@@ -1,0 +1,452 @@
+<div class="relative">
+    <button id="categoryMenuBtn" class="flex items-center space-x-2 bg-white px-3 py-1.5 text-[#3182CE] font-medium text-sm rounded-md font-bold">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="black" class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+        </svg>
+        <span>Danh mục sản phẩm</span>
+    </button>
+
+                        <div id="categoryDropdown" class="hidden absolute left-0 top-full mt-1 w-80 bg-white rounded-lg shadow-lg z-50">
+                            <div class="relative py-2">
+                                <!-- PC -->
+                                <div class="group/item px-4 py-2 hover:bg-blue-50">
+                                    <div class="flex items-center justify-between pr-8">
+                                        <span>PC</span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                                        </svg>
+                                    </div>
+                                    
+                                    <!-- Submenu -->
+                                    <div class="hidden group-hover/item:block absolute left-full top-0 min-h-full w-[600px] bg-white rounded-lg shadow-lg -mt-2">
+                                        <div class="absolute h-full w-12 bg-transparent -left-12"></div>
+                                        <div class="p-4 pt-6">     
+                                            <!-- Grid Layout -->
+                                            <div class="grid grid-cols-2 gap-x-6 gap-y-8">
+                                                <!-- Chọn theo nhu cầu -->
+                                                <div class="space-y-2">
+                                                    <h4 class="font-semibold text-blue-900 hover:text-red-500">Chọn theo nhu cầu</h4>
+                                                    <div class="space-y-1">
+                                                        <a href="#" class="block text-sm hover:text-blue-500">PC Gaming</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">PC Đồ hoạ - Làm việc</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">PC AI - Trí tuệ nhân tạo</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">PC Workstation</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">PC Văn phòng</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Xem toàn bộ</a>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Chọn theo khoảng giá -->
+                                                <div class="space-y-2">
+                                                    <h4 class="font-semibold text-blue-900 hover:text-red-500">Chọn theo khoảng giá</h4>
+                                                    <div class="space-y-1">
+                                                        <a href="#" class="block text-sm hover:text-blue-500">5 triệu - 15 triệu</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">15 triệu - 20 triệu</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">20 triệu - 30 triệu</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">30 triệu - 50 triệu</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">50 triệu - 100 triệu</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Trên 100 triệu</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Laptop -->
+                                <div class="group/item px-4 py-2 hover:bg-blue-50">
+                                    <div class="flex items-center justify-between pr-8">
+                                        <span>Laptop</span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                                        </svg>
+                                    </div>
+                                    
+                                    <!-- Submenu -->
+                                    <div class="hidden group-hover/item:block absolute left-full top-0 min-h-full w-[600px] bg-white rounded-lg shadow-lg -mt-2">
+                                        <div class="absolute h-full w-12 bg-transparent -left-12"></div>
+                                        <div class="p-4 pt-6">
+                                            <div class="grid grid-cols-2 gap-8">
+                                                <!-- Chọn theo nhu cầu -->
+                                                <div class="space-y-2">
+                                                    <h4 class="font-semibold text-blue-900 hover:text-red-500">Chọn theo nhu cầu</h4>
+                                                    <div class="space-y-1">
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Laptop Gaming</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Laptop Đồ hoạ - Làm việc</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Laptop Workstation</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Laptop Văn phòng</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Xem toàn bộ</a>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Chọn theo khoảng giá -->
+                                                <div class="space-y-2">
+                                                    <h4 class="font-semibold text-blue-900 hover:text-red-500">Chọn theo khoảng giá</h4>
+                                                    <div class="space-y-1">
+                                                        <a href="#" class="block text-sm hover:text-blue-500">5 triệu - 15 triệu</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">15 triệu - 20 triệu</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">20 triệu - 30 triệu</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">30 triệu - 50 triệu</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">50 triệu - 100 triệu</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Trên 100 triệu</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Linh kiện PC -->
+                                <div class="group/item px-4 py-2 hover:bg-blue-50">
+                                    <div class="flex items-center justify-between pr-8">
+                                        <span>Linh kiện PC</span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                                        </svg>
+                                    </div>
+                                    
+                                    <!-- Submenu -->
+                                    <div class="hidden group-hover/item:block absolute left-full top-0 min-h-full w-[600px] bg-white rounded-lg shadow-lg -mt-2">
+                                        <div class="absolute h-full w-12 bg-transparent -left-12"></div>
+                                        <div class="p-4 pt-6">
+                                            @* <!-- Title Section -->
+                                            <div class="mb-6">
+                                                <h3 class="text-blue-500 font-bold text-lg">DANH MỤC SẢN PHẨM</h3>
+                                            </div> *@
+                                            
+                                            <!-- Grid Layout -->
+                                            <div class="grid grid-cols-4 gap-x-6 gap-y-8">
+                                                <!-- CPU -->
+                                                <div class="space-y-2">
+                                                    <a class="block font-semibold text-blue-900 hover:text-red-500 cursor-pointer">CPU - Bộ vi xử lý</a>
+                                                    <div class="space-y-1">
+                                                        <a href="#" class="block text-sm hover:text-blue-500">CPU Intel</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">CPU AMD</a>
+                                                    </div>
+                                                </div>
+
+                                                <!-- VGA -->
+                                                <div class="space-y-2">
+                                                    <a class="block font-semibold text-blue-900 hover:text-red-500 cursor-pointer">VGA - Card màn hình</a>
+                                                    <div class="space-y-1">
+                                                        <a href="#" class="block text-sm hover:text-blue-500">VGA ASUS</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">VGA MSI</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">VGA GIGABYTE</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">VGA NVIDIA - QUARDO</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">VGA AMD</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">VGA Intel</a>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Mainboard -->
+                                                <div class="space-y-2">
+                                                    <a class="block font-semibold text-blue-900 hover:text-red-500 cursor-pointer">Mainboard - Bo mạch chủ</a>
+                                                    <div class="space-y-1">
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Mainboard ASUS</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Mainboard MSI</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Mainboard GIGABYTE</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Mainboard Asrock</a>
+                                                    </div>
+                                                </div>
+
+                                                <!-- RAM -->
+                                                <div class="space-y-2">
+                                                    <a class="block font-semibold text-blue-900 hover:text-red-500 cursor-pointer">RAM - Bộ nhớ trong</a>
+                                                    <div class="space-y-1">
+                                                        <a href="#" class="block text-sm hover:text-blue-500">RAM Corsair</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">RAM Kingston</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">RAM G.Skill</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">RAM TeamGroup</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">RAM GIGABYTE</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">RAM Samsung</a>
+                                                    </div>
+                                                </div>
+
+                                                <!-- PSU - Nguồn -->
+                                                <div class="space-y-2">
+                                                    <a class="block font-semibold text-blue-900 hover:text-red-500 cursor-pointer">PSU - Nguồn</a>
+                                                    <div class="space-y-1">
+                                                        <a href="#" class="block text-sm hover:text-blue-500">PSU Asus</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">PSU AIGO</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">PSU Antec</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">PSU Cooler Master</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">PSU Corsair</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">PSU MSI</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">PSU Deepcool</a>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Case - Vỏ máy -->
+                                                <div class="space-y-2">
+                                                    <a class="block font-semibold text-blue-900 hover:text-red-500 cursor-pointer">Case - Vỏ máy </a>
+                                                    <div class="space-y-1">
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Case Asus</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Case Corsair</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Case Cooler Master</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Case MSI</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Case Thermaltake</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Case Xigmatek</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Thiết bị lưu trữ -->
+                                <div class="group/item px-4 py-2 hover:bg-blue-50">
+                                    <div class="flex items-center justify-between pr-8">
+                                        <span>Thiết bị lưu trữ</span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                                        </svg>
+                                    </div>
+                                    
+                                    <!-- Submenu -->
+                                    <div class="hidden group-hover/item:block absolute left-full top-0 min-h-full w-[600px] bg-white rounded-lg shadow-lg -mt-2">
+                                        <div class="absolute h-full w-12 bg-transparent -left-12"></div>
+                                        <div class="p-4 pt-6">
+                                            <div class="grid grid-cols-4 gap-x-6 gap-y-8">
+                                                <div class="space-y-2">
+                                                    <a class="block font-semibold text-blue-900 hover:text-red-500 cursor-pointer">HDD</a>
+                                                    <div class="space-y-1">
+                                                        <a href="#" class="block text-sm hover:text-blue-500">HDD Seagate</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">HDD Toshiba</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">HDD Western Digital</a>
+                                                    </div>
+                                                </div>
+                                                <div class="space-y-2">
+                                                    <a class="block font-semibold text-blue-900 hover:text-red-500 cursor-pointer">SSD</a>
+                                                    <div class="space-y-1">
+                                                        <a href="#" class="block text-sm hover:text-blue-500">SSD Crucial</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">SSD Kingston</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">SSD Samsung</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">SSD WD Black</a>
+                                                    </div>
+                                                </div>
+                                                <div class="space-y-2">
+                                                    <a class="block font-semibold text-blue-900 hover:text-red-500 cursor-pointer">USB</a>
+                                                    <div class="space-y-1">
+                                                        <a href="#" class="block text-sm hover:text-blue-500">USB Kingston</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">USB Samsung</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">USB SanDisk</a>
+                                                    </div>
+                                                </div>
+                                                <div class="space-y-2">
+                                                    <a class="block font-semibold text-blue-900 hover:text-red-500 cursor-pointer">Ổ cứng di động</a>
+                                                    <div class="space-y-1">
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Seagate Backup Plus</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Toshiba Canvio</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">WD My Passport</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Màn hình -->
+                                <div class="group/item px-4 py-2 hover:bg-blue-50">
+                                    <div class="flex items-center justify-between pr-8">
+                                        <span>Màn hình</span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                                        </svg>
+                                    </div>
+                                    
+                                    <!-- Submenu -->
+                                    <div class="hidden group-hover/item:block absolute left-full top-0 min-h-full w-[600px] bg-white rounded-lg shadow-lg -mt-2">
+                                        <div class="absolute h-full w-12 bg-transparent -left-12"></div>
+                                        <div class="p-4 pt-6">
+                                            <div class="grid grid-cols-4 gap-x-6 gap-y-8">
+                                                <div class="space-y-2">
+                                                    <h4 class="font-semibold text-blue-900 hover:text-red-500">Hãng màn hình</h4>
+                                                    <div class="space-y-1">
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Màn hình AOC</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Màn hình ASUS</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Màn hình BenQ</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Màn hình Dell</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Màn hình LG</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Màn hình MSI</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Màn hình Samsung</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Màn hình ViewSonic</a>
+                                                    </div>
+                                                </div>
+                                                <div class="space-y-2">
+                                                    <h4 class="font-semibold text-blue-900 hover:text-red-500">Giá tiền</h4>
+                                                    <div class="space-y-1">
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Dưới 2 triệu</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">2 - 5 triệu</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">5 - 10 triệu</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">10 - 15 triệu</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Trên 20 triệu</a>
+                                                    </div>
+                                                </div>
+                                                <div class="space-y-2">
+                                                    <h4 class="font-semibold text-blue-900 hover:text-red-500">Kích thước</h4>
+                                                    <div class="space-y-1">
+                                                        <a href="#" class="block text-sm hover:text-blue-500">24 inch</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">27 inch</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">32 inch</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">34 inch</a>
+                                                    </div>
+                                                </div>
+                                                <div class="space-y-2">
+                                                    <h4 class="font-semibold text-blue-900 hover:text-red-500">Độ phân giải</h4>
+                                                    <div class="space-y-1">
+                                                        <a href="#" class="block text-sm hover:text-blue-500">1080p</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">1440p</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">4K</a>
+                                                    </div>
+                                                </div>
+                                                <div class="space-y-2">
+                                                    <h4 class="font-semibold text-blue-900 hover:text-red-500">Tần số quét</h4>
+                                                    <div class="space-y-1">
+                                                        <a href="#" class="block text-sm hover:text-blue-500">60Hz</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">75Hz</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">120Hz</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">144Hz</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">165Hz</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">240Hz</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Loa, Micro, Webcam -->
+                                <div class="group/item px-4 py-2 hover:bg-blue-50">
+                                    <div class="flex items-center justify-between pr-8">
+                                        <span>Loa, Micro, Webcam</span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                                        </svg>
+                                    </div>
+                                    
+                                    <!-- Submenu -->
+                                    <div class="hidden group-hover/item:block absolute left-full top-0 min-h-full w-[600px] bg-white rounded-lg shadow-lg -mt-2">
+                                        <div class="absolute h-full w-12 bg-transparent -left-12"></div>
+                                        <div class="p-4 pt-6">
+                                            <div class="grid grid-cols-3 gap-x-6 gap-y-8">
+                                                <div class="space-y-2">
+                                                    <h4 class="font-semibold text-blue-900 hover:text-red-500">Loa máy tính</h4>
+                                                    <div class="space-y-1">
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Loa Logitech</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Loa JBL</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Loa Edifier</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Loa Sony</a>
+                                                    </div>
+                                                </div>
+                                                <div class="space-y-2">
+                                                    <h4 class="font-semibold text-blue-900 hover:text-red-500">Micro</h4>
+                                                    <div class="space-y-1">
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Micro thu âm</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Micro không dây</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Micro có dây</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Micro karaoke</a>
+                                                    </div>
+                                                </div>
+                                                <div class="space-y-2">
+                                                    <h4 class="font-semibold text-blue-900 hover:text-red-500">Webcam</h4>
+                                                    <div class="space-y-1">
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Webcam Logitech</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Webcam Microsoft</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Webcam Rapoo</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Bàn phím, Chuột, Tai nghe -->
+                                <div class="group/item px-4 py-2 hover:bg-blue-50">
+                                    <div class="flex items-center justify-between pr-8">
+                                        <span>Bàn phím, Chuột, Tai nghe</span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                                        </svg>
+                                    </div>
+                                    
+                                    <!-- Submenu -->
+                                    <div class="hidden group-hover/item:block absolute left-full top-0 min-h-full w-[600px] bg-white rounded-lg shadow-lg -mt-2">
+                                        <div class="absolute h-full w-12 bg-transparent -left-12"></div>
+                                        <div class="p-4 pt-6">
+                                            <div class="grid grid-cols-3 gap-x-6 gap-y-8">
+                                                <div class="space-y-2">
+                                                    <h4 class="font-semibold text-blue-900 hover:text-red-500">Bàn phím</h4>
+                                                    <div class="space-y-1">
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Bàn phím Logitech</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Bàn phím Corsair</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Bàn phím Razer</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Bàn phím AKKO</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Bàn phím Leopold</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Bàn phím Steelseries</a>
+                                                    </div>
+                                                </div>
+                                                <div class="space-y-2">
+                                                    <h4 class="font-semibold text-blue-900 hover:text-red-500">Chuột</h4>
+                                                    <div class="space-y-1">
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Chuột Logitech</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Chuột Razer</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Chuột Corsair</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Chuột Steelseries</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Chuột ASUS</a>
+                                                    </div>
+                                                </div>
+                                                <div class="space-y-2">
+                                                    <h4 class="font-semibold text-blue-900 hover:text-red-500">Tai nghe</h4>
+                                                    <div class="space-y-1">
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Tai nghe Logitech</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Tai nghe Razer</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Tai nghe HyperX</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Tai nghe Corsair</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Tai nghe Steelseries</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Router Wifi, Card Wifi -->
+                                <div class="group/item px-4 py-2 hover:bg-blue-50">
+                                    <div class="flex items-center justify-between pr-8">
+                                        <span>Router Wifi, Card Wifi</span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                                        </svg>
+                                    </div>
+                                    
+                                    <!-- Submenu -->
+                                    <div class="hidden group-hover/item:block absolute left-full top-0 min-h-full w-[600px] bg-white rounded-lg shadow-lg -mt-2">
+                                        <div class="absolute h-full w-12 bg-transparent -left-12"></div>
+                                        <div class="p-4 pt-6">
+                                            <div class="grid grid-cols-2 gap-x-6 gap-y-8">
+                                                <div class="space-y-2">
+                                                    <h4 class="font-semibold text-blue-900 hover:text-red-500">Router Wifi</h4>
+                                                    <div class="space-y-1">
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Router TP-Link</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Router ASUS</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Router Tenda</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Router Linksys</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Router D-Link</a>
+                                                    </div>
+                                                </div>
+                                                <div class="space-y-2">
+                                                    <h4 class="font-semibold text-blue-900 hover:text-red-500">Card Wifi</h4>
+                                                    <div class="space-y-1">
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Card Wifi TP-Link</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Card Wifi ASUS</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">Card Wifi Intel</a>
+                                                        <a href="#" class="block text-sm hover:text-blue-500">USB Wifi</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+</div> 
