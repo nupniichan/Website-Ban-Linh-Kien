@@ -27,12 +27,12 @@
                                                 <div class="space-y-2">
                                                     <h4 class="font-semibold text-blue-900 hover:text-red-500">Chọn theo nhu cầu</h4>
                                                     <div class="space-y-1">
-                                                        <a href="#" class="block text-sm hover:text-blue-500">PC Gaming</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">PC Đồ hoạ - Làm việc</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">PC AI - Trí tuệ nhân tạo</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">PC Workstation</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">PC Văn phòng</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Xem toàn bộ</a>
+                                                        <a href="@Url.Action("PC", "ProductsList", new { category = "gaming" })" class="block text-sm hover:text-blue-500">PC Gaming</a>
+                                                        <a href="@Url.Action("PC", "ProductsList", new { category = "graphics" })" class="block text-sm hover:text-blue-500">PC Đồ hoạ - Làm việc</a>
+                                                        <a href="@Url.Action("PC", "ProductsList", new { category = "ai" })" class="block text-sm hover:text-blue-500">PC AI - Trí tuệ nhân tạo</a>
+                                                        <a href="@Url.Action("PC", "ProductsList", new { category = "workstation" })" class="block text-sm hover:text-blue-500">PC Workstation</a>
+                                                        <a href="@Url.Action("PC", "ProductsList", new { category = "office" })" class="block text-sm hover:text-blue-500">PC Văn phòng</a>
+                                                        <a href="@Url.Action("PC", "ProductsList")" class="block text-sm hover:text-blue-500">Xem toàn bộ</a>
                                                     </div>
                                                 </div>
 
@@ -40,12 +40,18 @@
                                                 <div class="space-y-2">
                                                     <h4 class="font-semibold text-blue-900 hover:text-red-500">Chọn theo khoảng giá</h4>
                                                     <div class="space-y-1">
-                                                        <a href="#" class="block text-sm hover:text-blue-500">5 triệu - 15 triệu</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">15 triệu - 20 triệu</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">20 triệu - 30 triệu</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">30 triệu - 50 triệu</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">50 triệu - 100 triệu</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Trên 100 triệu</a>
+                                                        <a href="@Url.Action("PC", "ProductsList", new { priceRange = "5-15-trieu" })" 
+                                                           class="block text-sm hover:text-blue-500">5 triệu - 15 triệu</a>
+                                                        <a href="@Url.Action("PC", "ProductsList", new { priceRange = "15-20-trieu" })" 
+                                                           class="block text-sm hover:text-blue-500">15 triệu - 20 triệu</a>
+                                                        <a href="@Url.Action("PC", "ProductsList", new { priceRange = "20-30-trieu" })" 
+                                                           class="block text-sm hover:text-blue-500">20 triệu - 30 triệu</a>
+                                                        <a href="@Url.Action("PC", "ProductsList", new { priceRange = "30-50-trieu" })" 
+                                                           class="block text-sm hover:text-blue-500">30 triệu - 50 triệu</a>
+                                                        <a href="@Url.Action("PC", "ProductsList", new { priceRange = "50-100-trieu" })" 
+                                                           class="block text-sm hover:text-blue-500">50 triệu - 100 triệu</a>
+                                                        <a href="@Url.Action("PC", "ProductsList", new { priceRange = "tren-100-trieu" })" 
+                                                           class="block text-sm hover:text-blue-500">Trên 100 triệu</a>
                                                     </div>
                                                 </div>
                                             </div>
@@ -71,11 +77,11 @@
                                                 <div class="space-y-2">
                                                     <h4 class="font-semibold text-blue-900 hover:text-red-500">Chọn theo nhu cầu</h4>
                                                     <div class="space-y-1">
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Laptop Gaming</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Laptop Đồ hoạ - Làm việc</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Laptop Workstation</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Laptop Văn phòng</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Xem toàn bộ</a>
+                                                        <a href="/productslist/laptop-gaming" class="block text-sm hover:text-blue-500">Laptop Gaming</a>
+                                                        <a href="/productslist/laptop-graphics" class="block text-sm hover:text-blue-500">Laptop Đồ hoạ - Làm việc</a>
+                                                        <a href="/productslist/laptop-workstation" class="block text-sm hover:text-blue-500">Laptop Workstation</a>
+                                                        <a href="/productslist/laptop-office" class="block text-sm hover:text-blue-500">Laptop Văn phòng</a>
+                                                        <a href="/productslist/laptop" class="block text-sm hover:text-blue-500">Xem toàn bộ</a>
                                                     </div>
                                                 </div>
 
@@ -83,12 +89,18 @@
                                                 <div class="space-y-2">
                                                     <h4 class="font-semibold text-blue-900 hover:text-red-500">Chọn theo khoảng giá</h4>
                                                     <div class="space-y-1">
-                                                        <a href="#" class="block text-sm hover:text-blue-500">5 triệu - 15 triệu</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">15 triệu - 20 triệu</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">20 triệu - 30 triệu</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">30 triệu - 50 triệu</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">50 triệu - 100 triệu</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Trên 100 triệu</a>
+                                                        <a href="@Url.Action("Laptop", "ProductsList", new { priceRange = "5-15-trieu" })" 
+                                                           class="block text-sm hover:text-blue-500">5 triệu - 15 triệu</a>
+                                                        <a href="@Url.Action("Laptop", "ProductsList", new { priceRange = "15-20-trieu" })" 
+                                                           class="block text-sm hover:text-blue-500">15 triệu - 20 triệu</a>
+                                                        <a href="@Url.Action("Laptop", "ProductsList", new { priceRange = "20-30-trieu" })" 
+                                                           class="block text-sm hover:text-blue-500">20 triệu - 30 triệu</a>
+                                                        <a href="@Url.Action("Laptop", "ProductsList", new { priceRange = "30-50-trieu" })" 
+                                                           class="block text-sm hover:text-blue-500">30 triệu - 50 triệu</a>
+                                                        <a href="@Url.Action("Laptop", "ProductsList", new { priceRange = "50-100-trieu" })" 
+                                                           class="block text-sm hover:text-blue-500">50 triệu - 100 triệu</a>
+                                                        <a href="@Url.Action("Laptop", "ProductsList", new { priceRange = "tren-100-trieu" })" 
+                                                           class="block text-sm hover:text-blue-500">Trên 100 triệu</a>
                                                     </div>
                                                 </div>
                                             </div>
@@ -118,74 +130,123 @@
                                             <div class="grid grid-cols-4 gap-x-6 gap-y-8">
                                                 <!-- CPU -->
                                                 <div class="space-y-2">
-                                                    <a class="block font-semibold text-blue-900 hover:text-red-500 cursor-pointer">CPU - Bộ vi xử lý</a>
+                                                    <a href="@Url.Action("Components", "ProductsList", new { category = "cpu" })" 
+                                                       class="block font-semibold text-blue-900 hover:text-red-500 cursor-pointer">
+                                                        CPU - Bộ vi xử lý
+                                                    </a>
                                                     <div class="space-y-1">
-                                                        <a href="#" class="block text-sm hover:text-blue-500">CPU Intel</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">CPU AMD</a>
+                                                        <a href="@Url.Action("Components", "ProductsList", new { category = "cpu", brand = "intel" })" 
+                                                           class="block text-sm hover:text-blue-500">CPU Intel</a>
+                                                        <a href="@Url.Action("Components", "ProductsList", new { category = "cpu", brand = "amd" })" 
+                                                           class="block text-sm hover:text-blue-500">CPU AMD</a>
                                                     </div>
                                                 </div>
 
                                                 <!-- VGA -->
                                                 <div class="space-y-2">
-                                                    <a class="block font-semibold text-blue-900 hover:text-red-500 cursor-pointer">VGA - Card màn hình</a>
+                                                    <a href="@Url.Action("Components", "ProductsList", new { category = "vga" })" 
+                                                       class="block font-semibold text-blue-900 hover:text-red-500 cursor-pointer">
+                                                        VGA - Card màn hình
+                                                    </a>
                                                     <div class="space-y-1">
-                                                        <a href="#" class="block text-sm hover:text-blue-500">VGA ASUS</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">VGA MSI</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">VGA GIGABYTE</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">VGA NVIDIA - QUARDO</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">VGA AMD</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">VGA Intel</a>
+                                                        <a href="@Url.Action("Components", "ProductsList", new { category = "vga", brand = "asus" })" 
+                                                           class="block text-sm hover:text-blue-500">VGA ASUS</a>
+                                                        <a href="@Url.Action("Components", "ProductsList", new { category = "vga", brand = "msi" })" 
+                                                           class="block text-sm hover:text-blue-500">VGA MSI</a>
+                                                        <a href="@Url.Action("Components", "ProductsList", new { category = "vga", brand = "gigabyte" })" 
+                                                           class="block text-sm hover:text-blue-500">VGA GIGABYTE</a>
+                                                        <a href="@Url.Action("Components", "ProductsList", new { category = "vga", brand = "nvidia" })" 
+                                                           class="block text-sm hover:text-blue-500">VGA NVIDIA - QUARDO</a>
+                                                        <a href="@Url.Action("Components", "ProductsList", new { category = "vga", brand = "amd" })" 
+                                                           class="block text-sm hover:text-blue-500">VGA AMD</a>
+                                                        <a href="@Url.Action("Components", "ProductsList", new { category = "vga", brand = "intel" })" 
+                                                           class="block text-sm hover:text-blue-500">VGA Intel</a>
                                                     </div>
                                                 </div>
 
                                                 <!-- Mainboard -->
                                                 <div class="space-y-2">
-                                                    <a class="block font-semibold text-blue-900 hover:text-red-500 cursor-pointer">Mainboard - Bo mạch chủ</a>
+                                                    <a href="@Url.Action("Components", "ProductsList", new { category = "mainboard" })" 
+                                                       class="block font-semibold text-blue-900 hover:text-red-500 cursor-pointer">
+                                                        Mainboard - Bo mạch chủ
+                                                    </a>
                                                     <div class="space-y-1">
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Mainboard ASUS</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Mainboard MSI</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Mainboard GIGABYTE</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Mainboard Asrock</a>
+                                                        <a href="@Url.Action("Components", "ProductsList", new { category = "mainboard", brand = "asus" })" 
+                                                           class="block text-sm hover:text-blue-500">Mainboard ASUS</a>
+                                                        <a href="@Url.Action("Components", "ProductsList", new { category = "mainboard", brand = "msi" })" 
+                                                           class="block text-sm hover:text-blue-500">Mainboard MSI</a>
+                                                        <a href="@Url.Action("Components", "ProductsList", new { category = "mainboard", brand = "gigabyte" })" 
+                                                           class="block text-sm hover:text-blue-500">Mainboard GIGABYTE</a>
+                                                        <a href="@Url.Action("Components", "ProductsList", new { category = "mainboard", brand = "asrock" })" 
+                                                           class="block text-sm hover:text-blue-500">Mainboard Asrock</a>
                                                     </div>
                                                 </div>
 
                                                 <!-- RAM -->
                                                 <div class="space-y-2">
-                                                    <a class="block font-semibold text-blue-900 hover:text-red-500 cursor-pointer">RAM - Bộ nhớ trong</a>
+                                                    <a href="@Url.Action("Components", "ProductsList", new { category = "ram" })" 
+                                                       class="block font-semibold text-blue-900 hover:text-red-500 cursor-pointer">
+                                                        RAM - Bộ nhớ trong
+                                                    </a>
                                                     <div class="space-y-1">
-                                                        <a href="#" class="block text-sm hover:text-blue-500">RAM Corsair</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">RAM Kingston</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">RAM G.Skill</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">RAM TeamGroup</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">RAM GIGABYTE</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">RAM Samsung</a>
+                                                        <a href="@Url.Action("Components", "ProductsList", new { category = "ram", brand = "corsair" })" 
+                                                           class="block text-sm hover:text-blue-500">RAM Corsair</a>
+                                                        <a href="@Url.Action("Components", "ProductsList", new { category = "ram", brand = "kingston" })" 
+                                                           class="block text-sm hover:text-blue-500">RAM Kingston</a>
+                                                        <a href="@Url.Action("Components", "ProductsList", new { category = "ram", brand = "gskill" })" 
+                                                           class="block text-sm hover:text-blue-500">RAM G.Skill</a>
+                                                        <a href="@Url.Action("Components", "ProductsList", new { category = "ram", brand = "teamgroup" })" 
+                                                           class="block text-sm hover:text-blue-500">RAM TeamGroup</a>
+                                                        <a href="@Url.Action("Components", "ProductsList", new { category = "ram", brand = "gigabyte" })" 
+                                                           class="block text-sm hover:text-blue-500">RAM GIGABYTE</a>
+                                                        <a href="@Url.Action("Components", "ProductsList", new { category = "ram", brand = "samsung" })" 
+                                                           class="block text-sm hover:text-blue-500">RAM Samsung</a>
                                                     </div>
                                                 </div>
 
                                                 <!-- PSU - Nguồn -->
                                                 <div class="space-y-2">
-                                                    <a class="block font-semibold text-blue-900 hover:text-red-500 cursor-pointer">PSU - Nguồn</a>
+                                                    <a href="@Url.Action("Components", "ProductsList", new { category = "psu" })" 
+                                                       class="block font-semibold text-blue-900 hover:text-red-500 cursor-pointer">
+                                                        PSU - Nguồn
+                                                    </a>
                                                     <div class="space-y-1">
-                                                        <a href="#" class="block text-sm hover:text-blue-500">PSU Asus</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">PSU AIGO</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">PSU Antec</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">PSU Cooler Master</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">PSU Corsair</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">PSU MSI</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">PSU Deepcool</a>
+                                                        <a href="@Url.Action("Components", "ProductsList", new { category = "psu", brand = "asus" })" 
+                                                           class="block text-sm hover:text-blue-500">PSU Asus</a>
+                                                        <a href="@Url.Action("Components", "ProductsList", new { category = "psu", brand = "aigopower" })" 
+                                                           class="block text-sm hover:text-blue-500">PSU AIGO</a>
+                                                        <a href="@Url.Action("Components", "ProductsList", new { category = "psu", brand = "antec" })" 
+                                                           class="block text-sm hover:text-blue-500">PSU Antec</a>
+                                                        <a href="@Url.Action("Components", "ProductsList", new { category = "psu", brand = "coolermaster" })" 
+                                                           class="block text-sm hover:text-blue-500">PSU Cooler Master</a>
+                                                        <a href="@Url.Action("Components", "ProductsList", new { category = "psu", brand = "corsair" })" 
+                                                           class="block text-sm hover:text-blue-500">PSU Corsair</a>
+                                                        <a href="@Url.Action("Components", "ProductsList", new { category = "psu", brand = "msi" })" 
+                                                           class="block text-sm hover:text-blue-500">PSU MSI</a>
+                                                        <a href="@Url.Action("Components", "ProductsList", new { category = "psu", brand = "deepcool" })" 
+                                                           class="block text-sm hover:text-blue-500">PSU Deepcool</a>
                                                     </div>
                                                 </div>
 
                                                 <!-- Case - Vỏ máy -->
                                                 <div class="space-y-2">
-                                                    <a class="block font-semibold text-blue-900 hover:text-red-500 cursor-pointer">Case - Vỏ máy </a>
+                                                    <a href="@Url.Action("Components", "ProductsList", new { category = "case" })" 
+                                                       class="block font-semibold text-blue-900 hover:text-red-500 cursor-pointer">
+                                                        Case - Vỏ máy 
+                                                    </a>
                                                     <div class="space-y-1">
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Case Asus</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Case Corsair</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Case Cooler Master</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Case MSI</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Case Thermaltake</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Case Xigmatek</a>
+                                                        <a href="@Url.Action("Components", "ProductsList", new { category = "case", brand = "asus" })" 
+                                                           class="block text-sm hover:text-blue-500">Case Asus</a>
+                                                        <a href="@Url.Action("Components", "ProductsList", new { category = "case", brand = "corsair" })" 
+                                                           class="block text-sm hover:text-blue-500">Case Corsair</a>
+                                                        <a href="@Url.Action("Components", "ProductsList", new { category = "case", brand = "coolermaster" })" 
+                                                           class="block text-sm hover:text-blue-500">Case Cooler Master</a>
+                                                        <a href="@Url.Action("Components", "ProductsList", new { category = "case", brand = "msi" })" 
+                                                           class="block text-sm hover:text-blue-500">Case MSI</a>
+                                                        <a href="@Url.Action("Components", "ProductsList", new { category = "case", brand = "thermaltake" })" 
+                                                           class="block text-sm hover:text-blue-500">Case Thermaltake</a>
+                                                        <a href="@Url.Action("Components", "ProductsList", new { category = "case", brand = "xigmatek" })" 
+                                                           class="block text-sm hover:text-blue-500">Case Xigmatek</a>
                                                     </div>
                                                 </div>
                                             </div>
@@ -208,36 +269,61 @@
                                         <div class="p-4 pt-6">
                                             <div class="grid grid-cols-4 gap-x-6 gap-y-8">
                                                 <div class="space-y-2">
-                                                    <a class="block font-semibold text-blue-900 hover:text-red-500 cursor-pointer">HDD</a>
+                                                    <a href="@Url.Action("Storage", "ProductsList", new { category = "hdd" })" 
+                                                       class="block font-semibold text-blue-900 hover:text-red-500 cursor-pointer">
+                                                        HDD
+                                                    </a>
                                                     <div class="space-y-1">
-                                                        <a href="#" class="block text-sm hover:text-blue-500">HDD Seagate</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">HDD Toshiba</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">HDD Western Digital</a>
+                                                        <a href="@Url.Action("Storage", "ProductsList", new { category = "hdd", brand = "seagate" })" 
+                                                           class="block text-sm hover:text-blue-500">HDD Seagate</a>
+                                                        <a href="@Url.Action("Storage", "ProductsList", new { category = "hdd", brand = "toshiba" })" 
+                                                           class="block text-sm hover:text-blue-500">HDD Toshiba</a>
+                                                        <a href="@Url.Action("Storage", "ProductsList", new { category = "hdd", brand = "western-digital" })" 
+                                                           class="block text-sm hover:text-blue-500">HDD Western Digital</a>
                                                     </div>
                                                 </div>
                                                 <div class="space-y-2">
-                                                    <a class="block font-semibold text-blue-900 hover:text-red-500 cursor-pointer">SSD</a>
+                                                    <a href="@Url.Action("Storage", "ProductsList", new { category = "ssd" })" 
+                                                       class="block font-semibold text-blue-900 hover:text-red-500 cursor-pointer">
+                                                        SSD
+                                                    </a>
                                                     <div class="space-y-1">
-                                                        <a href="#" class="block text-sm hover:text-blue-500">SSD Crucial</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">SSD Kingston</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">SSD Samsung</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">SSD WD Black</a>
+                                                        <a href="@Url.Action("Storage", "ProductsList", new { category = "ssd", brand = "crucial" })" 
+                                                           class="block text-sm hover:text-blue-500">SSD Crucial</a>
+                                                        <a href="@Url.Action("Storage", "ProductsList", new { category = "ssd", brand = "kingston" })" 
+                                                           class="block text-sm hover:text-blue-500">SSD Kingston</a>
+                                                        <a href="@Url.Action("Storage", "ProductsList", new { category = "ssd", brand = "samsung" })" 
+                                                           class="block text-sm hover:text-blue-500">SSD Samsung</a>
+                                                        <a href="@Url.Action("Storage", "ProductsList", new { category = "ssd", brand = "wd-black" })" 
+                                                           class="block text-sm hover:text-blue-500">SSD WD Black</a>
                                                     </div>
                                                 </div>
                                                 <div class="space-y-2">
-                                                    <a class="block font-semibold text-blue-900 hover:text-red-500 cursor-pointer">USB</a>
+                                                    <a href="@Url.Action("Storage", "ProductsList", new { category = "usb" })" 
+                                                       class="block font-semibold text-blue-900 hover:text-red-500 cursor-pointer">
+                                                        USB
+                                                    </a>
                                                     <div class="space-y-1">
-                                                        <a href="#" class="block text-sm hover:text-blue-500">USB Kingston</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">USB Samsung</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">USB SanDisk</a>
+                                                        <a href="@Url.Action("Storage", "ProductsList", new { category = "usb", brand = "kingston" })" 
+                                                           class="block text-sm hover:text-blue-500">USB Kingston</a>
+                                                        <a href="@Url.Action("Storage", "ProductsList", new { category = "usb", brand = "samsung" })" 
+                                                           class="block text-sm hover:text-blue-500">USB Samsung</a>
+                                                        <a href="@Url.Action("Storage", "ProductsList", new { category = "usb", brand = "sandisk" })" 
+                                                           class="block text-sm hover:text-blue-500">USB SanDisk</a>
                                                     </div>
                                                 </div>
                                                 <div class="space-y-2">
-                                                    <a class="block font-semibold text-blue-900 hover:text-red-500 cursor-pointer">Ổ cứng di động</a>
+                                                    <a href="@Url.Action("Storage", "ProductsList", new { category = "estorage" })" 
+                                                       class="block font-semibold text-blue-900 hover:text-red-500 cursor-pointer">
+                                                        Ổ cứng di động
+                                                    </a>
                                                     <div class="space-y-1">
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Seagate Backup Plus</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Toshiba Canvio</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">WD My Passport</a>
+                                                        <a href="@Url.Action("Storage", "ProductsList", new { category = "estorage", brand = "seagate" })" 
+                                                           class="block text-sm hover:text-blue-500">Seagate Backup Plus</a>
+                                                        <a href="@Url.Action("Storage", "ProductsList", new { category = "estorage", brand = "toshiba" })" 
+                                                           class="block text-sm hover:text-blue-500">Toshiba Canvio</a>
+                                                        <a href="@Url.Action("Storage", "ProductsList", new { category = "estorage", brand = "western-digital" })" 
+                                                           class="block text-sm hover:text-blue-500">WD My Passport</a>
                                                     </div>
                                                 </div>
                                             </div>
@@ -262,52 +348,78 @@
                                                 <div class="space-y-2">
                                                     <h4 class="font-semibold text-blue-900 hover:text-red-500">Hãng màn hình</h4>
                                                     <div class="space-y-1">
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Màn hình AOC</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Màn hình ASUS</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Màn hình BenQ</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Màn hình Dell</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Màn hình LG</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Màn hình MSI</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Màn hình Samsung</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Màn hình ViewSonic</a>
+                                                        <a href="@Url.Action("Monitor", "ProductsList", new { brand = "aoc" })" 
+                                                           class="block text-sm hover:text-blue-500">Màn hình AOC</a>
+                                                        <a href="@Url.Action("Monitor", "ProductsList", new { brand = "asus" })" 
+                                                           class="block text-sm hover:text-blue-500">Màn hình ASUS</a>
+                                                        <a href="@Url.Action("Monitor", "ProductsList", new { brand = "benq" })" 
+                                                           class="block text-sm hover:text-blue-500">Màn hình BenQ</a>
+                                                        <a href="@Url.Action("Monitor", "ProductsList", new { brand = "dell" })" 
+                                                           class="block text-sm hover:text-blue-500">Màn hình Dell</a>
+                                                        <a href="@Url.Action("Monitor", "ProductsList", new { brand = "lg" })" 
+                                                           class="block text-sm hover:text-blue-500">Màn hình LG</a>
+                                                        <a href="@Url.Action("Monitor", "ProductsList", new { brand = "msi" })" 
+                                                           class="block text-sm hover:text-blue-500">Màn hình MSI</a>
+                                                        <a href="@Url.Action("Monitor", "ProductsList", new { brand = "samsung" })" 
+                                                           class="block text-sm hover:text-blue-500">Màn hình Samsung</a>
+                                                        <a href="@Url.Action("Monitor", "ProductsList", new { brand = "viewsonic" })" 
+                                                           class="block text-sm hover:text-blue-500">Màn hình ViewSonic</a>
                                                     </div>
                                                 </div>
                                                 <div class="space-y-2">
                                                     <h4 class="font-semibold text-blue-900 hover:text-red-500">Giá tiền</h4>
                                                     <div class="space-y-1">
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Dưới 2 triệu</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">2 - 5 triệu</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">5 - 10 triệu</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">10 - 15 triệu</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Trên 20 triệu</a>
+                                                        <a href="@Url.Action("Monitor", "ProductsList", new { priceRange = "duoi-2" })" 
+                                                           class="block text-sm hover:text-blue-500">Dưới 2 triệu</a>
+                                                        <a href="@Url.Action("Monitor", "ProductsList", new { priceRange = "2-5" })" 
+                                                           class="block text-sm hover:text-blue-500">2 - 5 triệu</a>
+                                                        <a href="@Url.Action("Monitor", "ProductsList", new { priceRange = "5-10" })" 
+                                                           class="block text-sm hover:text-blue-500">5 - 10 triệu</a>
+                                                        <a href="@Url.Action("Monitor", "ProductsList", new { priceRange = "10-15" })" 
+                                                           class="block text-sm hover:text-blue-500">10 - 15 triệu</a>
+                                                        <a href="@Url.Action("Monitor", "ProductsList", new { priceRange = "tren-20" })" 
+                                                           class="block text-sm hover:text-blue-500">Trên 20 triệu</a>
                                                     </div>
                                                 </div>
                                                 <div class="space-y-2">
                                                     <h4 class="font-semibold text-blue-900 hover:text-red-500">Kích thước</h4>
                                                     <div class="space-y-1">
-                                                        <a href="#" class="block text-sm hover:text-blue-500">24 inch</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">27 inch</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">32 inch</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">34 inch</a>
+                                                        <a href="@Url.Action("Monitor", "ProductsList", new { size = "24" })" 
+                                                           class="block text-sm hover:text-blue-500">24 inch</a>
+                                                        <a href="@Url.Action("Monitor", "ProductsList", new { size = "27" })" 
+                                                           class="block text-sm hover:text-blue-500">27 inch</a>
+                                                        <a href="@Url.Action("Monitor", "ProductsList", new { size = "32" })" 
+                                                           class="block text-sm hover:text-blue-500">32 inch</a>
+                                                        <a href="@Url.Action("Monitor", "ProductsList", new { size = "34" })" 
+                                                           class="block text-sm hover:text-blue-500">34 inch</a>
                                                     </div>
                                                 </div>
                                                 <div class="space-y-2">
                                                     <h4 class="font-semibold text-blue-900 hover:text-red-500">Độ phân giải</h4>
                                                     <div class="space-y-1">
-                                                        <a href="#" class="block text-sm hover:text-blue-500">1080p</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">1440p</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">4K</a>
+                                                        <a href="@Url.Action("Monitor", "ProductsList", new { resolution = "1080p" })" 
+                                                           class="block text-sm hover:text-blue-500">1080p</a>
+                                                        <a href="@Url.Action("Monitor", "ProductsList", new { resolution = "1440p" })" 
+                                                           class="block text-sm hover:text-blue-500">1440p</a>
+                                                        <a href="@Url.Action("Monitor", "ProductsList", new { resolution = "4k" })" 
+                                                           class="block text-sm hover:text-blue-500">4K</a>
                                                     </div>
                                                 </div>
                                                 <div class="space-y-2">
                                                     <h4 class="font-semibold text-blue-900 hover:text-red-500">Tần số quét</h4>
                                                     <div class="space-y-1">
-                                                        <a href="#" class="block text-sm hover:text-blue-500">60Hz</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">75Hz</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">120Hz</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">144Hz</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">165Hz</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">240Hz</a>
+                                                        <a href="@Url.Action("Monitor", "ProductsList", new { refreshRate = "60" })" 
+                                                           class="block text-sm hover:text-blue-500">60Hz</a>
+                                                        <a href="@Url.Action("Monitor", "ProductsList", new { refreshRate = "75" })" 
+                                                           class="block text-sm hover:text-blue-500">75Hz</a>
+                                                        <a href="@Url.Action("Monitor", "ProductsList", new { refreshRate = "120" })" 
+                                                           class="block text-sm hover:text-blue-500">120Hz</a>
+                                                        <a href="@Url.Action("Monitor", "ProductsList", new { refreshRate = "144" })" 
+                                                           class="block text-sm hover:text-blue-500">144Hz</a>
+                                                        <a href="@Url.Action("Monitor", "ProductsList", new { refreshRate = "165" })" 
+                                                           class="block text-sm hover:text-blue-500">165Hz</a>
+                                                        <a href="@Url.Action("Monitor", "ProductsList", new { refreshRate = "240" })" 
+                                                           class="block text-sm hover:text-blue-500">240Hz</a>
                                                     </div>
                                                 </div>
                                             </div>
@@ -332,27 +444,38 @@
                                                 <div class="space-y-2">
                                                     <h4 class="font-semibold text-blue-900 hover:text-red-500">Loa máy tính</h4>
                                                     <div class="space-y-1">
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Loa Logitech</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Loa JBL</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Loa Edifier</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Loa Sony</a>
+                                                        <a href="@Url.Action("Audio", "ProductsList", new { category = "speaker", brand = "logitech" })" 
+                                                           class="block text-sm hover:text-blue-500">Loa Logitech</a>
+                                                        <a href="@Url.Action("Audio", "ProductsList", new { category = "speaker", brand = "jbl" })" 
+                                                           class="block text-sm hover:text-blue-500">Loa JBL</a>
+                                                        <a href="@Url.Action("Audio", "ProductsList", new { category = "speaker", brand = "edifier" })" 
+                                                           class="block text-sm hover:text-blue-500">Loa Edifier</a>
+                                                        <a href="@Url.Action("Audio", "ProductsList", new { category = "speaker", brand = "sony" })" 
+                                                           class="block text-sm hover:text-blue-500">Loa Sony</a>
                                                     </div>
                                                 </div>
                                                 <div class="space-y-2">
                                                     <h4 class="font-semibold text-blue-900 hover:text-red-500">Micro</h4>
                                                     <div class="space-y-1">
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Micro thu âm</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Micro không dây</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Micro có dây</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Micro karaoke</a>
+                                                        <a href="@Url.Action("Audio", "ProductsList", new { category = "microphone", type = "thu-am" })" 
+                                                           class="block text-sm hover:text-blue-500">Micro thu âm</a>
+                                                        <a href="@Url.Action("Audio", "ProductsList", new { category = "microphone", type = "khong-day" })" 
+                                                           class="block text-sm hover:text-blue-500">Micro không dây</a>
+                                                        <a href="@Url.Action("Audio", "ProductsList", new { category = "microphone", type = "co-day" })" 
+                                                           class="block text-sm hover:text-blue-500">Micro có dây</a>
+                                                        <a href="@Url.Action("Audio", "ProductsList", new { category = "microphone", type = "karaoke" })" 
+                                                           class="block text-sm hover:text-blue-500">Micro karaoke</a>
                                                     </div>
                                                 </div>
                                                 <div class="space-y-2">
                                                     <h4 class="font-semibold text-blue-900 hover:text-red-500">Webcam</h4>
                                                     <div class="space-y-1">
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Webcam Logitech</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Webcam Microsoft</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Webcam Rapoo</a>
+                                                        <a href="@Url.Action("Audio", "ProductsList", new { category = "webcam", brand = "logitech" })" 
+                                                           class="block text-sm hover:text-blue-500">Webcam Logitech</a>
+                                                        <a href="@Url.Action("Audio", "ProductsList", new { category = "webcam", brand = "microsoft" })" 
+                                                           class="block text-sm hover:text-blue-500">Webcam Microsoft</a>
+                                                        <a href="@Url.Action("Audio", "ProductsList", new { category = "webcam", brand = "rapoo" })" 
+                                                           class="block text-sm hover:text-blue-500">Webcam Rapoo</a>
                                                     </div>
                                                 </div>
                                             </div>
@@ -377,32 +500,48 @@
                                                 <div class="space-y-2">
                                                     <h4 class="font-semibold text-blue-900 hover:text-red-500">Bàn phím</h4>
                                                     <div class="space-y-1">
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Bàn phím Logitech</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Bàn phím Corsair</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Bàn phím Razer</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Bàn phím AKKO</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Bàn phím Leopold</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Bàn phím Steelseries</a>
+                                                        <a href="@Url.Action("Peripherals", "ProductsList", new { category = "keyboard", brand = "logitech" })" 
+                                                           class="block text-sm hover:text-blue-500">Bàn phím Logitech</a>
+                                                        <a href="@Url.Action("Peripherals", "ProductsList", new { category = "keyboard", brand = "corsair" })" 
+                                                           class="block text-sm hover:text-blue-500">Bàn phím Corsair</a>
+                                                        <a href="@Url.Action("Peripherals", "ProductsList", new { category = "keyboard", brand = "razer" })" 
+                                                           class="block text-sm hover:text-blue-500">Bàn phím Razer</a>
+                                                        <a href="@Url.Action("Peripherals", "ProductsList", new { category = "keyboard", brand = "akk" })" 
+                                                           class="block text-sm hover:text-blue-500">Bàn phím AKKO</a>
+                                                        <a href="@Url.Action("Peripherals", "ProductsList", new { category = "keyboard", brand = "leopold" })" 
+                                                           class="block text-sm hover:text-blue-500">Bàn phím Leopold</a>
+                                                        <a href="@Url.Action("Peripherals", "ProductsList", new { category = "keyboard", brand = "steelseries" })" 
+                                                           class="block text-sm hover:text-blue-500">Bàn phím Steelseries</a>
                                                     </div>
                                                 </div>
                                                 <div class="space-y-2">
                                                     <h4 class="font-semibold text-blue-900 hover:text-red-500">Chuột</h4>
                                                     <div class="space-y-1">
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Chuột Logitech</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Chuột Razer</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Chuột Corsair</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Chuột Steelseries</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Chuột ASUS</a>
+                                                        <a href="@Url.Action("Peripherals", "ProductsList", new { category = "mouse", brand = "logitech" })" 
+                                                           class="block text-sm hover:text-blue-500">Chuột Logitech</a>
+                                                        <a href="@Url.Action("Peripherals", "ProductsList", new { category = "mouse", brand = "razer" })" 
+                                                           class="block text-sm hover:text-blue-500">Chuột Razer</a>
+                                                        <a href="@Url.Action("Peripherals", "ProductsList", new { category = "mouse", brand = "corsair" })" 
+                                                           class="block text-sm hover:text-blue-500">Chuột Corsair</a>
+                                                        <a href="@Url.Action("Peripherals", "ProductsList", new { category = "mouse", brand = "steelseries" })" 
+                                                           class="block text-sm hover:text-blue-500">Chuột Steelseries</a>
+                                                        <a href="@Url.Action("Peripherals", "ProductsList", new { category = "mouse", brand = "asus" })" 
+                                                           class="block text-sm hover:text-blue-500">Chuột ASUS</a>
                                                     </div>
                                                 </div>
                                                 <div class="space-y-2">
                                                     <h4 class="font-semibold text-blue-900 hover:text-red-500">Tai nghe</h4>
                                                     <div class="space-y-1">
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Tai nghe Logitech</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Tai nghe Razer</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Tai nghe HyperX</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Tai nghe Corsair</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Tai nghe Steelseries</a>
+                                                        <a href="@Url.Action("Peripherals", "ProductsList", new { category = "headphone", brand = "logitech" })" 
+                                                           class="block text-sm hover:text-blue-500">Tai nghe Logitech</a>
+                                                        <a href="@Url.Action("Peripherals", "ProductsList", new { category = "headphone", brand = "razer" })" 
+                                                           class="block text-sm hover:text-blue-500">Tai nghe Razer</a>
+                                                        <a href="@Url.Action("Peripherals", "ProductsList", new { category = "headphone", brand = "hyperx" })" 
+                                                           class="block text-sm hover:text-blue-500">Tai nghe HyperX</a>
+                                                        <a href="@Url.Action("Peripherals", "ProductsList", new { category = "headphone", brand = "corsair" })" 
+                                                           class="block text-sm hover:text-blue-500">Tai nghe Corsair</a>
+                                                        <a href="@Url.Action("Peripherals", "ProductsList", new { category = "headphone", brand = "steelseries" })" 
+                                                           class="block text-sm hover:text-blue-500">Tai nghe Steelseries</a>
                                                     </div>
                                                 </div>
                                             </div>
@@ -424,23 +563,56 @@
                                         <div class="absolute h-full w-12 bg-transparent -left-12"></div>
                                         <div class="p-4 pt-6">
                                             <div class="grid grid-cols-2 gap-x-6 gap-y-8">
+                                                <!-- Router Wifi -->
                                                 <div class="space-y-2">
                                                     <h4 class="font-semibold text-blue-900 hover:text-red-500">Router Wifi</h4>
                                                     <div class="space-y-1">
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Router TP-Link</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Router ASUS</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Router Tenda</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Router Linksys</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Router D-Link</a>
+                                                        <a href="@Url.Action("Network", "ProductsList", new { category = "router", brand = "tp-link" })" 
+                                                           class="block text-sm hover:text-blue-500">Router TP-Link</a>
+                                                        <a href="@Url.Action("Network", "ProductsList", new { category = "router", brand = "asus" })" 
+                                                           class="block text-sm hover:text-blue-500">Router ASUS</a>
+                                                        <a href="@Url.Action("Network", "ProductsList", new { category = "router", brand = "tenda" })" 
+                                                           class="block text-sm hover:text-blue-500">Router Tenda</a>
+                                                        <a href="@Url.Action("Network", "ProductsList", new { category = "router", brand = "linksys" })" 
+                                                           class="block text-sm hover:text-blue-500">Router Linksys</a>
+                                                        <a href="@Url.Action("Network", "ProductsList", new { category = "router", type = "wifi-6" })" 
+                                                           class="block text-sm hover:text-blue-500">Router Wifi 6</a>
+                                                        <a href="@Url.Action("Network", "ProductsList", new { category = "router", type = "wifi-5" })" 
+                                                           class="block text-sm hover:text-blue-500">Router Wifi 5</a>
                                                     </div>
                                                 </div>
+
+                                                <!-- Card mạng -->
                                                 <div class="space-y-2">
-                                                    <h4 class="font-semibold text-blue-900 hover:text-red-500">Card Wifi</h4>
+                                                    <h4 class="font-semibold text-blue-900 hover:text-red-500">Card mạng</h4>
                                                     <div class="space-y-1">
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Card Wifi TP-Link</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Card Wifi ASUS</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">Card Wifi Intel</a>
-                                                        <a href="#" class="block text-sm hover:text-blue-500">USB Wifi</a>
+                                                        <a href="@Url.Action("Network", "ProductsList", new { category = "lan-card", brand = "tp-link" })" 
+                                                           class="block text-sm hover:text-blue-500">Card mạng TP-Link</a>
+                                                        <a href="@Url.Action("Network", "ProductsList", new { category = "lan-card", brand = "intel" })" 
+                                                           class="block text-sm hover:text-blue-500">Card mạng Intel</a>
+                                                        <a href="@Url.Action("Network", "ProductsList", new { category = "lan-card", brand = "asus" })" 
+                                                           class="block text-sm hover:text-blue-500">Card mạng ASUS</a>
+                                                        <a href="@Url.Action("Network", "ProductsList", new { category = "lan-card", connection = "pci-e" })" 
+                                                           class="block text-sm hover:text-blue-500">Card mạng PCI-E</a>
+                                                        <a href="@Url.Action("Network", "ProductsList", new { category = "lan-card", connection = "usb" })" 
+                                                           class="block text-sm hover:text-blue-500">USB Wifi</a>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Khoảng giá -->
+                                                <div class="space-y-2">
+                                                    <h4 class="font-semibold text-blue-900 hover:text-red-500">Chọn theo khoảng giá</h4>
+                                                    <div class="space-y-1">
+                                                        <a href="@Url.Action("Network", "ProductsList", new { priceRange = "duoi-500-nghin" })" 
+                                                           class="block text-sm hover:text-blue-500">Dưới 500 nghìn</a>
+                                                        <a href="@Url.Action("Network", "ProductsList", new { priceRange = "500-1-trieu" })" 
+                                                           class="block text-sm hover:text-blue-500">500 nghìn - 1 triệu</a>
+                                                        <a href="@Url.Action("Network", "ProductsList", new { priceRange = "1-2-trieu" })" 
+                                                           class="block text-sm hover:text-blue-500">1 - 2 triệu</a>
+                                                        <a href="@Url.Action("Network", "ProductsList", new { priceRange = "2-5-trieu" })" 
+                                                           class="block text-sm hover:text-blue-500">2 - 5 triệu</a>
+                                                        <a href="@Url.Action("Network", "ProductsList", new { priceRange = "tren-5-trieu" })" 
+                                                           class="block text-sm hover:text-blue-500">Trên 5 triệu</a>
                                                     </div>
                                                 </div>
                                             </div>

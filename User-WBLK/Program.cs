@@ -35,4 +35,10 @@ app.MapControllerRoute(
     pattern: "/orderHistory/{action=OrderHistory}/{id?}",
     defaults: new { controller = "ProfileManagement" });
     
+// cái này tui đang test nào xong xoá sau
+app.MapControllerRoute(
+    name: "producstList",
+    pattern: "/productsList/{action=Index}/{id?}",
+    defaults: new { controller = "ProductsList" });
+
 app.Run();
