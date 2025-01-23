@@ -1,0 +1,156 @@
+    <div id="mobileSidebar" class="fixed inset-y-0 left-0 w-64 bg-white transform -translate-x-full transition-transform duration-300 ease-in-out z-50 overflow-y-auto">
+        <div class="bg-[#3182CE] p-4">
+            <div class="flex justify-between items-center">
+                <h2 class="text-xl font-bold text-white">Menu</h2>
+                <button id="closeSidebarBtn" class="text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="p-4 space-y-4">
+            <!-- Tài khoản và Xây dựng cấu hình -->
+            <div class="space-y-2 border-b pb-4">
+                <a href="/Login" class="flex items-center space-x-3 text-gray-700 hover:text-blue-600 py-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                    </svg>
+                    <span class="font-medium">Tài khoản</span>
+                </a>
+                <a href="/build" class="flex items-center space-x-3 text-gray-700 hover:text-blue-600 py-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25m18 0A2.25 2.25 0 0 0 18.75 3H5.25A2.25 2.25 0 0 0 3 5.25m18 0V12a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 12V5.25" />
+                    </svg>
+                    <span class="font-medium">Xây dựng cấu hình</span>
+                </a>
+            </div>
+
+            <!-- Danh mục sản phẩm -->
+            <div class="space-y-2">
+                <!-- PC -->
+                <div class="mobile-category-item">
+                    <button class="flex items-center justify-between w-full text-gray-700 hover:text-blue-600 py-2">
+                        <span class="font-medium">PC</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 transform transition-transform">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div class="hidden pl-4 space-y-2 mt-2">
+                        <a href="@Url.Action("PC", "ProductsList", new { category = "gaming" })" class="block text-sm text-gray-600 hover:text-blue-500">PC Gaming</a>
+                        <a href="@Url.Action("PC", "ProductsList", new { category = "graphics" })" class="block text-sm text-gray-600 hover:text-blue-500">PC Đồ hoạ - Làm việc</a>
+                        <a href="@Url.Action("PC", "ProductsList", new { category = "ai" })" class="block text-sm text-gray-600 hover:text-blue-500">PC AI - Trí tuệ nhân tạo</a>
+                        <a href="@Url.Action("PC", "ProductsList", new { category = "workstation" })" class="block text-sm text-gray-600 hover:text-blue-500">PC Workstation</a>
+                        <a href="@Url.Action("PC", "ProductsList", new { category = "office" })" class="block text-sm text-gray-600 hover:text-blue-500">PC Văn phòng</a>
+                    </div>
+                </div>
+
+                <!-- Laptop -->
+                <div class="mobile-category-item">
+                    <button class="flex items-center justify-between w-full text-gray-700 hover:text-blue-600 py-2">
+                        <span class="font-medium">Laptop</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 transform transition-transform">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div class="hidden pl-4 space-y-2 mt-2">
+                        <a href="/productslist/laptop-gaming" class="block text-sm text-gray-600 hover:text-blue-500">Laptop Gaming</a>
+                        <a href="/productslist/laptop-graphics" class="block text-sm text-gray-600 hover:text-blue-500">Laptop Đồ hoạ - Làm việc</a>
+                        <a href="/productslist/laptop-workstation" class="block text-sm text-gray-600 hover:text-blue-500">Laptop Workstation</a>
+                        <a href="/productslist/laptop-office" class="block text-sm text-gray-600 hover:text-blue-500">Laptop Văn phòng</a>
+                    </div>
+                </div>
+
+                <!-- Linh kiện PC -->
+                <div class="mobile-category-item">
+                    <button class="flex items-center justify-between w-full text-gray-700 hover:text-blue-600 py-2">
+                        <span class="font-medium">Linh kiện PC</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 transform transition-transform">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div class="hidden pl-4 space-y-2 mt-2">
+                        <a href="@Url.Action("Components", "ProductsList", new { category = "cpu" })" class="block text-sm text-gray-600 hover:text-blue-500">CPU - Bộ vi xử lý</a>
+                        <a href="@Url.Action("Components", "ProductsList", new { category = "vga" })" class="block text-sm text-gray-600 hover:text-blue-500">VGA - Card màn hình</a>
+                        <a href="@Url.Action("Components", "ProductsList", new { category = "mainboard" })" class="block text-sm text-gray-600 hover:text-blue-500">Mainboard - Bo mạch chủ</a>
+                        <a href="@Url.Action("Components", "ProductsList", new { category = "ram" })" class="block text-sm text-gray-600 hover:text-blue-500">RAM - Bộ nhớ trong</a>
+                        <a href="@Url.Action("Components", "ProductsList", new { category = "psu" })" class="block text-sm text-gray-600 hover:text-blue-500">PSU - Nguồn máy tính</a>
+                        <a href="@Url.Action("Components", "ProductsList", new { category = "case" })" class="block text-sm text-gray-600 hover:text-blue-500">Case - Vỏ máy tính</a>
+                        <a href="@Url.Action("Components", "ProductsList", new { category = "cooling" })" class="block text-sm text-gray-600 hover:text-blue-500">Tản nhiệt</a>
+                    </div>
+                </div>
+
+                <!-- Màn hình -->
+                <div class="mobile-category-item">
+                    <button class="flex items-center justify-between w-full text-gray-700 hover:text-blue-600 py-2">
+                        <span class="font-medium">Màn hình</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 transform transition-transform">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div class="hidden pl-4 space-y-2 mt-2">
+                        <a href="@Url.Action("Monitor", "ProductsList", new { brand = "asus" })" class="block text-sm text-gray-600 hover:text-blue-500">Màn hình ASUS</a>
+                        <a href="@Url.Action("Monitor", "ProductsList", new { brand = "lg" })" class="block text-sm text-gray-600 hover:text-blue-500">Màn hình LG</a>
+                        <a href="@Url.Action("Monitor", "ProductsList", new { brand = "samsung" })" class="block text-sm text-gray-600 hover:text-blue-500">Màn hình Samsung</a>
+                        <a href="@Url.Action("Monitor", "ProductsList", new { brand = "dell" })" class="block text-sm text-gray-600 hover:text-blue-500">Màn hình Dell</a>
+                        <a href="@Url.Action("Monitor", "ProductsList", new { brand = "msi" })" class="block text-sm text-gray-600 hover:text-blue-500">Màn hình MSI</a>
+                    </div>
+                </div>
+
+                <!-- Thiết bị âm thanh -->
+                <div class="mobile-category-item">
+                    <button class="flex items-center justify-between w-full text-gray-700 hover:text-blue-600 py-2">
+                        <span class="font-medium">Thiết bị âm thanh</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 transform transition-transform">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div class="hidden pl-4 space-y-2 mt-2">
+                        <a href="@Url.Action("Audio", "ProductsList", new { category = "speaker" })" class="block text-sm text-gray-600 hover:text-blue-500">Loa máy tính</a>
+                        <a href="@Url.Action("Audio", "ProductsList", new { category = "microphone" })" class="block text-sm text-gray-600 hover:text-blue-500">Micro</a>
+                        <a href="@Url.Action("Audio", "ProductsList", new { category = "webcam" })" class="block text-sm text-gray-600 hover:text-blue-500">Webcam</a>
+                    </div>
+                </div>
+
+                <!-- Bàn phím, Chuột, Tai nghe -->
+                <div class="mobile-category-item">
+                    <button class="flex items-center justify-between w-full text-gray-700 hover:text-blue-600 py-2">
+                        <span class="font-medium">Bàn phím, Chuột, Tai nghe</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 transform transition-transform">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div class="hidden pl-4 space-y-2 mt-2">
+                        <a href="@Url.Action("Peripherals", "ProductsList", new { category = "keyboard" })" class="block text-sm text-gray-600 hover:text-blue-500">Bàn phím</a>
+                        <a href="@Url.Action("Peripherals", "ProductsList", new { category = "mouse" })" class="block text-sm text-gray-600 hover:text-blue-500">Chuột</a>
+                        <a href="@Url.Action("Peripherals", "ProductsList", new { category = "headphone" })" class="block text-sm text-gray-600 hover:text-blue-500">Tai nghe</a>
+                    </div>
+                </div>
+
+                <!-- Router Wifi, Card Wifi -->
+                <div class="mobile-category-item">
+                    <button class="flex items-center justify-between w-full text-gray-700 hover:text-blue-600 py-2">
+                        <span class="font-medium">Router Wifi, Card Wifi</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 transform transition-transform">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div class="hidden pl-4 space-y-2 mt-2">
+                        <a href="@Url.Action("Network", "ProductsList", new { category = "router" })" class="block text-sm text-gray-600 hover:text-blue-500">Router Wifi</a>
+                        <a href="@Url.Action("Network", "ProductsList", new { category = "lan-card" })" class="block text-sm text-gray-600 hover:text-blue-500">Card mạng</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Liên hệ -->
+            <div class="border-t pt-4">
+                <a href="/contact" class="flex items-center space-x-3 text-gray-700 hover:text-blue-600 py-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
+                    </svg>
+                    <span class="font-medium">Liên hệ</span>
+                </a>
+            </div>
+        </div>
+    </div>
