@@ -1,5 +1,208 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
+﻿@{
+    ViewBag.Title = "OrderHistory";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
+
+<div class="flex flex-col">
+    <!-- Add space below the navbar -->
+    <div class="h-16"></div>
+
+    <div class="flex gap-6">
+        <!-- Sidebar -->
+        <div class="bg-white shadow-lg rounded-lg p-4">
+            <div class="border-b pb-4 mb-4">
+                <h2 class="text-xl font-bold">Menu</h2>
+            </div>
+            <ul class="space-y-3">
+                <li>
+                    <a href="/account" class="block py-2 px-4 bg-gray-100 text-gray-700 rounded-md font-medium shadow hover:bg-gray-200">Thông tin tài khoản</a>
+                </li>
+                <li>
+                    <a href="/account/orderHistory" class="block py-2 px-4 bg-blue-500 text-white rounded-md font-medium shadow hover:bg-blue-600">Lịch sử giao dịch</a>
+                </li>
+            </ul>
+            <div class="mt-8">
+                <button class="bg-red-500 w-full text-white py-2 rounded-md font-medium shadow hover:bg-red-600">Đăng Xuất</button>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="flex-1 bg-white shadow-lg rounded-lg p-6">
+            <h1 class="text-2xl font-bold mb-6">Lịch sử giao dịch</h1>
+
+            <!-- Orders List -->
+            <div class="space-y-4">
+                <!-- Order 1: Chờ xác nhận -->
+                <div class="bg-gray-50 p-4 rounded-lg shadow-md">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-lg font-bold">Mã đơn hàng: OD0001</h2>
+                            <p class="text-sm text-gray-500">Ngày đặt: 15/01/2024 10:30:00 AM</p>
+                            <p class="text-sm text-red-600 font-bold">Tổng tiền: 5.678.000 VNĐ</p>
+                        </div>
+                        <div>
+                            <span class="bg-yellow-100 text-yellow-700 text-sm font-medium px-3 py-1 rounded-full">Chờ xác nhận</span>
+                        </div>
+                    </div>
+                    <div class="flex space-x-3 mt-3">
+                        <button class="bg-green-500 text-white px-4 py-2 rounded-md font-medium shadow hover:bg-green-600">Xem chi tiết</button>
+                        <button class="bg-red-500 text-white px-4 py-2 rounded-md font-medium shadow hover:bg-red-600">Hủy đơn hàng</button>
+                        <button class="bg-blue-500 text-white px-4 py-2 rounded-md font-medium shadow hover:bg-blue-600">Yêu cầu đổi trả</button>
+                    </div>
+                </div>
+
+                <!-- Order 2: Đang giao hàng -->
+                <div class="bg-gray-50 p-4 rounded-lg shadow-md">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-lg font-bold">Mã đơn hàng: OD0001</h2>
+                            <p class="text-sm text-gray-500">Ngày đặt: 15/01/2024 10:30:00 AM</p>
+                            <p class="text-sm text-red-600 font-bold">Tổng tiền: 5.678.000 VNĐ</p>
+                        </div>
+                        <div>
+                            <span class="bg-green-100 text-green-700 text-sm font-medium px-3 py-1 rounded-full">Đang giao hàng</span>
+                        </div>
+                    </div>
+                    <div class="flex space-x-3 mt-3">
+                        <button class="bg-green-500 text-white px-4 py-2 rounded-md font-medium shadow hover:bg-green-600">Xem chi tiết</button>
+                    </div>
+                </div>
+
+                <!-- Order 3: Đã giao hàng -->
+                <div class="bg-gray-50 p-4 rounded-lg shadow-md">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-lg font-bold">Mã đơn hàng: OD0001</h2>
+                            <p class="text-sm text-gray-500">Ngày đặt: 15/01/2024 10:30:00 AM</p>
+                            <p class="text-sm text-red-600 font-bold">Tổng tiền: 5.678.000 VNĐ</p>
+                        </div>
+                        <div>
+                            <span class="bg-blue-100 text-blue-700 text-sm font-medium px-3 py-1 rounded-full">Đã giao hàng</span>
+                        </div>
+                    </div>
+                    <div class="flex space-x-3 mt-3">
+                        <button class="bg-green-500 text-white px-4 py-2 rounded-md font-medium shadow hover:bg-green-600">Xem chi tiết</button>
+                        <button class="bg-orange-500 text-white px-4 py-2 rounded-md font-medium shadow hover:bg-orange-600">Đánh giá</button>
+                        <button class="bg-blue-500 text-white px-4 py-2 rounded-md font-medium shadow hover:bg-blue-600">Yêu cầu đổi trả</button>
+                    </div>
+                </div>
+
+                <!-- Order 4: Đã hoàn tiền -->
+                <div class="bg-gray-50 p-4 rounded-lg shadow-md">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-lg font-bold">Mã đơn hàng: OD0001</h2>
+                            <p class="text-sm text-gray-500">Ngày đặt: 15/01/2024 10:30:00 AM</p>
+                            <p class="text-sm text-red-600 font-bold">Tổng tiền: 5.678.000 VNĐ</p>
+                        </div>
+                        <div>
+                            <span class="bg-green-100 text-green-700 text-sm font-medium px-3 py-1 rounded-full">Đã hoàn tiền</span>
+                        </div>
+                    </div>
+                    <div class="flex space-x-3 mt-3">
+                        <button class="bg-green-500 text-white px-4 py-2 rounded-md font-medium shadow hover:bg-green-600">Xem chi tiết</button>
+                    </div>
+                </div>
+
+                <!-- Order 5: Đã hủy -->
+                <div class="bg-gray-50 p-4 rounded-lg shadow-md">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-lg font-bold">Mã đơn hàng: OD0001</h2>
+                            <p class="text-sm text-gray-500">Ngày đặt: 15/01/2024 10:30:00 AM</p>
+                            <p class="text-sm text-red-600 font-bold">Tổng tiền: 5.678.000 VNĐ</p>
+                        </div>
+                        <div>
+                            <span class="bg-gray-100 text-gray-700 text-sm font-medium px-3 py-1 rounded-full">Đã hủy</span>
+                        </div>
+                    </div>
+                    <div class="flex space-x-3 mt-3">
+                        <button class="bg-green-500 text-white px-4 py-2 rounded-md font-medium shadow hover:bg-green-600">Xem chi tiết</button>
+                    </div>
+                </div>
+
+                <!-- Order 6: Hoàn tất đổi trả -->
+                <div class="bg-gray-50 p-4 rounded-lg shadow-md">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-lg font-bold">Mã đơn hàng: OD0001</h2>
+                            <p class="text-sm text-gray-500">Ngày đặt: 15/01/2024 10:30:00 AM</p>
+                            <p class="text-sm text-red-600 font-bold">Tổng tiền: 5.678.000 VNĐ</p>
+                        </div>
+                        <div>
+                            <span class="bg-blue-100 text-blue-700 text-sm font-medium px-3 py-1 rounded-full">Hoàn tất đổi trả</span>
+                        </div>
+                    </div>
+                    <div class="flex space-x-3 mt-3">
+                        <button class="bg-green-500 text-white px-4 py-2 rounded-md font-medium shadow hover:bg-green-600">Xem chi tiết</button>
+                    </div>
+                </div>
+
+                <!-- Order 7: Đang xem xét -->
+                <div class="bg-gray-50 p-4 rounded-lg shadow-md">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-lg font-bold">Mã đơn hàng: OD0001</h2>
+                            <p class="text-sm text-gray-500">Ngày đặt: 15/01/2024 10:30:00 AM</p>
+                            <p class="text-sm text-red-600 font-bold">Tổng tiền: 5.678.000 VNĐ</p>
+                        </div>
+                        <div>
+                            <span class="bg-yellow-100 text-yellow-700 text-sm font-medium px-3 py-1 rounded-full">Đang xem xét</span>
+                        </div>
+                    </div>
+                    <div class="flex space-x-3 mt-3">
+                        <button class="bg-green-500 text-white px-4 py-2 rounded-md font-medium shadow hover:bg-green-600">Xem chi tiết</button>
+                        <button class="bg-red-500 text-white px-4 py-2 rounded-md font-medium shadow hover:bg-red-600">Hủy yêu cầu</button>
+                    </div>
+                </div>
+
+                <!-- Order 8: Chờ nhận hàng trả -->
+                <div class="bg-gray-50 p-4 rounded-lg shadow-md">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-lg font-bold">Mã đơn hàng: OD0001</h2>
+                            <p class="text-sm text-gray-500">Ngày đặt: 15/01/2024 10:30:00 AM</p>
+                            <p class="text-sm text-red-600 font-bold">Tổng tiền: 5.678.000 VNĐ</p>
+                        </div>
+                        <div>
+                            <span class="bg-yellow-100 text-yellow-700 text-sm font-medium px-3 py-1 rounded-full">Chờ nhận hàng trả</span>
+                        </div>
+                    </div>
+                    <div class="flex space-x-3 mt-3">
+                        <button class="bg-green-500 text-white px-4 py-2 rounded-md font-medium shadow hover:bg-green-600">Xem chi tiết</button>
+                        <p class="text-sm text-blue-600 font-medium">Vui lòng gửi hoặc mang sản phẩm đến cửa hàng để đổi trả</p>
+                    </div>
+                </div>
+
+                <!-- Order 9: Hoàn tất tất cả -->
+                <div class="bg-gray-50 p-4 rounded-lg shadow-md">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-lg font-bold">Mã đơn hàng: OD0001</h2>
+                            <p class="text-sm text-gray-500">Ngày đặt: 15/01/2024 10:30:00 AM</p>
+                            <p class="text-sm text-red-600 font-bold">Tổng tiền: 5.678.000 VNĐ</p>
+                        </div>
+                        <div>
+                            <span class="bg-blue-500 text-white text-sm font-medium px-3 py-1 rounded-full">Hoàn tất tất cả</span>
+                        </div>
+                    </div>
+                    <div class="flex space-x-3 mt-3">
+                        <button class="bg-green-500 text-white px-4 py-2 rounded-md font-medium shadow hover:bg-green-600">Xem chi tiết</button>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Pagination -->
+            <div class="flex justify-between items-center mt-6">
+                <button class="bg-gray-200 text-gray-600 px-4 py-2 rounded-md shadow hover:bg-gray-300">← Trước</button>
+                <div class="space-x-2">
+                    <button class="bg-blue-500 text-white px-4 py-2 rounded-md shadow">1</button>
+                    <button class="bg-gray-200 text-gray-600 px-4 py-2 rounded-md shadow hover:bg-gray-300">2</button>
+                    <button class="bg-gray-200 text-gray-600 px-4 py-2 rounded-md shadow hover:bg-gray-300">3</button>
+                </div>
+                <button class="bg-gray-200 text-gray-600 px-4 py-2 rounded-md shadow hover:bg-gray-300">Tiếp →</button>
+            </div>
+        </div>
+    </div>
+</div>

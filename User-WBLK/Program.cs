@@ -25,5 +25,14 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
+app.MapControllerRoute(
+    name: "account",
+    pattern: "/account/{action=Profile}/{id?}",
+    defaults: new { controller = "ProfileManagement" });
 
+app.MapControllerRoute(
+    name: "orderHistory",
+    pattern: "/orderHistory/{action=OrderHistory}/{id?}",
+    defaults: new { controller = "ProfileManagement" });
+    
 app.Run();

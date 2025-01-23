@@ -1,5 +1,60 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
+﻿@{
+    ViewBag.Title = "Profile";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
+
+<div class="flex flex-col">
+    <!-- Add space below the navbar -->
+    <div class="h-16"></div>
+
+    <div class="flex gap-6">
+        <!-- Sidebar -->
+        <div class="bg-white shadow-lg rounded-lg p-4">
+            <div class="border-b pb-4 mb-4">
+                <h2 class="text-xl font-bold">Menu</h2>
+            </div>
+            <ul class="space-y-3">
+                <li>
+                    <a href="/account" class="block py-2 px-4 bg-blue-500 text-white rounded-md font-medium shadow hover:bg-blue-600">Thông tin tài khoản</a>
+                </li>
+                <li>
+                    <a href="/account/orderHistory" class="block py-2 px-4 bg-gray-100 text-gray-700 rounded-md shadow hover:bg-gray-200">Lịch sử giao dịch</a>
+                </li>
+            </ul>
+            <div class="mt-8">
+                <button class="bg-red-500 w-full text-white py-2 rounded-md font-medium shadow hover:bg-red-600">Đăng Xuất</button>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="flex-1 bg-white shadow-lg rounded-lg p-6">
+            <h1 class="text-2xl font-bold mb-6">Thông tin tài khoản</h1>
+            <div class="grid grid-cols-1 gap-4">
+                <div class="bg-gray-50 p-3 rounded-lg shadow-md h-13 flex items-center ">
+                    <span class="font-medium">Tên:</span> <span class="ml-auto">Nguyễn Phi Quốc Bảo</span>
+                </div>
+                <div class="bg-gray-50 p-3 rounded-lg shadow-md h-13 flex items-center ">
+                    <span class="font-medium">Email:</span> <span class="ml-auto">nup@gmail.com</span>
+                </div>
+                <div class="bg-gray-50 p-3 rounded-lg shadow-md h-13 flex items-center ">
+                    <span class="font-medium">Số điện thoại:</span> <span class="ml-auto">0949752097</span>
+                </div>
+                <div class="bg-gray-50 p-3 rounded-lg shadow-md h-13 flex items-center ">
+                    <span class="font-medium">Ngày sinh:</span> <span class="ml-auto">2004-08-11</span>
+                </div>
+                <div class="bg-gray-50 p-3 rounded-lg shadow-md h-13 flex items-center ">
+                    <span class="font-medium">Giới tính:</span> <span class="ml-auto">Nam</span>
+                </div>
+                <div class="bg-gray-50 p-3 rounded-lg shadow-md h-13 flex items-center ">
+                    <span class="font-medium whitespace-nowrap">Địa chỉ:</span> <span class="whitespace-nowrap ml-auto pl-3">249Đ, Nguyễn Văn Lượng, Phường 11, Quận 6, Thành phố Hồ Chí Minh</span>
+                </div>
+                <div class="bg-gray-50 p-3 rounded-lg shadow-md h-13 flex items-center ">
+                    <span class="font-medium">Tên tài khoản:</span> <span class="ml-auto">nupniichan</span>
+                </div>
+            </div>
+            <div class="mt-6 text-right">
+                <button class="bg-yellow-500 text-white px-6 py-2 rounded-lg font-medium shadow hover:bg-yellow-600">Sửa thông tin tài khoản</button>
+            </div>
+        </div>
+    </div>
+</div>
