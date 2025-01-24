@@ -25,5 +25,20 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
+app.MapControllerRoute(
+    name: "account",
+    pattern: "/account/{action=Profile}/{id?}",
+    defaults: new { controller = "ProfileManagement" });
+
+app.MapControllerRoute(
+    name: "orderHistory",
+    pattern: "/orderHistory/{action=OrderHistory}/{id?}",
+    defaults: new { controller = "ProfileManagement" });
+    
+// cái này tui đang test nào xong xoá sau
+app.MapControllerRoute(
+    name: "producstList",
+    pattern: "/productsList/{action=Index}/{id?}",
+    defaults: new { controller = "ProductsList" });
 
 app.Run();

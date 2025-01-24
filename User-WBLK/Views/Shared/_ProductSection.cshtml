@@ -1,0 +1,14 @@
+<div>
+    <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold">@Model.Title</h2>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+        @for (int i = 0; i < 5; i++)
+        {
+            <partial name="_ProductCard" />
+        }
+    </div>
+    <div class="flex justify-end mt-10">
+        <a href="@Model.ViewAllLink" class="bg-blue-500 text-white px-4 py-1 rounded-[20px] text-md">Xem tất cả</a>
+    </div>
+</div>
