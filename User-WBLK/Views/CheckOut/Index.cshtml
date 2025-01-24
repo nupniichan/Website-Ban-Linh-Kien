@@ -1,5 +1,253 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
-}
+﻿<div class="container mx-auto px-4 md:px-8 lg:px-32">
+    <div class="checkout-content">
+        <div class="breadcrumb mb-4">
+            <a href="/" class="text-blue-600">Trang chủ</a>
+            <span class="mx-2">/</span>
+            <span>Checkout</span>
+        </div>
+
+        <h4 class="text-xl font-normal mb-4">Thông tin đặt hàng</h4>
+
+        <!-- Thông tin khách hàng -->
+        <div class="section mb-4">
+            <h5 class="text-lg mb-3">Thông tin khách hàng</h5>
+            <div class="info-line">
+                <input type="text" placeholder="Tên khách hàng" value="The Pink Cat" class="form-input">
+            </div>
+            <div class="info-line">
+                <input type="email" placeholder="Email" value="asdsaphat@gmail.com" class="form-input">
+            </div>
+            <div class="info-line">
+                <input type="tel" placeholder="Số điện thoại" value="0915647894" class="form-input">
+            </div>
+        </div>
+
+        <!-- Sản phẩm -->
+        <div class="section mb-4">
+            <div class="product-item">
+                <img src="/images/products/amd-ryzen-5-5600.jpg" alt="AMD" class="product-img">
+                <div class="product-info ml-4">
+                    <div>AMD ryzen 5 5600</div>
+                    <div>Số lượng: 1</div>
+                    <div class="text-red-500">Giá: 5.678.000 VNĐ</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Thông tin nhận hàng -->
+        <div class="section mb-4">
+            <h5 class="text-lg mb-3">Thông tin nhận hàng</h5>
+            <div class="delivery-options mb-4">
+                <label class="radio-container">
+                    <input type="radio" name="deliveryType" checked>
+                    <span>Nhận tại cửa hàng</span>
+                </label>
+                <label class="radio-container ml-6">
+                    <input type="radio" name="deliveryType">
+                    <span>Giao hàng tận nơi</span>
+                </label>
+            </div>
+
+            <div class="location-info">
+                <div class="info-line">
+                    <input type="text" placeholder="Tỉnh / Thành phố" value="HCM" class="form-input">
+                </div>
+                <div class="info-line">
+                    <input type="text" placeholder="Quận / Huyện" value="Q.10" class="form-input">
+                </div>
+                <div class="info-line">
+                    <input type="text" placeholder="Địa chỉ nhận hàng" value="828 SVH Q.10 TP.HCM" class="form-input">
+                </div>
+            </div>
+        </div>
+
+        <!-- Ghi chú -->
+        <div class="section mb-4">
+            <h5 class="text-lg mb-2">Ghi chú (nếu có):</h5>
+            <textarea class="form-control" rows="2" placeholder="Nhập ghi chú"></textarea>
+        </div>
+
+        <!-- Phương thức thanh toán -->
+        <div class="section mb-4">
+            <h5 class="text-lg mb-2">Phương thức thanh toán</h5>
+            <div class="payment-method">
+                <select class="form-select">
+                    <option>Thanh toán trực tiếp</option>
+                    <option>Momo</option>
+                    <option>VNPay</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Mã giảm giá -->
+        <div class="section mb-4">
+            <h5 class="text-lg mb-2">Mã giảm giá</h5>
+            <div class="discount-input">
+                <input type="text" placeholder="Nhấn để xem mã giảm giá hoặc nhập mã giảm giá" class="w-full">
+            </div>
+        </div>
+
+        <!-- Tổng tiền -->
+        <div class="total-section">
+            <div class="flex justify-between items-center">
+                <span class="text-lg">Tổng tiền tạm tính:</span>
+                <span class="total-price">3.000.000đ</span>
+            </div>
+        </div>
+
+        <!-- Button Tiếp tục -->
+        <button class="continue-btn w-full mt-4">Tiếp tục</button>
+    </div>
+</div>
+
+<style>
+    .checkout-content {
+        max-width: 700px;
+        margin: 0 auto;
+        padding: 20px 0;
+    }
+
+    .section {
+        background-color: #fff;
+        padding: 15px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+    }
+
+    .info-line {
+        padding: 8px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .delivery-options {
+        display: flex;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .radio-container {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+    }
+
+    .radio-container input[type="radio"] {
+        appearance: none;
+        width: 16px;
+        height: 16px;
+        border: 2px solid #3182ce;
+        border-radius: 50%;
+        margin-right: 8px;
+        position: relative;
+    }
+
+    .radio-container input[type="radio"]:checked::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 8px;
+        height: 8px;
+        background-color: #3182ce;
+        border-radius: 50%;
+    }
+
+    .product-item {
+        display: flex;
+        align-items: center;
+    }
+
+    .product-img {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 4px;
+    }
+
+    .payment-method, .discount-input input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        background-color: #fff;
+    }
+
+    .total-section {
+        background: white;
+        padding: 15px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+    }
+
+    .total-price {
+        font-size: 1.25rem;
+        color: #e53e3e;
+        font-weight: 500;
+    }
+
+    .continue-btn {
+        background-color: #3182ce;
+        color: white;
+        padding: 12px;
+        border: none;
+        border-radius: 6px;
+        font-weight: 500;
+        transition: background-color 0.2s;
+    }
+
+    .continue-btn:hover {
+        background-color: #2c5282;
+    }
+
+    textarea.form-control {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        resize: none;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        background-color: white;
+    }
+
+    .form-input::placeholder {
+        color: #a0aec0;
+    }
+
+    .form-select {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        background-color: white;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 0.5rem center;
+        background-repeat: no-repeat;
+        background-size: 1.5em 1.5em;
+        cursor: pointer;
+    }
+
+    .info-line:last-child {
+        border-bottom: none;
+    }
+
+    .payment-method {
+        padding: 0;
+        border: none;
+    }
+
+    /* Điều chỉnh style cho input focus */
+    .form-input:focus, .form-select:focus {
+        outline: none;
+        border-color: #3182ce;
+        box-shadow: 0 0 0 1px #3182ce;
+    }
+</style>
