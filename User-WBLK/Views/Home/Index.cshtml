@@ -39,7 +39,16 @@
             <div class="products-container flex gap-4 overflow-x-auto pb-4 scrollbar-hide" style="scroll-snap-type: x mandatory;">
                 @for (int i = 0; i < 10; i++) 
                 {
-                    <partial name="_ProductCard" />
+                    var productCard = new ProductCardViewModel
+                    {
+                        Id = $"product-{i}",
+                        Name = "PC GAMING I5 12400F / RAM 16G / VGA 3060 12G",
+                        Category = "pc",
+                        Price = 15990000,
+                        ImageUrl = "https://via.placeholder.com/300x200",
+                        Description = "Mô tả sản phẩm..."
+                    };
+                    <partial name="_ProductCard" model="productCard" />
                 }
             </div>
 
@@ -58,15 +67,51 @@
 
     <!-- Other Product Sections -->
     <div class="space-y-10">
-        <partial name="_ProductSection" model='new { Title = "PC - Máy tính cá nhân", ViewAllLink = "/productslist/pc" }' />
-        <partial name="_ProductSection" model='new { Title = "Laptop", ViewAllLink = "/productslist/laptop" }' />
-        <partial name="_ProductSection" model='new { Title = "Server", ViewAllLink = "/productslist/server" }' />
-        <partial name="_ProductSection" model='new { Title = "CPU - Bộ vi xử lý", ViewAllLink = "/productslist/server" }' />
-        <partial name="_ProductSection" model='new { Title = "VGA - Card màn hình", ViewAllLink = "/productslist/server" }' />
-        <partial name="_ProductSection" model='new { Title = "RAM - Bộ nhớ", ViewAllLink = "/productslist/server" }' />
-        <partial name="_ProductSection" model='new { Title = "Mainboard - Bo mạch chủ", ViewAllLink = "/productslist/server" }' />
-        <partial name="_ProductSection" model='new { Title = "Màn hình máy tính", ViewAllLink = "/productslist/server" }' />
-        <partial name="_ProductSection" model='new { Title = "Thiết bị lưu trữ", ViewAllLink = "/productslist/server" }' />
+        <partial name="_ProductSection" model='new ProductSectionViewModel { 
+            Title = "PC - Máy tính cá nhân", 
+            Category = "pc",
+            ViewAllLink = "/productslist/pc" 
+        }' />
+        <partial name="_ProductSection" model='new ProductSectionViewModel { 
+            Title = "Laptop", 
+            Category = "laptop",
+            ViewAllLink = "/productslist/laptop" 
+        }' />
+        <partial name="_ProductSection" model='new ProductSectionViewModel { 
+            Title = "Server", 
+            Category = "server",
+            ViewAllLink = "/productslist/server" 
+        }' />
+        <partial name="_ProductSection" model='new ProductSectionViewModel { 
+            Title = "CPU - Bộ vi xử lý", 
+            Category = "cpu",
+            ViewAllLink = "/productslist/components/cpu" 
+        }' />
+        <partial name="_ProductSection" model='new ProductSectionViewModel { 
+            Title = "VGA - Card màn hình", 
+            Category = "vga",
+            ViewAllLink = "/productslist/components/vga" 
+        }' />
+        <partial name="_ProductSection" model='new ProductSectionViewModel { 
+            Title = "RAM - Bộ nhớ", 
+            Category = "ram",
+            ViewAllLink = "/productslist/components/ram" 
+        }' />
+        <partial name="_ProductSection" model='new ProductSectionViewModel { 
+            Title = "Mainboard - Bo mạch chủ", 
+            Category = "mainboard",
+            ViewAllLink = "/productslist/components/mainboard" 
+        }' />
+        <partial name="_ProductSection" model='new ProductSectionViewModel { 
+            Title = "Màn hình máy tính", 
+            Category = "monitor",
+            ViewAllLink = "/productslist/monitor" 
+        }' />
+        <partial name="_ProductSection" model='new ProductSectionViewModel { 
+            Title = "Thiết bị lưu trữ", 
+            Category = "storage",
+            ViewAllLink = "/productslist/storage" 
+        }' />
     </div>
 
     <!-- Why Choose Us Section -->

@@ -1,11 +1,90 @@
+@model ProductSectionViewModel
 <div>
     <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold">@Model.Title</h2>
+        <h2 class="text-2xl font-bold">@Model.Title</h2>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
-        @for (int i = 0; i < 5; i++)
-        {
-            <partial name="_ProductCard" />
+        @{
+            var sampleProducts = Model.Category?.ToLower() switch
+            {
+                "pc" => new[]
+                {
+                    ("PC Gaming Plus", 15990000M, "https://via.placeholder.com/300x200/FF0000/FFFFFF?text=Gaming+PC"),
+                    ("PC Workstation Pro", 25990000M, "https://via.placeholder.com/300x200/00FF00/FFFFFF?text=Workstation"),
+                    ("PC Office Basic", 9990000M, "https://via.placeholder.com/300x200/0000FF/FFFFFF?text=Office+PC"),
+                    ("PC Gaming Ultra", 35990000M, "https://via.placeholder.com/300x200/FFFF00/000000?text=Ultra+Gaming"),
+                    ("PC Creator Edition", 29990000M, "https://via.placeholder.com/300x200/FF00FF/FFFFFF?text=Creator+PC")
+                },
+                
+                "laptop" => new[]
+                {
+                    ("Laptop Gaming ROG", 22990000M, "https://via.placeholder.com/300x200/FF0000/FFFFFF?text=ROG+Laptop"),
+                    ("Laptop MacBook Pro", 35990000M, "https://via.placeholder.com/300x200/00FF00/FFFFFF?text=MacBook"),
+                    ("Laptop ThinkPad", 19990000M, "https://via.placeholder.com/300x200/0000FF/FFFFFF?text=ThinkPad"),
+                    ("Laptop Dell XPS", 32990000M, "https://via.placeholder.com/300x200/FFFF00/000000?text=Dell+XPS"),
+                    ("Laptop HP Envy", 25990000M, "https://via.placeholder.com/300x200/FF00FF/FFFFFF?text=HP+Envy")
+                },
+
+                "cpu" => new[]
+                {
+                    ("Intel Core i9-13900K", 16990000M, "https://via.placeholder.com/300x200/FF0000/FFFFFF?text=i9+13900K"),
+                    ("AMD Ryzen 9 7950X", 15990000M, "https://via.placeholder.com/300x200/00FF00/FFFFFF?text=Ryzen+9"),
+                    ("Intel Core i7-13700K", 11990000M, "https://via.placeholder.com/300x200/0000FF/FFFFFF?text=i7+13700K"),
+                    ("AMD Ryzen 7 7700X", 9990000M, "https://via.placeholder.com/300x200/FFFF00/000000?text=Ryzen+7"),
+                    ("Intel Core i5-13600K", 8990000M, "https://via.placeholder.com/300x200/FF00FF/FFFFFF?text=i5+13600K")
+                },
+
+                "vga" => new[]
+                {
+                    ("RTX 4090 Gaming OC", 46990000M, "https://via.placeholder.com/300x200/FF0000/FFFFFF?text=RTX+4090"),
+                    ("RTX 4080 SUPER", 32990000M, "https://via.placeholder.com/300x200/00FF00/FFFFFF?text=RTX+4080"),
+                    ("RX 7900 XTX", 28990000M, "https://via.placeholder.com/300x200/0000FF/FFFFFF?text=RX+7900"),
+                    ("RTX 4070 Ti", 22990000M, "https://via.placeholder.com/300x200/FFFF00/000000?text=RTX+4070Ti"),
+                    ("RX 7800 XT", 19990000M, "https://via.placeholder.com/300x200/FF00FF/FFFFFF?text=RX+7800")
+                },
+
+                "monitor" => new[]
+                {
+                    ("LG 27GP950 4K 144Hz", 19990000M, "https://via.placeholder.com/300x200/FF0000/FFFFFF?text=LG+4K"),
+                    ("Samsung G7 240Hz", 15990000M, "https://via.placeholder.com/300x200/00FF00/FFFFFF?text=Samsung"),
+                    ("ASUS ROG 360Hz", 22990000M, "https://via.placeholder.com/300x200/0000FF/FFFFFF?text=ASUS+ROG"),
+                    ("Dell S2722DGM", 8990000M, "https://via.placeholder.com/300x200/FFFF00/000000?text=Dell"),
+                    ("MSI MAG274QRF", 12990000M, "https://via.placeholder.com/300x200/FF00FF/FFFFFF?text=MSI")
+                },
+
+                "keyboard" => new[]
+                {
+                    ("Logitech G Pro X", 3990000M, "https://via.placeholder.com/300x200/FF0000/FFFFFF?text=Logitech"),
+                    ("Razer Huntsman V2", 4590000M, "https://via.placeholder.com/300x200/00FF00/FFFFFF?text=Razer"),
+                    ("Corsair K100", 4990000M, "https://via.placeholder.com/300x200/0000FF/FFFFFF?text=Corsair"),
+                    ("Ducky One 3", 3290000M, "https://via.placeholder.com/300x200/FFFF00/000000?text=Ducky"),
+                    ("Keychron Q1", 3990000M, "https://via.placeholder.com/300x200/FF00FF/FFFFFF?text=Keychron")
+                },
+
+                _ => new[]
+                {
+                    ("Sample Product 1", 1990000M, "https://via.placeholder.com/300x200/FF0000/FFFFFF?text=Sample+1"),
+                    ("Sample Product 2", 2990000M, "https://via.placeholder.com/300x200/00FF00/FFFFFF?text=Sample+2"),
+                    ("Sample Product 3", 3990000M, "https://via.placeholder.com/300x200/0000FF/FFFFFF?text=Sample+3"),
+                    ("Sample Product 4", 4990000M, "https://via.placeholder.com/300x200/FFFF00/000000?text=Sample+4"),
+                    ("Sample Product 5", 5990000M, "https://via.placeholder.com/300x200/FF00FF/FFFFFF?text=Sample+5")
+                }
+            };
+
+            for (int i = 0; i < 5; i++)
+            {
+                var (name, price, image) = sampleProducts[i];
+                var productCard = new ProductCardViewModel
+                {
+                    Id = $"product-{i}",
+                    Name = name,
+                    Category = Model.Category,
+                    Price = price,
+                    ImageUrl = image,
+                    Description = $"Mô tả chi tiết cho {name}"
+                };
+                <partial name="_ProductCard" model="productCard" />
+            }
         }
     </div>
     <div class="flex justify-end mt-10">
