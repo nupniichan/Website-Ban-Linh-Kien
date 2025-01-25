@@ -1,130 +1,106 @@
 <div id="registerPopup" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-lg w-full max-w-[500px] shadow-lg relative">
+    <div class="bg-white rounded-xl w-full max-w-[500px] shadow-2xl relative">
         <!-- Header -->
-        <div class="text-center py-4 border-b">
-            <h2 class="text-xl font-medium">Đăng ký</h2>
-            <button id="closeRegisterBtn" class="absolute right-4 top-4 text-gray-400 hover:text-gray-600">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
+        <div class="px-8 py-5 border-b border-gray-200">
+            <div class="flex justify-between items-center">
+                <h2 class="text-2xl font-bold text-gray-800">Đăng ký</h2>
+                <button id="closeRegisterBtn" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
         </div>
 
         <!-- Body -->
         <div class="max-h-[calc(100vh-200px)] overflow-y-auto">
-            <div class="p-6">
-                <form id="registerForm" class="space-y-4">
-                    <div class="error-message text-red-500 hidden mb-2"></div>
-                    
-                    <div class="space-y-1">
-                        <label class="block text-sm">Họ và tên:</label>
-                        <input type="text" name="fullName" 
-                               class="w-full px-3 py-2 border rounded focus:outline-none focus:border-blue-500" 
-                               placeholder="Nhập họ và tên của bạn">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Email</label>
-                        <input type="email" name="email" 
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all" 
-                               placeholder="example@email.com">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Mật khẩu</label>
-                        <div class="relative">
-                            <input type="password" name="password" 
+            <div class="px-8 py-5">
+                    <form id="registerForm" class="space-y-4">
+                        <div class="error-message text-red-500 hidden mb-2"></div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Họ và tên</label>
+                            <input type="text" name="fullName" 
                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all" 
-                                   placeholder="••••••••">
-                            <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors toggle-password">
-                                <i class="fas fa-eye"></i>
-                            </button>
+                                   placeholder="Nhập họ và tên của bạn">
                         </div>
-                    </div>
 
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Xác nhận mật khẩu</label>
-                        <div class="relative">
-                            <input type="password" name="confirmPassword" 
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Email</label>
+                            <input type="email" name="email" 
                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all" 
-                                   placeholder="••••••••">
-                            <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors toggle-password">
-                                <i class="fas fa-eye"></i>
-                            </button>
+                                   placeholder="example@email.com">
                         </div>
-                    </div>
 
-                    <div>
-                        <label class="block text-sm mb-1">Giới tính</label>
-                        <div class="space-x-4 flex items-center">
-                            <label class="inline-flex items-center">
-                                <input type="radio" name="gender" value="male" class="text-blue-500 focus:ring-blue-500">
-                                <span class="ml-2 text-sm">Nam</span>
-                            </label>
-                            <label class="inline-flex items-center">
-                                <input type="radio" name="gender" value="female" class="text-blue-500 focus:ring-blue-500">
-                                <span class="ml-2 text-sm">Nữ</span>
-                            </label>
-                            
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Mật khẩu</label>
+                            <div class="relative">
+                                <input type="password" name="password" 
+                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all" 
+                                       placeholder="••••••••">
+                                <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors toggle-password">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
                         </div>
-                    </div>
 
-                    <div>
-                        <label class="block text-sm mb-1">Ngày sinh</label>
-                        <input type="date" name="birthDate" 
-                               class="w-full px-3 py-2 border rounded focus:outline-none focus:border-blue-500">
-                    </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Xác nhận mật khẩu</label>
+                            <div class="relative">
+                                <input type="password" name="confirmPassword" 
+                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all" 
+                                       placeholder="••••••••">
+                                <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors toggle-password">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
 
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Địa chỉ</label>
-                        <input type="text" name="address" 
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all" 
-                               placeholder="Nhập địa chỉ của bạn">
-                    </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Giới tính</label>
+                                <select name="gender" 
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all">
+                                    <option value="">Chọn giới tính</option>
+                                    <option value="male">Nam</option>
+                                    <option value="female">Nữ</option>
+                                    <option value="other">Khác</option>
+                                </select>
+                            </div>
 
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Số điện thoại</label>
-                        <input type="tel" name="phone" 
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all" 
-                               placeholder="Nhập số điện thoại của bạn">
-                    </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Ngày sinh</label>
+                                <input type="date" name="birthDate" 
+                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all">
+                            </div>
+                        </div>
 
-                    <div class="flex items-start space-x-2 mt-4">
-                        <input type="checkbox" name="terms" id="terms" class="mt-1 text-blue-500 focus:ring-blue-500">
-                        <label for="terms" class="text-sm text-gray-600">
-                            Tôi đồng ý với 
-                            <a href="#" class="text-blue-600 hover:underline">Điều khoản dịch vụ</a> và 
-                            <a href="#" class="text-blue-600 hover:underline">Chính sách bảo mật</a>
-                        </label>
-                    </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Địa chỉ</label>
+                            <input type="text" name="address" 
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all" 
+                                   placeholder="Nhập địa chỉ của bạn">
+                        </div>
 
-                    <button type="submit" 
-                            class="w-full bg-blue-600 text-white py-2.5 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-500/50 transition-all font-semibold mt-2">
-                        Đăng ký
-                    </button>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Số điện thoại</label>
+                            <input type="tel" name="phone" 
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all" 
+                                   placeholder="Nhập số điện thoại của bạn">
+                        </div>
 
-                    <div class="text-center text-sm text-gray-600">
-                        <span>Đã có tài khoản? </span>
-                        <a href="#" class="text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-colors" 
-                           id="switchToLogin">Đăng nhập ngay!</a>
-                    </div>
-                </form>
+                        <button type="submit" 
+                                class="w-full bg-blue-600 text-white py-2.5 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-500/50 transition-all font-semibold mt-2">
+                            Đăng ký
+                        </button>
+
+                        <div class="text-center text-sm text-gray-600">
+                            <span>Đã có tài khoản? </span>
+                            <a href="#" class="text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-colors" 
+                               id="switchToLogin">Đăng nhập ngay!</a>
+                        </div>
+                    </form>
             </div>
         </div>
     </div>
-</div>
-
-<style>
-    #registerPopup input, #registerPopup select {
-        transition: all 0.2s;
-    }
-    
-    #registerPopup input:focus, #registerPopup select:focus {
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 1px #3b82f6;
-    }
-    
-    #registerPopup button {
-        transition: all 0.2s;
-    }
-</style> 
+</div> 
