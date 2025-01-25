@@ -205,7 +205,7 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
         @for (int i = 0; i < 15; i++)
         {
-            <partial name="_ProductCard" />
+            <partial name="_ProductCard" model="new ProductCardViewModel()" />
         }
     </div>
 
@@ -216,8 +216,7 @@
             {
                 var routeValues = new Dictionary<string, object>();
                 
-                if (!string.IsNullOrEmpty(Model.Category))
-                {
+                if (!string.IsNullOrEmpty(Model.Category))                {
                     routeValues.Add("category", Model.Category);
                 }
                 

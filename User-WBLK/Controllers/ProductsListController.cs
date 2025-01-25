@@ -406,5 +406,23 @@ namespace Website_Ban_Linh_Kien.Controllers
 
             return View(viewName);
         }
+        
+        public IActionResult Components(string category)
+        {
+            var products = new List<ProductCardViewModel>
+            {
+                new ProductCardViewModel 
+                { 
+                    Id = "intel-i9",
+                    Category = "cpu",
+                    Name = "Intel Core i9",
+                    Price = 12990000M,
+                    ImageUrl = "path/to/image"
+                },
+                // Other products...
+            };
+            
+            return View(products);
+        }
     }
 }

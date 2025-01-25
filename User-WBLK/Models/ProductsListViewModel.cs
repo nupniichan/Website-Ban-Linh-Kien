@@ -16,4 +16,5 @@ public class ProductListViewModel
     public string Type { get; set; }
     public string Connection { get; set; }
     public string Features { get; set; }
+    public List<ProductViewModel> Products { get; set; } = new List<ProductViewModel>();
 }

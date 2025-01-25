@@ -1,25 +1,52 @@
+@model ProductCardViewModel
+@{
+    var defaultId = "default-product";
+    var defaultName = "Sản phẩm mẫu";
+    var defaultPrice = 0M;
+    var defaultImage = "https://via.placeholder.com/300x200";
+}
+
 <div class="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 w-56 flex-shrink-0 border-gray-900" style="scroll-snap-align: start;">
-    <div class="p-3">
-        <img src="https://via.placeholder.com/300x200" alt="Product Image" class="w-full h-40 object-cover rounded-lg mb-3">
-        <div class="relative group">
-            <h3 class="text-base font-semibold mb-2 product-title overflow-hidden"
-                data-full-text="PC GAMING I5 12400F / RAM 16G / VGA 3060 12G askdsajdaslkdjaslkdjaslsadasdksajdkasdjasjdlsajdlasjdlkasjddjl">
-            </h3>
-            <div class="absolute left-0 -top-12 bg-black text-white text-xs rounded-lg px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 whitespace-nowrap product-tooltip">
-            </div>
-        </div>
-        <p class="text-red-600 font-bold text-xl mb-4">15.990.000đ</p>
-        <button class="w-full hover:opacity-80 transition-opacity duration-300">
-            <div class="flex items-center gap-2">
-                <div class="bg-[#0066CC] p-2 rounded-full">
-                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
+    @{
+        var productUrl = Model?.Category?.ToLower() switch
+        {
+            "pc" => $"/pc/{Model?.Id ?? defaultId}",
+            "laptop" => $"/laptop/{Model?.Id ?? defaultId}",
+            "cpu" or "vga" or "mainboard" or "ram" or "psu" or "case" => 
+                $"/components/{Model.Category}/{Model?.Id ?? defaultId}",
+            "storage" => $"/storage/{Model?.Id ?? defaultId}",
+            "monitor" => $"/monitor/{Model?.Id ?? defaultId}",
+            "speaker" or "microphone" or "webcam" => 
+                $"/audio/{Model.Category}/{Model?.Id ?? defaultId}",
+            "keyboard" or "mouse" or "headphone" => 
+                $"/peripherals/{Model.Category}/{Model?.Id ?? defaultId}",
+            "network" => $"/network/{Model?.Id ?? defaultId}",
+            _ => "#"  // Thay đổi fallback route thành "#" để tránh redirect không mong muốn
+        };
+    }
+    <a href="@productUrl" class="block">
+        <div class="p-3">
+            <img src="@(Model?.ImageUrl ?? defaultImage)" alt="Product Image" class="w-full h-40 object-cover rounded-lg mb-3">
+            <div class="relative group">
+                <h3 class="text-base font-semibold mb-2 product-title overflow-hidden"
+                    data-full-text="@(Model?.Name ?? defaultName)">
+                </h3>
+                <div class="absolute left-0 -top-12 bg-black text-white text-xs rounded-lg px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 whitespace-nowrap product-tooltip">
                 </div>
-                <span class="text-gray-700">Thêm vào giỏ hàng</span>
             </div>
-        </button>
-    </div>
+            <p class="text-red-600 font-bold text-xl mb-4">@((Model?.Price ?? defaultPrice).ToString("N0"))đ</p>
+            <button class="w-full hover:opacity-80 transition-opacity duration-300">
+                <div class="flex items-center gap-2">
+                    <div class="bg-[#0066CC] p-2 rounded-full">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                    </div>
+                    <span class="text-gray-700">Thêm vào giỏ hàng</span>
+                </div>
+            </button>
+        </div>
+    </a>
 </div>
 
 <script>
