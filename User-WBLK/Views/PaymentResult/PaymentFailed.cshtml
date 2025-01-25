@@ -3,3 +3,39 @@
 *@
 @{
 }
+
+<div class="container mx-auto px-4 py-8 max-w-[700px]">
+    <div class="text-center space-y-4">
+        <!-- Icon Failed -->
+        <div class="flex justify-center">
+            <svg class="w-20 h-20 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+        </div>
+
+        <!-- Title -->
+        <h1 class="text-3xl font-bold text-red-600">Thanh toán thất bại!</h1>
+
+        <!-- Message -->
+        <p class="text-gray-600">Giao dịch của bạn đã bị từ chối. Vui lòng thử lại.</p>
+
+        <!-- Buttons -->
+        <div class="flex justify-center gap-4 pt-4">
+            <a href="/cart" class="px-6 py-2.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                Quay về giỏ hàng
+            </a>
+            <a href="/contact" class="px-6 py-2.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
+                Yêu cầu trợ giúp
+            </a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Tự động chuyển về trang giỏ hàng sau 5 giây
+        setTimeout(function() {
+            window.location.href = '/cart';
+        }, 5000);
+    </script>
+}

@@ -3,3 +3,39 @@
 *@
 @{
 }
+
+<div class="container mx-auto px-4 py-8 max-w-[700px]">
+    <div class="text-center space-y-4">
+        <!-- Icon Success -->
+        <div class="flex justify-center">
+            <svg class="w-20 h-20 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+        </div>
+
+        <!-- Title -->
+        <h1 class="text-3xl font-bold text-green-600">Thanh toán thành công!</h1>
+
+        <!-- Message -->
+        <p class="text-gray-600">Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi.</p>
+
+        <!-- Buttons -->
+        <div class="flex justify-center gap-4 pt-4">
+            <a href="/order-history" class="px-6 py-2.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                Xem lịch sử mua hàng
+            </a>
+            <a href="/" class="px-6 py-2.5 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">
+                Quay về trang chủ
+            </a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Tự động chuyển về trang chủ sau 5 giây
+        setTimeout(function() {
+            window.location.href = '/';
+        }, 5000);
+    </script>
+}
