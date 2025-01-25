@@ -1,16 +1,11 @@
 ﻿<div class="container mx-auto px-4 md:px-8 lg:px-32">
     <div class="max-w-[700px] mx-auto py-5">
-        <div class="mb-4">
-            <a href="/" class="text-blue-600">Trang chủ</a>
-            <span class="mx-2">/</span>
-            <span>Checkout</span>
-        </div>
 
         <h4 class="text-xl font-normal mb-4">Thông tin đặt hàng</h4>
 
         <!-- Thông tin khách hàng -->
         <div class="bg-white p-4 border border-gray-200 rounded-lg mb-4">
-            <h5 class="text-lg mb-3">Thông tin khách hàng</h5>
+            <h5 class="text-lg mb-3 font-bold">Thông tin khách hàng</h5>
             <div class="border-b border-gray-100 py-2 last:border-b-0">
                 <input type="text" placeholder="Tên khách hàng" value="The Pink Cat" 
                        class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all">
@@ -40,46 +35,87 @@
 
         <!-- Thông tin nhận hàng -->
         <div class="bg-white p-4 border border-gray-200 rounded-lg mb-4">
-            <h5 class="text-lg mb-3">Thông tin nhận hàng</h5>
-            <div class="flex items-center mb-4 border-b border-gray-100 pb-4">
-                <label class="flex items-center cursor-pointer">
-                    <input type="radio" name="deliveryType" checked
-                           class="w-4 h-4 text-blue-500 border-gray-300 focus:ring-blue-500">
-                    <span class="ml-2">Nhận tại cửa hàng</span>
-                </label>
-                <label class="flex items-center cursor-pointer ml-6">
-                    <input type="radio" name="deliveryType"
-                           class="w-4 h-4 text-blue-500 border-gray-300 focus:ring-blue-500">
-                    <span class="ml-2">Giao hàng tận nơi</span>
-                </label>
+            <h5 class="text-lg mb-3 font-bold">Thông tin giao - nhận hàng</h5>
+            
+            <!-- Phương thức nhận hàng -->
+            <div class="bg-gray-100 p-4 rounded-lg mb-6">
+                <div class="flex justify-between">
+                    <label class="flex items-center cursor-pointer">
+                        <input type="radio" name="deliveryType" value="store" id="store-pickup"
+                               class="hidden peer">
+                        <span class="w-4 h-4 border border-gray-300 rounded-full inline-block mr-2 relative
+                                   peer-checked:border-blue-500 peer-checked:before:content-[''] 
+                                   peer-checked:before:absolute peer-checked:before:w-2 peer-checked:before:h-2 
+                                   peer-checked:before:bg-blue-500 peer-checked:before:rounded-full 
+                                   peer-checked:before:top-1/2 peer-checked:before:left-1/2 
+                                   peer-checked:before:-translate-x-1/2 peer-checked:before:-translate-y-1/2">
+                        </span>
+                        <span class="text-gray-700">Nhận tại cửa hàng</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer">
+                        <input type="radio" name="deliveryType" value="delivery" id="home-delivery" checked
+                               class="hidden peer">
+                        <span class="w-4 h-4 border border-gray-300 rounded-full inline-block mr-2 relative
+                                   peer-checked:border-blue-500 peer-checked:before:content-[''] 
+                                   peer-checked:before:absolute peer-checked:before:w-2 peer-checked:before:h-2 
+                                   peer-checked:before:bg-blue-500 peer-checked:before:rounded-full 
+                                   peer-checked:before:top-1/2 peer-checked:before:left-1/2 
+                                   peer-checked:before:-translate-x-1/2 peer-checked:before:-translate-y-1/2">
+                        </span>
+                        <span class="text-gray-700">Giao hàng tận nơi</span>
+                    </label>
+                </div>
             </div>
 
-            <div class="space-y-2">
-                <div class="border-b border-gray-100 py-2 last:border-b-0">
-                    <input type="text" placeholder="Tỉnh / Thành phố" value="HCM" 
-                           class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all">
+            <!-- Địa chỉ cửa hàng (ẩn mặc định) -->
+            <div id="store-address" class="bg-gray-50 p-4 rounded-lg mb-4 hidden">
+                <p class="font-medium mb-2">Địa chỉ cửa hàng:</p>
+                <p class="text-gray-600">123 Nguyễn Văn A, Phường 1, Quận 1, TP.HCM</p>
+                <p class="text-gray-600 mt-2">Thời gian làm việc: 8:00 - 21:00 (Thứ 2 - Chủ nhật)</p>
+            </div>
+
+            <!-- Form địa chỉ giao hàng -->
+            <div id="delivery-address" class="space-y-4">
+
+                <!-- Địa chỉ giao hàng -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm text-gray-600 mb-1">Tỉnh/Thành phố</label>
+                        <input type="text" name="City" placeholder="Nhập tỉnh/thành phố"
+                               class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-600 mb-1">Quận/Huyện</label>
+                        <input type="text" name="District" placeholder="Nhập quận/huyện"
+                               class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all">
+                    </div>
                 </div>
-                <div class="border-b border-gray-100 py-2 last:border-b-0">
-                    <input type="text" placeholder="Quận / Huyện" value="Q.10" 
-                           class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all">
-                </div>
-                <div class="border-b border-gray-100 py-2 last:border-b-0">
-                    <input type="text" placeholder="Địa chỉ nhận hàng" value="828 SVH Q.10 TP.HCM" 
-                           class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all">
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm text-gray-600 mb-1">Phường/Xã</label>
+                        <input type="text" name="Ward" placeholder="Nhập phường/xã"
+                               class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-600 mb-1">Số nhà, tên đường</label>
+                        <input type="text" name="StreetAddress" placeholder="Nhập số nhà, tên đường"
+                               class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all">
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Ghi chú -->
         <div class="bg-white p-4 border border-gray-200 rounded-lg mb-4">
-            <h5 class="text-lg mb-2">Ghi chú (nếu có):</h5>
+            <h5 class="text-lg mb-2 font-bold">Ghi chú (nếu có):</h5>
             <textarea class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all resize-none" 
                       rows="2" placeholder="Nhập ghi chú"></textarea>
         </div>
 
         <!-- Phương thức thanh toán -->
         <div class="bg-white p-4 border border-gray-200 rounded-lg mb-4">
-            <h5 class="text-lg mb-2">Phương thức thanh toán</h5>
+            <h5 class="text-lg mb-2 font-bold">Phương thức thanh toán</h5>
             <select class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all appearance-none bg-white bg-[url('data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3e%3c/svg%3e')] bg-[length:1.5em_1.5em] bg-no-repeat bg-[right_0.5rem_center] cursor-pointer">
                 <option>Thanh toán trực tiếp</option>
                 <option>Momo</option>
@@ -89,7 +125,7 @@
 
         <!-- Mã giảm giá -->
         <div class="bg-white p-4 border border-gray-200 rounded-lg mb-4">
-            <h5 class="text-lg mb-2">Mã giảm giá</h5>
+            <h5 class="text-lg mb-2 font-bold">Mã giảm giá</h5>
             <input type="text" placeholder="Nhấn để xem mã giảm giá hoặc nhập mã giảm giá" 
                    class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all">
         </div>
@@ -108,3 +144,25 @@
         </button>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const storePickup = document.getElementById('store-pickup');
+        const homeDelivery = document.getElementById('home-delivery');
+        const storeAddress = document.getElementById('store-address');
+        const deliveryAddress = document.getElementById('delivery-address');
+
+        function toggleDeliveryMethod() {
+            if (storePickup.checked) {
+                storeAddress.classList.remove('hidden');
+                deliveryAddress.classList.add('hidden');
+            } else {
+                storeAddress.classList.add('hidden');
+                deliveryAddress.classList.remove('hidden');
+            }
+        }
+
+        storePickup.addEventListener('change', toggleDeliveryMethod);
+        homeDelivery.addEventListener('change', toggleDeliveryMethod);
+    });
+</script>
