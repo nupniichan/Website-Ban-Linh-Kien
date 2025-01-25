@@ -30,12 +30,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Toggle password
+    // Toggle password visibility
     togglePassword.addEventListener('click', function() {
         const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
         passwordInput.setAttribute('type', type);
-        this.querySelector('i').classList.toggle('fa-eye');
-        this.querySelector('i').classList.toggle('fa-eye-slash');
+        
+        // Toggle giữa hai icon
+        const eyeOpen = this.querySelector('.eye-open');
+        const eyeClosed = this.querySelector('.eye-closed');
+        eyeOpen.classList.toggle('hidden');
+        eyeClosed.classList.toggle('hidden');
     });
 
     // Xử lý form submit với Ajax

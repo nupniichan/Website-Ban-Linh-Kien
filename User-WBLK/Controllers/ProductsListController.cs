@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Website_Ban_Linh_Kien.Models;
+
 namespace Website_Ban_Linh_Kien.Controllers
 {
     public class ProductsListController : BaseController
