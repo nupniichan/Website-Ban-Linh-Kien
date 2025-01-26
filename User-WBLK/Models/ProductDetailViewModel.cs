@@ -27,4 +27,4 @@ namespace Website_Ban_Linh_Kien.Models
         public int Rating { get; set; }
         public string Comment { get; set; }
     }
-} 
+}
