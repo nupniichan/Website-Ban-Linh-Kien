@@ -45,9 +45,11 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('loginPopup').classList.remove('hidden');
     });
 
-    // Form submission
+    // Prevent any default form submissions
     registerForm.addEventListener('submit', function(e) {
         e.preventDefault();
+        e.stopPropagation();
+        
         const formData = new FormData(this);
 
         fetch('/Register/Register', {
@@ -68,5 +70,18 @@ document.addEventListener('DOMContentLoaded', function() {
             errorMessage.textContent = 'Đã có lỗi xảy ra. Vui lòng thử lại.';
             errorMessage.classList.remove('hidden');
         });
+    });
+
+    // Handle select change without form submission
+    const genderSelect = registerForm.querySelector('select[name="gender"]');
+    genderSelect.addEventListener('change', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+    });
+
+    // Prevent any form submission on select interaction
+    genderSelect.addEventListener('click', function(e) {
+        e.stopPropagation();
     });
 });
