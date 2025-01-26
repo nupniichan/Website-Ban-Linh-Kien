@@ -1,0 +1,66 @@
+<header class="bg-white border-bottom py-2 px-3">
+    <div class="container-fluid d-flex justify-content-between align-items-center">
+        <!-- Desktop Header -->
+        <h1 class="m-0 d-none d-md-block" style="font-size: 1.25rem;">
+            <span class="text-primary">Trang quản lý</span>
+            <span class="text-dark">BPT</span>
+        </h1>
+        <!-- Mobile Header -->
+        <h1 class="m-0 d-md-none" style="font-size: 1rem;">
+            <span class="text-primary">Trang quản lý</span>
+            <button class="btn btn-link text-dark p-0" id="toggleMobileMenu" style="font-size: 1rem; text-decoration: none;">
+                <i class="bi bi-list"></i> BPT
+            </button>
+        </h1>
+        <div class="user-info d-flex align-items-center">
+            <div class="rounded-full bg-black" style="width: 30px; height: 30px; margin-right: 10px;"></div>
+            <span style="font-size: 0.9rem;">Xin chào Admin</span>
+            <button class="btn btn-white" style="padding: 0; border: none;">
+                <i class="bi bi-chevron-down"></i>
+            </button>
+        </div>
+    </div>
+</header>
+<!-- Mobile Sidebar -->
+<div id="overlay" class="d-none position-fixed top-0 start-0 w-100 h-100" style="background: rgba(0,0,0,0.5); z-index: 1049;"></div>
+<aside id="mobileSidebar" class="bg-white border-end position-fixed top-0 start-0 h-100 d-none d-md-none" style="width: 250px; z-index: 1050;">
+    <nav class="nav flex-column p-3" style="font-size: 1.1rem;">
+        <a class="nav-link text-dark d-flex align-items-center" href="/dashboard">
+            <i class="bi bi-grid-3x3-gap-fill me-2"></i> Dashboard
+        </a>
+        <a class="nav-link text-dark d-flex align-items-center" href="/product-management">
+            <i class="bi bi-calendar2-event-fill me-2"></i> Quản lý sản phẩm
+        </a>
+        <a class="nav-link text-dark d-flex align-items-center" href="/order-management">
+            <i class="bi bi-cart-fill me-2"></i> Quản lý đơn hàng
+        </a>
+        <a class="nav-link text-dark d-flex align-items-center" href="/request-management">
+            <i class="bi bi-envelope-fill me-2"></i> Quản lý yêu cầu
+        </a>
+        <a class="nav-link text-dark d-flex align-items-center" href="/account-management">
+            <i class="bi bi-person-fill me-2"></i> Quản lý tài khoản
+        </a>
+        <a class="nav-link text-dark d-flex align-items-center" href="/customer-management">
+            <i class="bi bi-people-fill me-2"></i> Quản lý khách hàng
+        </a>
+        <a class="nav-link text-dark d-flex align-items-center" href="/discount-management">
+            <i class="bi bi-percent me-2 text-white bg-black border rounded-circle" style="padding: 0.2rem;"></i> Quản lý mã giảm giá
+        </a>
+    </nav>
+</aside>
+
+<script>
+    const toggleMobileMenu = document.getElementById('toggleMobileMenu');
+    const mobileSidebar = document.getElementById('mobileSidebar');
+    const overlay = document.getElementById('overlay');
+
+    toggleMobileMenu.addEventListener('click', function () {
+        mobileSidebar.classList.toggle('d-none');
+        overlay.classList.toggle('d-none');
+    });
+
+    overlay.addEventListener('click', function () {
+        mobileSidebar.classList.add('d-none');
+        overlay.classList.add('d-none');
+    });
+</script>
