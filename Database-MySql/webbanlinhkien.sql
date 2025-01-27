@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 27, 2025 at 10:19 AM
+-- Generation Time: Jan 27, 2025 at 12:48 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -248,8 +248,9 @@ CREATE TABLE `sanpham` (
 --
 
 INSERT INTO `sanpham` (`idSP`, `tenSP`, `gia`, `soLuongTon`, `thuongHieu`, `moTa`, `thongSoKyThuat`, `loaiSP`, `idNV`, `hinh_anh`) VALUES
-('SP001', 'Mainboard ASUS ROG', 5500000.00, 50, 'ASUS', 'Mainboard chơi game cao cấp', 'CPU Socket: LGA 1200, Chipset: Intel Z490', 'Linh Kiện Máy Tính', 'NV001', NULL),
-('SP002', 'RAM Corsair 16GB', 1200000.00, 100, 'Corsair', 'RAM dung lượng cao', 'DDR4, 3200MHz, 16GB', 'Linh Kiện Máy Tính', 'NV001', NULL);
+('SP00003', 'CPU Intel core i5-12400F 14 nhân 24 luồng', 300000.00, 17, 'intel', '<strike style=\"\">CPU Intel core i5-12400F 14 core 28 thread</strike>', '[{\"key\":\"Số nhân xử lý\",\"value\":\"6\"},{\"key\":\"Số luồng xử lý\",\"value\":\"12\"},{\"key\":\"brand\",\"value\":\"Intel\"}]', 'CPU', 'NV001', '/Images/ProductImage/2vu3tuc3.v0v.jpg'),
+('SP001', 'Mainboard ASUS ROG', 5500000.00, 50, 'ASUS', 'Mainboard chơi game cao cấp', 'CPU Socket: LGA 1200, Chipset: Intel Z490', 'Linh Kiện Máy Tính', 'NV001', 'Images/Products/123.jpg'),
+('SP002', 'RAM Corsair 16GB', 1200000.00, 100, 'Corsair', 'RAM dung lượng cao', 'DDR4, 3200MHz, 16GB', 'Linh Kiện Máy Tính', 'NV001', 'Images/Products/123.jpg');
 
 -- --------------------------------------------------------
 
@@ -284,20 +285,21 @@ INSERT INTO `taikhoan` (`idTK`, `matkhau`, `tentaikhoan`, `ngaytaotk`, `ngaysuad
 
 CREATE TABLE `thanhtoan` (
   `idTT` varchar(10) NOT NULL,
-  `mathanhtoan` varchar(50) NOT NULL,
+  `mathanhtoannganhang` varchar(50) DEFAULT NULL,
   `trangthai` varchar(50) NOT NULL,
   `tienthanhtoan` decimal(10,2) NOT NULL,
   `ngaythanhtoan` date NOT NULL,
   `noidungthanhtoan` varchar(200) DEFAULT NULL,
-  `idDH` varchar(10) NOT NULL
+  `idDH` varchar(10) NOT NULL,
+  `mathanhtoanapp` varchar(50) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `thanhtoan`
 --
 
-INSERT INTO `thanhtoan` (`idTT`, `mathanhtoan`, `trangthai`, `tienthanhtoan`, `ngaythanhtoan`, `noidungthanhtoan`, `idDH`) VALUES
-('TT001', 'BANK_TRANSFER_001', 'Thành Công', 6700000.00, '2024-01-20', 'Thanh toán đơn hàng DH001', 'DH001');
+INSERT INTO `thanhtoan` (`idTT`, `mathanhtoannganhang`, `trangthai`, `tienthanhtoan`, `ngaythanhtoan`, `noidungthanhtoan`, `idDH`, `mathanhtoanapp`) VALUES
+('TT001', 'BANK_TRANSFER_001', 'Thành Công', 6700000.00, '2024-01-20', 'Thanh toán đơn hàng DH001', 'DH001', NULL);
 
 --
 -- Indexes for dumped tables
