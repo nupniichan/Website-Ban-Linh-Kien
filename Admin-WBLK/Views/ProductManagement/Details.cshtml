@@ -1,0 +1,157 @@
+﻿@model Admin_WBLK.Models.Sanpham
+
+@{
+    ViewData["Title"] = "Chi tiết sản phẩm";
+}
+
+<div class="p-6 w-full h-full bg-gray-50">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="mb-6">
+            <h1 class="text-3xl font-bold text-gray-900">Chi tiết sản phẩm</h1>
+            <p class="mt-2 text-sm text-gray-600">Thông tin chi tiết về sản phẩm</p>
+        </div>
+
+        <!-- Card chứa thông tin -->
+        <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+            <!-- Phần trên: Hình ảnh và thông tin cơ bản -->
+            <div class="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Hình ảnh sản phẩm -->
+                <div class="md:col-span-1">
+                    <div class="aspect-square rounded-lg overflow-hidden bg-gray-100 border">
+                        <img src="@Model.hinh_anh" alt="@Model.TenSp" 
+                             class="w-full h-full object-contain" />
+                    </div>
+                </div>
+
+                <!-- Thông tin cơ bản -->
+                <div class="md:col-span-2 space-y-4">
+                    <h2 class="text-2xl font-bold text-gray-900">@Model.TenSp</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <div class="flex items-center">
+                                <span class="text-gray-600">Giá bán:</span>
+                                <span class="ml-2 text-lg font-semibold text-red-600">
+                                    @Model.Gia.ToString("N0") VNĐ
+                                </span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="text-gray-600">Số lượng tồn:</span>
+                                <span class="ml-2 font-medium">@Model.SoLuongTon</span>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex items-center">
+                                <span class="text-gray-600">Thương hiệu:</span>
+                                <span class="ml-2 font-medium">@Model.ThuongHieu</span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="text-gray-600">Loại sản phẩm:</span>
+                                <span class="ml-2 font-medium">@Model.LoaiSp</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="border-t border-gray-200">
+                <div class="px-6">
+                    <div class="border-b border-gray-200">
+                        <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                            <button onclick="switchTab('description')" 
+                                    class="tab-btn border-blue-500 text-blue-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                                Mô tả
+                            </button>
+                            <button onclick="switchTab('specs')" 
+                                    class="tab-btn border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                                Thông số kỹ thuật
+                            </button>
+                        </nav>
+                    </div>
+                </div>
+
+                <!-- Tab contents -->
+                <div class="p-6">
+                    <!-- Mô tả -->
+                    <div id="description-tab" class="tab-content prose max-w-none">
+                        @Html.Raw(Model.MoTa)
+                    </div>
+
+                    <!-- Thông số kỹ thuật -->
+                    <div id="specs-tab" class="tab-content hidden">
+                        <div class="border border-gray-300 rounded-lg overflow-hidden">
+                            <table class="w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b w-1/3">Thông số</th>
+                                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b">Giá trị</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        var specs = Newtonsoft.Json.JsonConvert.DeserializeObject<List<dynamic>>(Model.ThongSoKyThuat);
+                                        foreach (var spec in specs)
+                                        {
+                                            <tr class="border-b hover:bg-gray-50">
+                                                <td class="px-4 py-3 text-sm text-gray-600">@spec.key</td>
+                                                <td class="px-4 py-3 text-sm font-medium text-gray-900">@spec.value</td>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                <div class="flex justify-between items-center">
+                    <div class="text-sm text-gray-500">
+                        Mã sản phẩm: @Model.IdSp
+                    </div>
+                    <div class="flex gap-4">
+                        <a asp-action="Edit" asp-route-id="@Model.IdSp" 
+                           class="inline-flex items-center px-4 py-2 border border-blue-600 text-sm font-medium rounded-md text-blue-600 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                            Chỉnh sửa
+                        </a>
+                        <a asp-action="Index" 
+                           class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Quay lại
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function switchTab(tabName) {
+            // Ẩn tất cả tab content
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+            
+            // Hiện tab được chọn
+            document.getElementById(`${tabName}-tab`).classList.remove('hidden');
+            
+            // Cập nhật style cho các nút tab
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('border-blue-500', 'text-blue-600');
+                btn.classList.add('border-transparent', 'text-gray-500');
+            });
+            
+            // Style cho nút tab được chọn
+            event.currentTarget.classList.remove('border-transparent', 'text-gray-500');
+            event.currentTarget.classList.add('border-blue-500', 'text-blue-600');
+        }
+    </script>
+}

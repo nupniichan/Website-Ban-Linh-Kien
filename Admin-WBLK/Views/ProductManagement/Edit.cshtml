@@ -1,0 +1,395 @@
+﻿@model Admin_WBLK.Models.Sanpham
+
+@{
+    ViewData["Title"] = "Chỉnh sửa sản phẩm";
+}
+
+<div class="p-6 w-full h-full bg-gray-50">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="mb-6">
+            <h1 class="text-3xl font-bold text-gray-900">Chỉnh sửa sản phẩm</h1>
+            <p class="mt-2 text-sm text-gray-600">Cập nhật thông tin chi tiết sản phẩm</p>
+        </div>
+
+        <!-- Card chứa form -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <form asp-action="Edit" method="post" enctype="multipart/form-data" class="w-full h-full">
+                <input type="hidden" name="ThongSoKyThuat" />
+                <input type="hidden" asp-for="IdSp" />
+                <div asp-validation-summary="ModelOnly" class="mb-4 p-4 rounded-lg bg-red-50 text-red-500"></div>
+
+                <!-- Grid layout cho các trường input -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Tên sản phẩm - full width -->
+                    <div class="md:col-span-2">
+                        <label asp-for="TenSp" class="block text-sm font-medium text-gray-700 mb-1">Tên sản phẩm</label>
+                        <input asp-for="TenSp" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required />
+                        <span asp-validation-for="TenSp" class="text-red-500 text-sm mt-1"></span>
+                    </div>
+
+                    <!-- Giá -->
+                    <div>
+                        <label asp-for="Gia" class="block text-sm font-medium text-gray-700 mb-1">Giá</label>
+                        <div class="relative">
+                            <input asp-for="Gia" type="number" class="w-full pl-4 pr-12 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required />
+                            <span class="absolute right-4 top-2 text-gray-500">VNĐ</span>
+                        </div>
+                        <span asp-validation-for="Gia" class="text-red-500 text-sm mt-1"></span>
+                    </div>
+
+                    <!-- Số lượng tồn -->
+                    <div>
+                        <label asp-for="SoLuongTon" class="block text-sm font-medium text-gray-700 mb-1">Số lượng tồn</label>
+                        <input asp-for="SoLuongTon" type="number" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required />
+                        <span asp-validation-for="SoLuongTon" class="text-red-500 text-sm mt-1"></span>
+                    </div>
+
+                    <!-- Loại sản phẩm -->
+                    <div>
+                        <label asp-for="LoaiSp" class="block text-sm font-medium text-gray-700 mb-1">Loại sản phẩm</label>
+                        <input asp-for="LoaiSp" 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
+                               required 
+                               list="productTypes"
+                               autocomplete="off"
+                               oninput="filterProductTypes(this.value)"/>
+                        <datalist id="productTypes">
+                            <!-- Options sẽ được điền bởi JavaScript -->
+                        </datalist>
+                        <span asp-validation-for="LoaiSp" class="text-red-500 text-sm mt-1"></span>
+                    </div>
+
+                    <!-- Thương hiệu -->
+                    <div>
+                        <label asp-for="ThuongHieu" class="block text-sm font-medium text-gray-700 mb-1">Thương hiệu</label>
+                        <input asp-for="ThuongHieu" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required />
+                        <span asp-validation-for="ThuongHieu" class="text-red-500 text-sm mt-1"></span>
+                    </div>
+                </div>
+
+                <!-- Hình ảnh -->
+                <div class="mt-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Hình ảnh sản phẩm</label>
+                    <div class="flex items-start gap-6">
+                        <!-- Preview hình ảnh -->
+                        <div class="w-48 h-48 border border-gray-300 rounded-lg overflow-hidden bg-gray-50">
+                            <img id="currentImage" src="@Model.hinh_anh" alt="Hình ảnh sản phẩm" 
+                                 class="w-full h-full object-contain" />
+                        </div>
+                        
+                        <!-- Upload section -->
+                        <div class="flex-1">
+                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-blue-500 transition-colors"
+                                 ondrop="dropHandler(event)" 
+                                 ondragover="dragOverHandler(event)"
+                                 ondragleave="dragLeaveHandler(event)">
+                                <input type="file" id="imageFile" name="imageFile" accept="image/*" 
+                                       class="w-full"
+                                       onchange="previewImage(this)" />
+                                <input type="hidden" asp-for="hinh_anh" />
+                                <p class="mt-2 text-sm text-gray-500">
+                                    Kéo thả hoặc click để chọn hình ảnh. Kích thước tối đa 5MB.
+                                </p>
+                            </div>
+                            <div id="imageError" class="text-red-500 text-sm mt-2"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mô tả -->
+                <div class="mt-6">
+                    <label asp-for="MoTa" class="block text-sm font-medium text-gray-700 mb-2">Mô tả</label>
+                    <div class="border border-gray-300 rounded-lg overflow-hidden">
+                        <!-- Thanh công cụ định dạng -->
+                        <div class="flex flex-wrap gap-1 p-2 bg-gray-50 border-b border-gray-300">
+                            <div class="flex gap-1 items-center">
+                                <button type="button" onclick="formatText('bold')" class="p-1.5 hover:bg-gray-200 rounded transition-colors" title="In đậm">
+                                    <i class="fas fa-bold text-gray-700"></i>
+                                </button>
+                                <button type="button" onclick="formatText('italic')" class="p-1.5 hover:bg-gray-200 rounded transition-colors" title="In nghiêng">
+                                    <i class="fas fa-italic text-gray-700"></i>
+                                </button>
+                                <button type="button" onclick="formatText('strikethrough')" class="p-1.5 hover:bg-gray-200 rounded transition-colors" title="Gạch ngang">
+                                    <i class="fas fa-strikethrough text-gray-700"></i>
+                                </button>
+                                <div class="w-px bg-gray-300 mx-1"></div>
+                                <button type="button" onclick="formatText('justifyLeft')" class="p-1.5 hover:bg-gray-200 rounded transition-colors" title="Căn trái">
+                                    <i class="fas fa-align-left text-gray-700"></i>
+                                </button>
+                                <button type="button" onclick="formatText('justifyCenter')" class="p-1.5 hover:bg-gray-200 rounded transition-colors" title="Căn giữa">
+                                    <i class="fas fa-align-center text-gray-700"></i>
+                                </button>
+                                <button type="button" onclick="formatText('justifyRight')" class="p-1.5 hover:bg-gray-200 rounded transition-colors" title="Căn phải">
+                                    <i class="fas fa-align-right text-gray-700"></i>
+                                </button>
+                                <button type="button" onclick="formatText('lineHeight')" class="p-1.5 hover:bg-gray-200 rounded transition-colors" title="Giãn dòng">
+                                    <i class="fas fa-text-height text-gray-700"></i>
+                                </button>
+                                <button type="button" onclick="formatText('insertorderedlist')" class="p-1.5 hover:bg-gray-200 rounded transition-colors" title="Danh sách số">
+                                    <i class="fas fa-list-ol text-gray-700"></i>
+                                </button>
+                                <button type="button" onclick="formatText('insertunorderedlist')" class="p-1.5 hover:bg-gray-200 rounded transition-colors" title="Danh sách">
+                                    <i class="fas fa-list-ul text-gray-700"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div contenteditable="true" id="moTaEditor" class="min-h-[250px] p-4 focus:outline-none"></div>
+                        <textarea asp-for="MoTa" class="hidden"></textarea>
+                    </div>
+                    <span asp-validation-for="MoTa" class="text-red-500 text-sm mt-1"></span>
+                </div>
+
+                <!-- Thông số kỹ thuật -->
+                <div class="mt-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Thông số kỹ thuật</label>
+                    <div class="border border-gray-300 rounded-lg overflow-hidden">
+                        <table class="w-full" id="specTable">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b w-1/3">Thông số</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b">Giá trị</th>
+                                    <th class="px-4 py-3 w-16 border-b"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Sẽ được điền bởi JavaScript -->
+                            </tbody>
+                        </table>
+                        <div class="p-4 bg-gray-50 border-t border-gray-300">
+                            <button type="button" onclick="addRow()" 
+                                    class="flex items-center text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                </svg>
+                                Thêm thông số
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Buttons -->
+                <div class="mt-8 flex items-center justify-end gap-4">
+                    <a asp-action="Index" class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-800 transition-colors">
+                        Quay lại
+                    </a>
+                    <button type="submit" class="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
+                        Lưu thay đổi
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
+    <script>
+        // Khởi tạo dữ liệu khi trang được load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Khởi tạo mô tả
+            const moTaContent = @Html.Raw(Json.Serialize(Model.MoTa));
+            if (moTaContent) {
+                document.getElementById('moTaEditor').innerHTML = moTaContent;
+            }
+
+            // Khởi tạo thông số kỹ thuật
+            try {
+                const thongSoKyThuat = @Html.Raw(Json.Serialize(Model.ThongSoKyThuat));
+                if (thongSoKyThuat) {
+                    // Nếu đã là JSON string thì parse trực tiếp
+                    const specs = typeof thongSoKyThuat === 'string' ? JSON.parse(thongSoKyThuat) : thongSoKyThuat;
+                    
+                    // Xóa các dòng mặc định
+                    document.querySelector('#specTable tbody').innerHTML = '';
+                    
+                    // Thêm các thông số từ database
+                    specs.forEach(spec => {
+                        addSpecRow(spec.key, spec.value);
+                    });
+                }
+            } catch (e) {
+                console.error('Lỗi khi parse thông số kỹ thuật:', e);
+            }
+        });
+
+        // Hàm thêm dòng thông số kỹ thuật với giá trị
+        function addSpecRow(key = '', value = '') {
+            const tbody = document.querySelector('#specTable tbody');
+            const rowCount = tbody.children.length;
+            const newRow = document.createElement('tr');
+            newRow.className = 'border';
+            newRow.innerHTML = `
+                <td class="px-4 py-2 border">
+                    <input type="text" name="specs[${rowCount}].key" value="${key}" class="w-full px-2 py-1 border-0 focus:outline-none focus:ring-0" placeholder="Thông số">
+                </td>
+                <td class="px-4 py-2 border">
+                    <input type="text" name="specs[${rowCount}].value" value="${value}" class="w-full px-2 py-1 border-0 focus:outline-none focus:ring-0" placeholder="Giá trị">
+                </td>
+                <td class="px-4 py-2 border text-center">
+                    <button type="button" onclick="removeRow(this)" class="text-red-500 hover:text-red-700">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(newRow);
+        }
+
+        // Thêm các hàm từ Create.cshtml
+        function addRow() {
+            addSpecRow();
+        }
+
+        function removeRow(button) {
+            const row = button.closest('tr');
+            row.remove();
+            reindexRows();
+        }
+
+        function reindexRows() {
+            const rows = document.querySelectorAll('#specTable tbody tr');
+            rows.forEach((row, index) => {
+                const inputs = row.querySelectorAll('input');
+                inputs[0].name = `specs[${index}].key`;
+                inputs[1].name = `specs[${index}].value`;
+            });
+        }
+
+        // Xử lý form submit
+        document.querySelector('form').addEventListener('submit', function(e) {
+            // Xử lý mô tả
+            const moTaEditor = document.getElementById('moTaEditor');
+            const moTaContent = moTaEditor.innerHTML.trim();
+            document.querySelector('[name="MoTa"]').value = moTaContent;
+
+            // Xử lý thông số kỹ thuật
+            const specs = [];
+            const rows = document.querySelectorAll('#specTable tbody tr');
+            rows.forEach(row => {
+                const inputs = row.querySelectorAll('input');
+                if (inputs[0].value && inputs[1].value) {
+                    specs.push({
+                        key: inputs[0].value,
+                        value: inputs[1].value
+                    });
+                }
+            });
+
+            // Lưu thông số kỹ thuật vào input hidden
+            document.querySelector('input[name="ThongSoKyThuat"]').value = JSON.stringify(specs);
+
+            // Kiểm tra nếu có chọn hình mới
+            const imageFile = document.getElementById('imageFile');
+            if (imageFile.files && imageFile.files.length > 0) {
+                const file = imageFile.files[0];
+                if (file.size > 5 * 1024 * 1024) {
+                    e.preventDefault();
+                    document.getElementById('imageError').textContent = 'Kích thước file không được vượt quá 5MB';
+                    return false;
+                }
+                if (!file.type.startsWith('image/')) {
+                    e.preventDefault();
+                    document.getElementById('imageError').textContent = 'Vui lòng chọn file hình ảnh';
+                    return false;
+                }
+            }
+
+            return true;
+        });
+
+        // Copy các hàm format text từ Create.cshtml
+        function formatText(command, value = null) {
+            if (command === 'lineHeight') {
+                const currentValue = getComputedStyle(document.getElementById('moTaEditor')).lineHeight;
+                const newValue = prompt('Nhập khoảng cách dòng (VD: 1.5):', currentValue === 'normal' ? '1' : currentValue);
+                if (newValue && !isNaN(newValue)) {
+                    document.getElementById('moTaEditor').style.lineHeight = newValue;
+                }
+            } else {
+                document.execCommand(command, false, value);
+            }
+            document.getElementById('moTaEditor').focus();
+        }
+
+        function insertLink() {
+            const url = prompt('Nhập URL:');
+            if (url) {
+                document.execCommand('createLink', false, url);
+            }
+        }
+
+        function insertTable() {
+            document.execCommand('insertTable');
+        }
+
+        function insertCode() {
+            document.execCommand('insertCode');
+        }
+
+        function previewImage(input) {
+            const currentImage = document.getElementById('currentImage');
+            const imageError = document.getElementById('imageError');
+            
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                
+                // Kiểm tra kích thước file (giới hạn 5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    imageError.textContent = 'Kích thước file không được vượt quá 5MB';
+                    input.value = '';
+                    return;
+                }
+                
+                // Kiểm tra loại file
+                if (!file.type.startsWith('image/')) {
+                    imageError.textContent = 'Vui lòng chọn file hình ảnh';
+                    input.value = '';
+                    return;
+                }
+                
+                // Preview hình ảnh
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    currentImage.src = e.target.result;
+                    imageError.textContent = '';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Thêm vào phần script
+        function dragOverHandler(ev) {
+            ev.preventDefault();
+            ev.currentTarget.classList.add('border-blue-500');
+            ev.currentTarget.classList.add('bg-blue-50');
+        }
+
+        function dragLeaveHandler(ev) {
+            ev.currentTarget.classList.remove('border-blue-500');
+            ev.currentTarget.classList.remove('bg-blue-50');
+        }
+
+        function dropHandler(ev) {
+            ev.preventDefault();
+            ev.currentTarget.classList.remove('border-blue-500');
+            ev.currentTarget.classList.remove('bg-blue-50');
+
+            if (ev.dataTransfer.items) {
+                const file = ev.dataTransfer.items[0].getAsFile();
+                if (file) {
+                    const input = document.getElementById('imageFile');
+                    const container = new DataTransfer();
+                    container.items.add(file);
+                    input.files = container.files;
+                    previewImage(input);
+                }
+            }
+        }
+    </script>
+}

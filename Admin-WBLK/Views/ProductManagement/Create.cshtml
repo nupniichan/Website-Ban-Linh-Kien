@@ -1,0 +1,527 @@
+﻿@model Admin_WBLK.Models.Sanpham
+
+@{
+    ViewData["Title"] = "Thêm sản phẩm mới";
+}
+
+<div class="p-6 w-full h-full bg-gray-50">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="mb-6">
+            <h1 class="text-3xl font-bold text-gray-900">Thêm sản phẩm mới</h1>
+            <p class="mt-2 text-sm text-gray-600">Nhập thông tin chi tiết cho sản phẩm mới</p>
+        </div>
+
+        <!-- Card chứa form -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <form asp-action="Create" method="post" enctype="multipart/form-data" class="w-full h-full">
+                <input type="hidden" name="ThongSoKyThuat" />
+                <div asp-validation-summary="ModelOnly" class="mb-4 p-4 rounded-lg bg-red-50 text-red-500"></div>
+
+                <!-- Grid layout cho các trường input -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Tên sản phẩm - full width -->
+                    <div class="md:col-span-2">
+                        <label asp-for="TenSp" class="block text-sm font-medium text-gray-700 mb-1">Tên sản phẩm</label>
+                        <input asp-for="TenSp" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required />
+                        <span asp-validation-for="TenSp" class="text-red-500 text-sm mt-1"></span>
+                    </div>
+
+                    <!-- Giá -->
+                    <div>
+                        <label asp-for="Gia" class="block text-sm font-medium text-gray-700 mb-1">Giá</label>
+                        <div class="relative">
+                            <input asp-for="Gia" type="number" class="w-full pl-4 pr-12 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required />
+                            <span class="absolute right-4 top-2 text-gray-500">VNĐ</span>
+                        </div>
+                        <span asp-validation-for="Gia" class="text-red-500 text-sm mt-1"></span>
+                    </div>
+
+                    <!-- Số lượng tồn -->
+                    <div>
+                        <label asp-for="SoLuongTon" class="block text-sm font-medium text-gray-700 mb-1">Số lượng tồn</label>
+                        <input asp-for="SoLuongTon" type="number" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required />
+                        <span asp-validation-for="SoLuongTon" class="text-red-500 text-sm mt-1"></span>
+                    </div>
+
+                    <!-- Loại sản phẩm -->
+                    <div>
+                        <label asp-for="LoaiSp" class="block text-sm font-medium text-gray-700 mb-1">Loại sản phẩm</label>
+                        <input asp-for="LoaiSp" 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
+                               required 
+                               list="productTypes"
+                               autocomplete="off"
+                               oninput="filterProductTypes(this.value)"/>
+                        <datalist id="productTypes">
+                            <!-- Options sẽ được điền bởi JavaScript -->
+                        </datalist>
+                        <span asp-validation-for="LoaiSp" class="text-red-500 text-sm mt-1"></span>
+                    </div>
+
+                    <!-- Thương hiệu -->
+                    <div>
+                        <label asp-for="ThuongHieu" class="block text-sm font-medium text-gray-700 mb-1">Thương hiệu</label>
+                        <input asp-for="ThuongHieu" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required />
+                        <span asp-validation-for="ThuongHieu" class="text-red-500 text-sm mt-1"></span>
+                    </div>
+                </div>
+
+                <!-- Hình ảnh -->
+                <div class="mt-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Hình ảnh sản phẩm</label>
+                    <div class="flex items-start gap-6">
+                        <!-- Preview hình ảnh -->
+                        <div class="w-48 h-48 border border-gray-300 rounded-lg overflow-hidden bg-gray-50">
+                            <img id="preview" src="#" alt="Preview" class="w-full h-full object-contain hidden">
+                            <div id="uploadIcon" class="w-full h-full flex items-center justify-center">
+                                <svg class="w-12 h-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                            </div>
+                        </div>
+                        
+                        <!-- Upload section -->
+                        <div class="flex-1">
+                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-blue-500 transition-colors"
+                                 ondrop="dropHandler(event)" 
+                                 ondragover="dragOverHandler(event)"
+                                 ondragleave="dragLeaveHandler(event)">
+                                <input type="file" id="imageFile" name="imageFile" accept="image/*" 
+                                       class="w-full"
+                                       onchange="previewImage(this)" />
+                                <p class="mt-2 text-sm text-gray-500">
+                                    Kéo thả hoặc click để chọn hình ảnh. Kích thước tối đa 5MB.
+                                </p>
+                            </div>
+                            <div id="imageError" class="text-red-500 text-sm mt-2"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mô tả -->
+                <div class="mt-6">
+                    <label asp-for="MoTa" class="block text-sm font-medium text-gray-700 mb-2">Mô tả</label>
+                    <div class="border border-gray-300 rounded-lg overflow-hidden">
+                        <!-- Thanh công cụ định dạng -->
+                        <div class="flex flex-wrap gap-1 p-2 bg-gray-50 border-b border-gray-300">
+                            <div class="flex gap-1 items-center">
+                                <button type="button" onclick="formatText('bold')" class="p-1.5 hover:bg-gray-200 rounded transition-colors" title="In đậm">
+                                    <i class="fas fa-bold text-gray-700"></i>
+                                </button>
+                                <button type="button" onclick="formatText('italic')" class="p-1.5 hover:bg-gray-200 rounded transition-colors" title="In nghiêng">
+                                    <i class="fas fa-italic text-gray-700"></i>
+                                </button>
+                                <button type="button" onclick="formatText('strikethrough')" class="p-1.5 hover:bg-gray-200 rounded transition-colors" title="Gạch ngang">
+                                    <i class="fas fa-strikethrough text-gray-700"></i>
+                                </button>
+                                <div class="w-px bg-gray-300 mx-1"></div>
+                                <button type="button" onclick="formatText('justifyLeft')" class="p-1.5 hover:bg-gray-200 rounded transition-colors" title="Căn trái">
+                                    <i class="fas fa-align-left text-gray-700"></i>
+                                </button>
+                                <button type="button" onclick="formatText('justifyCenter')" class="p-1.5 hover:bg-gray-200 rounded transition-colors" title="Căn giữa">
+                                    <i class="fas fa-align-center text-gray-700"></i>
+                                </button>
+                                <button type="button" onclick="formatText('justifyRight')" class="p-1.5 hover:bg-gray-200 rounded transition-colors" title="Căn phải">
+                                    <i class="fas fa-align-right text-gray-700"></i>
+                                </button>
+                                <button type="button" onclick="formatText('lineHeight')" class="p-1.5 hover:bg-gray-200 rounded transition-colors" title="Giãn dòng">
+                                    <i class="fas fa-text-height text-gray-700"></i>
+                                </button>
+                                <button type="button" onclick="formatText('insertorderedlist')" class="p-1.5 hover:bg-gray-200 rounded transition-colors" title="Danh sách số">
+                                    <i class="fas fa-list-ol text-gray-700"></i>
+                                </button>
+                                <button type="button" onclick="formatText('insertunorderedlist')" class="p-1.5 hover:bg-gray-200 rounded transition-colors" title="Danh sách">
+                                    <i class="fas fa-list-ul text-gray-700"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="w-full"></div>
+                            <div class="flex gap-1 items-center">
+                                <select onchange="formatText('fontName', this.value)" class="p-1 border rounded text-sm" title="Font chữ">
+                                    <option value="Arial">Arial</option>
+                                    <option value="Times New Roman">Times New Roman</option>
+                                    <option value="Courier New">Courier New</option>
+                                </select>
+                                <select onchange="formatText('fontSize', this.value)" class="p-1 border rounded text-sm" title="Cỡ chữ">
+                                    <option value="1">Nhỏ</option>
+                                    <option value="3">Bình thường</option>
+                                    <option value="5">Lớn</option>
+                                    <option value="7">Rất lớn</option>
+                                </select>
+                                <div class="w-px bg-gray-300 mx-1"></div>
+                                <button type="button" onclick="insertLink()" class="p-1.5 hover:bg-gray-200 rounded transition-colors" title="Chèn link">
+                                    <i class="fas fa-link text-gray-700"></i>
+                                </button>
+                                <button type="button" onclick="insertTable()" class="p-1.5 hover:bg-gray-200 rounded transition-colors" title="Chèn bảng">
+                                    <i class="fas fa-table text-gray-700"></i>
+                                </button>
+                                <button type="button" onclick="insertCode()" class="p-1.5 hover:bg-gray-200 rounded transition-colors" title="Chèn code">
+                                    <i class="fas fa-code text-gray-700"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div contenteditable="true" id="moTaEditor" class="min-h-[250px] p-4 focus:outline-none"></div>
+                        <textarea asp-for="MoTa" class="hidden"></textarea>
+                    </div>
+                    <span asp-validation-for="MoTa" class="text-red-500 text-sm mt-1"></span>
+                </div>
+
+                <!-- Thông số kỹ thuật -->
+                <div class="mt-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Thông số kỹ thuật</label>
+                    <div class="border border-gray-300 rounded-lg overflow-hidden">
+                        <table class="w-full" id="specTable">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b w-1/3">Thông số</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b">Giá trị</th>
+                                    <th class="px-4 py-3 w-16 border-b"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Mặc định các dòng thông số -->
+                                <tr class="border">
+                                    <td class="px-4 py-2 border">
+                                        <input type="text" name="specs[0].key" value="Số nhân xử lý" class="w-full px-2 py-1 border-0 focus:outline-none focus:ring-0">
+                                    </td>
+                                    <td class="px-4 py-2 border">
+                                        <input type="text" name="specs[0].value" value="6" class="w-full px-2 py-1 border-0 focus:outline-none focus:ring-0">
+                                    </td>
+                                    <td class="px-4 py-2 border text-center">
+                                        <button type="button" onclick="removeRow(this)" class="text-red-500 hover:text-red-700">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr class="border">
+                                    <td class="px-4 py-2 border">
+                                        <input type="text" name="specs[1].key" value="Số luồng xử lý" class="w-full px-2 py-1 border-0 focus:outline-none focus:ring-0">
+                                    </td>
+                                    <td class="px-4 py-2 border">
+                                        <input type="text" name="specs[1].value" value="12" class="w-full px-2 py-1 border-0 focus:outline-none focus:ring-0">
+                                    </td>
+                                    <td class="px-4 py-2 border text-center">
+                                        <button type="button" onclick="removeRow(this)" class="text-red-500 hover:text-red-700">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="p-4 bg-gray-50 border-t border-gray-300">
+                            <button type="button" onclick="addRow()" 
+                                    class="flex items-center text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                </svg>
+                                Thêm thông số
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Buttons -->
+                <div class="mt-8 flex items-center justify-end gap-4">
+                    <a asp-action="Index" class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-800 transition-colors">
+                        Quay lại
+                    </a>
+                    <button type="submit" class="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
+                        Thêm sản phẩm
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
+    <script>
+        // Khai báo biến toàn cục
+        const editor = document.getElementById('moTaEditor');
+        let isResizing = false;
+
+        function addRow() {
+            const tbody = document.querySelector('#specTable tbody');
+            const rowCount = tbody.children.length;
+            const newRow = document.createElement('tr');
+            newRow.className = 'border';
+            newRow.innerHTML = `
+                <td class="px-4 py-2 border">
+                    <input type="text" name="specs[${rowCount}].key" class="w-full px-2 py-1 border-0 focus:outline-none focus:ring-0" placeholder="Thông số">
+                </td>
+                <td class="px-4 py-2 border">
+                    <input type="text" name="specs[${rowCount}].value" class="w-full px-2 py-1 border-0 focus:outline-none focus:ring-0" placeholder="Giá trị">
+                </td>
+                <td class="px-4 py-2 border text-center">
+                    <button type="button" onclick="removeRow(this)" class="text-red-500 hover:text-red-700">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(newRow);
+        }
+
+        function removeRow(button) {
+            const row = button.closest('tr');
+            row.remove();
+            reindexRows();
+        }
+
+        function reindexRows() {
+            const rows = document.querySelectorAll('#specTable tbody tr');
+            rows.forEach((row, index) => {
+                const inputs = row.querySelectorAll('input');
+                inputs[0].name = `specs[${index}].key`;
+                inputs[1].name = `specs[${index}].value`;
+            });
+        }
+
+        function formatText(command, value = null) {
+            if (command === 'lineHeight') {
+                const currentValue = getComputedStyle(document.getElementById('moTaEditor')).lineHeight;
+                const newValue = prompt('Nhập khoảng cách dòng (VD: 1.5):', currentValue === 'normal' ? '1' : currentValue);
+                if (newValue && !isNaN(newValue)) {
+                    document.getElementById('moTaEditor').style.lineHeight = newValue;
+                }
+            } else {
+                document.execCommand(command, false, value);
+            }
+            document.getElementById('moTaEditor').focus();
+        }
+
+        function insertLink() {
+            const url = prompt('Nhập URL:');
+            if (url) {
+                document.execCommand('createLink', false, url);
+            }
+        }
+
+        // Thay thế hàm submit form hiện tại bằng đoạn code sau
+        document.querySelector('form').addEventListener('submit', function(e) {
+            // Kiểm tra hình ảnh
+            const imageFile = document.getElementById('imageFile');
+            if (!imageFile.files || imageFile.files.length === 0) {
+                e.preventDefault();
+                document.getElementById('imageError').textContent = 'Vui lòng chọn hình ảnh sản phẩm';
+                return false;
+            }
+
+            // Kiểm tra mô tả
+            const moTaEditor = document.getElementById('moTaEditor');
+            const moTaContent = moTaEditor.innerHTML.trim();
+            document.querySelector('[name="MoTa"]').value = moTaContent;
+            
+            if (moTaContent.length < 10) {
+                e.preventDefault();
+                alert('Mô tả phải có ít nhất 10 ký tự');
+                return false;
+            }
+
+            // Xử lý thông số kỹ thuật
+            const specs = [];
+            const rows = document.querySelectorAll('#specTable tbody tr');
+            let hasSpecs = false;
+            
+            rows.forEach(row => {
+                const inputs = row.querySelectorAll('input');
+                if (inputs[0].value && inputs[1].value) {
+                    hasSpecs = true;
+                    specs.push({
+                        key: inputs[0].value,
+                        value: inputs[1].value
+                    });
+                }
+            });
+
+            if (!hasSpecs) {
+                e.preventDefault();
+                alert('Vui lòng thêm ít nhất một thông số kỹ thuật');
+                return false;
+            }
+
+            // Chuyển đổi specs thành chuỗi JSON và lưu vào input hidden
+            const specsJson = JSON.stringify(specs);
+            
+            // Tạo hoặc cập nhật hidden input cho ThongSoKyThuat
+            let thongSoInput = document.querySelector('input[name="ThongSoKyThuat"]');
+            if (!thongSoInput) {
+                thongSoInput = document.createElement('input');
+                thongSoInput.type = 'hidden';
+                thongSoInput.name = 'ThongSoKyThuat';
+                this.appendChild(thongSoInput);
+            }
+            thongSoInput.value = specsJson;
+
+            return true;
+        });
+
+        function previewImage(input) {
+            const preview = document.getElementById('preview');
+            const uploadIcon = document.getElementById('uploadIcon');
+            const file = input.files[0];
+            
+            if (file) {
+                if (file.size > 5 * 1024 * 1024) {
+                    document.getElementById('imageError').textContent = 'Kích thước file không được vượt quá 5MB';
+                    input.value = '';
+                    preview.src = '#';
+                    preview.classList.add('hidden');
+                    uploadIcon.classList.remove('hidden');
+                    return;
+                }
+
+                if (!file.type.startsWith('image/')) {
+                    document.getElementById('imageError').textContent = 'Vui lòng chọn file hình ảnh';
+                    input.value = '';
+                    preview.src = '#';
+                    preview.classList.add('hidden');
+                    uploadIcon.classList.remove('hidden');
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.classList.remove('hidden');
+                    uploadIcon.classList.add('hidden');
+                    document.getElementById('imageError').textContent = '';
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function dragOverHandler(ev) {
+            ev.preventDefault();
+            ev.currentTarget.classList.add('border-blue-500');
+            ev.currentTarget.classList.add('bg-blue-50');
+        }
+
+        function dragLeaveHandler(ev) {
+            ev.currentTarget.classList.remove('border-blue-500');
+            ev.currentTarget.classList.remove('bg-blue-50');
+        }
+
+        function dropHandler(ev) {
+            ev.preventDefault();
+            ev.currentTarget.classList.remove('border-blue-500');
+            ev.currentTarget.classList.remove('bg-blue-50');
+
+            if (ev.dataTransfer.items) {
+                const file = ev.dataTransfer.items[0].getAsFile();
+                if (file) {
+                    const input = document.getElementById('imageFile');
+                    const container = new DataTransfer();
+                    container.items.add(file);
+                    input.files = container.files;
+                    previewImage(input);
+                }
+            }
+        }
+
+        // Khôi phục nội dung đã lưu
+        const savedContent = document.querySelector('[name="MoTa"]').value;
+        if (savedContent) {
+            document.getElementById('moTaEditor').innerHTML = savedContent;
+        }
+
+        // Thêm style mặc định cho editor
+        document.getElementById('moTaEditor').style.lineHeight = 'normal';
+
+        function prepareMetaTags() {
+            // Lấy nội dung mô tả
+            const moTaContent = document.getElementById('moTaEditor').innerHTML;
+            
+            // Lấy thông số kỹ thuật
+            const specs = [];
+            const rows = document.querySelectorAll('#specTable tbody tr');
+            rows.forEach(row => {
+                const inputs = row.querySelectorAll('input');
+                if (inputs[0].value && inputs[1].value) {
+                    specs.push({
+                        key: inputs[0].value,
+                        value: inputs[1].value
+                    });
+                }
+            });
+
+            // Tạo meta tags
+            const metaTags = [];
+
+            // Meta description từ mô tả
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = moTaContent;
+            const plainText = tempDiv.textContent || tempDiv.innerText;
+            // Giới hạn độ dài description trong khoảng 150-160 ký tự
+            const description = plainText.substring(0, 155) + (plainText.length > 155 ? '...' : '');
+            metaTags.push(`<meta name="description" content="${escapeHtml(description)}">`);
+
+            // Meta keywords từ thông số kỹ thuật
+            const keywords = specs.map(spec => `${spec.key} ${spec.value}`).join(', ');
+            metaTags.push(`<meta name="keywords" content="${escapeHtml(keywords)}">`);
+
+            // Meta tags cho từng thông số kỹ thuật
+            specs.forEach(spec => {
+                metaTags.push(`<meta property="product:${escapeHtml(spec.key)}" content="${escapeHtml(spec.value)}">`);
+            });
+
+            // Meta tags cho Open Graph
+            metaTags.push(`<meta property="og:title" content="${escapeHtml(document.querySelector('[name="TenSp"]').value)}">`);
+            metaTags.push(`<meta property="og:description" content="${escapeHtml(description)}">`);
+            metaTags.push(`<meta property="og:type" content="product">`);
+            
+            // Lưu meta tags vào hidden input
+            document.getElementById('metaTags').value = metaTags.join('\n');
+
+            // Lưu nội dung gốc của mô tả
+            document.querySelector('[name="MoTa"]').value = moTaContent;
+
+            return true;
+        }
+
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Thêm hàm filter cho product types
+        function filterProductTypes(inputValue) {
+            const productTypes = [
+                'PC', 'Laptop', 'CPU', 'VGA', 'Mainboard', 'RAM', 'PSU', 
+                'Case', 'HDD', 'SSD', 'Monitor', 'Speaker', 'Microphone', 
+                'Webcam', 'Keyboard', 'Mouse', 'Headphone', 'Router Wifi', 'Wifi Card'
+            ];
+            
+            const datalist = document.getElementById('productTypes');
+            datalist.innerHTML = ''; // Xóa tất cả options hiện tại
+            
+            const filteredTypes = productTypes.filter(type => 
+                type.toLowerCase().includes(inputValue.toLowerCase())
+            );
+            
+            filteredTypes.forEach(type => {
+                const option = document.createElement('option');
+                option.value = type;
+                datalist.appendChild(option);
+            });
+        }
+
+        // Khởi tạo danh sách ban đầu
+        filterProductTypes('');
+    </script>
+}

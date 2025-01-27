@@ -1,3 +1,4 @@
+using Admin_WBLK.Models;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -5,7 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-// Thêm DbContext vào DI container
+// Thï¿½m DbContext vï¿½o DI container
 builder.Services.AddDbContext<DatabaseContext>(options =>
     options.UseMySql(
         builder.Configuration.GetConnectionString("DefaultConnection"),
