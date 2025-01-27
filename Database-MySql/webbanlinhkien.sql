@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 26, 2025 at 03:19 PM
+-- Generation Time: Jan 27, 2025 at 10:19 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -174,6 +174,7 @@ CREATE TABLE `khachhang` (
 --
 
 INSERT INTO `khachhang` (`idKH`, `hoten`, `diachi`, `email`, `gioitinh`, `ngaysinh`, `sodienthoai`, `idTK`) VALUES
+('KH00002', 'Nguyễn Phi Quốc Bảo', '249Đ, Nguyễn Văn Luông, Phường 11, Quận 6, Thành phố Hồ Chí Minh', 'nup@gmail.com', 'male', '2004-08-02', '0949752097', 'TK00004'),
 ('KH001', 'Lê Văn Cường', 'Hà Nội', 'cuong.le@email.com', 'Nam', '1990-05-15', '0923456789', 'TK003');
 
 -- --------------------------------------------------------
@@ -238,16 +239,17 @@ CREATE TABLE `sanpham` (
   `moTa` text DEFAULT NULL,
   `thongSoKyThuat` text DEFAULT NULL,
   `loaiSP` varchar(50) NOT NULL,
-  `idNV` varchar(10) NOT NULL
+  `idNV` varchar(10) NOT NULL,
+  `hinh_anh` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `sanpham`
 --
 
-INSERT INTO `sanpham` (`idSP`, `tenSP`, `gia`, `soLuongTon`, `thuongHieu`, `moTa`, `thongSoKyThuat`, `loaiSP`, `idNV`) VALUES
-('SP001', 'Mainboard ASUS ROG', 5500000.00, 50, 'ASUS', 'Mainboard chơi game cao cấp', 'CPU Socket: LGA 1200, Chipset: Intel Z490', 'Linh Kiện Máy Tính', 'NV001'),
-('SP002', 'RAM Corsair 16GB', 1200000.00, 100, 'Corsair', 'RAM dung lượng cao', 'DDR4, 3200MHz, 16GB', 'Linh Kiện Máy Tính', 'NV001');
+INSERT INTO `sanpham` (`idSP`, `tenSP`, `gia`, `soLuongTon`, `thuongHieu`, `moTa`, `thongSoKyThuat`, `loaiSP`, `idNV`, `hinh_anh`) VALUES
+('SP001', 'Mainboard ASUS ROG', 5500000.00, 50, 'ASUS', 'Mainboard chơi game cao cấp', 'CPU Socket: LGA 1200, Chipset: Intel Z490', 'Linh Kiện Máy Tính', 'NV001', NULL),
+('SP002', 'RAM Corsair 16GB', 1200000.00, 100, 'Corsair', 'RAM dung lượng cao', 'DDR4, 3200MHz, 16GB', 'Linh Kiện Máy Tính', 'NV001', NULL);
 
 -- --------------------------------------------------------
 
@@ -269,6 +271,7 @@ CREATE TABLE `taikhoan` (
 --
 
 INSERT INTO `taikhoan` (`idTK`, `matkhau`, `tentaikhoan`, `ngaytaotk`, `ngaysuadoi`, `quyentruycap`) VALUES
+('TK00004', 'NupOniiBaka089', 'nup', '2025-01-27', NULL, 'KhachHang'),
 ('TK001', 'hashed_password1', 'admin_user', '2024-01-15', NULL, 'ADMIN'),
 ('TK002', 'hashed_password2', 'staff_user', '2024-01-16', NULL, 'STAFF'),
 ('TK003', 'hashed_password3', 'customer1', '2024-01-17', NULL, 'CUSTOMER');
