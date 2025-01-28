@@ -1,7 +1,25 @@
-﻿@model Admin_WBLK.Models.Sanpham
+﻿@using System.Text.Json
+@model Admin_WBLK.Models.Sanpham
 
 @{
     ViewData["Title"] = "Xóa sản phẩm";
+
+    string FormatSpecifications(string jsonSpecs)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(jsonSpecs)) return "";
+            
+            var specs = JsonSerializer.Deserialize<List<Dictionary<string, string>>>(jsonSpecs);
+            return string.Join("<br/>", specs.Select(spec => 
+                $"{spec["key"]}: {spec["value"]}"
+            ));
+        }
+        catch
+        {
+            return jsonSpecs;
+        }
+    }
 }
 
 <div class="p-6 w-full h-full bg-gray-50">
@@ -51,7 +69,9 @@
 
                 <div class="col-span-2">
                     <dt class="text-sm font-medium text-gray-500">Thông số kỹ thuật</dt>
-                    <dd class="mt-1 text-gray-900">@Html.Raw(Model.ThongSoKyThuat)</dd>
+                    <dd class="mt-1 text-gray-900">
+                        @Html.Raw(FormatSpecifications(Model.ThongSoKyThuat))
+                    </dd>
                 </div>
 
                 <div>
