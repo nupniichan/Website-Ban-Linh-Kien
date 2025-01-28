@@ -184,7 +184,7 @@ namespace Website_Ban_Linh_Kien.Controllers
             Dictionary<string, string> specifications = null,
             int page = 1)
         {
-            var query = _context.Sanphams.Where(p => p.LoaiSp == "LinhKien");
+            var query = _context.Sanphams.Where(p => p.LoaiSp.ToLower() == "components");
 
             // Lọc theo danh mục con (category)
             if (!string.IsNullOrEmpty(category))
@@ -269,7 +269,7 @@ namespace Website_Ban_Linh_Kien.Controllers
         [Route("productslist/monitor")]
         public async Task<IActionResult> Monitor(string brand = null, string priceRange = null, int page = 1)
         {
-            var query = _context.Sanphams.Where(p => p.LoaiSp.ToLower() == "Monitor");
+            var query = _context.Sanphams.Where(p => p.LoaiSp.ToLower() == "monitor");
 
             if (!string.IsNullOrEmpty(brand))
                 query = query.Where(p => p.ThuongHieu.ToLower() == brand.ToLower());
@@ -385,7 +385,7 @@ namespace Website_Ban_Linh_Kien.Controllers
             string priceRange = null,
             int page = 1)
         {
-            var query = _context.Sanphams.Where(p => p.LoaiSp == "ThietBiMang");
+            var query = _context.Sanphams.Where(p => p.LoaiSp.ToLower() == "network");
 
             // Lọc theo danh mục
             if (!string.IsNullOrEmpty(category))
@@ -466,7 +466,7 @@ namespace Website_Ban_Linh_Kien.Controllers
             string priceRange = null,
             int page = 1)
         {
-            var query = _context.Sanphams.Where(p => p.LoaiSp == "ThietBiNgoaiVi");
+            var query = _context.Sanphams.Where(p => p.LoaiSp.ToLower() == "peripherals");
 
             // Lọc theo danh mục
             if (!string.IsNullOrEmpty(category))
@@ -547,7 +547,7 @@ namespace Website_Ban_Linh_Kien.Controllers
             string priceRange = null,
             int page = 1)
         {
-            var query = _context.Sanphams.Where(p => p.LoaiSp == "ThietBiLuuTru");
+            var query = _context.Sanphams.Where(p => p.LoaiSp.ToLower() == "storage");
 
             // Lọc theo danh mục
             if (!string.IsNullOrEmpty(category))
