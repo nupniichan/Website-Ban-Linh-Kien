@@ -1,4 +1,6 @@
-﻿@{
+﻿@using Website_Ban_Linh_Kien.Models
+@model List<ProductCardViewModel>
+@{
     ViewData["Title"] = "Home Page";
 }
 
@@ -37,18 +39,12 @@
             <h2 class="text-2xl font-bold mb-4 text-white">Sản phẩm giá sốc ⚡</h2>
             
             <div class="products-container flex gap-4 overflow-x-auto pb-4 scrollbar-hide" style="scroll-snap-type: x mandatory;">
-                @for (int i = 0; i < 10; i++) 
+                @if (Model != null && Model.Any())
                 {
-                    var productCard = new ProductCardViewModel
+                    @foreach (var product in Model)
                     {
-                        Id = $"product-{i}",
-                        Name = "PC GAMING I5 12400F / RAM 16G / VGA 3060 12G",
-                        Category = "pc",
-                        Price = 15990000,
-                        ImageUrl = "https://via.placeholder.com/300x200",
-                        Description = "Mô tả sản phẩm..."
-                    };
-                    <partial name="_ProductCard" model="productCard" />
+                        <partial name="_ProductCard" model="product" />
+                    }
                 }
             </div>
 

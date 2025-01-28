@@ -22,6 +22,7 @@ public partial class Sanpham
     public string LoaiSp { get; set; } = null!;
 
     public string IdNv { get; set; } = null!;
+    public string hinh_anh { get; set; } = null!;
 
     public virtual ICollection<Chitietdonhang> Chitietdonhangs { get; set; } = new List<Chitietdonhang>();
 

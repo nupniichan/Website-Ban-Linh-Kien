@@ -13,78 +13,93 @@
                 <!-- Nhu cầu -->
                 <div class="relative">
                     <select class="px-4 py-2 border rounded-md w-48" onchange="window.location.href=this.value">
-                        <option value="@Url.Action("PC", "ProductsList")">Nhu cầu</option>
                         @{
-                            var gamingUrl = Url.Action("PC", "ProductsList", new { usage = "gaming", priceRange = Model.PriceRange });
-                            var graphicsUrl = Url.Action("PC", "ProductsList", new { usage = "graphics", priceRange = Model.PriceRange });
-                            var aiUrl = Url.Action("PC", "ProductsList", new { usage = "ai", priceRange = Model.PriceRange });
-                            var workstationUrl = Url.Action("PC", "ProductsList", new { usage = "workstation", priceRange = Model.PriceRange });
-                            var officeUrl = Url.Action("PC", "ProductsList", new { usage = "office", priceRange = Model.PriceRange });
+                            var defaultUrl = Url.Action("PC", "ProductsList", new { cpuType = Model.CpuType, ram = Model.Ram, gpu = Model.Gpu, priceRange = Model.PriceRange });
+                            var isDefaultSelected = string.IsNullOrEmpty(Model.Usage);
                         }
-                        <option value="@gamingUrl" selected="@(Model.AdditionalFilters["usage"] == "gaming")" class="@(Model.AdditionalFilters["usage"] == "gaming" ? "font-bold" : "")">PC Gaming</option>
-                        <option value="@graphicsUrl" selected="@(Model.AdditionalFilters["usage"] == "graphics")" class="@(Model.AdditionalFilters["usage"] == "graphics" ? "font-bold" : "")">PC Đồ hoạ - Làm việc</option>
-                        <option value="@aiUrl" selected="@(Model.AdditionalFilters["usage"] == "ai")" class="@(Model.AdditionalFilters["usage"] == "ai" ? "font-bold" : "")">PC AI - Trí tuệ nhân tạo</option>
-                        <option value="@workstationUrl" selected="@(Model.AdditionalFilters["usage"] == "workstation")" class="@(Model.AdditionalFilters["usage"] == "workstation" ? "font-bold" : "")">PC Workstation</option>
-                        <option value="@officeUrl" selected="@(Model.AdditionalFilters["usage"] == "office")" class="@(Model.AdditionalFilters["usage"] == "office" ? "font-bold" : "")">PC Văn phòng</option>
+                        <option value="@defaultUrl" selected="@isDefaultSelected">Nhu cầu</option>
+                        @foreach (var (value, text) in new[] {
+                            ("gaming", "PC Gaming"),
+                            ("graphics", "PC Đồ hoạ - Làm việc"),
+                            ("ai", "PC AI - Trí tuệ nhân tạo"),
+                            ("workstation", "PC Workstation"),
+                            ("office", "PC Văn phòng")
+                        })
+                        {
+                            var url = Url.Action("PC", "ProductsList", new { usage = value, cpuType = Model.CpuType, ram = Model.Ram, gpu = Model.Gpu, priceRange = Model.PriceRange });
+                            var isSelected = Model.Usage == value;
+                            <option value="@url" selected="@isSelected">@text</option>
+                        }
                     </select>
                 </div>
 
                 <!-- CPU -->
                 <div class="relative">
                     <select class="px-4 py-2 border rounded-md w-48" onchange="window.location.href=this.value">
-                        <option value="">Loại CPU</option>
                         @{
-                            var intelI3Url = Url.Action("PC", "ProductsList", new { cpuType = "intel-i3" });
-                            var intelI5Url = Url.Action("PC", "ProductsList", new { cpuType = "intel-i5" });
-                            var intelI7Url = Url.Action("PC", "ProductsList", new { cpuType = "intel-i7" });
-                            var intelI9Url = Url.Action("PC", "ProductsList", new { cpuType = "intel-i9" });
-                            var amdR3Url = Url.Action("PC", "ProductsList", new { cpuType = "amd-r3" });
-                            var amdR5Url = Url.Action("PC", "ProductsList", new { cpuType = "amd-r5" });
-                            var amdR7Url = Url.Action("PC", "ProductsList", new { cpuType = "amd-r7" });
-                            var amdR9Url = Url.Action("PC", "ProductsList", new { cpuType = "amd-r9" });
+                            var cpuDefaultUrl = Url.Action("PC", "ProductsList", new { usage = Model.Usage, ram = Model.Ram, gpu = Model.Gpu, priceRange = Model.PriceRange });
+                            var isCpuDefaultSelected = string.IsNullOrEmpty(Model.CpuType);
                         }
-                        <option value="@intelI3Url" selected="@(Model.AdditionalFilters["cpuType"] == "intel-i3")">Intel Core i3</option>
-                        <option value="@intelI5Url" selected="@(Model.AdditionalFilters["cpuType"] == "intel-i5")">Intel Core i5</option>
-                        <option value="@intelI7Url" selected="@(Model.AdditionalFilters["cpuType"] == "intel-i7")">Intel Core i7</option>
-                        <option value="@intelI9Url" selected="@(Model.AdditionalFilters["cpuType"] == "intel-i9")">Intel Core i9</option>
-                        <option value="@amdR3Url" selected="@(Model.AdditionalFilters["cpuType"] == "amd-r3")">AMD Ryzen 3</option>
-                        <option value="@amdR5Url" selected="@(Model.AdditionalFilters["cpuType"] == "amd-r5")">AMD Ryzen 5</option>
-                        <option value="@amdR7Url" selected="@(Model.AdditionalFilters["cpuType"] == "amd-r7")">AMD Ryzen 7</option>
-                        <option value="@amdR9Url" selected="@(Model.AdditionalFilters["cpuType"] == "amd-r9")">AMD Ryzen 9</option>
+                        <option value="@cpuDefaultUrl" selected="@isCpuDefaultSelected">Loại CPU</option>
+                        @foreach (var (value, text) in new[] {
+                            ("intel-i3", "Intel Core i3"),
+                            ("intel-i5", "Intel Core i5"),
+                            ("intel-i7", "Intel Core i7"),
+                            ("intel-i9", "Intel Core i9"),
+                            ("amd-r3", "AMD Ryzen 3"),
+                            ("amd-r5", "AMD Ryzen 5"),
+                            ("amd-r7", "AMD Ryzen 7"),
+                            ("amd-r9", "AMD Ryzen 9")
+                        })
+                        {
+                            var url = Url.Action("PC", "ProductsList", new { cpuType = value, usage = Model.Usage, ram = Model.Ram, gpu = Model.Gpu, priceRange = Model.PriceRange });
+                            var isSelected = Model.CpuType == value;
+                            <option value="@url" selected="@isSelected">@text</option>
+                        }
                     </select>
                 </div>
 
                 <!-- RAM -->
                 <div class="relative">
                     <select class="px-4 py-2 border rounded-md w-48" onchange="window.location.href=this.value">
-                        <option value="">RAM</option>
                         @{
-                            var ram8Url = Url.Action("PC", "ProductsList", new { ram = "8gb" });
-                            var ram16Url = Url.Action("PC", "ProductsList", new { ram = "16gb" });
-                            var ram32Url = Url.Action("PC", "ProductsList", new { ram = "32gb" });
-                            var ram64Url = Url.Action("PC", "ProductsList", new { ram = "64gb" });
-                            var ram128Url = Url.Action("PC", "ProductsList", new { ram = "128gb" });
+                            var ramDefaultUrl = Url.Action("PC", "ProductsList", new { usage = Model.Usage, cpuType = Model.CpuType, gpu = Model.Gpu, priceRange = Model.PriceRange });
+                            var isRamDefaultSelected = string.IsNullOrEmpty(Model.Ram);
                         }
-                        <option value="@ram8Url" selected="@(Model.AdditionalFilters["ram"] == "8gb")">8GB</option>
-                        <option value="@ram16Url" selected="@(Model.AdditionalFilters["ram"] == "16gb")">16GB</option>
-                        <option value="@ram32Url" selected="@(Model.AdditionalFilters["ram"] == "32gb")">32GB</option>
-                        <option value="@ram64Url" selected="@(Model.AdditionalFilters["ram"] == "64gb")">64GB</option>
-                        <option value="@ram128Url" selected="@(Model.AdditionalFilters["ram"] == "128gb")">128GB</option>
+                        <option value="@ramDefaultUrl" selected="@isRamDefaultSelected">RAM</option>
+                        @foreach (var (value, text) in new[] {
+                            ("8gb", "8GB"),
+                            ("16gb", "16GB"),
+                            ("32gb", "32GB"),
+                            ("64gb", "64GB"),
+                            ("128gb", "128GB")
+                        })
+                        {
+                            var url = Url.Action("PC", "ProductsList", new { ram = value, usage = Model.Usage, cpuType = Model.CpuType, gpu = Model.Gpu, priceRange = Model.PriceRange });
+                            var isSelected = Model.Ram == value;
+                            <option value="@url" selected="@isSelected">@text</option>
+                        }
                     </select>
                 </div>
 
                 <!-- GPU -->
                 <div class="relative">
                     <select class="px-4 py-2 border rounded-md w-48" onchange="window.location.href=this.value">
-                        <option value="">Card màn hình</option>
                         @{
-                            var nvidiaUrl = Url.Action("PC", "ProductsList", new { gpu = "nvidia" });
-                            var amdGpuUrl = Url.Action("PC", "ProductsList", new { gpu = "amd" });
-                            var intelGpuUrl = Url.Action("PC", "ProductsList", new { gpu = "intel" });
+                            var gpuDefaultUrl = Url.Action("PC", "ProductsList", new { usage = Model.Usage, cpuType = Model.CpuType, ram = Model.Ram, priceRange = Model.PriceRange });
+                            var isGpuDefaultSelected = string.IsNullOrEmpty(Model.Gpu);
                         }
-                        <option value="@nvidiaUrl" selected="@(Model.AdditionalFilters["gpu"] == "nvidia")">NVIDIA</option>
-                        <option value="@amdGpuUrl" selected="@(Model.AdditionalFilters["gpu"] == "amd")">AMD</option>
-                        <option value="@intelGpuUrl" selected="@(Model.AdditionalFilters["gpu"] == "intel")">Intel</option>
+                        <option value="@gpuDefaultUrl" selected="@isGpuDefaultSelected">Card màn hình</option>
+                        @foreach (var (value, text) in new[] {
+                            ("nvidia", "NVIDIA"),
+                            ("amd", "AMD"),
+                            ("intel", "Intel")
+                        })
+                        {
+                            var url = Url.Action("PC", "ProductsList", new { gpu = value, usage = Model.Usage, cpuType = Model.CpuType, ram = Model.Ram, priceRange = Model.PriceRange });
+                            var isSelected = Model.Gpu == value;
+                            <option value="@url" selected="@isSelected">@text</option>
+                        }
                     </select>
                 </div>
             </div>
@@ -95,103 +110,112 @@
             <h2 class="font-semibold mb-2">Khoảng giá:</h2>
             <div class="flex flex-wrap gap-2">
                 @{
-                    var priceRanges = new Dictionary<string, string>
+                    var priceRanges = new Dictionary<string, string>() {
+                        {"duoi-10-trieu", "Dưới 10 triệu"},
+                        {"10-15-trieu", "10 - 15 triệu"},
+                        {"15-20-trieu", "15 - 20 triệu"},
+                        {"20-25-trieu", "20 - 25 triệu"},
+                        {"25-35-trieu", "25 - 35 triệu"},
+                        {"35-trieu", "Trên 35 triệu"}
+                    };
+                }
+                @foreach (var range in priceRanges)
                 {
-                {"5-15-trieu", "5 triệu - 15 triệu"},
-                {"15-20-trieu", "15 triệu - 20 triệu"},
-                {"20-30-trieu", "20 triệu - 30 triệu"},
-                {"30-50-trieu", "30 triệu - 50 triệu"},
-                {"50-100-trieu", "50 triệu - 100 triệu"},
-                {"tren-100-trieu", "Trên 100 triệu"}
-                };
-
-                    foreach (var range in priceRanges)
-                    {
-                        var url = Url.Action("PC", "ProductsList", new { priceRange = range.Key, usage = Model.AdditionalFilters["usage"] });
-                        var isSelected = Model.PriceRange == range.Key;
-                        <a href="@url"
-                           class="px-4 py-2 bg-gray-100 rounded-md hover:bg-gray-200 @(isSelected ? "bg-blue-600 text-white" : "")">
-                            @range.Value
-                        </a>
-                    }
+                    var url = Url.Action("PC", "ProductsList", new { priceRange = range.Key, usage = Model.Usage, cpuType = Model.CpuType, ram = Model.Ram, gpu = Model.Gpu });
+                    <a href="@url" class="px-4 py-2 bg-gray-100 rounded-md hover:bg-gray-200 @(Model.PriceRange == range.Key ? "bg-blue-600 text-white" : "")">
+                        @range.Value
+                    </a>
                 }
             </div>
         </div>
     </div>
 
-    <!-- Sort Options -->
-    <div class="flex gap-4 mb-6">
-        <button class="px-4 py-2 bg-white rounded-md hover:bg-gray-50">Tăng dần</button>
-        <button class="px-4 py-2 bg-white rounded-md hover:bg-gray-50">Giảm dần</button>
-        <button class="px-4 py-2 bg-white rounded-md hover:bg-gray-50">Từ A - Z</button>
-    </div>
-
     <!-- Products Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-        @for (int i = 0; i < 15; i++)
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        @if (Model.Products != null && Model.Products.Any())
         {
-            <partial name="_ProductCard" model="new ProductCardViewModel()" />
+            @foreach (var product in Model.Products)
+            {
+                <div class="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300">
+                    <a href="/pc/@product.IdSp" class="block">
+                        <div class="p-3">
+                            <img src="@product.hinh_anh" alt="@product.TenSp" 
+                                 class="w-full h-40 object-cover rounded-lg mb-3">
+                            <div class="relative group">
+                                <h3 class="text-base font-semibold mb-2 product-title overflow-hidden"
+                                    data-full-text="@product.TenSp">
+                                    @product.TenSp
+                                </h3>
+                                <div class="absolute left-0 -top-12 bg-black text-white text-xs rounded-lg px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 whitespace-nowrap product-tooltip">
+                                    @product.TenSp
+                                </div>
+                            </div>
+                            <p class="text-red-600 font-bold text-xl mb-4">@product.Gia.ToString("N0")đ</p>
+                            <button class="w-full hover:opacity-80 transition-opacity duration-300">
+                                <div class="flex items-center gap-2">
+                                    <div class="bg-[#0066CC] p-2 rounded-full">
+                                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                                        </svg>
+                                    </div>
+                                    <span class="text-gray-700">Thêm vào giỏ hàng</span>
+                                </div>
+                            </button>
+                        </div>
+                    </a>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-span-full text-center py-8">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-xl font-semibold text-gray-700 mb-2">Không tìm thấy sản phẩm</h3>
+                    <p class="text-gray-500">Không có sản phẩm nào phù hợp với tiêu chí tìm kiếm của bạn.</p>
+                </div>
+            </div>
         }
     </div>
 
     <!-- Pagination -->
-    <div class="flex justify-center items-center space-x-2 my-8">
-        @{
-            string GetPageUrl(int pageNum)
-            {
-                var routeValues = new Dictionary<string, object>();
-
-                if (!string.IsNullOrEmpty(Model.Category))
+    @if (Model.TotalPages > 1)
+    {
+        <div class="mt-8 flex justify-center">
+            <div class="flex space-x-2">
+                @for (int i = 1; i <= Model.TotalPages; i++)
                 {
-                    routeValues.Add("category", Model.Category);
+                    <a href="?page=@i" class="px-4 py-2 rounded @(Model.CurrentPage == i ? "bg-blue-500 text-white" : "bg-gray-200")">
+                        @i
+                    </a>
                 }
-
-                if (!string.IsNullOrEmpty(Model.PriceRange))
-                {
-                    routeValues.Add("priceRange", Model.PriceRange);
-                }
-
-                routeValues.Add("page", pageNum);
-
-                return Url.Action("PC", routeValues);
-            }
-        }
-
-        <a href="@GetPageUrl(Model.CurrentPage - 1)"
-           class="px-4 py-2 bg-white rounded-md hover:bg-gray-50 @(Model.CurrentPage == 1 ? "opacity-50 cursor-not-allowed" : "")"
-        @(Model.CurrentPage == 1 ? "disabled" : "")>
-            <span class="sr-only">Previous</span>
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-            </svg>
-        </a>
-
-        @for (int i = 1; i <= Model.TotalPages; i++)
-        {
-            if (i == Model.CurrentPage)
-            {
-                <a href="@GetPageUrl(i)"
-                   class="px-4 py-2 bg-blue-600 text-white rounded-md">@i</a>
-            }
-            else if (i <= 3 || i == Model.TotalPages || Math.Abs(i - Model.CurrentPage) <= 1)
-            {
-                <a href="@GetPageUrl(i)"
-                   class="px-4 py-2 bg-white hover:bg-gray-50 rounded-md">@i</a>
-            }
-            else if (i == 4 || i == Model.TotalPages - 1)
-            {
-                <span class="px-4 py-2">...</span>
-            }
-        }
-
-        <a href="@GetPageUrl(Model.CurrentPage + 1)"
-           class="px-4 py-2 bg-white rounded-md hover:bg-gray-50 @(Model.CurrentPage == Model.TotalPages ? "opacity-50 cursor-not-allowed" : "")"
-        @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")>
-            <span class="sr-only">Next</span>
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg>
-        </a>
-    </div>
+            </div>
+        </div>
+    }
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            function updateProductTitles() {
+                const titles = document.querySelectorAll('.product-title');            
+                titles.forEach((title, index) => {
+                    const fullText = title.getAttribute('data-full-text');
+                    
+                    title.textContent = fullText;
+                    
+                    if (fullText && fullText.length > 70) {
+                        const truncatedText = fullText.substring(0, 70) + '...';
+                        title.textContent = truncatedText;
+                    }
+                    
+                    const tooltip = title.closest('.group').querySelector('.product-tooltip');
+                    tooltip.textContent = fullText;
+                });
+            }
+
+            updateProductTitles();
+            setTimeout(updateProductTitles, 500);
+        });
+    </script>
+}
 

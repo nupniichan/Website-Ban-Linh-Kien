@@ -608,33 +608,45 @@
 </div> 
 
 <script>
+function buildFilterUrl(baseUrl, newParams) {
+    // Lấy tất cả các tham số hiện tại từ URL
+    const currentParams = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams();
+
+    // Giữ lại các tham số lọc hiện tại
+    ['usage', 'cpuType', 'ram', 'gpu', 'priceRange'].forEach(param => {
+        if (currentParams.has(param)) {
+            params.set(param, currentParams.get(param));
+        }
+    });
+
+    // Thêm/cập nhật các tham số mới
+    Object.entries(newParams).forEach(([key, value]) => {
+        if (value) {
+            params.set(key, value);
+        }
+    });
+
+    // Tạo URL mới
+    return `${baseUrl}?${params.toString()}`;
+}
+
+// Áp dụng cho tất cả các link trong menu
 document.addEventListener('DOMContentLoaded', function() {
-    // Lắng nghe sự thay đổi của các select
-    document.querySelectorAll('select').forEach(select => {
-        select.addEventListener('change', function() {
-            const params = new URLSearchParams(window.location.search);
-            
-            // Cập nhật giá trị của select hiện tại
-            if (this.value) {
-                params.set(this.id, this.value);
-            } else {
-                params.delete(this.id);
-            }
-
-            // Giữ nguyên category và brand từ URL hiện tại
-            const currentCategory = params.get('category');
-            const currentBrand = params.get('brand');
-            
-            if (currentCategory) {
-                params.set('category', currentCategory);
-            }
-            if (currentBrand) {
-                params.set('brand', currentBrand);
-            }
-
-            // Chuyển hướng với các tham số mới
-            window.location.href = `${window.location.pathname}?${params.toString()}`;
-        });
+    const menuLinks = document.querySelectorAll('#categoryDropdown a');
+    menuLinks.forEach(link => {
+        const href = link.getAttribute('href');
+        if (href && href.includes('ProductsList')) {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const url = new URL(href, window.location.origin);
+                const newParams = {};
+                url.searchParams.forEach((value, key) => {
+                    newParams[key] = value;
+                });
+                window.location.href = buildFilterUrl(url.pathname, newParams);
+            });
+        }
     });
 });
 </script> 

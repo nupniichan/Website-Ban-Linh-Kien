@@ -1,9 +1,13 @@
-public class ProductCardViewModel
+using Website_Ban_Linh_Kien.Models;
+
+namespace Website_Ban_Linh_Kien.Models
 {
-    public string Id { get; set; }
-    public string Name { get; set; }
-    public string Category { get; set; }
-    public decimal Price { get; set; }
-    public string ImageUrl { get; set; }
-    public string Description { get; set; }
-} 
+    public class ProductCardViewModel
+    {
+        public string IdSp { get; set; }
+        public string TenSp { get; set; }
+        public decimal Gia { get; set; }
+        public string ImageUrl { get; set; }
+        public string LoaiSp { get; set; }
+    }
+}

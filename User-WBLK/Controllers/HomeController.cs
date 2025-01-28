@@ -7,15 +7,28 @@ namespace Website_Ban_Linh_Kien.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly DatabaseContext _context;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger, DatabaseContext context)
         {
             _logger = logger;
+            _context = context;
         }
 
         public IActionResult Index()
         {
-            return View();
+            var products = _context.Sanphams
+                .Select(p => new ProductCardViewModel
+                {
+                    IdSp = p.IdSp,
+                    TenSp = p.TenSp,
+                    Gia = p.Gia,
+                    ImageUrl = p.hinh_anh,
+                    LoaiSp = p.LoaiSp
+                })
+                .ToList();
+
+            return View(products);
         }
 
         public IActionResult Privacy()
