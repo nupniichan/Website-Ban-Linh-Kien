@@ -1,0 +1,98 @@
+@model Admin_WBLK.Models.Donhang
+
+@{
+    ViewData["Title"] = "Xóa đơn hàng";
+}
+
+<div class="p-6 w-full h-full bg-gray-50">
+    <div class="max-w-3xl mx-auto">
+        <h1 class="text-3xl font-bold text-gray-900 mb-4">Xóa đơn hàng</h1>
+        <div class="bg-yellow-50 border border-yellow-400 text-yellow-700 p-4 rounded-lg mb-6">
+            <h3 class="font-medium">Bạn có chắc chắn muốn xóa đơn hàng này?</h3>
+            <p class="mt-1 text-sm">Hành động này không thể hoàn tác.</p>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-sm p-6">
+            <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-6">
+                <div class="col-span-2">
+                    <dt class="text-sm font-medium text-gray-500">Mã đơn hàng</dt>
+                    <dd class="mt-1 text-lg text-gray-900">@Model.IdDh</dd>
+                </div>
+
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Khách hàng</dt>
+                    <dd class="mt-1 text-gray-900">@Model.IdKhNavigation.Hoten</dd>
+                </div>
+
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Ngày đặt</dt>
+                    <dd class="mt-1 text-gray-900">@Model.Ngaydathang.ToString("dd/MM/yyyy")</dd>
+                </div>
+
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Tổng tiền</dt>
+                    <dd class="mt-1 text-gray-900">@Model.Tongtien.ToString("#,##0") VNĐ</dd>
+                </div>
+
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Trạng thái</dt>
+                    <dd class="mt-1">
+                        <span class="px-2 py-1 text-sm rounded-full @GetStatusClass(Model.Trangthai)">
+                            @Model.Trangthai
+                        </span>
+                    </dd>
+                </div>
+
+                <div class="col-span-2">
+                    <dt class="text-sm font-medium text-gray-500">Địa chỉ giao hàng</dt>
+                    <dd class="mt-1 text-gray-900">@Model.Diachigiaohang</dd>
+                </div>
+
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Phương thức thanh toán</dt>
+                    <dd class="mt-1 text-gray-900">@Model.Phuongthucthanhtoan</dd>
+                </div>
+
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Mã giảm giá</dt>
+                    <dd class="mt-1 text-gray-900">@(Model.IdMgg ?? "Không có")</dd>
+                </div>
+
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Nhân viên xử lý</dt>
+                    <dd class="mt-1 text-gray-900">@Model.IdNvNavigation?.Hoten</dd>
+                </div>
+            </dl>
+
+            <div class="mt-8 flex items-center justify-end gap-4">
+                <a asp-action="Index" 
+                   class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-800">
+                    Quay lại
+                </a>
+                <form asp-action="Delete" class="inline">
+                    <input type="hidden" asp-for="IdDh" />
+                    <button type="submit" 
+                            class="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                        Xác nhận xóa
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    public string GetStatusClass(string status)
+    {
+        return status switch
+        {
+            "Chờ xác nhận" => "bg-yellow-100 text-yellow-800",
+            "Đã xác nhận" => "bg-blue-100 text-blue-800",
+            "Đang giao" => "bg-indigo-100 text-indigo-800",
+            "Đã giao" => "bg-green-100 text-green-800",
+            "Đã hủy" => "bg-red-100 text-red-800",
+            "Yêu cầu hủy" => "bg-orange-100 text-orange-800",
+            _ => "bg-gray-100 text-gray-800"
+        };
+    }
+} 

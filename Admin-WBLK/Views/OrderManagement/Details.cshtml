@@ -1,0 +1,102 @@
+@model Admin_WBLK.Models.Donhang
+
+@{
+    ViewData["Title"] = "Chi tiết đơn hàng";
+}
+
+<div class="p-6 w-full h-full bg-gray-50">
+    <div class="max-w-3xl mx-auto">
+        <h1 class="text-3xl font-bold text-gray-900 mb-4">Chi tiết đơn hàng</h1>
+
+        <div class="bg-white rounded-lg shadow-sm p-6">
+            <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-6">
+                <!-- Mã đơn hàng -->
+                <div class="col-span-2">
+                    <dt class="text-sm font-medium text-gray-500">Mã đơn hàng</dt>
+                    <dd class="mt-1 text-lg text-gray-900">@Model.IdDh</dd>
+                </div>
+
+                <!-- Ngày đặt hàng -->
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Ngày đặt hàng</dt>
+                    <dd class="mt-1 text-gray-900">@Model.Ngaydathang.ToString("dd/MM/yyyy")</dd>
+                </div>
+
+                <!-- Trạng thái -->
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Trạng thái</dt>
+                    <dd class="mt-1">
+                        @{
+                            var statusClass = Model.Trangthai switch
+                            {
+                                "Chờ xác nhận" => "bg-yellow-100 text-yellow-800",
+                                "Đã xác nhận" => "bg-blue-100 text-blue-800",
+                                "Đang giao" => "bg-purple-100 text-purple-800",
+                                "Đã giao" => "bg-green-100 text-green-800",
+                                "Đã hủy" => "bg-red-100 text-red-800",
+                                "Yêu cầu hủy" => "bg-orange-100 text-orange-800",
+                                _ => "bg-gray-100 text-gray-800"
+                            };
+                        }
+                        <span class="@statusClass px-3 py-1 rounded-full text-sm font-medium">
+                            @Model.Trangthai
+                        </span>
+                    </dd>
+                </div>
+
+                <!-- Thông tin khách hàng -->
+                <div class="col-span-2">
+                    <dt class="text-sm font-medium text-gray-500">Thông tin khách hàng</dt>
+                    <dd class="mt-1 text-gray-900">
+                        <p class="font-medium">@Model.IdKhNavigation?.Hoten</p>
+                        <p class="text-sm text-gray-600">Mã KH: @Model.IdKh</p>
+                    </dd>
+                </div>
+
+                <!-- Nhân viên phụ trách -->
+                <div class="col-span-2">
+                    <dt class="text-sm font-medium text-gray-500">Nhân viên phụ trách</dt>
+                    <dd class="mt-1 text-gray-900">
+                        <p class="font-medium">@Model.IdNvNavigation?.Hoten</p>
+                        <p class="text-sm text-gray-600">Mã NV: @Model.IdNv</p>
+                    </dd>
+                </div>
+
+                <!-- Địa chỉ giao hàng -->
+                <div class="col-span-2">
+                    <dt class="text-sm font-medium text-gray-500">Địa chỉ giao hàng</dt>
+                    <dd class="mt-1 text-gray-900">@Model.Diachigiaohang</dd>
+                </div>
+
+                <!-- Phương thức thanh toán -->
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Phương thức thanh toán</dt>
+                    <dd class="mt-1 text-gray-900">@Model.Phuongthucthanhtoan</dd>
+                </div>
+
+                <!-- Mã giảm giá -->
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Mã giảm giá</dt>
+                    <dd class="mt-1 text-gray-900">@(Model.IdMgg ?? "Không có")</dd>
+                </div>
+
+                <!-- Tổng tiền -->
+                <div class="col-span-2">
+                    <dt class="text-sm font-medium text-gray-500">Tổng tiền</dt>
+                    <dd class="mt-1 text-xl font-medium text-gray-900">@Model.Tongtien.ToString("#,##0") VNĐ</dd>
+                </div>
+            </dl>
+
+            <div class="mt-8 flex items-center justify-end gap-4">
+                <a asp-action="Index" 
+                   class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-800">
+                    Quay lại
+                </a>
+                <a asp-action="Edit" asp-route-id="@Model.IdDh"
+                   class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    Chỉnh sửa
+                </a>
+            </div>
+        </div>
+    </div>
+</div> 

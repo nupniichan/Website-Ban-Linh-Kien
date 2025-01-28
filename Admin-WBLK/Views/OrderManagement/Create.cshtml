@@ -1,0 +1,211 @@
+@model Admin_WBLK.Models.Donhang
+
+@{
+    ViewData["Title"] = "Thêm đơn hàng mới";
+}
+
+<div class="p-6 w-full h-full bg-gray-50">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="mb-6">
+            <h1 class="text-3xl font-bold text-gray-900">Thêm đơn hàng mới</h1>
+            <p class="mt-2 text-sm text-gray-600">Nhập thông tin chi tiết cho đơn hàng mới</p>
+        </div>
+
+        <!-- Card chứa form -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <form asp-action="Create" method="post" class="w-full h-full">
+                <div asp-validation-summary="ModelOnly" class="mb-4 p-4 rounded-lg bg-red-50 text-red-500"></div>
+
+                <!-- Grid layout cho các trường input -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Mã khách hàng -->
+                    <div>
+                        <label asp-for="IdKh" class="block text-sm font-medium text-gray-700 mb-1">Mã khách hàng</label>
+                        <input asp-for="IdKh" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required />
+                        <span asp-validation-for="IdKh" class="text-red-500 text-sm mt-1"></span>
+                    </div>
+
+                    <!-- Tên khách hàng (readonly, sẽ tự động điền) -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tên khách hàng</label>
+                        <input type="text" id="tenKhachHang" readonly class="w-full px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg" />
+                    </div>
+
+                    <!-- Địa chỉ giao hàng -->
+                    <div class="md:col-span-2">
+                        <label asp-for="Diachigiaohang" class="block text-sm font-medium text-gray-700 mb-1">Địa chỉ giao hàng</label>
+                        <input asp-for="Diachigiaohang" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required />
+                        <span asp-validation-for="Diachigiaohang" class="text-red-500 text-sm mt-1"></span>
+                    </div>
+
+                    <!-- Phương thức thanh toán -->
+                    <div>
+                        <label asp-for="Phuongthucthanhtoan" class="block text-sm font-medium text-gray-700 mb-1">Phương thức thanh toán</label>
+                        <select asp-for="Phuongthucthanhtoan" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required>
+                            <option value="">Chọn phương thức</option>
+                            <option value="COD">COD</option>
+                            <option value="Banking">Banking</option>
+                            <option value="Momo">Momo</option>
+                        </select>
+                        <span asp-validation-for="Phuongthucthanhtoan" class="text-red-500 text-sm mt-1"></span>
+                    </div>
+
+                    <!-- Mã giảm giá -->
+                    <div>
+                        <label asp-for="IdMgg" class="block text-sm font-medium text-gray-700 mb-1">Mã giảm giá</label>
+                        <input asp-for="IdMgg" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+                        <span asp-validation-for="IdMgg" class="text-red-500 text-sm mt-1"></span>
+                    </div>
+                </div>
+
+                <!-- Sản phẩm đặt -->
+                <div class="mt-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Sản phẩm đặt</label>
+                    <div class="border border-gray-300 rounded-lg overflow-hidden">
+                        <table class="w-full" id="productTable">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b">Mã SP</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b">Tên SP</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b">Số lượng</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b">Đơn giá</th>
+                                    <th class="px-4 py-3 w-16 border-b"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Rows will be added dynamically -->
+                            </tbody>
+                        </table>
+                        <div class="p-4 bg-gray-50 border-t border-gray-300">
+                            <button type="button" onclick="addProductRow()" 
+                                    class="flex items-center text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                </svg>
+                                Thêm sản phẩm
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sau bảng sản phẩm -->
+                <div class="mt-4 text-right">
+                    <input type="hidden" asp-for="Tongtien" id="Tongtien" />
+                    <div class="text-lg font-medium">
+                        Tổng tiền: <span id="displayTotal" class="text-blue-600">0</span> VNĐ
+                    </div>
+                </div>
+
+                <!-- Buttons -->
+                <div class="mt-8 flex items-center justify-end gap-4">
+                    <a asp-action="Index" class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-800 transition-colors">
+                        Quay lại
+                    </a>
+                    <button type="submit" class="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
+                        Tạo đơn hàng
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        // Tự động điền tên khách hàng khi nhập mã
+        document.getElementById('IdKh').addEventListener('change', async function() {
+            const customerId = this.value;
+            if (!customerId) return;
+
+            try {
+                const response = await fetch(`/OrderManagement/GetCustomerInfo?id=${encodeURIComponent(customerId)}`);
+                const data = await response.json();
+                if (data) {
+                    document.getElementById('tenKhachHang').value = data.hoten;
+                } else {
+                    document.getElementById('tenKhachHang').value = 'Không tìm thấy khách hàng';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+
+        // Thêm sản phẩm vào bảng
+        function addProductRow() {
+            const tbody = document.querySelector('#productTable tbody');
+            const rowCount = tbody.children.length;
+            
+            const newRow = document.createElement('tr');
+            newRow.className = 'border-t';
+            newRow.innerHTML = `
+                <td class="px-4 py-3">
+                    <input type="text" name="Products[${rowCount}].IdSp" 
+                           class="w-full px-2 py-1 border rounded product-id"
+                           onchange="updateProductInfo(this)" required>
+                </td>
+                <td class="px-4 py-3">
+                    <input type="text" name="Products[${rowCount}].TenSp" 
+                           class="w-full px-2 py-1 bg-gray-50" readonly>
+                </td>
+                <td class="px-4 py-3">
+                    <input type="number" name="Products[${rowCount}].SoLuong" 
+                           class="w-full px-2 py-1 border rounded quantity"
+                           onchange="updateTotal()" min="1" required>
+                </td>
+                <td class="px-4 py-3">
+                    <input type="number" name="Products[${rowCount}].DonGia" 
+                           class="w-full px-2 py-1 bg-gray-50 price" readonly>
+                </td>
+                <td class="px-4 py-3">
+                    <button type="button" onclick="this.closest('tr').remove(); updateTotal()"
+                            class="text-red-600 hover:text-red-800">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(newRow);
+        }
+
+        // Cập nhật thông tin sản phẩm khi nhập mã
+        async function updateProductInfo(input) {
+            const row = input.closest('tr');
+            const productId = input.value;
+            
+            try {
+                const response = await fetch(`/OrderManagement/GetProductInfo?id=${encodeURIComponent(productId)}`);
+                const data = await response.json();
+                if (data) {
+                    row.querySelector('[name$=".TenSp"]').value = data.tenSp;
+                    row.querySelector('[name$=".DonGia"]').value = data.gia;
+                    row.querySelector('[name$=".SoLuong"]').max = data.soLuongTon;
+                } else {
+                    row.querySelector('[name$=".TenSp"]').value = 'Không tìm thấy sản phẩm';
+                    row.querySelector('[name$=".DonGia"]').value = '';
+                }
+                updateTotal();
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Tính tổng tiền
+        function updateTotal() {
+            let total = 0;
+            const rows = document.querySelectorAll('#productTable tbody tr');
+            
+            rows.forEach(row => {
+                const quantity = parseFloat(row.querySelector('.quantity').value) || 0;
+                const price = parseFloat(row.querySelector('.price').value) || 0;
+                total += quantity * price;
+            });
+
+            document.getElementById('Tongtien').value = total;
+            document.getElementById('displayTotal').textContent = total.toLocaleString('vi-VN');
+        }
+    </script>
+} 
