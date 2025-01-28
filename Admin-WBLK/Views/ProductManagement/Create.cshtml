@@ -47,15 +47,19 @@
                     <!-- Loại sản phẩm -->
                     <div>
                         <label asp-for="LoaiSp" class="block text-sm font-medium text-gray-700 mb-1">Loại sản phẩm</label>
-                        <input asp-for="LoaiSp" 
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
-                               required 
-                               list="productTypes"
-                               autocomplete="off"
-                               oninput="filterProductTypes(this.value)"/>
-                        <datalist id="productTypes">
-                            <!-- Options sẽ được điền bởi JavaScript -->
-                        </datalist>
+                        <select asp-for="LoaiSp" 
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
+                                required>
+                            <option value="">Chọn loại sản phẩm</option>
+                            <option value="PC">PC</option>
+                            <option value="Laptop">Laptop</option>
+                            <option value="Components">Linh kiện máy tính</option>
+                            <option value="Monitor">Màn hình</option>
+                            <option value="Audio">Thiết bị âm thanh</option>
+                            <option value="Network">Thiết bị mạng</option>
+                            <option value="Peripherals">Thiết bị ngoại vi</option>
+                            <option value="Storage">Thiết bị lưu trữ</option>
+                        </select>
                         <span asp-validation-for="LoaiSp" class="text-red-500 text-sm mt-1"></span>
                     </div>
 
@@ -168,7 +172,7 @@
                 </div>
 
                 <!-- Thông số kỹ thuật -->
-                <div class="mt-6">
+                <div class="mt-6" id="specificationSection" style="display: none;">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Thông số kỹ thuật</label>
                     <div class="border border-gray-300 rounded-lg overflow-hidden">
                         <table class="w-full" id="specTable">
@@ -180,37 +184,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <!-- Mặc định các dòng thông số -->
-                                <tr class="border">
-                                    <td class="px-4 py-2 border">
-                                        <input type="text" name="specs[0].key" value="Số nhân xử lý" class="w-full px-2 py-1 border-0 focus:outline-none focus:ring-0">
-                                    </td>
-                                    <td class="px-4 py-2 border">
-                                        <input type="text" name="specs[0].value" value="6" class="w-full px-2 py-1 border-0 focus:outline-none focus:ring-0">
-                                    </td>
-                                    <td class="px-4 py-2 border text-center">
-                                        <button type="button" onclick="removeRow(this)" class="text-red-500 hover:text-red-700">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                            </svg>
-                                        </button>
-                                    </td>
-                                </tr>
-                                <tr class="border">
-                                    <td class="px-4 py-2 border">
-                                        <input type="text" name="specs[1].key" value="Số luồng xử lý" class="w-full px-2 py-1 border-0 focus:outline-none focus:ring-0">
-                                    </td>
-                                    <td class="px-4 py-2 border">
-                                        <input type="text" name="specs[1].value" value="12" class="w-full px-2 py-1 border-0 focus:outline-none focus:ring-0">
-                                    </td>
-                                    <td class="px-4 py-2 border text-center">
-                                        <button type="button" onclick="removeRow(this)" class="text-red-500 hover:text-red-700">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                            </svg>
-                                        </button>
-                                    </td>
-                                </tr>
+                                <!-- Rows will be added dynamically -->
                             </tbody>
                         </table>
                         <div class="p-4 bg-gray-50 border-t border-gray-300">
@@ -250,17 +224,184 @@
         const editor = document.getElementById('moTaEditor');
         let isResizing = false;
 
+        // Định nghĩa mapping cho các danh mục
+        const categoryMapping = {
+            'Components': ['CPU', 'VGA', 'Mainboard', 'RAM', 'PSU', 'Case'],
+            'Audio': ['Speaker', 'Microphone','Webcam'],
+            'Network': ['Router Wifi', 'Wifi Card'],
+            'Peripherals': ['Keyboard', 'Mouse', 'Headphone'],
+            'Storage': ['SSD', 'HDD']
+        };
+
+        // Đảm bảo các mapping được định nghĩa trước khi sử dụng
+        const defaultSpecsMapping = {
+            'PC': [
+                { key: 'CPU', value: '' },
+                { key: 'RAM', value: '' },
+                { key: 'VGA', value: '' },
+                { key: 'Mainboard', value: '' },
+                { key: 'SSD/HDD', value: '' },
+                { key: 'PSU', value: '' },
+                { key: 'Case', value: '' }
+            ],
+            'Laptop': [
+                { key: 'CPU', value: '' },
+                { key: 'RAM', value: '' },
+                { key: 'VGA', value: '' },
+                { key: 'Màn hình', value: '' },
+                { key: 'Ổ cứng', value: '' },
+                { key: 'Pin', value: '' },
+                { key: 'Trọng lượng', value: '' }
+            ],
+            'Monitor': [
+                { key: 'Kích thước', value: '' },
+                { key: 'Độ phân giải', value: '' },
+                { key: 'Tần số quét', value: '' },
+                { key: 'Công nghệ màn hình', value: '' },
+                { key: 'Cổng kết nối', value: '' }
+            ],
+            'Components': [
+                { key: 'Danh mục', value: '' }
+            ],
+            'Audio': [
+                { key: 'Danh mục', value: '' }
+            ],
+            'Network': [
+                { key: 'Danh mục', value: '' }
+            ],
+            'Peripherals': [
+                { key: 'Danh mục', value: '' }
+            ],
+            'Storage': [
+                { key: 'Danh mục', value: '' }
+            ]
+        };
+
+        // Thêm event listener với debug logs
+        document.addEventListener('DOMContentLoaded', function() {
+            const loaiSpSelect = document.querySelector('select[name="LoaiSp"]');
+            console.log('Found select element:', loaiSpSelect); // Debug
+
+            if (loaiSpSelect) {
+                loaiSpSelect.addEventListener('change', function(e) {
+                    const productType = e.target.value;
+                    console.log('Selected product type:', productType); // Debug
+
+                    const specificationSection = document.getElementById('specificationSection');
+                    console.log('Found specification section:', specificationSection); // Debug
+
+                    if (!productType) {
+                        specificationSection.style.display = 'none';
+                        return;
+                    }
+
+                    // Hiển thị phần thông số kỹ thuật
+                    specificationSection.style.display = 'block';
+                    
+                    const tbody = document.querySelector('#specTable tbody');
+                    console.log('Found tbody:', tbody); // Debug
+                    
+                    // Xóa tất cả rows hiện tại
+                    tbody.innerHTML = '';
+                    
+                    // Thêm các thông số mặc định theo loại sản phẩm
+                    if (defaultSpecsMapping[productType]) {
+                        console.log('Adding specs for type:', productType); // Debug
+                        console.log('Specs to add:', defaultSpecsMapping[productType]); // Debug
+
+                        defaultSpecsMapping[productType].forEach((spec, index) => {
+                            const row = document.createElement('tr');
+                            row.className = 'border';
+                            
+                            const isCategory = spec.key === 'Danh mục';
+                            const inputClass = "w-full px-2 py-1 border-0 focus:outline-none focus:ring-0";
+                            
+                            // Tạo select dropdown cho danh mục
+                            let valueCell;
+                            if (isCategory && categoryMapping[productType]) {
+                                valueCell = `
+                                    <select name="specs[${index}].value" 
+                                            class="${inputClass} bg-white"
+                                            required>
+                                        <option value="">Chọn danh mục</option>
+                                        ${categoryMapping[productType]
+                                            .map(cat => `<option value="${cat}">${cat}</option>`)
+                                            .join('')}
+                                    </select>`;
+                            } else {
+                                valueCell = `
+                                    <input type="text" 
+                                           name="specs[${index}].value" 
+                                           value="${spec.value}"
+                                           class="${inputClass}"
+                                           placeholder="Giá trị">`;
+                            }
+                            
+                            row.innerHTML = `
+                                <td class="px-4 py-2 border">
+                                    <input type="text" 
+                                           name="specs[${index}].key" 
+                                           value="${spec.key}" 
+                                           class="${inputClass}"
+                                           ${isCategory ? 'readonly' : ''}>
+                                </td>
+                                <td class="px-4 py-2 border">
+                                    ${valueCell}
+                                </td>
+                                <td class="px-4 py-2 border text-center">
+                                    ${!isCategory ? `
+                                        <button type="button" onclick="removeRow(this)" class="text-red-500 hover:text-red-700">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        </button>
+                                    ` : ''}
+                                </td>
+                            `;
+                            tbody.appendChild(row);
+                        });
+                    }
+                });
+            } else {
+                console.error('Could not find LoaiSp select element!');
+            }
+        });
+
+        // Thêm hàm kiểm tra key trùng
+        function isDuplicateKey(key, currentRow) {
+            const allKeys = document.querySelectorAll('#specTable tbody tr input[name$="].key"]');
+            for (let input of allKeys) {
+                if (input !== currentRow && input.value.toLowerCase() === key.toLowerCase()) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // Cập nhật hàm addRow để kiểm tra key trùng
         function addRow() {
             const tbody = document.querySelector('#specTable tbody');
             const rowCount = tbody.children.length;
             const newRow = document.createElement('tr');
             newRow.className = 'border';
+            const index = rowCount;
+            
             newRow.innerHTML = `
                 <td class="px-4 py-2 border">
-                    <input type="text" name="specs[${rowCount}].key" class="w-full px-2 py-1 border-0 focus:outline-none focus:ring-0" placeholder="Thông số">
+                    <div class="relative">
+                        <input type="text" 
+                               name="specs[${index}].key" 
+                               class="w-full px-2 py-1 border-0 focus:outline-none focus:ring-0" 
+                               placeholder="Thông số"
+                               oninput="validateKey(this)">
+                        <div class="text-red-500 text-sm absolute"></div>
+                    </div>
                 </td>
                 <td class="px-4 py-2 border">
-                    <input type="text" name="specs[${rowCount}].value" class="w-full px-2 py-1 border-0 focus:outline-none focus:ring-0" placeholder="Giá trị">
+                    <input type="text" 
+                           name="specs[${index}].value" 
+                           class="w-full px-2 py-1 border-0 focus:outline-none focus:ring-0" 
+                           placeholder="Giá trị">
                 </td>
                 <td class="px-4 py-2 border text-center">
                     <button type="button" onclick="removeRow(this)" class="text-red-500 hover:text-red-700">
@@ -271,6 +412,22 @@
                 </td>
             `;
             tbody.appendChild(newRow);
+        }
+
+        // Thêm hàm validate key
+        function validateKey(input) {
+            const errorDiv = input.parentElement.querySelector('div.text-red-500');
+            const key = input.value.trim();
+            
+            if (isDuplicateKey(key, input)) {
+                errorDiv.textContent = 'Thông số này đã tồn tại';
+                input.classList.add('border-red-500');
+                return false;
+            } else {
+                errorDiv.textContent = '';
+                input.classList.remove('border-red-500');
+                return true;
+            }
         }
 
         function removeRow(button) {
@@ -310,6 +467,25 @@
 
         // Thay thế hàm submit form hiện tại bằng đoạn code sau
         document.querySelector('form').addEventListener('submit', function(e) {
+            const allInputs = document.querySelectorAll('#specTable tbody tr input[name$="].key"]');
+            const keys = new Set();
+            let hasError = false;
+
+            allInputs.forEach(input => {
+                const key = input.value.trim().toLowerCase();
+                if (key && keys.has(key)) {
+                    hasError = true;
+                    validateKey(input);
+                }
+                keys.add(key);
+            });
+
+            if (hasError) {
+                e.preventDefault();
+                alert('Vui lòng sửa các thông số trùng lặp trước khi lưu');
+                return false;
+            }
+
             // Kiểm tra hình ảnh
             const imageFile = document.getElementById('imageFile');
             if (!imageFile.files || imageFile.files.length === 0) {
@@ -498,30 +674,5 @@
                 .replace(/"/g, "&quot;")
                 .replace(/'/g, "&#039;");
         }
-
-        // Thêm hàm filter cho product types
-        function filterProductTypes(inputValue) {
-            const productTypes = [
-                'PC', 'Laptop', 'CPU', 'VGA', 'Mainboard', 'RAM', 'PSU', 
-                'Case', 'HDD', 'SSD', 'Monitor', 'Speaker', 'Microphone', 
-                'Webcam', 'Keyboard', 'Mouse', 'Headphone', 'Router Wifi', 'Wifi Card'
-            ];
-            
-            const datalist = document.getElementById('productTypes');
-            datalist.innerHTML = ''; // Xóa tất cả options hiện tại
-            
-            const filteredTypes = productTypes.filter(type => 
-                type.toLowerCase().includes(inputValue.toLowerCase())
-            );
-            
-            filteredTypes.forEach(type => {
-                const option = document.createElement('option');
-                option.value = type;
-                datalist.appendChild(option);
-            });
-        }
-
-        // Khởi tạo danh sách ban đầu
-        filterProductTypes('');
     </script>
 }

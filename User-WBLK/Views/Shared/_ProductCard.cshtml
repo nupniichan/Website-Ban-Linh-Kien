@@ -1,3 +1,4 @@
+@using Website_Ban_Linh_Kien.Models
 @model ProductCardViewModel
 @{
     var defaultId = "default-product";
@@ -8,20 +9,20 @@
 
 <div class="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 w-56 flex-shrink-0 border-gray-900" style="scroll-snap-align: start;">
     @{
-        var productUrl = Model?.Category?.ToLower() switch
+        var productUrl = Model?.LoaiSp?.ToLower() switch
         {
-            "pc" => $"/pc/{Model?.Id ?? defaultId}",
-            "laptop" => $"/laptop/{Model?.Id ?? defaultId}",
+            "pc" => $"/pc/{Model?.IdSp ?? defaultId}",
+            "laptop" => $"/laptop/{Model?.IdSp ?? defaultId}",
             "cpu" or "vga" or "mainboard" or "ram" or "psu" or "case" => 
-                $"/components/{Model.Category}/{Model?.Id ?? defaultId}",
-            "storage" => $"/storage/{Model?.Id ?? defaultId}",
-            "monitor" => $"/monitor/{Model?.Id ?? defaultId}",
+                $"/components/{Model.LoaiSp}/{Model?.IdSp ?? defaultId}",
+            "storage" => $"/storage/{Model?.IdSp ?? defaultId}",
+            "monitor" => $"/monitor/{Model?.IdSp ?? defaultId}",
             "speaker" or "microphone" or "webcam" => 
-                $"/audio/{Model.Category}/{Model?.Id ?? defaultId}",
+                $"/audio/{Model.LoaiSp}/{Model?.IdSp ?? defaultId}",
             "keyboard" or "mouse" or "headphone" => 
-                $"/peripherals/{Model.Category}/{Model?.Id ?? defaultId}",
-            "network" => $"/network/{Model?.Id ?? defaultId}",
-            _ => "#"  // Thay đổi fallback route thành "#" để tránh redirect không mong muốn
+                $"/peripherals/{Model.LoaiSp}/{Model?.IdSp ?? defaultId}",
+            "network" => $"/network/{Model?.IdSp ?? defaultId}",
+            _ => "#"
         };
     }
     <a href="@productUrl" class="block">
@@ -29,12 +30,12 @@
             <img src="@(Model?.ImageUrl ?? defaultImage)" alt="Product Image" class="w-full h-40 object-cover rounded-lg mb-3">
             <div class="relative group">
                 <h3 class="text-base font-semibold mb-2 product-title overflow-hidden"
-                    data-full-text="@(Model?.Name ?? defaultName)">
+                    data-full-text="@(Model?.TenSp ?? defaultName)">
                 </h3>
                 <div class="absolute left-0 -top-12 bg-black text-white text-xs rounded-lg px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 whitespace-nowrap product-tooltip">
                 </div>
             </div>
-            <p class="text-red-600 font-bold text-xl mb-4">@((Model?.Price ?? defaultPrice).ToString("N0"))đ</p>
+            <p class="text-red-600 font-bold text-xl mb-4">@((Model?.Gia ?? defaultPrice).ToString("N0"))đ</p>
             <button class="w-full hover:opacity-80 transition-opacity duration-300">
                 <div class="flex items-center gap-2">
                     <div class="bg-[#0066CC] p-2 rounded-full">
