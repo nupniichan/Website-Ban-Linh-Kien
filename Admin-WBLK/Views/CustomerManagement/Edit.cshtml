@@ -1,0 +1,91 @@
+@model Admin_WBLK.Models.Khachhang
+
+@{
+    ViewData["Title"] = "Chỉnh sửa thông tin khách hàng";
+}
+
+<div class="p-6 w-full h-full bg-gray-50">
+    <div class="max-w-3xl mx-auto">
+        <h1 class="text-3xl font-bold text-gray-900 mb-6">Chỉnh sửa thông tin khách hàng</h1>
+
+        <div class="bg-white rounded-lg shadow-sm p-6">
+            <form asp-action="Edit" method="post">
+                <div asp-validation-summary="ModelOnly" class="mb-4 text-red-500 text-sm"></div>
+                <input type="hidden" asp-for="IdKh" />
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label asp-for="IdKh" class="block text-sm font-medium text-gray-700 mb-2">Mã khách hàng</label>
+                        <input asp-for="IdKh" class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100" readonly />
+                    </div>
+
+                    <div>
+                        <label asp-for="Hoten" class="block text-sm font-medium text-gray-700 mb-2">Họ tên</label>
+                        <input asp-for="Hoten" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+                        <span asp-validation-for="Hoten" class="text-sm text-red-500"></span>
+                    </div>
+
+                    <div>
+                        <label asp-for="Email" class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                        <input asp-for="Email" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+                        <span asp-validation-for="Email" class="text-sm text-red-500"></span>
+                    </div>
+
+                    <div>
+                        <label asp-for="Sodienthoai" class="block text-sm font-medium text-gray-700 mb-2">Số điện thoại</label>
+                        <input asp-for="Sodienthoai" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+                        <span asp-validation-for="Sodienthoai" class="text-sm text-red-500"></span>
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label asp-for="Diachi" class="block text-sm font-medium text-gray-700 mb-2">Địa chỉ</label>
+                        <input asp-for="Diachi" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+                        <span asp-validation-for="Diachi" class="text-sm text-red-500"></span>
+                    </div>
+
+                    <div>
+                        <label asp-for="Gioitinh" class="block text-sm font-medium text-gray-700 mb-2">Giới tính</label>
+                        <select asp-for="Gioitinh" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                            <option value="Nam">Nam</option>
+                            <option value="Nữ">Nữ</option>
+                        </select>
+                        <span asp-validation-for="Gioitinh" class="text-sm text-red-500"></span>
+                    </div>
+
+                    <div>
+                        <label asp-for="Ngaysinh" class="block text-sm font-medium text-gray-700 mb-2">Ngày sinh</label>
+                        <input asp-for="Ngaysinh" type="date" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+                        <span asp-validation-for="Ngaysinh" class="text-sm text-red-500"></span>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex items-center justify-end gap-4">
+                    <a asp-action="Index" class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-800">
+                        Quay lại
+                    </a>
+                    <button type="submit" class="px-4 py-2 bg-yellow-600 text-white text-sm font-medium rounded-lg hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2">
+                        Lưu thay đổi
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        document.querySelector('form').addEventListener('submit', function(e) {
+            console.log('Form submitting...');
+            console.log('Form data:', {
+                IdKh: document.querySelector('[name="IdKh"]').value,
+                Hoten: document.querySelector('[name="Hoten"]').value,
+                Email: document.querySelector('[name="Email"]').value,
+                Diachi: document.querySelector('[name="Diachi"]').value,
+                Sodienthoai: document.querySelector('[name="Sodienthoai"]').value,
+                Gioitinh: document.querySelector('[name="Gioitinh"]').value,
+                Ngaysinh: document.querySelector('[name="Ngaysinh"]').value
+            });
+        });
+    </script>
+} 
