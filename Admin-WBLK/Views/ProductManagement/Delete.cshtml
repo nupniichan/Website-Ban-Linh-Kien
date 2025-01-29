@@ -30,80 +30,144 @@
             <p class="mt-1 text-sm">Hành động này không thể hoàn tác.</p>
         </div>
 
-        <div class="bg-white rounded-lg shadow-sm p-6">
-            <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-6">
-                <div class="col-span-2">
-                    <dt class="text-sm font-medium text-gray-500">Mã sản phẩm</dt>
-                    <dd class="mt-1 text-lg text-gray-900">@Model.IdSp</dd>
-                </div>
-
-                <div class="col-span-2">
-                    <dt class="text-sm font-medium text-gray-500">Tên sản phẩm</dt>
-                    <dd class="mt-1 text-gray-900">@Model.TenSp</dd>
-                </div>
-
-                <div>
-                    <dt class="text-sm font-medium text-gray-500">Giá</dt>
-                    <dd class="mt-1 text-gray-900">@Model.Gia.ToString("#,##0") VNĐ</dd>
-                </div>
-
-                <div>
-                    <dt class="text-sm font-medium text-gray-500">Số lượng tồn</dt>
-                    <dd class="mt-1 text-gray-900">@Model.SoLuongTon</dd>
-                </div>
-
-                <div>
-                    <dt class="text-sm font-medium text-gray-500">Thương hiệu</dt>
-                    <dd class="mt-1 text-gray-900">@Model.ThuongHieu</dd>
-                </div>
-
-                <div>
-                    <dt class="text-sm font-medium text-gray-500">Loại sản phẩm</dt>
-                    <dd class="mt-1 text-gray-900">@Model.LoaiSp</dd>
-                </div>
-
-                <div class="col-span-2">
-                    <dt class="text-sm font-medium text-gray-500">Mô tả</dt>
-                    <dd class="mt-1 text-gray-900">@Html.Raw(Model.MoTa)</dd>
-                </div>
-
-                <div class="col-span-2">
-                    <dt class="text-sm font-medium text-gray-500">Thông số kỹ thuật</dt>
-                    <dd class="mt-1 text-gray-900">
-                        @Html.Raw(FormatSpecifications(Model.ThongSoKyThuat))
-                    </dd>
-                </div>
-
-                <div>
-                    <dt class="text-sm font-medium text-gray-500">Nhân viên quản lý</dt>
-                    <dd class="mt-1 text-gray-900">@Model.IdNvNavigation?.Hoten</dd>
-                </div>
-
+        <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+            <!-- Phần trên: Hình ảnh và thông tin cơ bản -->
+            <div class="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Hình ảnh sản phẩm -->
                 @if (!string.IsNullOrEmpty(Model.hinh_anh))
                 {
-                    <div class="col-span-2">
-                        <dt class="text-sm font-medium text-gray-500 mb-2">Hình ảnh sản phẩm</dt>
-                        <dd>
-                            <img src="@Model.hinh_anh" alt="@Model.TenSp" 
-                                 class="w-48 h-48 object-cover rounded-lg border border-gray-200"/>
-                        </dd>
+                    <div class="md:col-span-1">
+                        <div class="aspect-square rounded-lg overflow-hidden bg-gray-100 border">
+                            <img src="@Model.hinh_anh" alt="@Model.TenSp" class="w-full h-full object-contain" />
+                        </div>
                     </div>
                 }
-            </dl>
 
-            <div class="mt-8 flex items-center justify-end gap-4">
-                <a asp-action="Index" 
-                   class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-800">
-                    Quay lại
-                </a>
-                <form asp-action="Delete" class="inline">
-                    <input type="hidden" asp-for="IdSp" />
-                    <button type="submit" 
-                            class="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
-                        Xác nhận xóa
-                    </button>
-                </form>
+                <!-- Thông tin cơ bản -->
+                <div class="md:col-span-2 space-y-4">
+                    <h2 class="text-2xl font-bold text-gray-900">@Model.TenSp</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <div class="flex items-center">
+                                <span class="text-gray-600">Giá bán:</span>
+                                <span class="ml-2 text-lg font-semibold text-red-600">@Model.Gia.ToString("#,##0") VNĐ</span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="text-gray-600">Số lượng tồn:</span>
+                                <span class="ml-2 font-medium">@Model.SoLuongTon</span>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex items-center">
+                                <span class="text-gray-600">Thương hiệu:</span>
+                                <span class="ml-2 font-medium">@Model.ThuongHieu</span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="text-gray-600">Loại sản phẩm:</span>
+                                <span class="ml-2 font-medium">@Model.LoaiSp</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="border-t border-gray-200">
+                <div class="px-6">
+                    <div class="border-b border-gray-200">
+                        <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                            <button onclick="switchTab('description')" 
+                                    class="tab-btn border-blue-500 text-blue-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                                Mô tả
+                            </button>
+                            <button onclick="switchTab('specs')" 
+                                    class="tab-btn border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                                Thông số kỹ thuật
+                            </button>
+                        </nav>
+                    </div>
+                </div>
+
+                <!-- Tab contents -->
+                <div class="p-6">
+                    <!-- Mô tả -->
+                    <div id="description-tab" class="tab-content prose max-w-none">
+                        @Html.Raw(Model.MoTa)
+                    </div>
+
+                    <!-- Thông số kỹ thuật -->
+                    <div id="specs-tab" class="tab-content hidden">
+                        <div class="border border-gray-300 rounded-lg overflow-hidden">
+                            <table class="w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b w-1/3">Thông số</th>
+                                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b">Giá trị</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        var specs = Newtonsoft.Json.JsonConvert.DeserializeObject<List<dynamic>>(Model.ThongSoKyThuat);
+                                        foreach (var spec in specs)
+                                        {
+                                            <tr class="border-b hover:bg-gray-50">
+                                                <td class="px-4 py-3 text-sm text-gray-600">@spec.key</td>
+                                                <td class="px-4 py-3 text-sm font-medium text-gray-900">@spec.value</td>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                <div class="flex justify-between items-center">
+                    <div class="text-sm text-gray-500">
+                        Mã sản phẩm: @Model.IdSp
+                    </div>
+                    <div class="flex gap-4">
+                        <a asp-action="Index" 
+                           class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-800">
+                            Quay lại
+                        </a>
+                        <form asp-action="Delete" class="inline">
+                            <input type="hidden" asp-for="IdSp" />
+                            <button type="submit" 
+                                    class="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                                Xác nhận xóa
+                            </button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        function switchTab(tabName) {
+            // Ẩn tất cả tab content
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+            
+            // Hiện tab được chọn
+            document.getElementById(`${tabName}-tab`).classList.remove('hidden');
+            
+            // Cập nhật style cho các nút tab
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('border-blue-500', 'text-blue-600');
+                btn.classList.add('border-transparent', 'text-gray-500');
+            });
+            
+            // Style cho nút tab được chọn
+            event.currentTarget.classList.remove('border-transparent', 'text-gray-500');
+            event.currentTarget.classList.add('border-blue-500', 'text-blue-600');
+        }
+    </script>
+}

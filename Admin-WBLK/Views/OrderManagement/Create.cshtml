@@ -45,8 +45,8 @@
                         <select asp-for="Phuongthucthanhtoan" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required>
                             <option value="">Chọn phương thức</option>
                             <option value="COD">COD</option>
-                            <option value="Banking">Banking</option>
-                            <option value="Momo">Momo</option>
+                            <option value="Paypal">Paypal</option>
+                            <option value="VNPay">VNPay</option>
                         </select>
                         <span asp-validation-for="Phuongthucthanhtoan" class="text-red-500 text-sm mt-1"></span>
                     </div>
@@ -92,9 +92,11 @@
                 <!-- Sau bảng sản phẩm -->
                 <div class="mt-4 text-right">
                     <input type="hidden" asp-for="Tongtien" id="Tongtien" />
-                    <div id="discountInfo" class="text-blue-600 mb-2"></div>
-                    <div class="text-lg font-medium">
-                        Tổng tiền: <span id="displayTotal" class="text-blue-600">0</span> VNĐ
+                    <!-- Thông tin giảm giá -->
+                    <div id="discountInfo" class="text-green-600 text-base mb-2"></div>
+                    <!-- Tổng tiền -->
+                    <div class="text-lg">
+                        Tổng tiền: <span id="displayTotal" class="font-bold text-red-600">0</span> VNĐ
                     </div>
                 </div>
 
@@ -245,13 +247,14 @@
             // Hiển thị thông tin giảm giá
             const discountInfo = document.getElementById('discountInfo');
             if (currentDiscountRate > 0) {
-                discountInfo.textContent = `Giảm giá: -${discount.toLocaleString('vi-VN')} VNĐ (${currentDiscountRate}%)`;
+                discountInfo.textContent = `Giảm giá ${currentDiscountRate}%: -${discount.toLocaleString('vi-VN')} VNĐ`;
                 discountInfo.classList.remove('hidden');
             } else {
                 discountInfo.textContent = '';
                 discountInfo.classList.add('hidden');
             }
 
+            // Hiển thị tổng tiền
             document.getElementById('Tongtien').value = total;
             document.getElementById('displayTotal').textContent = total.toLocaleString('vi-VN');
         }
