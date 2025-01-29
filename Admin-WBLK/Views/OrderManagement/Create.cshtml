@@ -92,6 +92,7 @@
                 <!-- Sau bảng sản phẩm -->
                 <div class="mt-4 text-right">
                     <input type="hidden" asp-for="Tongtien" id="Tongtien" />
+                    <div id="discountInfo" class="text-blue-600 mb-2"></div>
                     <div class="text-lg font-medium">
                         Tổng tiền: <span id="displayTotal" class="text-blue-600">0</span> VNĐ
                     </div>
@@ -193,16 +194,63 @@
             }
         }
 
-        // Tính tổng tiền
+        let currentDiscountRate = 0;
+
+        // Kiểm tra mã giảm giá
+        document.getElementById('IdMgg').addEventListener('change', async function() {
+            const discountCode = this.value;
+            if (!discountCode) {
+                currentDiscountRate = 0;
+                updateTotal();
+                return;
+            }
+
+            try {
+                const response = await fetch(`/OrderManagement/GetDiscountInfo?id=${encodeURIComponent(discountCode)}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentDiscountRate = data.tilechietkhau;
+                    updateTotal();
+                    alert(data.message);
+                } else {
+                    alert(data.message);
+                    this.value = '';
+                    currentDiscountRate = 0;
+                    updateTotal();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi kiểm tra mã giảm giá');
+                currentDiscountRate = 0;
+                updateTotal();
+            }
+        });
+
+        // Cập nhật lại hàm updateTotal để tính và hiển thị giảm giá
         function updateTotal() {
-            let total = 0;
+            let subtotal = 0;
             const rows = document.querySelectorAll('#productTable tbody tr');
             
             rows.forEach(row => {
                 const quantity = parseFloat(row.querySelector('.quantity').value) || 0;
                 const price = parseFloat(row.querySelector('.price').value) || 0;
-                total += quantity * price;
+                subtotal += quantity * price;
             });
+
+            // Áp dụng giảm giá
+            const discount = subtotal * (currentDiscountRate / 100);
+            const total = subtotal - discount;
+
+            // Hiển thị thông tin giảm giá
+            const discountInfo = document.getElementById('discountInfo');
+            if (currentDiscountRate > 0) {
+                discountInfo.textContent = `Giảm giá: -${discount.toLocaleString('vi-VN')} VNĐ (${currentDiscountRate}%)`;
+                discountInfo.classList.remove('hidden');
+            } else {
+                discountInfo.textContent = '';
+                discountInfo.classList.add('hidden');
+            }
 
             document.getElementById('Tongtien').value = total;
             document.getElementById('displayTotal').textContent = total.toLocaleString('vi-VN');

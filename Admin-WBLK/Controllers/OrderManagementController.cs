@@ -155,6 +155,57 @@ namespace Admin_WBLK.Controllers
             return Json(product);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetDiscountInfo(string id)
+        {
+            try 
+            {
+                var today = DateOnly.FromDateTime(DateTime.Now);
+                Console.WriteLine($"Debug - Today: {today:dd/MM/yyyy}");
+
+                var discount = await _context.Magiamgia
+                    .Where(m => m.IdMgg == id)
+                    .FirstOrDefaultAsync();
+
+                if (discount == null)
+                {
+                    return Json(new { success = false, message = "Mã giảm giá không tồn tại" });
+                }
+
+                if (today < discount.Ngaysudung)
+                {
+                    return Json(new { 
+                        success = false, 
+                        message = $"Mã giảm giá chưa đến ngày sử dụng (Bắt đầu từ: {discount.Ngaysudung:dd/MM/yyyy})" 
+                    });
+                }
+
+                if (today > discount.Ngayhethan)
+                {
+                    return Json(new { 
+                        success = false, 
+                        message = $"Mã giảm giá đã hết hạn (Hết hạn ngày: {discount.Ngayhethan:dd/MM/yyyy})" 
+                    });
+                }
+
+                if (discount.Soluong <= 0)
+                {
+                    return Json(new { success = false, message = "Mã giảm giá đã hết lượt sử dụng" });
+                }
+
+                return Json(new { 
+                    success = true,
+                    tilechietkhau = discount.Tilechietkhau * 100,
+                    message = $"Áp dụng giảm giá {discount.Tilechietkhau * 100}% (Có hiệu lực đến {discount.Ngayhethan:dd/MM/yyyy})"
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetDiscountInfo: {ex.Message}");
+                return Json(new { success = false, message = "Có lỗi xảy ra khi kiểm tra mã giảm giá" });
+            }
+        }
+
         // GET: OrderManagement/Delete/5
         public async Task<IActionResult> Delete(string id)
         {
