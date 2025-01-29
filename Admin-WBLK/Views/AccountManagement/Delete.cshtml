@@ -1,27 +1,43 @@
 ﻿@model Admin_WBLK.Models.Taikhoan
 
 @{
-    ViewData["Title"] = "Delete Account";
+    ViewData["Title"] = "Xóa tài khoản";
 }
 
-<h1 class="text-2xl font-bold mb-4">Delete Account</h1>
-
-<hr class="mb-6" />
-
-<div class="max-w-lg mx-auto">
-    <h4 class="text-lg font-medium mb-4">Are you sure you want to delete this account?</h4>
-    <div class="space-y-2">
-        <p><strong>Username:</strong> @Html.DisplayFor(model => model.Tentaikhoan)</p>
-        <p><strong>Access Level:</strong> @Html.DisplayFor(model => model.Quyentruycap)</p>
-    </div>
-
-    <hr class="my-6" />
-
-    <form asp-action="Delete" class="space-y-4">
-        <input type="hidden" asp-for="IdTk" />
-        <div class="flex items-center justify-between">
-            <button type="submit" class="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">Delete</button>
-            <a asp-action="Index" class="text-gray-700 hover:underline text-sm">Cancel</a>
+<div class="p-6 w-full h-full bg-gray-50">
+    <div class="max-w-3xl mx-auto">
+        <h1 class="text-3xl font-bold text-gray-900 mb-4">Xóa tài khoản</h1>
+        <div class="bg-yellow-50 border border-yellow-400 text-yellow-700 p-4 rounded-lg mb-6">
+            <h3 class="font-medium">Bạn có chắc chắn muốn xóa tài khoản này?</h3>
+            <p class="mt-1 text-sm">Hành động này không thể hoàn tác.</p>
         </div>
-    </form>
+
+        <div class="bg-white rounded-lg shadow-sm p-6">
+            <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-6">
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Tên tài khoản</dt>
+                    <dd class="mt-1 text-sm text-gray-900">@Model.Tentaikhoan</dd>
+                </div>
+
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Quyền truy cập</dt>
+                    <dd class="mt-1 text-sm text-gray-900">@Model.Quyentruycap</dd>
+                </div>
+            </dl>
+
+            <div class="mt-8 flex items-center justify-end gap-4">
+                <a asp-action="Index" 
+                   class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-800">
+                    Quay lại
+                </a>
+                <form asp-action="Delete" class="inline">
+                    <input type="hidden" asp-for="IdTk" />
+                    <button type="submit" 
+                            class="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                        Xác nhận xóa
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
