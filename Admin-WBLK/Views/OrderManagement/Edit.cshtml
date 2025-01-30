@@ -9,7 +9,7 @@
         <h1 class="text-3xl font-bold text-gray-900 mb-4">Chỉnh sửa đơn hàng</h1>
 
         <div class="bg-white rounded-lg shadow-sm p-6">
-            <form asp-action="Edit">
+            <form asp-action="Edit" id="editOrderForm" onsubmit="return validateForm()">
                 <div asp-validation-summary="ModelOnly" class="mb-4 p-4 rounded-lg bg-red-50 text-red-500"></div>
                 <input type="hidden" asp-for="IdDh" />
                 <input type="hidden" asp-for="Ngaydathang" />
@@ -22,24 +22,42 @@
                         <input value="@Model.IdDh" readonly class="w-full px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg" />
                     </div>
 
-                    <!-- Ngày đặt hàng (readonly) -->
+                    <!-- Ngày đặt -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Ngày đặt hàng</label>
-                        <input value="@Model.Ngaydathang.ToString("dd/MM/yyyy")" readonly class="w-full px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg" />
+                        <label asp-for="Ngaydathang" class="block text-sm font-medium text-gray-700 mb-1">Ngày đặt <span class="text-red-500">*</span></label>
+                        <input asp-for="Ngaydathang" type="date" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required />
+                        <span asp-validation-for="Ngaydathang" class="text-red-500 text-sm mt-1"></span>
+                        <span id="NgaydatError" class="text-red-500 text-sm mt-1"></span>
                     </div>
 
                     <!-- Mã khách hàng -->
                     <div>
-                        <label asp-for="IdKh" class="block text-sm font-medium text-gray-700 mb-1">Mã khách hàng</label>
-                        <input asp-for="IdKh" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                        <label asp-for="IdKh" class="block text-sm font-medium text-gray-700 mb-1">Mã khách hàng <span class="text-red-500">*</span></label>
+                        <input asp-for="IdKh" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                               required pattern="^KH[0-9]{5}$" title="Mã khách hàng phải bắt đầu bằng 'KH' và theo sau là 5 số" />
                         <span asp-validation-for="IdKh" class="text-red-500 text-sm mt-1"></span>
+                        <span id="customerError" class="text-red-500 text-sm mt-1 hidden"></span>
+                    </div>
+
+                    <!-- Tên khách hàng (readonly) -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tên khách hàng</label>
+                        <input type="text" id="tenKhachHang" readonly class="w-full px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg" />
                     </div>
 
                     <!-- Mã nhân viên -->
                     <div>
-                        <label asp-for="IdNv" class="block text-sm font-medium text-gray-700 mb-1">Mã nhân viên</label>
-                        <input asp-for="IdNv" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                        <label asp-for="IdNv" class="block text-sm font-medium text-gray-700 mb-1">Mã nhân viên <span class="text-red-500">*</span></label>
+                        <input asp-for="IdNv" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                               required pattern="^NV[0-9]{3}$" title="Mã nhân viên phải bắt đầu bằng 'NV' và theo sau là 3 số" />
                         <span asp-validation-for="IdNv" class="text-red-500 text-sm mt-1"></span>
+                        <span id="staffError" class="text-red-500 text-sm mt-1 hidden"></span>
+                    </div>
+
+                    <!-- Tên nhân viên (readonly) -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tên nhân viên</label>
+                        <input type="text" id="tenNhanVien" readonly class="w-full px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg" />
                     </div>
 
                     <!-- Trạng thái -->
@@ -88,6 +106,9 @@
                     </div>
                 </div>
 
+                <!-- Thêm div hiển thị lỗi chung -->
+                <div id="orderError" class="text-red-500 text-sm mt-4 mb-2 hidden"></div>
+
                 <div class="flex justify-end gap-4 mt-6">
                     <a asp-action="Index" class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-800">
                         Quay lại
@@ -103,4 +124,101 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        let isCustomerValid = true;
+        let isStaffValid = true;
+
+        // Kiểm tra khách hàng khi trang load
+        window.addEventListener('load', async () => {
+            await checkCustomer(document.getElementById('IdKh').value);
+            await checkStaff(document.getElementById('IdNv').value);
+        });
+
+        // Validate khách hàng
+        document.getElementById('IdKh').addEventListener('change', async function() {
+            await checkCustomer(this.value);
+        });
+
+        // Validate nhân viên
+        document.getElementById('IdNv').addEventListener('change', async function() {
+            await checkStaff(this.value);
+        });
+
+        async function checkCustomer(customerId) {
+            if (!customerId) {
+                document.getElementById('tenKhachHang').value = '';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/OrderManagement/GetCustomerInfo?id=${encodeURIComponent(customerId)}`);
+                const data = await response.json();
+                if (data) {
+                    document.getElementById('tenKhachHang').value = data.hoten;
+                    document.getElementById('customerError').classList.add('hidden');
+                    isCustomerValid = true;
+                } else {
+                    document.getElementById('tenKhachHang').value = '';
+                    document.getElementById('customerError').textContent = "Không tìm thấy khách hàng";
+                    document.getElementById('customerError').classList.remove('hidden');
+                    isCustomerValid = false;
+                }
+            } catch (error) {
+                document.getElementById('customerError').textContent = "Lỗi khi kiểm tra thông tin khách hàng";
+                document.getElementById('customerError').classList.remove('hidden');
+                isCustomerValid = false;
+            }
+        }
+
+        async function checkStaff(staffId) {
+            if (!staffId) {
+                document.getElementById('tenNhanVien').value = '';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/OrderManagement/GetStaffInfo?id=${encodeURIComponent(staffId)}`);
+                const data = await response.json();
+                if (data) {
+                    document.getElementById('tenNhanVien').value = data.hoten;
+                    document.getElementById('staffError').classList.add('hidden');
+                    isStaffValid = true;
+                } else {
+                    document.getElementById('tenNhanVien').value = '';
+                    document.getElementById('staffError').textContent = "Không tìm thấy nhân viên";
+                    document.getElementById('staffError').classList.remove('hidden');
+                    isStaffValid = false;
+                }
+            } catch (error) {
+                document.getElementById('staffError').textContent = "Lỗi khi kiểm tra thông tin nhân viên";
+                document.getElementById('staffError').classList.remove('hidden');
+                isStaffValid = false;
+            }
+        }
+
+        function validateForm() {
+            const errorMessages = [];
+            
+            if (!isCustomerValid) {
+                errorMessages.push("Vui lòng chọn khách hàng hợp lệ");
+                document.getElementById('customerError').textContent = "Khách hàng không hợp lệ";
+                document.getElementById('customerError').classList.remove('hidden');
+            }
+
+            if (!isStaffValid) {
+                errorMessages.push("Vui lòng chọn nhân viên hợp lệ");
+                document.getElementById('staffError').textContent = "Nhân viên không hợp lệ";
+                document.getElementById('staffError').classList.remove('hidden');
+            }
+
+            if (errorMessages.length > 0) {
+                const orderError = document.getElementById('orderError');
+                orderError.textContent = errorMessages.join(", ");
+                orderError.classList.remove('hidden');
+                return false;
+            }
+
+            return true;
+        }
+    </script>
 } 

@@ -118,7 +118,6 @@ namespace Admin_WBLK.Controllers
             if (ModelState.IsValid)
             {
                 donhang.IdDh = GenerateOrderId(); // Tạo mã đơn hàng tự động
-                donhang.Ngaydathang = DateOnly.FromDateTime(DateTime.Now);
                 donhang.Trangthai = "Chờ xác nhận";
                 
                 _context.Add(donhang);
@@ -204,6 +203,16 @@ namespace Admin_WBLK.Controllers
                 Console.WriteLine($"Error in GetDiscountInfo: {ex.Message}");
                 return Json(new { success = false, message = "Có lỗi xảy ra khi kiểm tra mã giảm giá" });
             }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetStaffInfo(string id)
+        {
+            var staff = await _context.Nhanviens
+                .Where(n => n.IdNv == id)
+                .Select(n => new { n.IdNv, n.Hoten })
+                .FirstOrDefaultAsync();
+            return Json(staff);
         }
 
         // GET: OrderManagement/Delete/5
@@ -335,6 +344,118 @@ namespace Admin_WBLK.Controllers
                 Console.WriteLine($"Stack Trace: {ex.StackTrace}");
                 ModelState.AddModelError("", $"Có lỗi xảy ra: {ex.Message}");
                 return View(donhang);
+            }
+        }
+
+        // GET: OrderManagement/UpdateStatus/5
+        [HttpGet]
+        public async Task<IActionResult> UpdateStatus(string id, string newStatus)
+        {
+            if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(newStatus))
+            {
+                return BadRequest();
+            }
+
+            try
+            {
+                var donhang = await _context.Donhangs
+                    .Include(d => d.Chitietdonhangs)
+                    .FirstOrDefaultAsync(d => d.IdDh == id);
+
+                if (donhang == null)
+                {
+                    return NotFound();
+                }
+
+                // Kiểm tra tính hợp lệ của trạng thái mới
+                var validTransitions = new Dictionary<string, string[]>
+                {
+                    { "Chờ xác nhận", new[] { "Đã xác nhận" } },
+                    { "Đã xác nhận", new[] { "Đang giao" } },
+                    { "Đang giao", new[] { "Đã giao" } },
+                    { "Yêu cầu hủy", new[] { "Đã hủy" } }
+                };
+
+                if (!validTransitions.ContainsKey(donhang.Trangthai) || 
+                    !validTransitions[donhang.Trangthai].Contains(newStatus))
+                {
+                    TempData["Error"] = "Không thể chuyển trạng thái đơn hàng!";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                using var transaction = await _context.Database.BeginTransactionAsync();
+                try
+                {
+                    // Cập nhật trạng thái đơn hàng
+                    donhang.Trangthai = newStatus;
+
+                    // Xử lý các logic bổ sung theo trạng thái
+                    switch (newStatus)
+                    {
+                        case "Đã xác nhận":
+                            // Kiểm tra và cập nhật số lượng tồn kho
+                            foreach (var detail in donhang.Chitietdonhangs)
+                            {
+                                var product = await _context.Sanphams.FindAsync(detail.IdSp);
+                                if (product.SoLuongTon < detail.Soluong)
+                                {
+                                    throw new Exception($"Sản phẩm {product.TenSp} không đủ số lượng trong kho!");
+                                }
+                            }
+                            break;
+
+                        case "Đã giao":
+                            // Cập nhật số lượng tồn kho
+                            foreach (var detail in donhang.Chitietdonhangs)
+                            {
+                                var product = await _context.Sanphams.FindAsync(detail.IdSp);
+                                product.SoLuongTon -= detail.Soluong;
+                                _context.Update(product);
+                            }
+
+                            // Cập nhật số lượng mã giảm giá nếu có
+                            if (!string.IsNullOrEmpty(donhang.IdMgg))
+                            {
+                                var discount = await _context.Magiamgia.FindAsync(donhang.IdMgg);
+                                if (discount != null && discount.Soluong > 0)
+                                {
+                                    discount.Soluong--;
+                                    _context.Update(discount);
+                                }
+                            }
+                            break;
+
+                        case "Đã hủy":
+                            // Hoàn trả số lượng tồn kho nếu đã xác nhận trước đó
+                            if (donhang.Trangthai == "Đã xác nhận" || donhang.Trangthai == "Đang giao")
+                            {
+                                foreach (var detail in donhang.Chitietdonhangs)
+                                {
+                                    var product = await _context.Sanphams.FindAsync(detail.IdSp);
+                                    product.SoLuongTon += detail.Soluong;
+                                    _context.Update(product);
+                                }
+                            }
+                            break;
+                    }
+
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    TempData["Success"] = $"Đã cập nhật trạng thái đơn hàng thành '{newStatus}'!";
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    TempData["Error"] = $"Lỗi khi cập nhật trạng thái: {ex.Message}";
+                }
+
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Có lỗi xảy ra: {ex.Message}";
+                return RedirectToAction(nameof(Index));
             }
         }
     }
