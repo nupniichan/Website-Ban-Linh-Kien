@@ -1,0 +1,58 @@
+@model Admin_WBLK.Models.Khachhang
+
+@{
+    ViewData["Title"] = "Xóa khách hàng";
+}
+
+<div class="p-6 w-full h-full bg-gray-50">
+    <div class="max-w-3xl mx-auto">
+        <h1 class="text-3xl font-bold text-gray-900 mb-4">Xóa khách hàng</h1>
+        <div class="bg-yellow-50 border border-yellow-400 text-yellow-700 p-4 rounded-lg mb-6">
+            <h3 class="font-medium">Bạn có chắc chắn muốn xóa khách hàng này?</h3>
+            <p class="mt-1 text-sm">Hành động này không thể hoàn tác.</p>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-sm p-6">
+            <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-6">
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Mã khách hàng</dt>
+                    <dd class="mt-1 text-sm text-gray-900">@Model.IdKh</dd>
+                </div>
+
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Họ tên</dt>
+                    <dd class="mt-1 text-sm text-gray-900">@Model.Hoten</dd>
+                </div>
+
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Email</dt>
+                    <dd class="mt-1 text-sm text-gray-900">@Model.Email</dd>
+                </div>
+
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Số điện thoại</dt>
+                    <dd class="mt-1 text-sm text-gray-900">@Model.Sodienthoai</dd>
+                </div>
+
+                <div class="md:col-span-2">
+                    <dt class="text-sm font-medium text-gray-500">Địa chỉ</dt>
+                    <dd class="mt-1 text-sm text-gray-900">@Model.Diachi</dd>
+                </div>
+            </dl>
+
+            <div class="mt-8 flex items-center justify-end gap-4">
+                <a asp-action="Index" 
+                   class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-800">
+                    Quay lại
+                </a>
+                <form asp-action="Delete" class="inline">
+                    <input type="hidden" asp-for="IdKh" />
+                    <button type="submit" 
+                            class="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                        Xác nhận xóa
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div> 
