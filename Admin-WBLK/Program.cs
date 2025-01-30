@@ -36,5 +36,13 @@ app.MapControllerRoute(
     pattern: "{controller=Dashboard}/{action=Index}/{id?}")
     .WithStaticAssets();
 
+app.MapControllerRoute(
+    name: "accountManagement",
+    pattern: "/account-management/{action=Index}/{id?}",
+    defaults: new { controller = "AccountManagement" });
 
+app.MapControllerRoute(
+    name: "requestManagement",
+    pattern: "/request-management/{action=Index}/{id?}",
+    defaults: new { controller = "RequestManagement" });
 app.Run();
