@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Website_Ban_Linh_Kien.Models;
+namespace Admin_WBLK.Models;
 
 public partial class Donhang
 {
@@ -19,6 +19,7 @@ public partial class Donhang
 
     public string IdKh { get; set; } = null!;
 
+	public string ghichu {get;set;}
     public string? IdMgg { get; set; }
 
     public string IdNv { get; set; } = null!;

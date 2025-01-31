@@ -19,6 +19,7 @@ public partial class Donhang
 
     public string IdKh { get; set; } = null!;
 
+	public string ghichu {get;set;}
     public string? IdMgg { get; set; }
 
     public string IdNv { get; set; } = null!;

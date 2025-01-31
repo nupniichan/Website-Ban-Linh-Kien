@@ -113,12 +113,15 @@ namespace Admin_WBLK.Controllers
         // POST: OrderManagement/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("IdKh,Diachigiaohang,Phuongthucthanhtoan,IdMgg")] Donhang donhang)
+        public async Task<IActionResult> Create([Bind("IdKh,Diachigiaohang,Phuongthucthanhtoan,IdMgg,Trangthai")] Donhang donhang)
         {
             if (ModelState.IsValid)
             {
-                donhang.IdDh = GenerateOrderId(); // Tạo mã đơn hàng tự động
-                donhang.Trangthai = "Chờ xác nhận";
+                donhang.IdDh = GenerateOrderId();
+                if (string.IsNullOrEmpty(donhang.Trangthai))
+                {
+                    donhang.Trangthai = "Chờ xác nhận"; // Giá trị mặc định nếu không được chọn
+                }
                 
                 _context.Add(donhang);
                 await _context.SaveChangesAsync();

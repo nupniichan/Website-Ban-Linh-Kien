@@ -3,29 +3,35 @@ function validateOrderForm(e) {
     e.preventDefault();
     
     // Lấy các giá trị
-    const ngaydat = document.getElementById('Ngaydat').value;
-    const trangthai = document.getElementById('Trangthai').value;
-    const tongtien = document.getElementById('Tongtien').value;
-    const diachigiaohang = document.getElementById('Diachigiaohang')?.value.trim();
-    const sodienthoaigh = document.getElementById('Sodienthoaigh')?.value.trim();
+    const ngaydat = document.getElementById('Ngaydat')?.value || '';
+    const trangthai = document.getElementById('Trangthai')?.value || '';
+    const tongtien = document.getElementById('Tongtien')?.value || '';
+    const diachigiaohang = document.getElementById('Diachigiaohang')?.value?.trim() || '';
+    const sodienthoaigh = document.getElementById('Sodienthoaigh')?.value?.trim() || '';
 
     let isValid = true;
     let errorMessages = [];
 
     // Validate ngày đặt
-    const orderDate = new Date(ngaydat);
-    const today = new Date();
-    const ngaydatError = document.getElementById('NgaydatError');
+    if (document.getElementById('Ngaydat')) {
+        const orderDate = new Date(ngaydat);
+        const today = new Date();
+        const ngaydatError = document.getElementById('NgaydatError');
 
-    if (!ngaydat) {
-        isValid = false;
-        ngaydatError.textContent = 'Vui lòng chọn ngày đặt';
-        document.getElementById('Ngaydat').classList.add('border-red-500');
-    }
-    else if (orderDate > today) {
-        isValid = false;
-        ngaydatError.textContent = 'Ngày đặt không thể là ngày trong tương lai';
-        document.getElementById('Ngaydat').classList.add('border-red-500');
+        if (!ngaydat) {
+            isValid = false;
+            if (ngaydatError) {
+                ngaydatError.textContent = 'Vui lòng chọn ngày đặt';
+            }
+            document.getElementById('Ngaydat').classList.add('border-red-500');
+        }
+        else if (orderDate > today) {
+            isValid = false;
+            if (ngaydatError) {
+                ngaydatError.textContent = 'Ngày đặt không thể là ngày trong tương lai';
+            }
+            document.getElementById('Ngaydat').classList.add('border-red-500');
+        }
     }
 
     // Validate trạng thái
@@ -311,4 +317,40 @@ function updateTotal() {
 document.addEventListener('DOMContentLoaded', function() {
     // Thêm một hàng sản phẩm mặc định
     addProductRow();
-}); 
+});
+
+// Validate form trước khi submit
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('createOrderForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            // Kiểm tra các trường bắt buộc
+            const idKh = document.getElementById('IdKh').value;
+            const idNv = document.getElementById('IdNv').value;
+            const diachigiaohang = document.getElementById('Diachigiaohang').value;
+            const phuongthucthanhtoan = document.getElementById('Phuongthucthanhtoan').value;
+            const trangthai = document.getElementById('Trangthai').value;
+
+            // Kiểm tra bảng sản phẩm
+            const productTable = document.getElementById('productTable');
+            const productRows = productTable.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+
+            if (!idKh || !idNv || !diachigiaohang || !phuongthucthanhtoan || !trangthai) {
+                alert('Vui lòng điền đầy đủ thông tin bắt buộc');
+                e.preventDefault();
+                return false;
+            }
+
+            if (productRows.length === 0) {
+                alert('Vui lòng thêm ít nhất một sản phẩm');
+                e.preventDefault();
+                return false;
+            }
+
+            // Nếu tất cả đều hợp lệ, cho phép form submit
+            return true;
+        });
+    }
+});
+
+// Thêm các hàm xử lý sự kiện khác ở đây 
