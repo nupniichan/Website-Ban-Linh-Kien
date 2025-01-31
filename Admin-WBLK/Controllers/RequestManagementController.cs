@@ -72,7 +72,7 @@ namespace Admin_WBLK.Controllers
             }
 
             request.Trangthai = "Chấp nhận đổi";
-            request.Ngayxuly = DateOnly.FromDateTime(DateTime.Now);
+            request.Ngayxuly = DateTime.Now;
             request.Ghichu = note;
 
             _context.Update(request);
@@ -99,7 +99,7 @@ namespace Admin_WBLK.Controllers
             }
 
             request.Trangthai = "Từ chối đổi";
-            request.Ngayxuly = DateOnly.FromDateTime(DateTime.Now);
+            request.Ngayxuly = DateTime.Now;
             request.Ghichu = note;
 
             _context.Update(request);

@@ -220,7 +220,7 @@ namespace Admin_WBLK.Controllers
                         Mathanhtoan = Mathanhtoan,
                         Trangthai = "Chờ xác nhận",
                         Tienthanhtoan = donhang.Tongtien,
-                        Ngaythanhtoan = DateOnly.FromDateTime(DateTime.Now),
+                        Ngaythanhtoan = DateTime.Now,
                         Noidungthanhtoan = NoiDungThanhToan ?? "",
                         IdDh = donhang.IdDh
                     };
@@ -538,7 +538,7 @@ namespace Admin_WBLK.Controllers
                             IdDh = id,
                             Trangthai = TrangthaiThanhtoan ?? "Chờ thanh toán",
                             Tienthanhtoan = donhang.Tongtien,
-                            Ngaythanhtoan = DateOnly.FromDateTime(DateTime.Now),
+                            Ngaythanhtoan = DateTime.Now,
                             Noidungthanhtoan = Noidungthanhtoan ?? ""
                         };
                         _context.Thanhtoans.Add(thanhtoan);
