@@ -14,7 +14,7 @@
             "pc" => $"/pc/{Model?.IdSp ?? defaultId}",
             "laptop" => $"/laptop/{Model?.IdSp ?? defaultId}",
             "cpu" or "vga" or "mainboard" or "ram" or "psu" or "case" => 
-                $"/components/{Model.LoaiSp}/{Model?.IdSp ?? defaultId}",
+                $"/components/{Model?.LoaiSp?.ToLower()}/{Model?.IdSp ?? defaultId}",
             "storage" => $"/storage/{Model?.IdSp ?? defaultId}",
             "monitor" => $"/monitor/{Model?.IdSp ?? defaultId}",
             "speaker" or "microphone" or "webcam" => 

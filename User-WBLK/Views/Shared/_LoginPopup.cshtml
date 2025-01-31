@@ -86,9 +86,8 @@
 </div>
 
 <script>
-    // Handle form submission
     document.getElementById('loginForm').addEventListener('submit', function (e) {
-        e.preventDefault(); // Ngăn chặn form gửi lại trang
+        e.preventDefault();
 
         const tentaikhoan = document.querySelector('[name="tentaikhoan"]').value;
         const password = document.querySelector('[name="password"]').value;
@@ -104,15 +103,22 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Redirect to Home page if login is successful
-                window.location.href = data.redirectUrl;
+                // Reload trang sau khi đăng nhập thành công
+                window.location.reload();
             } else {
-                // Show error message if login failed
                 const errorMessage = document.querySelector('.error-message');
                 errorMessage.textContent = data.message;
                 errorMessage.classList.remove('hidden');
             }
         })
         .catch(error => console.error('Error:', error));
+    });
+
+    // Thêm xử lý đóng popup khi click ra ngoài
+    document.getElementById('loginPopup').addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.classList.add('hidden');
+            this.classList.remove('flex');
+        }
     });
 </script>

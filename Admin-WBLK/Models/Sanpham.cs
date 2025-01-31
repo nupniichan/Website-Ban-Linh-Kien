@@ -41,7 +41,7 @@ public partial class Sanpham
 
     public virtual ICollection<Chitietgiohang> Chitietgiohangs { get; set; } = new List<Chitietgiohang>();
 
-    public virtual ICollection<Danhgium> Danhgia { get; set; } = new List<Danhgium>();
+    public virtual ICollection<Danhgia> Danhgia { get; set; } = new List<Danhgia>();
 
     public virtual Nhanvien IdNvNavigation { get; set; } = null!;
 }

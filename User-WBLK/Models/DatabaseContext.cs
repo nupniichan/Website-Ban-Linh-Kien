@@ -20,7 +20,7 @@ public partial class DatabaseContext : DbContext
 
     public virtual DbSet<Chitietgiohang> Chitietgiohangs { get; set; }
 
-    public virtual DbSet<Danhgium> Danhgia { get; set; }
+    public virtual DbSet<Danhgia> Danhgia { get; set; }
 
     public virtual DbSet<Doitradh> Doitradhs { get; set; }
 
@@ -30,7 +30,7 @@ public partial class DatabaseContext : DbContext
 
     public virtual DbSet<Khachhang> Khachhangs { get; set; }
 
-    public virtual DbSet<Magiamgium> Magiamgia { get; set; }
+    public virtual DbSet<Magiamgia> Magiamgia { get; set; }
 
     public virtual DbSet<Nhanvien> Nhanviens { get; set; }
 
@@ -115,7 +115,7 @@ public partial class DatabaseContext : DbContext
                 .HasConstraintName("chitietgiohang_ibfk_2");
         });
 
-        modelBuilder.Entity<Danhgium>(entity =>
+        modelBuilder.Entity<Danhgia>(entity =>
         {
             entity.HasKey(e => e.IdDg).HasName("PRIMARY");
 
@@ -318,7 +318,7 @@ public partial class DatabaseContext : DbContext
                 .HasConstraintName("khachhang_ibfk_1");
         });
 
-        modelBuilder.Entity<Magiamgium>(entity =>
+        modelBuilder.Entity<Magiamgia>(entity =>
         {
             entity.HasKey(e => e.IdMgg).HasName("PRIMARY");
 

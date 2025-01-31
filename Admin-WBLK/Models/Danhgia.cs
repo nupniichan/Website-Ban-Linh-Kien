@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Admin_WBLK.Models;
 
-public partial class Danhgium
+public partial class Danhgia
 {
     public string IdDg { get; set; } = null!;
 
