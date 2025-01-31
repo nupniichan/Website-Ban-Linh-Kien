@@ -3,19 +3,17 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="flex flex-col">
+<div class="flex flex-col h-auto bg-white">
     <!-- Add space below the navbar -->
     <div class="h-16"></div>
 
-    <!-- Add Breadcrumb -->
-    <partial name="_Breadcrumb" />
-
-    <div class="flex gap-6">
+    <div class="flex flex-1 max-w-screen-xl mx-auto">
         <!-- Sidebar -->
         <partial name="_AccountSidebar" />
 
+
         <!-- Content -->
-        <div class="flex-1 bg-white shadow-lg rounded-lg p-6">
+        <div class="w-full bg-white shadow-lg rounded-lg p-6 ml-6">
             <h1 class="text-2xl font-bold mb-6">Lịch sử giao dịch</h1>
 
             <!-- Orders List -->
@@ -179,6 +177,7 @@
                     </div>
                 </div>
             </div>
+
 
             <!-- Pagination -->
             <div class="flex justify-between items-center mt-6">

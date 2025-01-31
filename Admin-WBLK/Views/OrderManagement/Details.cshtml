@@ -5,21 +5,27 @@
 }
 
 <div class="p-6 w-full h-full bg-gray-50">
-    <div class="max-w-3xl mx-auto">
-        <h1 class="text-3xl font-bold text-gray-900 mb-4">Chi tiết đơn hàng</h1>
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="mb-6">
+            <h1 class="text-3xl font-bold text-gray-900">Chi tiết đơn hàng</h1>
+            <p class="mt-2 text-sm text-gray-600">Xem thông tin chi tiết đơn hàng @Model.IdDh</p>
+        </div>
 
+        <!-- Card chứa thông tin -->
         <div class="bg-white rounded-lg shadow-sm p-6">
-            <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-6">
+            <!-- Thông tin cơ bản -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <!-- Mã đơn hàng -->
-                <div class="col-span-2">
+                <div>
                     <dt class="text-sm font-medium text-gray-500">Mã đơn hàng</dt>
-                    <dd class="mt-1 text-lg text-gray-900">@Model.IdDh</dd>
+                    <dd class="mt-1 text-lg font-medium text-gray-900">@Model.IdDh</dd>
                 </div>
 
                 <!-- Ngày đặt hàng -->
                 <div>
                     <dt class="text-sm font-medium text-gray-500">Ngày đặt hàng</dt>
-                    <dd class="mt-1 text-gray-900">@Model.Ngaydathang.ToString("dd/MM/yyyy")</dd>
+                    <dd class="mt-1 text-gray-900">@Model.Ngaydathang.ToString("dd/MM/yyyy HH:mm:ss")</dd>
                 </div>
 
                 <!-- Trạng thái -->
@@ -31,10 +37,16 @@
                             {
                                 "Chờ xác nhận" => "bg-yellow-100 text-yellow-800",
                                 "Đã xác nhận" => "bg-blue-100 text-blue-800",
-                                "Đang giao" => "bg-purple-100 text-purple-800",
-                                "Đã giao" => "bg-green-100 text-green-800",
-                                "Đã hủy" => "bg-red-100 text-red-800",
-                                "Yêu cầu hủy" => "bg-orange-100 text-orange-800",
+                                "Chờ giao hàng" => "bg-indigo-100 text-indigo-800",
+                                "Đang giao hàng" => "bg-purple-100 text-purple-800",
+                                "Đã giao hàng" => "bg-green-100 text-green-800",
+                                "Đã huỷ" => "bg-red-100 text-red-800",
+                                "Yêu cầu huỷ" => "bg-orange-100 text-orange-800",
+                                "Đã hoàn tiền" => "bg-pink-100 text-pink-800",
+                                "Đang yêu cầu đổi trả" => "bg-cyan-100 text-cyan-800",
+                                "Chờ nhận hàng trả" => "bg-teal-100 text-teal-800",
+                                "Đổi trả thành công" => "bg-emerald-100 text-emerald-800",
+                                "Đổi trả thất bại" => "bg-rose-100 text-rose-800",
                                 _ => "bg-gray-100 text-gray-800"
                             };
                         }
@@ -44,49 +56,111 @@
                     </dd>
                 </div>
 
-                <!-- Thông tin khách hàng -->
-                <div class="col-span-2">
-                    <dt class="text-sm font-medium text-gray-500">Thông tin khách hàng</dt>
-                    <dd class="mt-1 text-gray-900">
-                        <p class="font-medium">@Model.IdKhNavigation?.Hoten</p>
-                        <p class="text-sm text-gray-600">Mã KH: @Model.IdKh</p>
-                    </dd>
-                </div>
-
-                <!-- Nhân viên phụ trách -->
-                <div class="col-span-2">
-                    <dt class="text-sm font-medium text-gray-500">Nhân viên phụ trách</dt>
-                    <dd class="mt-1 text-gray-900">
-                        <p class="font-medium">@Model.IdNvNavigation?.Hoten</p>
-                        <p class="text-sm text-gray-600">Mã NV: @Model.IdNv</p>
-                    </dd>
-                </div>
-
-                <!-- Địa chỉ giao hàng -->
-                <div class="col-span-2">
-                    <dt class="text-sm font-medium text-gray-500">Địa chỉ giao hàng</dt>
-                    <dd class="mt-1 text-gray-900">@Model.Diachigiaohang</dd>
-                </div>
-
                 <!-- Phương thức thanh toán -->
                 <div>
                     <dt class="text-sm font-medium text-gray-500">Phương thức thanh toán</dt>
                     <dd class="mt-1 text-gray-900">@Model.Phuongthucthanhtoan</dd>
                 </div>
+            </div>
 
-                <!-- Mã giảm giá -->
-                <div>
-                    <dt class="text-sm font-medium text-gray-500">Mã giảm giá</dt>
-                    <dd class="mt-1 text-gray-900">@(Model.IdMgg ?? "Không có")</dd>
+            <!-- Thông tin khách hàng và nhân viên -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <!-- Thông tin khách hàng -->
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Thông tin khách hàng</h3>
+                    <dl class="space-y-2">
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Mã khách hàng</dt>
+                            <dd class="mt-1 text-gray-900">@Model.IdKh</dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Tên khách hàng</dt>
+                            <dd class="mt-1 text-gray-900">@Model.IdKhNavigation?.Hoten</dd>
+                        </div>
+                    </dl>
                 </div>
 
-                <!-- Tổng tiền -->
-                <div class="col-span-2">
-                    <dt class="text-sm font-medium text-gray-500">Tổng tiền</dt>
-                    <dd class="mt-1 text-xl font-medium text-gray-900">@Model.Tongtien.ToString("#,##0") VNĐ</dd>
+                <!-- Thông tin nhân viên -->
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Nhân viên phụ trách</h3>
+                    <dl class="space-y-2">
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Mã nhân viên</dt>
+                            <dd class="mt-1 text-gray-900">@Model.IdNv</dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Tên nhân viên</dt>
+                            <dd class="mt-1 text-gray-900">@Model.IdNvNavigation?.Hoten</dd>
+                        </div>
+                    </dl>
                 </div>
-            </dl>
+            </div>
 
+            <!-- Chi tiết sản phẩm -->
+            <div class="mb-8">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Chi tiết sản phẩm</h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mã SP</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tên SP</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Số lượng</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Đơn giá</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Thành tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @foreach (var item in Model.Chitietdonhangs)
+                            {
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@item.IdSp</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@item.IdSpNavigation?.TenSp</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@item.Soluong</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@item.Dongia.ToString("#,##0") VNĐ</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@((item.Soluong * item.Dongia).ToString("#,##0")) VNĐ</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Thông tin thanh toán -->
+            <div class="mb-8">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Thông tin thanh toán</h3>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <dl class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Mã giảm giá -->
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Mã giảm giá</dt>
+                            <dd class="mt-1 text-gray-900">@(Model.IdMgg ?? "Không có")</dd>
+                        </div>
+                        <!-- Tổng tiền -->
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Tổng tiền</dt>
+                            <dd class="mt-1 text-xl font-medium text-red-600">@Model.Tongtien.ToString("#,##0") VNĐ</dd>
+                        </div>
+                    </dl>
+                </div>
+            </div>
+
+            <!-- Địa chỉ giao hàng -->
+            <div class="mb-8">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Địa chỉ giao hàng</h3>
+                <p class="text-gray-900 bg-gray-50 p-4 rounded-lg">@Model.Diachigiaohang</p>
+            </div>
+
+            <!-- Ghi chú -->
+            @if (!string.IsNullOrEmpty(Model.ghichu))
+            {
+                <div class="mb-8">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Ghi chú</h3>
+                    <p class="text-gray-900 bg-gray-50 p-4 rounded-lg">@Model.ghichu</p>
+                </div>
+            }
+
+            <!-- Buttons -->
             <div class="mt-8 flex items-center justify-end gap-4">
                 <a asp-action="Index" 
                    class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-800">

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Admin_WBLK.Models;
 using System.Diagnostics;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace Admin_WBLK.Controllers
 {
@@ -16,12 +17,48 @@ namespace Admin_WBLK.Controllers
         }
 
         // GET: CustomerManagement
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchString, string sortOrder, int pageNumber = 1)
         {
-            var khachhangs = await _context.Khachhangs
+            int pageSize = 10;
+            ViewData["CurrentFilter"] = searchString;
+            ViewData["CurrentSort"] = sortOrder;
+            ViewData["NameSortParm"] = string.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
+
+            var query = _context.Khachhangs
                 .Include(k => k.IdTkNavigation)
+                .AsQueryable();
+
+            // Lọc theo tìm kiếm
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                searchString = searchString.Trim().ToLower();
+                query = query.Where(k => 
+                    k.IdKh.ToLower().Contains(searchString) ||
+                    k.Hoten.ToLower().Contains(searchString) ||
+                    k.Email.ToLower().Contains(searchString) ||
+                    k.Sodienthoai.Contains(searchString)
+                );
+            }
+
+            // Sắp xếp
+            switch (sortOrder)
+            {
+                case "name_desc":
+                    query = query.OrderByDescending(k => k.Hoten);
+                    break;
+                default:
+                    query = query.OrderBy(k => k.Hoten);
+                    break;
+            }
+
+            var totalItems = await query.CountAsync();
+            var items = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
-            return View(khachhangs);
+
+            var model = new PaginatedList<Khachhang>(items, totalItems, pageNumber, pageSize);
+            return View(model);
         }
 
         [HttpGet]
@@ -74,23 +111,56 @@ namespace Admin_WBLK.Controllers
         {
             try
             {
-                Console.WriteLine("Create action started");
-
                 // Bỏ qua validation cho các trường navigation và IdTk
                 ModelState.Remove("IdTkNavigation");
                 ModelState.Remove("IdTk");
                 ModelState.Remove("IdKh");
 
+                // Custom validation
+                if (string.IsNullOrEmpty(khachhang.Hoten) || khachhang.Hoten.Length < 2 || khachhang.Hoten.Length > 50)
+                {
+                    ModelState.AddModelError("Hoten", "Họ tên phải từ 2 đến 50 ký tự");
+                }
+
+                if (string.IsNullOrEmpty(khachhang.Diachi) || khachhang.Diachi.Length < 5 || khachhang.Diachi.Length > 200)
+                {
+                    ModelState.AddModelError("Diachi", "Địa chỉ phải từ 5 đến 200 ký tự");
+                }
+
+                if (!Regex.IsMatch(khachhang.Sodienthoai, @"^0\d{9}$"))
+                {
+                    ModelState.AddModelError("Sodienthoai", "Số điện thoại không hợp lệ (phải bắt đầu bằng 0 và có 10 số)");
+                }
+
+                // Validate ngày sinh (giống nhau cho cả Create và Edit)
+                var today = DateOnly.FromDateTime(DateTime.Today);
+                var birthDate = khachhang.Ngaysinh; // Đã là DateOnly
+
+                // Kiểm tra ngày sinh không được là ngày hiện tại hoặc trong tương lai
+                if (birthDate >= today)
+                {
+                    ModelState.AddModelError("Ngaysinh", "Ngày sinh không thể là ngày hiện tại hoặc trong tương lai");
+                    return View(khachhang);
+                }
+
+                // Tính tuổi chính xác
+                var age = today.Year - birthDate.Year;
+                if (today.Month < birthDate.Month || (today.Month == birthDate.Month && today.Day < birthDate.Day))
+                {
+                    age--;
+                }
+
+                if (age < 18)
+                {
+                    ModelState.AddModelError("Ngaysinh", "Bạn phải đủ 18 tuổi");
+                }
+                else if (age > 100)
+                {
+                    ModelState.AddModelError("Ngaysinh", "Tuổi không được quá 100");
+                }
+
                 if (!ModelState.IsValid)
                 {
-                    Console.WriteLine("ModelState is invalid");
-                    foreach (var modelState in ModelState.Values)
-                    {
-                        foreach (var error in modelState.Errors)
-                        {
-                            Console.WriteLine($"Validation error: {error.ErrorMessage}");
-                        }
-                    }
                     return View(khachhang);
                 }
 
@@ -131,7 +201,6 @@ namespace Admin_WBLK.Controllers
                     await _context.SaveChangesAsync();
 
                     await transaction.CommitAsync();
-
                     Console.WriteLine("Customer created successfully");
                     TempData["Success"] = "Thêm khách hàng thành công!";
                     return RedirectToAction(nameof(Index));
@@ -139,6 +208,7 @@ namespace Admin_WBLK.Controllers
                 catch (Exception ex)
                 {
                     await transaction.RollbackAsync();
+                    Console.WriteLine($"Transaction error: {ex.Message}");
                     throw;
                 }
             }
@@ -276,15 +346,51 @@ namespace Admin_WBLK.Controllers
                 ModelState.Remove("IdTkNavigation");
                 ModelState.Remove("IdTk");
 
+                // Custom validation
+                if (string.IsNullOrEmpty(khachhang.Hoten) || khachhang.Hoten.Length < 2 || khachhang.Hoten.Length > 50)
+                {
+                    ModelState.AddModelError("Hoten", "Họ tên phải từ 2 đến 50 ký tự");
+                }
+
+                if (string.IsNullOrEmpty(khachhang.Diachi) || khachhang.Diachi.Length < 5 || khachhang.Diachi.Length > 200)
+                {
+                    ModelState.AddModelError("Diachi", "Địa chỉ phải từ 5 đến 200 ký tự");
+                }
+
+                if (!Regex.IsMatch(khachhang.Sodienthoai, @"^0\d{9}$"))
+                {
+                    ModelState.AddModelError("Sodienthoai", "Số điện thoại không hợp lệ (phải bắt đầu bằng 0 và có 10 số)");
+                }
+
+                // Validate ngày sinh (giống nhau cho cả Create và Edit)
+                var today = DateOnly.FromDateTime(DateTime.Today);
+                var birthDate = khachhang.Ngaysinh; // Đã là DateOnly
+
+                // Kiểm tra ngày sinh không được là ngày hiện tại hoặc trong tương lai
+                if (birthDate >= today)
+                {
+                    ModelState.AddModelError("Ngaysinh", "Ngày sinh không thể là ngày hiện tại hoặc trong tương lai");
+                    return View(khachhang);
+                }
+
+                // Tính tuổi chính xác
+                var age = today.Year - birthDate.Year;
+                if (today.Month < birthDate.Month || (today.Month == birthDate.Month && today.Day < birthDate.Day))
+                {
+                    age--;
+                }
+
+                if (age < 18)
+                {
+                    ModelState.AddModelError("Ngaysinh", "Bạn phải đủ 18 tuổi");
+                }
+                else if (age > 100)
+                {
+                    ModelState.AddModelError("Ngaysinh", "Tuổi không được quá 100");
+                }
+
                 if (!ModelState.IsValid)
                 {
-                    foreach (var modelState in ModelState.Values)
-                    {
-                        foreach (var error in modelState.Errors)
-                        {
-                            Console.WriteLine(error.ErrorMessage);
-                        }
-                    }
                     return View(khachhang);
                 }
 

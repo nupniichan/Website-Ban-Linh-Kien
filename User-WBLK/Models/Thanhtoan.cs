@@ -1,19 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Website_Ban_Linh_Kien.Models;
+namespace Admin_WBLK.Models;
 
 public partial class Thanhtoan
 {
     public string IdTt { get; set; } = null!;
 
-    public string Mathanhtoan { get; set; } = null!;
+    public string? Mathanhtoan { get; set; } = null!;
 
     public string Trangthai { get; set; } = null!;
 
     public decimal Tienthanhtoan { get; set; }
 
-    public DateOnly Ngaythanhtoan { get; set; }
+    public DateTime Ngaythanhtoan { get; set; }
 
     public string? Noidungthanhtoan { get; set; }
 

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Website_Ban_Linh_Kien.Models;
+namespace Admin_WBLK.Models;
 
 public partial class Chitietdonhang
 {
