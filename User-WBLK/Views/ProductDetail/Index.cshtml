@@ -85,12 +85,23 @@
                     <div class="flex items-center gap-4">
                         <span class="text-gray-600">Số lượng:</span>
                         <div class="flex border rounded">
-                            <button class="px-3 py-1 border-r hover:bg-gray-100">-</button>
+                            <button onclick="decreaseQuantity()" 
+                                    class="px-3 py-1 border-r hover:bg-gray-100 transition-colors">
+                                -
+                            </button>
                             <input type="number" 
+                                   id="quantity"
                                    value="1" 
+                                   min="1"
+                                   max="@(Model.SoLuongTon * 0.2)" 
+                                   onchange="validateQuantity(this)"
                                    class="w-16 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
-                            <button class="px-3 py-1 border-l hover:bg-gray-100">+</button>
+                            <button onclick="increaseQuantity()" 
+                                    class="px-3 py-1 border-l hover:bg-gray-100 transition-colors">
+                                +
+                            </button>
                         </div>
+                        <span id="quantityError" class="text-red-500 text-sm hidden"></span>
                     </div>
 
                     <!-- Action Buttons -->
@@ -287,11 +298,28 @@
 
     <!-- Sản phẩm liên quan -->
     <div class="mt-8">
-        <partial name="_ProductSection" model='new ProductSectionViewModel { 
-            Title = "Sản phẩm liên quan", 
-            Category = "cpu",
-            ViewAllLink = "/productslist/components/cpu" 
-        }' />
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold">Sản phẩm liên quan</h2>
+                <a href="/productslist/@Model.Category.ToLower()" 
+                   class="text-blue-600 hover:text-blue-700 text-sm">
+                    Xem tất cả
+                </a>
+            </div>
+
+            <!-- Product Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+                @foreach (var product in Model.RelatedProducts)
+                {
+                    <partial name="_ProductCard" model="product" />
+                }
+            </div>
+
+            @if (!Model.RelatedProducts.Any())
+            {
+                <p class="text-gray-500 text-center py-4">Không có sản phẩm liên quan</p>
+            }
+        </div>
     </div>
 </div>
 
@@ -376,5 +404,50 @@
                 isExpanded = false;
             }
         }
+
+        const maxQuantity = @(Model.SoLuongTon * 0.2);
+        const quantityInput = document.getElementById('quantity');
+        const quantityError = document.getElementById('quantityError');
+
+        function validateQuantity(input) {
+            let value = parseInt(input.value);
+            
+            // Kiểm tra giá trị tối thiểu
+            if (value < 1) {
+                value = 1;
+            }
+            
+            // Kiểm tra giá trị tối đa (20% số lượng tồn)
+            if (value > maxQuantity) {
+                value = Math.floor(maxQuantity);
+                quantityError.textContent = `Số lượng tối đa có thể mua là ${value}`;
+                quantityError.classList.remove('hidden');
+            } else {
+                quantityError.classList.add('hidden');
+            }
+            
+            input.value = value;
+        }
+
+        function increaseQuantity() {
+            let currentValue = parseInt(quantityInput.value);
+            if (currentValue < maxQuantity) {
+                quantityInput.value = currentValue + 1;
+                validateQuantity(quantityInput);
+            }
+        }
+
+        function decreaseQuantity() {
+            let currentValue = parseInt(quantityInput.value);
+            if (currentValue > 1) {
+                quantityInput.value = currentValue - 1;
+                validateQuantity(quantityInput);
+            }
+        }
+
+        // Validate khi load trang
+        document.addEventListener('DOMContentLoaded', function() {
+            validateQuantity(quantityInput);
+        });
     </script>
 }

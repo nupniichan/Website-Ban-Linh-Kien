@@ -52,6 +52,51 @@ namespace Website_Ban_Linh_Kien.Controllers
                 ratingDistribution[i] = reviews.Count(r => r.Sosao == i);
             }
 
+            // Lấy các sản phẩm liên quan dựa trên thông số kỹ thuật
+            var relatedProducts = _context.Sanphams
+                .Where(p => p.IdSp != sp.IdSp)  // Khác ID với sản phẩm hiện tại
+                .AsEnumerable()  // Chuyển về IEnumerable để xử lý JSON
+                .Where(p => 
+                {
+                    try
+                    {
+                        if (string.IsNullOrEmpty(p.ThongSoKyThuat)) return false;
+                        
+                        var specs = JsonSerializer.Deserialize<List<Dictionary<string, string>>>(p.ThongSoKyThuat);
+                        return specs.Any(spec => 
+                            spec.ContainsKey("key") && 
+                            spec.ContainsKey("value") && 
+                            spec["key"].Trim().ToLower() == "danh mục" &&
+                            spec["value"].Trim().ToLower() == "cpu"
+                        );
+                    }
+                    catch (Exception ex)
+                    {
+                        // Thêm log để debug
+                        System.Diagnostics.Debug.WriteLine($"Error parsing specifications for product {p.IdSp}: {ex.Message}");
+                        return false;
+                    }
+                })
+                .OrderBy(p => Guid.NewGuid())  // Random order
+                .Take(6)  // Lấy 6 sản phẩm
+                .Select(p => new ProductCardViewModel
+                {
+                    IdSp = p.IdSp,
+                    TenSp = p.TenSp,
+                    Gia = p.Gia,
+                    ImageUrl = p.hinh_anh,
+                    LoaiSp = p.LoaiSp,
+                    SoLuongTon = p.SoLuongTon
+                })
+                .ToList();
+
+            // Thêm log để debug
+            System.Diagnostics.Debug.WriteLine($"Found {relatedProducts.Count} related products");
+            foreach (var product in relatedProducts)
+            {
+                System.Diagnostics.Debug.WriteLine($"Related product: {product.IdSp} - {product.TenSp}");
+            }
+
             return new ProductDetailViewModel
             {
                 Id = sp.IdSp,
@@ -67,7 +112,7 @@ namespace Website_Ban_Linh_Kien.Controllers
                 TotalReviews = totalReviews,
                 AverageRating = Math.Round(averageRating, 1),
                 RatingDistribution = ratingDistribution,
-                Reviews = reviews.Select(r => new ProductReview
+                Reviews = reviews.Select(r => new ProductReviewViewModel
                 {
                     UserName = r.IdKhNavigation?.Hoten ?? "Anonymous",
                     Rating = r.Sosao,
@@ -78,7 +123,9 @@ namespace Website_Ban_Linh_Kien.Controllers
                 ViewCount = sp.soluotxem,
                 PurchaseCount = sp.damuahang,
                 Rating = averageRating,
-                Warranty = 24 // Có thể thêm trường này vào database nếu cần
+                Warranty = 24, // Có thể thêm trường này vào database nếu cần
+                SoLuongTon = sp.SoLuongTon,
+                RelatedProducts = relatedProducts
             };
         }
 
