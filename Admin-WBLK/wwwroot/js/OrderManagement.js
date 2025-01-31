@@ -222,18 +222,18 @@ function addProductRow() {
     const newRow = document.createElement('tr');
     newRow.innerHTML = `
         <td class="px-4 py-3 border-b">
-            <input type="text" class="product-id w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+            <input type="text" name="IdSp" class="product-id w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
                    required pattern="^SP[0-9]{5}$" title="Mã sản phẩm phải bắt đầu bằng 'SP' và theo sau là 5 số" />
         </td>
         <td class="px-4 py-3 border-b">
             <input type="text" class="product-name w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg" readonly />
         </td>
         <td class="px-4 py-3 border-b">
-            <input type="number" class="product-quantity w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+            <input type="number" name="Soluong" class="product-quantity w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
                    required min="1" value="1" />
         </td>
         <td class="px-4 py-3 border-b">
-            <input type="number" class="product-price w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg" readonly />
+            <input type="number" name="Dongia" class="product-price w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg" readonly />
         </td>
         <td class="px-4 py-3 border-b text-center">
             <button type="button" onclick="removeProductRow(this)" class="text-red-600 hover:text-red-800">
@@ -323,34 +323,126 @@ document.addEventListener('DOMContentLoaded', function() {
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('createOrderForm');
     if (form) {
-        form.addEventListener('submit', function(e) {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
             // Kiểm tra các trường bắt buộc
-            const idKh = document.getElementById('IdKh').value;
-            const idNv = document.getElementById('IdNv').value;
-            const diachigiaohang = document.getElementById('Diachigiaohang').value;
-            const phuongthucthanhtoan = document.getElementById('Phuongthucthanhtoan').value;
-            const trangthai = document.getElementById('Trangthai').value;
+            const requiredFields = {
+                'IdKh': 'Mã khách hàng',
+                'IdNv': 'Mã nhân viên',
+                'Diachigiaohang': 'Địa chỉ giao hàng',
+                'paymentMethod': 'Phương thức thanh toán'
+            };
+
+            for (const [id, label] of Object.entries(requiredFields)) {
+                const field = document.getElementById(id);
+                if (!field || !field.value.trim()) {
+                    alert(`Vui lòng nhập ${label}`);
+                    field?.focus();
+                    return;
+                }
+            }
 
             // Kiểm tra bảng sản phẩm
-            const productTable = document.getElementById('productTable');
-            const productRows = productTable.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
-
-            if (!idKh || !idNv || !diachigiaohang || !phuongthucthanhtoan || !trangthai) {
-                alert('Vui lòng điền đầy đủ thông tin bắt buộc');
-                e.preventDefault();
-                return false;
-            }
-
+            const productRows = document.querySelectorAll('#productTable tbody tr');
             if (productRows.length === 0) {
                 alert('Vui lòng thêm ít nhất một sản phẩm');
-                e.preventDefault();
-                return false;
+                return;
             }
 
-            // Nếu tất cả đều hợp lệ, cho phép form submit
-            return true;
+            // Thu thập thông tin chi tiết đơn hàng
+            const chitietdonhangs = [];
+            for (const row of productRows) {
+                const idSp = row.querySelector('[name="IdSp"]').value;
+                const soluong = parseInt(row.querySelector('.product-quantity').value);
+                const dongia = parseFloat(row.querySelector('.product-price').value);
+
+                if (!idSp || isNaN(soluong) || isNaN(dongia)) {
+                    alert('Vui lòng kiểm tra lại thông tin sản phẩm');
+                    return;
+                }
+
+                chitietdonhangs.push({ IdSp: idSp, Soluong: soluong, Dongia: dongia });
+            }
+
+            // Tạo FormData
+            const formData = new FormData(form);
+            formData.append('chitietdonhangs', JSON.stringify(chitietdonhangs));
+
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    }
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    alert(result.message);
+                    window.location.href = '/OrderManagement';
+                } else {
+                    alert(result.message);
+                }
+            } catch (error) {
+                alert('Có lỗi xảy ra khi tạo đơn hàng');
+                console.error('Error:', error);
+            }
         });
     }
 });
 
+// Xử lý hiển thị form thanh toán khi trang load
+document.addEventListener('DOMContentLoaded', function() {
+    // Xóa event listener cũ của paymentMethod vì giờ là readonly
+    const paymentMethod = document.getElementById('Phuongthucthanhtoan')?.value;
+    const onlinePaymentInfo = document.getElementById('onlinePaymentInfo');
+    
+    if (paymentMethod && onlinePaymentInfo) {
+        if (paymentMethod === 'VNPay' || paymentMethod === 'Paypal') {
+            onlinePaymentInfo.classList.remove('hidden');
+        } else {
+            onlinePaymentInfo.classList.add('hidden');
+        }
+    }
+});
+
 // Thêm các hàm xử lý sự kiện khác ở đây 
+
+async function searchCustomer() {
+    const idKh = document.getElementById('IdKh').value;
+    if (!idKh) return;
+
+    try {
+        const response = await fetch(`/OrderManagement/GetCustomerInfo/${idKh}`);
+        const data = await response.json();
+        if (data) {
+            document.getElementById('tenKhachHang').value = data.hoten;
+        } else {
+            alert('Không tìm thấy khách hàng');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Có lỗi xảy ra khi tìm kiếm khách hàng');
+    }
+}
+
+async function checkDiscount() {
+    const idMgg = document.getElementById('IdMgg').value;
+    if (!idMgg) return;
+
+    try {
+        const response = await fetch(`/OrderManagement/GetDiscountInfo/${idMgg}`);
+        const data = await response.json();
+        if (data) {
+            discountPercent = data.tilechietkhau;
+            calculateFinalTotal();
+        } else {
+            alert('Mã giảm giá không hợp lệ');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Có lỗi xảy ra khi kiểm tra mã giảm giá');
+    }
+} 

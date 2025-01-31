@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Website_Ban_Linh_Kien.Models;
+namespace Admin_WBLK.Models;
 
 public partial class Danhgia
 {
@@ -11,7 +11,7 @@ public partial class Danhgia
 
     public string? Noidung { get; set; }
 
-    public DateOnly Ngaydanhgia { get; set; }
+    public DateTime Ngaydanhgia { get; set; }
 
     public string IdKh { get; set; } = null!;
 

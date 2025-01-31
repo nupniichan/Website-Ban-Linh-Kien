@@ -33,10 +33,11 @@ public partial class Sanpham
     [Required(ErrorMessage = "Vui lòng chọn loại sản phẩm")]
     public string LoaiSp { get; set; } = null!;
     [Required(ErrorMessage = "Vui lòng chọn hình ảnh sản phẩm")]
+
     public string hinh_anh { get; set; } = null!;
-
+    public int soluotxem { get; set; }
+    public int damuahang { get; set; }
     public string IdNv { get; set; } = null!;
-
     public virtual ICollection<Chitietdonhang> Chitietdonhangs { get; set; } = new List<Chitietdonhang>();
 
     public virtual ICollection<Chitietgiohang> Chitietgiohangs { get; set; } = new List<Chitietgiohang>();

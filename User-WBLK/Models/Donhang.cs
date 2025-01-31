@@ -13,13 +13,13 @@ public partial class Donhang
 
     public string Diachigiaohang { get; set; } = null!;
 
-    public DateOnly Ngaydathang { get; set; }
+    public DateTime Ngaydathang { get; set; }
 
     public string Phuongthucthanhtoan { get; set; } = null!;
 
     public string IdKh { get; set; } = null!;
 
-	public string ghichu {get;set;}
+	public string? ghichu {get;set;}
     public string? IdMgg { get; set; }
 
     public string IdNv { get; set; } = null!;

@@ -11,7 +11,7 @@ public partial class Danhgia
 
     public string? Noidung { get; set; }
 
-    public DateOnly Ngaydanhgia { get; set; }
+    public DateTime Ngaydanhgia { get; set; }
 
     public string IdKh { get; set; } = null!;
 
