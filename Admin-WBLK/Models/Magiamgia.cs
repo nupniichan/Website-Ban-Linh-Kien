@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Admin_WBLK.Models;
 
-public partial class Magiamgium
+public partial class Magiamgia
 {
     public string IdMgg { get; set; } = null!;
 

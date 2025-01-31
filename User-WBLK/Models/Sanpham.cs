@@ -23,12 +23,14 @@ public partial class Sanpham
 
     public string IdNv { get; set; } = null!;
     public string hinh_anh { get; set; } = null!;
+    public int soluotxem { get; set; }
+    public int damuahang { get; set; }
 
     public virtual ICollection<Chitietdonhang> Chitietdonhangs { get; set; } = new List<Chitietdonhang>();
 
     public virtual ICollection<Chitietgiohang> Chitietgiohangs { get; set; } = new List<Chitietgiohang>();
 
-    public virtual ICollection<Danhgium> Danhgia { get; set; } = new List<Danhgium>();
+    public virtual ICollection<Danhgia> Danhgia { get; set; } = new List<Danhgia>();
 
     public virtual Nhanvien IdNvNavigation { get; set; } = null!;
 }
