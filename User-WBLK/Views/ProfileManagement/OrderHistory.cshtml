@@ -3,31 +3,19 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="flex flex-col h-auto bg-white">
+<div class="flex flex-col">
     <!-- Add space below the navbar -->
     <div class="h-16"></div>
 
-    <div class="flex flex-1 max-w-screen-xl mx-auto">
+    <!-- Add Breadcrumb -->
+    <partial name="_Breadcrumb" />
+
+    <div class="flex gap-6">
         <!-- Sidebar -->
-        <div class=" bg-white shadow-lg rounded-lg p-4">
-            <div class="border-b pb-4 mb-4">
-                <h2 class="text-xl font-bold">Menu</h2>
-            </div>
-            <ul class="space-y-3">
-                <li>
-                    <a href="/account" class="block py-2 px-4 bg-gray-100 text-gray-700 rounded-md font-medium shadow hover:bg-gray-200">Thông tin tài khoản</a>
-                </li>
-                <li>
-                    <a href="/account/orderHistory" class="block py-2 px-4 bg-blue-500 text-white rounded-md font-medium shadow hover:bg-blue-600">Lịch sử giao dịch</a>
-                </li>
-            </ul>
-            <div class="mt-8">
-                <button class="bg-red-500 w-full text-white py-2 rounded-md font-medium shadow hover:bg-red-600">Đăng Xuất</button>
-            </div>
-        </div>
+        <partial name="_AccountSidebar" />
 
         <!-- Content -->
-        <div class="w-[638px] bg-white shadow-lg rounded-lg p-6 ml-6">
+        <div class="flex-1 bg-white shadow-lg rounded-lg p-6">
             <h1 class="text-2xl font-bold mb-6">Lịch sử giao dịch</h1>
 
             <!-- Orders List -->
@@ -191,7 +179,6 @@
                     </div>
                 </div>
             </div>
-
 
             <!-- Pagination -->
             <div class="flex justify-between items-center mt-6">

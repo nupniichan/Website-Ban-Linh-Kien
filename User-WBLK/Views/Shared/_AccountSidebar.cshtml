@@ -1,0 +1,42 @@
+        <div class="w-64 shrink-0">
+        <div class=" bg-white shadow-lg rounded-lg p-4">
+            <div class="border-b pb-4 mb-4">
+                <h2 class="text-xl font-bold">Menu</h2>
+            </div>
+            <ul class="space-y-3">
+                <li>
+                    <a href="/account" 
+                       class="block py-2 px-4 rounded-md font-medium shadow hover:bg-gray-200 @(ViewBag.CurrentTab == "Profile" ? "bg-gray-100 text-gray-700" : "bg-white text-gray-600")">
+                        Thông tin tài khoản
+                    </a>
+                </li>
+                <li>
+                    <a href="/account/orderHistory" 
+                       class="block py-2 px-4 rounded-md font-medium shadow hover:bg-gray-200 @(ViewBag.CurrentTab == "OrderHistory" ? "bg-blue-500 text-white" : "bg-white text-gray-600")">
+                        Lịch sử giao dịch
+                    </a>
+                </li>
+            </ul>
+            <div class="mt-8">
+                <button onclick="handleLogout()" class="bg-red-500 w-full text-white py-2 rounded-md font-medium shadow hover:bg-red-600">Đăng Xuất</button>
+            </div>
+        </div>
+        </div>
+
+<script>
+    function handleLogout() {
+        fetch('/Login/Logout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                // Chuyển về trang chủ sau khi đăng xuất
+                window.location.href = '/';
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+</script>
