@@ -25,7 +25,7 @@ public partial class Nhanvien
 
     public virtual Taikhoan IdTkNavigation { get; set; } = null!;
 
-    public virtual ICollection<Magiamgium> Magiamgia { get; set; } = new List<Magiamgium>();
+    public virtual ICollection<Magiamgia> Magiamgia { get; set; } = new List<Magiamgia>();
 
     public virtual ICollection<Sanpham> Sanphams { get; set; } = new List<Sanpham>();
 }

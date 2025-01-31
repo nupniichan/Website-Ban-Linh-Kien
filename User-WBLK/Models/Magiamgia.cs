@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Website_Ban_Linh_Kien.Models;
 
-public partial class Magiamgium
+public partial class Magiamgia
 {
     public string IdMgg { get; set; } = null!;
 
