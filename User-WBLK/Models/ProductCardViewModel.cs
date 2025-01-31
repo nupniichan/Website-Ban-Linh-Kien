@@ -9,5 +9,6 @@ namespace Website_Ban_Linh_Kien.Models
         public decimal Gia { get; set; }
         public string ImageUrl { get; set; }
         public string LoaiSp { get; set; }
+        public int SoLuongTon { get; set; } 
     }
 }

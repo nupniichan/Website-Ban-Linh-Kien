@@ -2,6 +2,10 @@
 @{
     ViewData["Title"] = Model.Name;
     Layout = "~/Views/Shared/_Layout.cshtml";
+    
+    // Add debug information
+    System.Diagnostics.Debug.WriteLine($"Product ID: {Model.Id}");
+    System.Diagnostics.Debug.WriteLine($"Product Category: {Model.Category}");
 }
 
 <div class="container mx-auto px-4 py-8">
@@ -10,10 +14,10 @@
         <div class="space-y-4">
             <div class="bg-white p-4 rounded-lg shadow-md">
                 @* Nào có data thì tui mở lại sau*@
-                @* <img src="@Model.ImageUrl" alt="@Model.Name" class="w-full h-auto rounded-lg"> *@
-                <img src="/imgs/products/cpu-amd.jpg" 
+                <img src="http://localhost:5177/@Model.ImageUrl" alt="@Model.Name" class="w-full h-auto rounded-lg">
+                @* <img src="/imgs/products/cpu-amd.jpg" 
                      class="w-full h-[500px] object-contain rounded-lg" 
-                     alt="@Model.Name">
+                     alt="@Model.Name"> *@
             </div>
             @if (Model.AdditionalImages?.Any() == true)
             {
@@ -67,7 +71,7 @@
                             </div>
                             <div class="flex items-center space-x-2">
                                 <span class="text-gray-600 whitespace-nowrap">Đánh giá:</span>
-                                <span class="text-[#007AFF] font-medium">@Model.Rating</span>
+                                <span class="text-[#007AFF] font-medium">@Model.TotalReviews</span>
                             </div>
                         </div>
                     </div>
@@ -81,12 +85,23 @@
                     <div class="flex items-center gap-4">
                         <span class="text-gray-600">Số lượng:</span>
                         <div class="flex border rounded">
-                            <button class="px-3 py-1 border-r hover:bg-gray-100">-</button>
+                            <button onclick="decreaseQuantity()" 
+                                    class="px-3 py-1 border-r hover:bg-gray-100 transition-colors">
+                                -
+                            </button>
                             <input type="number" 
+                                   id="quantity"
                                    value="1" 
+                                   min="1"
+                                   max="@(Model.SoLuongTon * 0.2)" 
+                                   onchange="validateQuantity(this)"
                                    class="w-16 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
-                            <button class="px-3 py-1 border-l hover:bg-gray-100">+</button>
+                            <button onclick="increaseQuantity()" 
+                                    class="px-3 py-1 border-l hover:bg-gray-100 transition-colors">
+                                +
+                            </button>
                         </div>
+                        <span id="quantityError" class="text-red-500 text-sm hidden"></span>
                     </div>
 
                     <!-- Action Buttons -->
@@ -130,130 +145,180 @@
                         </div>
                     </div>
                 </div>
-
-                @* @if (!string.IsNullOrEmpty(Model.Description) || Model.Specifications?.Any() == true)
-                {
-                    <div class="bg-white p-6 rounded-lg shadow-md mt-6">
-                        <!-- Tab headers -->
-                        <div class="border-b">
-                            <div class="flex space-x-8">
-                                <button class="text-lg font-semibold pb-4 border-b-2 border-[#007AFF] text-[#007AFF]" 
-                                        onclick="switchTab('description')" 
-                                        id="descriptionTab">
-                                    Mô tả sản phẩm
-                                </button>
-                                <button class="text-lg font-semibold pb-4 border-b-2 border-transparent text-gray-500 hover:text-gray-700" 
-                                        onclick="switchTab('specifications')" 
-                                        id="specificationsTab">
-                                    Thông số kỹ thuật
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Tab contents -->
-                        <div class="mt-6">
-                            <!-- Description tab -->
-                            <div id="descriptionContent" class="prose max-w-none">
-                                @if (!string.IsNullOrEmpty(Model.Description))
-                                {
-                                    <div class="text-gray-600">@Html.Raw(Model.Description)</div>
-                                }
-                            </div>
-
-                            <!-- Specifications tab -->
-                            <div id="specificationsContent" class="hidden">
-                                @if (Model.Specifications?.Any() == true)
-                                {
-                                    <div class="grid grid-cols-1 gap-3">
-                                        @foreach (var spec in Model.Specifications)
-                                        {
-                                            <div class="flex items-center bg-gray-50 p-3 rounded-lg">
-                                                <span class="font-medium text-gray-600 w-1/3">@spec.Key:</span>
-                                                <span class="text-gray-800">@spec.Value</span>
-                                            </div>
-                                        }
-                                    </div>
-                                }
-                            </div>
-                        </div>
-                    </div>
-                } *@
             </div>
         </div>
     </div>
 
     <!-- Product Details Section -->
     <div class="mt-8">
-        <div class="bg-white p-6 rounded-lg shadow-md">
-            <h2 class="text-xl font-bold mb-4">Thông tin sản phẩm</h2>
-            
-            <!-- Specifications Table -->
-            <div class="border rounded-lg overflow-hidden">
-                <!-- cai nay cua description ben admin them vao roi luu len database -->
-            </div>
-
-            <!-- Description -->
-            <div class="mt-6">
-                <h3 class="font-medium mb-3">Mô tả</h3>
-                <div class="text-gray-600">
-                    @Html.Raw(Model.Description)
+        <div class="bg-white rounded-lg shadow-md">
+            <!-- Tabs -->
+            <div class="border-t border-gray-200">
+                <div class="px-6">
+                    <div class="border-b border-gray-200">
+                        <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                            <button onclick="switchTab('description')" 
+                                    class="tab-btn border-blue-500 text-blue-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm"
+                                    id="descriptionTab">
+                                Mô tả sản phẩm
+                            </button>
+                            <button onclick="switchTab('specs')" 
+                                    class="tab-btn border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm"
+                                    id="specsTab">
+                                Thông số kỹ thuật
+                            </button>
+                        </nav>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Reviews Section -->
-            <div class="mt-8">
-                <h2 class="text-xl font-bold mb-4">Đánh giá & nhận xét</h2>
-                <div class="bg-white rounded-lg border">
-                    <div class="flex flex-col sm:flex-row">
-                        <!-- Rating Summary -->
-                        <div class="text-center p-4 sm:border-r border-b sm:border-b-0 min-w-[150px] flex flex-col justify-center items-center">
-                            <div class="text-[#007AFF] text-4xl font-bold">5/5</div>
-                            <div class="text-gray-500">4 đánh giá</div>
-                        </div>
+                <!-- Tab contents -->
+                <div class="p-6">
+                    <!-- Description tab -->
+                    <div id="description-tab" class="tab-content prose max-w-none">
+                        @Html.Raw(Model.Description)
+                    </div>
 
-                        <!-- Reviews List -->
-                        <div class="flex-1 p-4">
-                            <div id="reviewsList">
-                                @{var initialReviews = Model.Reviews.Take(4);}
-                                @foreach (var review in initialReviews)
-                                {
-                                    <div class="py-2">
-                                        <div class="flex flex-wrap items-center gap-1">
-                                            <span class="font-medium">@review.UserName - </span>
-                                            <div class="flex text-yellow-400">
-                                                @for (int i = 0; i < review.Rating; i++)
-                                                {
-                                                    <span>⭐</span>
-                                                }
-                                            </div>
-                                        </div>
-                                        <p class="text-gray-600 mt-1">@review.Comment</p>
-                                    </div>
-                                }
+                    <!-- Specifications tab -->
+                    <div id="specs-tab" class="tab-content hidden">
+                        @if (Model.Specifications?.Any() == true)
+                        {
+                            <div class="border border-gray-300 rounded-lg overflow-hidden">
+                                <table class="w-full">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b w-1/3">Thông số</th>
+                                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b">Giá trị</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var spec in Model.Specifications)
+                                        {
+                                            <tr class="border-b hover:bg-gray-50">
+                                                <td class="px-4 py-3 text-sm text-gray-600">@spec.Key</td>
+                                                <td class="px-4 py-3 text-sm font-medium text-gray-900">@spec.Value</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
                             </div>
-                            <div class="text-center mt-4">
-                                @if (Model.Reviews.Count > 4)
-                                {
-                                    <button id="showMoreBtn" 
-                                            class="bg-blue-500 text-white px-6 py-1.5 rounded-lg hover:bg-blue-600 transition-colors text-sm"
-                                            onclick="toggleReviews()">
-                                        Xem thêm
-                                    </button>
-                                }
-                            </div>
-                        </div>
+                        }
+                        else
+                        {
+                            <p class="text-gray-500 italic">Chưa có thông số kỹ thuật cho sản phẩm này</p>
+                        }
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <!-- Sản phẩm liên quan -->
-            <div class="mt-8">
-                <partial name="_ProductSection" model='new ProductSectionViewModel { 
-                    Title = "Sản phẩm liên quan", 
-                    Category = "cpu",
-                    ViewAllLink = "/productslist/components/cpu" 
-                }' />
+    <!-- Reviews Section -->
+    <div class="mt-8">
+        <h2 class="text-xl font-bold mb-4">Đánh giá & nhận xét (@Model.TotalReviews)</h2>
+        <div class="bg-white rounded-lg border">
+            <div class="flex flex-col sm:flex-row">
+                <!-- Rating Summary -->
+                <div class="text-center p-6 sm:border-r border-b sm:border-b-0 min-w-[200px] flex flex-col justify-center items-center">
+                    <div class="text-[#007AFF] text-4xl font-bold mb-2">
+                        @Model.AverageRating.ToString("0.0")/5
+                    </div>
+                    <div class="flex text-yellow-400 mb-2">
+                        @for (var i = 1; i <= 5; i++)
+                        {
+                            if (i <= Math.Floor(Model.AverageRating))
+                            {
+                                <span>⭐</span>
+                            }
+                            else if (i - Model.AverageRating <= 0.5 && i - Model.AverageRating > 0)
+                            {
+                                <span>⭐</span>
+                            }
+                            else
+                            {
+                                <span class="text-gray-300">☆</span>
+                            }
+                        }
+                    </div>
+                    <div class="text-gray-500">@Model.TotalReviews đánh giá</div>
+
+                    <!-- Rating Distribution -->
+                    <div class="w-full mt-4 space-y-2">
+                        @for (int i = 5; i >= 1; i--)
+                        {
+                            var count = Model.RatingDistribution[i];
+                            var percentage = Model.TotalReviews > 0 ? (count * 100.0 / Model.TotalReviews) : 0;
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm w-8">@i sao</span>
+                                <div class="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                    <div class="h-full bg-yellow-400 rounded-full" 
+                                         style="width: @percentage%"></div>
+                                </div>
+                                <span class="text-sm text-gray-500 w-12">@count</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Reviews List -->
+                <div class="flex-1 p-6">
+                    <div id="reviewsList">
+                        @foreach (var review in Model.Reviews.Take(4))
+                        {
+                            <div class="py-3 border-b last:border-0">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="font-medium">@review.UserName</span>
+                                    <span class="text-gray-400">•</span>
+                                    <div class="flex text-yellow-400">
+                                        @for (int i = 0; i < review.Rating; i++)
+                                        {
+                                            <span>⭐</span>
+                                        }
+                                    </div>
+                                    <span class="text-gray-400">•</span>
+                                    <span class="text-sm text-gray-500">@review.Date.ToString("dd/MM/yyyy")</span>
+                                </div>
+                                <p class="text-gray-600">@review.Comment</p>
+                            </div>
+                        }
+                    </div>
+                    @if (Model.Reviews.Count > 4)
+                    {
+                        <div class="text-center mt-4">
+                            <button id="showMoreBtn" 
+                                    class="bg-blue-500 text-white px-6 py-1.5 rounded-lg hover:bg-blue-600 transition-colors text-sm"
+                                    onclick="toggleReviews()">
+                                Xem thêm
+                            </button>
+                        </div>
+                    }
+                </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Sản phẩm liên quan -->
+    <div class="mt-8">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold">Sản phẩm liên quan</h2>
+                <a href="/productslist/@Model.Category.ToLower()" 
+                   class="text-blue-600 hover:text-blue-700 text-sm">
+                    Xem tất cả
+                </a>
+            </div>
+
+            <!-- Product Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+                @foreach (var product in Model.RelatedProducts)
+                {
+                    <partial name="_ProductCard" model="product" />
+                }
+            </div>
+
+            @if (!Model.RelatedProducts.Any())
+            {
+                <p class="text-gray-500 text-center py-4">Không có sản phẩm liên quan</p>
+            }
         </div>
     </div>
 </div>
@@ -272,20 +337,23 @@
         });
         
         function switchTab(tabName) {
-            // Hide all contents
-            document.getElementById('descriptionContent').classList.add('hidden');
-            document.getElementById('specificationsContent').classList.add('hidden');
+            // Ẩn tất cả tab content
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.add('hidden');
+            });
             
-            // Remove active states
-            document.getElementById('descriptionTab').classList.remove('border-[#007AFF]', 'text-[#007AFF]');
-            document.getElementById('specificationsTab').classList.remove('border-[#007AFF]', 'text-[#007AFF]');
-            document.getElementById('descriptionTab').classList.add('border-transparent', 'text-gray-500');
-            document.getElementById('specificationsTab').classList.add('border-transparent', 'text-gray-500');
+            // Hiện tab được chọn
+            document.getElementById(`${tabName}-tab`).classList.remove('hidden');
             
-            // Show selected content and activate tab
-            document.getElementById(tabName + 'Content').classList.remove('hidden');
-            document.getElementById(tabName + 'Tab').classList.remove('border-transparent', 'text-gray-500');
-            document.getElementById(tabName + 'Tab').classList.add('border-[#007AFF]', 'text-[#007AFF]');
+            // Cập nhật style cho các nút tab
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('border-blue-500', 'text-blue-600');
+                btn.classList.add('border-transparent', 'text-gray-500');
+            });
+            
+            // Style cho nút tab được chọn
+            event.currentTarget.classList.remove('border-transparent', 'text-gray-500');
+            event.currentTarget.classList.add('border-blue-500', 'text-blue-600');
         }
 
         let currentReviewCount = 4;
@@ -336,5 +404,50 @@
                 isExpanded = false;
             }
         }
+
+        const maxQuantity = @(Model.SoLuongTon * 0.2);
+        const quantityInput = document.getElementById('quantity');
+        const quantityError = document.getElementById('quantityError');
+
+        function validateQuantity(input) {
+            let value = parseInt(input.value);
+            
+            // Kiểm tra giá trị tối thiểu
+            if (value < 1) {
+                value = 1;
+            }
+            
+            // Kiểm tra giá trị tối đa (20% số lượng tồn)
+            if (value > maxQuantity) {
+                value = Math.floor(maxQuantity);
+                quantityError.textContent = `Số lượng tối đa có thể mua là ${value}`;
+                quantityError.classList.remove('hidden');
+            } else {
+                quantityError.classList.add('hidden');
+            }
+            
+            input.value = value;
+        }
+
+        function increaseQuantity() {
+            let currentValue = parseInt(quantityInput.value);
+            if (currentValue < maxQuantity) {
+                quantityInput.value = currentValue + 1;
+                validateQuantity(quantityInput);
+            }
+        }
+
+        function decreaseQuantity() {
+            let currentValue = parseInt(quantityInput.value);
+            if (currentValue > 1) {
+                quantityInput.value = currentValue - 1;
+                validateQuantity(quantityInput);
+            }
+        }
+
+        // Validate khi load trang
+        document.addEventListener('DOMContentLoaded', function() {
+            validateQuantity(quantityInput);
+        });
     </script>
 }

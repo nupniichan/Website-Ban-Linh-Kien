@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Website_Ban_Linh_Kien.Models;
 
-public partial class Danhgium
+public partial class Danhgia
 {
     public string IdDg { get; set; } = null!;
 

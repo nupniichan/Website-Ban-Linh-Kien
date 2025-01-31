@@ -42,7 +42,7 @@ namespace Website_Ban_Linh_Kien.Controllers
             }
 
             // Kiểm tra quyền truy cập
-            if (account.Quyentruycap != "KHACHHANG")
+            if (account.Quyentruycap.ToLower() != "khachhang")
             {
                 return Json(new { success = false, message = "Bạn không có quyền truy cập vào hệ thống này" });
             }

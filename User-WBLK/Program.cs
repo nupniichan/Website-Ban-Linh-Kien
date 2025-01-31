@@ -15,14 +15,17 @@ builder.Services.AddDbContext<DatabaseContext>(options =>
     )
 );
 
+// Cấu hình Authentication
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        options.LoginPath = "/Login/Login";
+        options.LoginPath = "/Shared/AccessDenied";
         options.LogoutPath = "/Login/Logout";
-        options.Cookie.Name = "YourAppCookie";
+        options.AccessDeniedPath = "/Shared/AccessDenied";
+        options.ExpireTimeSpan = TimeSpan.FromDays(7); // Cookie tồn tại 7 ngày
+        options.SlidingExpiration = true; // Gia hạn cookie mỗi lần request
     });
-    
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -33,9 +36,13 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+app.UseMiddleware<CheckCookiesSession>();
+
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();

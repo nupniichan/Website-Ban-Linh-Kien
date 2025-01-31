@@ -30,7 +30,7 @@ public partial class Donhang
 
     public virtual Khachhang IdKhNavigation { get; set; } = null!;
 
-    public virtual Magiamgium? IdMggNavigation { get; set; }
+    public virtual Magiamgia? IdMggNavigation { get; set; }
 
     public virtual Nhanvien IdNvNavigation { get; set; } = null!;
 

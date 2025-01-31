@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace Website_Ban_Linh_Kien.Models
 {
     public class ProductDetailViewModel
@@ -18,13 +20,11 @@ namespace Website_Ban_Linh_Kien.Models
         public int PurchaseCount { get; set; }
         public double Rating { get; set; }
         public int ReviewCount { get; set; }
-        public List<ProductReview> Reviews { get; set; }
-    }
-
-    public class ProductReview
-    {
-        public string UserName { get; set; }
-        public int Rating { get; set; }
-        public string Comment { get; set; }
+        public List<ProductReviewViewModel> Reviews { get; set; } = new List<ProductReviewViewModel>();
+        public int TotalReviews { get; set; }
+        public double AverageRating { get; set; }
+        public Dictionary<int, int> RatingDistribution { get; set; } = new Dictionary<int, int>();
+        public int SoLuongTon { get; set; }
+        public List<ProductCardViewModel> RelatedProducts { get; set; } = new List<ProductCardViewModel>();
     }
 }

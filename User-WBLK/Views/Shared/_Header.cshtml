@@ -77,12 +77,26 @@
                             <span class="text-sm font-bold">Liên hệ</span>
                         </a>
 
-                        <a href="/Login" class="text-white text-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 mx-auto">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                            </svg>
-                            <span class="text-sm font-bold">Tài khoản</span>
-                        </a>
+                        <div class="account-section">
+                            @if (User.Identity.IsAuthenticated)
+                            {
+                                <a href="/account" class="text-white text-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 mx-auto">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                    </svg>
+                                    <span class="text-sm font-bold">@User.FindFirst("FullName")?.Value</span>
+                                </a>
+                            }
+                            else
+                            {
+                                <a href="#" class="text-white text-center" id="showLoginBtn">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 mx-auto">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                    </svg>
+                                    <span class="text-sm font-bold">Tài khoản</span>
+                                </a>
+                            }
+                        </div>
                     </div>
                 </div>
             </div>
@@ -203,5 +217,29 @@
             mobileMenuBtn.addEventListener('click', openSidebar);
             closeSidebarBtn.addEventListener('click', closeSidebar);
             sidebarOverlay.addEventListener('click', closeSidebar);
+        });
+    </script>
+
+    <!-- Thêm script này vào cuối file, trước </header> -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const showLoginBtn = document.getElementById('showLoginBtn');
+            const loginPopup = document.getElementById('loginPopup');
+            const closeLoginBtn = document.getElementById('closeLoginBtn');
+
+            if (showLoginBtn) {
+                showLoginBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    loginPopup.classList.remove('hidden');
+                    loginPopup.classList.add('flex');
+                });
+            }
+
+            if (closeLoginBtn) {
+                closeLoginBtn.addEventListener('click', function() {
+                    loginPopup.classList.add('hidden');
+                    loginPopup.classList.remove('flex');
+                });
+            }
         });
     </script>
