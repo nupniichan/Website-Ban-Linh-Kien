@@ -617,29 +617,30 @@ namespace Admin_WBLK.Controllers
                     return NotFound();
                 }
 
-                // Kiểm tra tính hợp lệ của trạng thái mới
+                // Cập nhật Dictionary các trạng thái hợp lệ
                 var validTransitions = new Dictionary<string, string[]>
                 {
                     { "Chờ xác nhận", new[] { "Đã xác nhận", "Đã huỷ" } },
                     { "Đã xác nhận", new[] { "Chờ giao hàng", "Đã huỷ" } },
                     { "Chờ giao hàng", new[] { "Đang giao hàng", "Đã huỷ" } },
-                    { "Đang giao hàng", new[] { "Đã giao hàng", "Đang yêu cầu đổi trả" } },
-                    { "Yêu cầu huỷ", new[] { "Đã huỷ", "Đã hoàn tiền" } },
-                    { "Đang yêu cầu đổi trả", new[] { "Chờ nhận hàng trả" } },
-                    { "Chờ nhận hàng trả", new[] { "Đổi trả thành công", "Đổi trả thất bại" } }
+                    { "Đang giao hàng", new[] { "Đã giao hàng", "Đã huỷ" } },
+                    { "Đã giao hàng", new[] { "Đang yêu cầu đổi trả" } },
+                    { "Yêu cầu huỷ", new[] { "Đã huỷ", "Đã xác nhận" } },
+                    { "Đang yêu cầu đổi trả", new[] { "Chờ nhận hàng trả", "Đổi trả thất bại" } },
+                    { "Chờ nhận hàng trả", new[] { "Đổi trả thành công" } }
                 };
 
                 if (!validTransitions.ContainsKey(donhang.Trangthai) || 
                     !validTransitions[donhang.Trangthai].Contains(newStatus))
                 {
-                    TempData["Error"] = "Không thể chuyển trạng thái đơn hàng!";
+                    TempData["Error"] = $"Không thể chuyển trạng thái từ '{donhang.Trangthai}' sang '{newStatus}'!";
                     return RedirectToAction(nameof(Index));
                 }
 
                 // Xử lý các logic bổ sung theo trạng thái
                 switch (newStatus)
                 {
-                    case "Chờ xác nhận":
+                    case "Đã xác nhận":
                         // Kiểm tra và trừ số lượng tồn kho
                         foreach (var detail in donhang.Chitietdonhangs)
                         {
@@ -660,24 +661,25 @@ namespace Admin_WBLK.Controllers
                         break;
 
                     case "Đã huỷ":
-                        // Hoàn trả số lượng tồn kho khi hủy đơn
-                        foreach (var detail in donhang.Chitietdonhangs)
+                        // Hoàn trả số lượng tồn kho nếu đơn hàng đã được xác nhận trước đó
+                        if (donhang.Trangthai == "Đã xác nhận" || 
+                            donhang.Trangthai == "Chờ giao hàng" || 
+                            donhang.Trangthai == "Đang giao hàng")
                         {
-                            var product = await _context.Sanphams.FindAsync(detail.IdSp);
-                            if (product != null)
+                            foreach (var detail in donhang.Chitietdonhangs)
                             {
-                                // Hoàn trả số lượng sản phẩm vào kho
-                                product.SoLuongTon += detail.Soluong;
-                                _context.Update(product);
-                                
-                                // Log để theo dõi
-                                Console.WriteLine($"Đã hoàn trả {detail.Soluong} sản phẩm {product.TenSp} vào kho");
+                                var product = await _context.Sanphams.FindAsync(detail.IdSp);
+                                if (product != null)
+                                {
+                                    product.SoLuongTon += detail.Soluong;
+                                    _context.Update(product);
+                                }
                             }
                         }
                         break;
 
                     case "Đổi trả thành công":
-                        // Xử lý tương tự như hủy đơn
+                        // Hoàn trả số lượng tồn kho khi đổi trả thành công
                         foreach (var detail in donhang.Chitietdonhangs)
                         {
                             var product = await _context.Sanphams.FindAsync(detail.IdSp);
