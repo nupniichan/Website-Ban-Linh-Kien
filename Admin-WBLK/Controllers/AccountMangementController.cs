@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Admin_WBLK.Models;
@@ -15,6 +16,23 @@ namespace Admin_WBLK.Controllers
         public AccountManagementController(DatabaseContext context)
         {
             _context = context;
+        }
+                
+        // Validation helper method
+        private bool IsValidInput(string input, bool isPassword = false)
+        {
+            if (string.IsNullOrWhiteSpace(input) || input.StartsWith(" ") || input.EndsWith(" "))
+            {
+                return false;
+            }
+
+            if (!isPassword)
+            {
+                return Regex.IsMatch(input, "^[a-zA-Z0-9_]+$");
+            }
+
+            // Password validation: At least 8 chars, one uppercase, one number, one special character
+            return Regex.IsMatch(input, @"^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$");
         }
 
         // GET: AccountManagement
@@ -79,23 +97,31 @@ namespace Admin_WBLK.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("IdTk, Tentaikhoan, Matkhau, Quyentruycap")] Taikhoan taikhoan)
         {
-            if (ModelState.IsValid)
+            if (!IsValidInput(taikhoan.Tentaikhoan))
             {
-                // Check if the Tentaikhoan already exists
-                if (_context.Taikhoans.Any(t => t.Tentaikhoan == taikhoan.Tentaikhoan))
-                {
-                    ModelState.AddModelError("Tentaikhoan", "Tên tài khoản đã tồn tại.");
-                    return View(taikhoan);
-                }
-
-                taikhoan.Ngaytaotk = DateOnly.FromDateTime(DateTime.Now);
-                taikhoan.Ngaysuadoi = null;
-                _context.Add(taikhoan);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                ModelState.AddModelError("Tentaikhoan", "Tên tài khoản không hợp lệ. Không chứa khoảng trắng ở đầu/cuối và chỉ gồm chữ, số, dấu gạch dưới.");
             }
-            return View(taikhoan);
+            if (!IsValidInput(taikhoan.Matkhau, true))
+            {
+                ModelState.AddModelError("Matkhau", "Mật khẩu phải có ít nhất 8 ký tự, ít nhất một chữ cái viết hoa, một số và một ký tự đặc biệt, không có khoảng trắng.");
+            }
+
+            if (_context.Taikhoans.Any(t => t.Tentaikhoan == taikhoan.Tentaikhoan))
+            {
+                ModelState.AddModelError("Tentaikhoan", "Tên tài khoản đã tồn tại.");
+            }
+            if (!ModelState.IsValid)
+            {
+                return View(taikhoan);
+            }
+            
+            taikhoan.Ngaytaotk = DateOnly.FromDateTime(DateTime.Now);
+            taikhoan.Ngaysuadoi = null;
+            _context.Add(taikhoan);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
+
 
         // GET: AccountManagement/Edit/5
         public async Task<IActionResult> Edit(string id)
@@ -124,36 +150,54 @@ namespace Admin_WBLK.Controllers
                 return NotFound();
             }
 
-            if (ModelState.IsValid)
+            if (!IsValidInput(taikhoan.Tentaikhoan))
             {
-                try
-                {
-                    var existingAccount = await _context.Taikhoans.AsNoTracking().FirstOrDefaultAsync(t => t.IdTk == id);
-                    if (existingAccount != null)
-                    {
-                        taikhoan.Ngaytaotk = existingAccount.Ngaytaotk; // Preserve original creation date
-                    }
-
-                    taikhoan.Ngaysuadoi = DateOnly.FromDateTime(DateTime.Now);
-                    _context.Update(taikhoan);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!TaikhoanExists(taikhoan.IdTk))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
+                ModelState.AddModelError("Tentaikhoan", "Tên tài khoản không hợp lệ. Không chứa khoảng trắng ở đầu/cuối và chỉ gồm chữ, số, dấu gạch dưới.");
+            }
+            if (!string.IsNullOrEmpty(taikhoan.Matkhau) && !IsValidInput(taikhoan.Matkhau, true))
+            {
+                ModelState.AddModelError("Matkhau", "Mật khẩu phải có ít nhất 8 ký tự, ít nhất một chữ cái viết hoa, một số và một ký tự đặc biệt, không có khoảng trắng.");
             }
 
-            return View(taikhoan);
+            if (!ModelState.IsValid)
+            {
+                return View(taikhoan);
+            }
+
+            try
+            {
+                var existingAccount = await _context.Taikhoans.AsNoTracking().FirstOrDefaultAsync(t => t.IdTk == id);
+                if (existingAccount == null)
+                {
+                    return NotFound();
+                }
+
+                taikhoan.Ngaytaotk = existingAccount.Ngaytaotk;
+                if (string.IsNullOrWhiteSpace(taikhoan.Matkhau))
+                {
+                    taikhoan.Matkhau = existingAccount.Matkhau;
+                }
+
+                taikhoan.Ngaysuadoi = DateOnly.FromDateTime(DateTime.Now);
+                _context.Taikhoans.Update(taikhoan);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!TaikhoanExists(taikhoan.IdTk))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            return RedirectToAction(nameof(Index));
         }
+
+
+
 
         // GET: AccountManagement/Delete/5
         public async Task<IActionResult> Delete(string id)

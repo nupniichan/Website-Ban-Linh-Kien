@@ -7,7 +7,7 @@ public partial class Taikhoan
 {
     public string IdTk { get; set; } = null!;
 
-    public string Matkhau { get; set; } = null!;
+    public string? Matkhau { get; set; }
 
     public string Tentaikhoan { get; set; } = null!;
 
