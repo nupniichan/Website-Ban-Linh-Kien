@@ -153,6 +153,9 @@ namespace Admin_WBLK.Controllers
         {
             try
             {
+                // Log để debug
+                Console.WriteLine($"Received chitietdonhangs: {chitietdonhangs}");
+                
                 using var transaction = await _context.Database.BeginTransactionAsync();
                 
                 // Kiểm tra mã thanh toán nếu là thanh toán online
