@@ -25,8 +25,6 @@ namespace Admin_WBLK.Controllers
 
             var query = _context.Donhangs
                 .Include(d => d.IdKhNavigation)    
-                .Include(d => d.IdNvNavigation)    
-                .Include(d => d.IdMggNavigation)   
                 .Select(d => new Donhang
                 {
                     IdDh = d.IdDh,
@@ -36,12 +34,8 @@ namespace Admin_WBLK.Controllers
                     Ngaydathang = d.Ngaydathang,
                     Phuongthucthanhtoan = d.Phuongthucthanhtoan,
                     IdKh = d.IdKh,
-                    IdMgg = d.IdMgg,
-                    IdNv = d.IdNv,
                     ghichu = d.ghichu ?? "",
-                    IdKhNavigation = d.IdKhNavigation,
-                    IdNvNavigation = d.IdNvNavigation,
-                    IdMggNavigation = d.IdMggNavigation
+                    IdKhNavigation = d.IdKhNavigation
                 });
 
             if (!string.IsNullOrEmpty(searchString))
@@ -59,8 +53,9 @@ namespace Admin_WBLK.Controllers
 
             if (ngayDat.HasValue)
             {
-                var ngayDatDateTime = ngayDat.Value.ToDateTime(TimeOnly.MinValue);
-                query = query.Where(d => d.Ngaydathang.Date == ngayDatDateTime.Date);
+                var startDate = ngayDat.Value.ToDateTime(TimeOnly.MinValue);
+                var endDate = ngayDat.Value.ToDateTime(TimeOnly.MaxValue);
+                query = query.Where(d => d.Ngaydathang >= startDate && d.Ngaydathang <= endDate);
             }
 
             // Lấy danh sách trạng thái để làm dropdown filter
@@ -71,8 +66,8 @@ namespace Admin_WBLK.Controllers
                 "Chờ giao hàng",
                 "Đang giao hàng",
                 "Đã giao hàng",
-                "Đã huỷ",
                 "Yêu cầu huỷ",
+                "Đã huỷ",
                 "Đã hoàn tiền",
                 "Đang yêu cầu đổi trả",
                 "Chờ nhận hàng trả",
@@ -109,7 +104,11 @@ namespace Admin_WBLK.Controllers
                 .Where(d => d.IdDh.ToLower().Contains(term) ||
                            d.IdKhNavigation.Hoten.ToLower().Contains(term))
                 .Take(5)
-                .Select(d => new { d.IdDh, CustomerName = d.IdKhNavigation.Hoten })
+                .Select(d => new { 
+                    d.IdDh, 
+                    CustomerName = d.IdKhNavigation.Hoten,
+                    OrderDate = d.Ngaydathang
+                })
                 .ToListAsync();
 
             return Json(suggestions);
@@ -153,9 +152,6 @@ namespace Admin_WBLK.Controllers
         {
             try
             {
-                // Log để debug
-                Console.WriteLine($"Received chitietdonhangs: {chitietdonhangs}");
-                
                 using var transaction = await _context.Database.BeginTransactionAsync();
                 
                 // Kiểm tra mã thanh toán nếu là thanh toán online
@@ -617,30 +613,29 @@ namespace Admin_WBLK.Controllers
                     return NotFound();
                 }
 
-                // Cập nhật Dictionary các trạng thái hợp lệ
+                // Kiểm tra tính hợp lệ của trạng thái mới
                 var validTransitions = new Dictionary<string, string[]>
                 {
                     { "Chờ xác nhận", new[] { "Đã xác nhận", "Đã huỷ" } },
                     { "Đã xác nhận", new[] { "Chờ giao hàng", "Đã huỷ" } },
                     { "Chờ giao hàng", new[] { "Đang giao hàng", "Đã huỷ" } },
-                    { "Đang giao hàng", new[] { "Đã giao hàng", "Đã huỷ" } },
-                    { "Đã giao hàng", new[] { "Đang yêu cầu đổi trả" } },
-                    { "Yêu cầu huỷ", new[] { "Đã huỷ", "Đã xác nhận" } },
-                    { "Đang yêu cầu đổi trả", new[] { "Chờ nhận hàng trả", "Đổi trả thất bại" } },
-                    { "Chờ nhận hàng trả", new[] { "Đổi trả thành công" } }
+                    { "Đang giao hàng", new[] { "Đã giao hàng", "Đang yêu cầu đổi trả" } },
+                    { "Yêu cầu huỷ", new[] { "Đã huỷ", "Đã hoàn tiền" } },
+                    { "Đang yêu cầu đổi trả", new[] { "Chờ nhận hàng trả" } },
+                    { "Chờ nhận hàng trả", new[] { "Đổi trả thành công", "Đổi trả thất bại" } }
                 };
 
                 if (!validTransitions.ContainsKey(donhang.Trangthai) || 
                     !validTransitions[donhang.Trangthai].Contains(newStatus))
                 {
-                    TempData["Error"] = $"Không thể chuyển trạng thái từ '{donhang.Trangthai}' sang '{newStatus}'!";
+                    TempData["Error"] = "Không thể chuyển trạng thái đơn hàng!";
                     return RedirectToAction(nameof(Index));
                 }
 
                 // Xử lý các logic bổ sung theo trạng thái
                 switch (newStatus)
                 {
-                    case "Đã xác nhận":
+                    case "Chờ xác nhận":
                         // Kiểm tra và trừ số lượng tồn kho
                         foreach (var detail in donhang.Chitietdonhangs)
                         {
@@ -661,25 +656,24 @@ namespace Admin_WBLK.Controllers
                         break;
 
                     case "Đã huỷ":
-                        // Hoàn trả số lượng tồn kho nếu đơn hàng đã được xác nhận trước đó
-                        if (donhang.Trangthai == "Đã xác nhận" || 
-                            donhang.Trangthai == "Chờ giao hàng" || 
-                            donhang.Trangthai == "Đang giao hàng")
+                        // Hoàn trả số lượng tồn kho khi hủy đơn
+                        foreach (var detail in donhang.Chitietdonhangs)
                         {
-                            foreach (var detail in donhang.Chitietdonhangs)
+                            var product = await _context.Sanphams.FindAsync(detail.IdSp);
+                            if (product != null)
                             {
-                                var product = await _context.Sanphams.FindAsync(detail.IdSp);
-                                if (product != null)
-                                {
-                                    product.SoLuongTon += detail.Soluong;
-                                    _context.Update(product);
-                                }
+                                // Hoàn trả số lượng sản phẩm vào kho
+                                product.SoLuongTon += detail.Soluong;
+                                _context.Update(product);
+                                
+                                // Log để theo dõi
+                                Console.WriteLine($"Đã hoàn trả {detail.Soluong} sản phẩm {product.TenSp} vào kho");
                             }
                         }
                         break;
 
                     case "Đổi trả thành công":
-                        // Hoàn trả số lượng tồn kho khi đổi trả thành công
+                        // Xử lý tương tự như hủy đơn
                         foreach (var detail in donhang.Chitietdonhangs)
                         {
                             var product = await _context.Sanphams.FindAsync(detail.IdSp);

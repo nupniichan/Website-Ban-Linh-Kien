@@ -99,69 +99,51 @@
 
     <!-- Orders Table -->
     <div class="overflow-x-auto">
-        <table class="min-w-full bg-white border rounded-lg">
+        <table class="min-w-full bg-white border rounded-lg table-fixed">
             <thead class="bg-gray-50">
                 <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mã ĐH</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Khách hàng</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nhân viên</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày đặt</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tổng tiền (VNĐ)</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Địa chỉ giao</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PT Thanh toán</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mã giảm giá</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hành động</th>
+                    <th class="w-28 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mã ĐH</th>
+                    <th class="w-40 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Khách hàng</th>
+                    <th class="w-32 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày đặt</th>
+                    <th class="w-40 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Địa chỉ</th>
+                    <th class="w-32 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tổng tiền</th>
+                    <th class="w-32 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
+                    <th class="w-40 px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Thao tác</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200">
+            <tbody class="bg-white divide-y divide-gray-200">
                 @foreach (var item in Model.Items)
                 {
                     <tr class="hover:bg-gray-50">
-                        <td class="px-6 py-4 whitespace-nowrap">@item.IdDh</td>
+                        <td class="px-6 py-4">@item.IdDh</td>
                         <td class="px-6 py-4">@item.IdKhNavigation.Hoten</td>
-                        <td class="px-6 py-4">@item.IdNvNavigation.Hoten</td>
                         <td class="px-6 py-4">
                             <div class="flex flex-col">
                                 <span class="font-medium">@item.Ngaydathang.ToString("dd/MM/yyyy")</span>
                                 <span class="text-sm text-gray-500">@item.Ngaydathang.ToString("HH:mm:ss")</span>
                             </div>
                         </td>
-                        <td class="px-6 py-4">@item.Tongtien.ToString("#,##0")</td>
                         <td class="px-6 py-4">
                             <div class="flex flex-col">
                                 <div class="max-w-xs truncate" title="@item.Diachigiaohang">
                                     @{
-                                        var diachiParts = item.Diachigiaohang.Split(',', 2);
+                                        var diachiParts = item.Diachigiaohang.Split(new[] { ',' }, 2);
                                         if (diachiParts.Length > 1)
                                         {
-                                            <span class="block">@diachiParts[0].Trim()</span>
-                                            <span class="block text-gray-500 text-sm">@diachiParts[1].Trim()</span>
+                                            <span class="block font-medium text-gray-900">@diachiParts[0].Trim()</span>
+                                            <span class="block text-sm text-gray-500">@diachiParts[1].Trim()</span>
                                         }
                                         else
                                         {
-                                            <span class="block">@item.Diachigiaohang</span>
+                                            <span class="block font-medium text-gray-900">@item.Diachigiaohang</span>
                                         }
                                     }
                                 </div>
                             </div>
                         </td>
-                        <td class="px-6 py-4">@item.Phuongthucthanhtoan</td>
-                        <td class="px-6 py-4">@(item.IdMgg ?? "Không có")</td>
+                        <td class="px-6 py-4">@item.Tongtien.ToString("#,##0")</td>
                         <td class="px-6 py-4">
-                            @{
-                                var statusClass = item.Trangthai switch
-                                {
-                                    "Chờ xác nhận" => "text-yellow-600",
-                                    "Đã xác nhận" => "text-blue-600",
-                                    "Đang giao" => "text-indigo-600",
-                                    "Đã giao" => "text-green-600",
-                                    "Đã hủy" => "text-red-600",
-                                    "Yêu cầu hủy" => "text-orange-600",
-                                    _ => "text-gray-600"
-                                };
-                            }
-                            <span class="@statusClass font-medium">
+                            <span class="@GetStatusClass(item.Trangthai) text-sm">
                                 @item.Trangthai
                             </span>
                         </td>
@@ -181,27 +163,17 @@
                                         break;
 
                                     case "Đã xác nhận":
-                                        <a asp-action="UpdateStatus" asp-route-id="@item.IdDh" asp-route-newStatus="Chờ giao hàng"
+                                        <a asp-action="UpdateStatus" asp-route-id="@item.IdDh" asp-route-newStatus="Đang giao"
                                            class="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200"
-                                           title="Chuyển sang chờ giao hàng">
+                                           title="Chuyển sang đang giao">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                                             </svg>
                                         </a>
                                         break;
 
-                                    case "Chờ giao hàng":
-                                        <a asp-action="UpdateStatus" asp-route-id="@item.IdDh" asp-route-newStatus="Đang giao hàng"
-                                           class="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200"
-                                           title="Chuyển sang đang giao hàng">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                            </svg>
-                                        </a>
-                                        break;
-
-                                    case "Đang giao hàng":
-                                        <a asp-action="UpdateStatus" asp-route-id="@item.IdDh" asp-route-newStatus="Đã giao hàng"
+                                    case "Đang giao":
+                                        <a asp-action="UpdateStatus" asp-route-id="@item.IdDh" asp-route-newStatus="Đã giao"
                                            class="inline-flex items-center px-3 py-1 bg-indigo-100 text-indigo-700 rounded-md hover:bg-indigo-200"
                                            title="Xác nhận đã giao">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -210,56 +182,18 @@
                                         </a>
                                         break;
 
-                                    case "Yêu cầu huỷ":
-                                        <div class="flex gap-2">
-                                            <a asp-action="UpdateStatus" asp-route-id="@item.IdDh" asp-route-newStatus="Đã huỷ"
-                                               class="inline-flex items-center px-3 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200"
-                                               title="Xác nhận huỷ đơn">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                                </svg>
-                                            </a>
-                                            <a asp-action="UpdateStatus" asp-route-id="@item.IdDh" asp-route-newStatus="Đã xác nhận"
-                                               class="inline-flex items-center px-3 py-1 bg-green-100 text-green-700 rounded-md hover:bg-green-200"
-                                               title="Từ chối huỷ đơn">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                                </svg>
-                                            </a>
-                                        </div>
-                                        break;
-
-                                    case "Đang yêu cầu đổi trả":
-                                        <div class="flex gap-2">
-                                            <a asp-action="UpdateStatus" asp-route-id="@item.IdDh" asp-route-newStatus="Chờ nhận hàng trả"
-                                               class="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200"
-                                               title="Chấp nhận đổi trả">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                                </svg>
-                                            </a>
-                                            <a asp-action="UpdateStatus" asp-route-id="@item.IdDh" asp-route-newStatus="Đổi trả thất bại"
-                                               class="inline-flex items-center px-3 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200"
-                                               title="Từ chối đổi trả">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                                </svg>
-                                            </a>
-                                        </div>
-                                        break;
-
-                                    case "Chờ nhận hàng trả":
-                                        <a asp-action="UpdateStatus" asp-route-id="@item.IdDh" asp-route-newStatus="Đổi trả thành công"
-                                           class="inline-flex items-center px-3 py-1 bg-green-100 text-green-700 rounded-md hover:bg-green-200"
-                                           title="Xác nhận đã nhận hàng trả">
+                                    case "Yêu cầu hủy":
+                                        <a asp-action="UpdateStatus" asp-route-id="@item.IdDh" asp-route-newStatus="Đã hủy"
+                                           class="inline-flex items-center px-3 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200"
+                                           title="Xác nhận hủy đơn">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                             </svg>
                                         </a>
                                         break;
                                 }
 
-                                @* Luôn hiển thị 3 nút hành động cơ bản *@
+                                @* 3 nút hành động cơ bản *@
                                 <a asp-action="Details" asp-route-id="@item.IdDh" 
                                    class="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200"
                                    title="Chi tiết">
@@ -404,13 +338,19 @@
     {
         return status switch
         {
-            "Chờ xác nhận" => "bg-yellow-100 text-yellow-800",
-            "Đã xác nhận" => "bg-blue-100 text-blue-800",
-            "Đang giao" => "bg-indigo-100 text-indigo-800",
-            "Đã giao" => "bg-green-100 text-green-800",
-            "Đã hủy" => "bg-red-100 text-red-800",
-            "Yêu cầu hủy" => "bg-orange-100 text-orange-800",
-            _ => "bg-gray-100 text-gray-800"
+            "Chờ xác nhận" => "text-yellow-600",
+            "Đã xác nhận" => "text-blue-600",
+            "Chờ giao hàng" => "text-indigo-600",
+            "Đang giao hàng" => "text-purple-600",
+            "Đã giao hàng" => "text-green-600",
+            "Yêu cầu huỷ" => "text-orange-600",
+            "Đã huỷ" => "text-red-600",
+            "Đã hoàn tiền" => "text-gray-600",
+            "Đang yêu cầu đổi trả" => "text-orange-600",
+            "Chờ nhận hàng trả" => "text-indigo-600",
+            "Đổi trả thành công" => "text-green-600",
+            "Đổi trả thất bại" => "text-red-600",
+            _ => "text-gray-600"
         };
     }
 }
