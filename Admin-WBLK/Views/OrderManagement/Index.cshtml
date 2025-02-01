@@ -124,8 +124,21 @@
                         <td class="px-6 py-4">@item.Ngaydathang.ToString("dd/MM/yyyy")</td>
                         <td class="px-6 py-4">@item.Tongtien.ToString("#,##0")</td>
                         <td class="px-6 py-4">
-                            <div class="max-w-xs truncate" title="@item.Diachigiaohang">
-                                @item.Diachigiaohang
+                            <div class="flex flex-col">
+                                <div class="max-w-xs truncate" title="@item.Diachigiaohang">
+                                    @{
+                                        var diachiParts = item.Diachigiaohang.Split(',', 2);
+                                        if (diachiParts.Length > 1)
+                                        {
+                                            <span class="block">@diachiParts[0].Trim()</span>
+                                            <span class="block text-gray-500 text-sm">@diachiParts[1].Trim()</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="block">@item.Diachigiaohang</span>
+                                        }
+                                    }
+                                </div>
                             </div>
                         </td>
                         <td class="px-6 py-4">@item.Phuongthucthanhtoan</td>
@@ -163,17 +176,27 @@
                                         break;
 
                                     case "Đã xác nhận":
-                                        <a asp-action="UpdateStatus" asp-route-id="@item.IdDh" asp-route-newStatus="Đang giao"
+                                        <a asp-action="UpdateStatus" asp-route-id="@item.IdDh" asp-route-newStatus="Chờ giao hàng"
                                            class="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200"
-                                           title="Chuyển sang đang giao">
+                                           title="Chuyển sang chờ giao hàng">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                                             </svg>
                                         </a>
                                         break;
 
-                                    case "Đang giao":
-                                        <a asp-action="UpdateStatus" asp-route-id="@item.IdDh" asp-route-newStatus="Đã giao"
+                                    case "Chờ giao hàng":
+                                        <a asp-action="UpdateStatus" asp-route-id="@item.IdDh" asp-route-newStatus="Đang giao hàng"
+                                           class="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200"
+                                           title="Chuyển sang đang giao hàng">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                            </svg>
+                                        </a>
+                                        break;
+
+                                    case "Đang giao hàng":
+                                        <a asp-action="UpdateStatus" asp-route-id="@item.IdDh" asp-route-newStatus="Đã giao hàng"
                                            class="inline-flex items-center px-3 py-1 bg-indigo-100 text-indigo-700 rounded-md hover:bg-indigo-200"
                                            title="Xác nhận đã giao">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -182,12 +205,50 @@
                                         </a>
                                         break;
 
-                                    case "Yêu cầu hủy":
-                                        <a asp-action="UpdateStatus" asp-route-id="@item.IdDh" asp-route-newStatus="Đã hủy"
-                                           class="inline-flex items-center px-3 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200"
-                                           title="Xác nhận hủy đơn">
+                                    case "Yêu cầu huỷ":
+                                        <div class="flex gap-2">
+                                            <a asp-action="UpdateStatus" asp-route-id="@item.IdDh" asp-route-newStatus="Đã huỷ"
+                                               class="inline-flex items-center px-3 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200"
+                                               title="Xác nhận huỷ đơn">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                                </svg>
+                                            </a>
+                                            <a asp-action="UpdateStatus" asp-route-id="@item.IdDh" asp-route-newStatus="Đã xác nhận"
+                                               class="inline-flex items-center px-3 py-1 bg-green-100 text-green-700 rounded-md hover:bg-green-200"
+                                               title="Từ chối huỷ đơn">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                            </a>
+                                        </div>
+                                        break;
+
+                                    case "Đang yêu cầu đổi trả":
+                                        <div class="flex gap-2">
+                                            <a asp-action="UpdateStatus" asp-route-id="@item.IdDh" asp-route-newStatus="Chờ nhận hàng trả"
+                                               class="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200"
+                                               title="Chấp nhận đổi trả">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                                </svg>
+                                            </a>
+                                            <a asp-action="UpdateStatus" asp-route-id="@item.IdDh" asp-route-newStatus="Đổi trả thất bại"
+                                               class="inline-flex items-center px-3 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200"
+                                               title="Từ chối đổi trả">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                            </a>
+                                        </div>
+                                        break;
+
+                                    case "Chờ nhận hàng trả":
+                                        <a asp-action="UpdateStatus" asp-route-id="@item.IdDh" asp-route-newStatus="Đổi trả thành công"
+                                           class="inline-flex items-center px-3 py-1 bg-green-100 text-green-700 rounded-md hover:bg-green-200"
+                                           title="Xác nhận đã nhận hàng trả">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                                             </svg>
                                         </a>
                                         break;
