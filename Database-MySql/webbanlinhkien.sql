@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 27, 2025 at 12:48 PM
+-- Generation Time: Jan 31, 2025 at 02:18 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -39,8 +39,7 @@ CREATE TABLE `chitietdonhang` (
 --
 
 INSERT INTO `chitietdonhang` (`idDH`, `idSP`, `soluong`, `dongia`) VALUES
-('DH001', 'SP001', 1, 5500000.00),
-('DH001', 'SP002', 2, 1200000.00);
+('DH000004', 'SP00003', 1, 300000.00);
 
 -- --------------------------------------------------------
 
@@ -72,7 +71,7 @@ CREATE TABLE `danhgia` (
   `idDG` varchar(10) NOT NULL,
   `sosao` int(11) NOT NULL CHECK (`sosao` between 1 and 5),
   `noidung` text DEFAULT NULL,
-  `ngaydanhgia` date NOT NULL,
+  `ngaydanhgia` datetime DEFAULT NULL,
   `idKH` varchar(10) NOT NULL,
   `idSP` varchar(10) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -82,7 +81,7 @@ CREATE TABLE `danhgia` (
 --
 
 INSERT INTO `danhgia` (`idDG`, `sosao`, `noidung`, `ngaydanhgia`, `idKH`, `idSP`) VALUES
-('DG001', 4, 'Sản phẩm tốt, giao hàng nhanh', '2024-01-25', 'KH001', 'SP001');
+('DG001', 4, 'Sản phẩm tốt, giao hàng nhanh', '2024-01-25 00:00:00', 'KH001', 'SP00003');
 
 -- --------------------------------------------------------
 
@@ -94,8 +93,8 @@ CREATE TABLE `doitradh` (
   `id` varchar(10) NOT NULL,
   `trangthai` varchar(50) NOT NULL,
   `lydo` varchar(200) NOT NULL,
-  `ngayyeucau` date NOT NULL,
-  `ngayxuly` date DEFAULT NULL,
+  `ngayyeucau` datetime DEFAULT NULL,
+  `ngayxuly` datetime DEFAULT NULL,
   `ghichu` text DEFAULT NULL,
   `idKH` varchar(10) NOT NULL,
   `idNV` varchar(10) NOT NULL,
@@ -107,7 +106,7 @@ CREATE TABLE `doitradh` (
 --
 
 INSERT INTO `doitradh` (`id`, `trangthai`, `lydo`, `ngayyeucau`, `ngayxuly`, `ghichu`, `idKH`, `idNV`, `idDH`) VALUES
-('DTR001', 'Chờ Xử Lý', 'Sản phẩm bị lỗi', '2024-01-22', NULL, NULL, 'KH001', 'NV001', 'DH001');
+('DTR001', 'Chấp nhận đổi', 'Sản phẩm bị lỗi', '2024-01-22 00:00:00', '2025-01-30 00:00:00', 'ádasdasdas', 'KH001', 'NV001', 'DH001');
 
 -- --------------------------------------------------------
 
@@ -120,19 +119,23 @@ CREATE TABLE `donhang` (
   `trangthai` varchar(50) NOT NULL,
   `tongtien` decimal(10,2) NOT NULL,
   `diachigiaohang` varchar(200) NOT NULL,
-  `ngaydathang` date NOT NULL,
+  `ngaydathang` datetime DEFAULT NULL,
   `phuongthucthanhtoan` varchar(50) NOT NULL,
   `idKH` varchar(10) NOT NULL,
   `idMGG` varchar(10) DEFAULT NULL,
-  `idNV` varchar(10) NOT NULL
+  `idNV` varchar(10) NOT NULL,
+  `ghichu` varchar(500) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `donhang`
 --
 
-INSERT INTO `donhang` (`idDH`, `trangthai`, `tongtien`, `diachigiaohang`, `ngaydathang`, `phuongthucthanhtoan`, `idKH`, `idMGG`, `idNV`) VALUES
-('DH001', 'Đang Xử Lý', 6700000.00, 'Hà Nội', '2024-01-20', 'Chuyển Khoản', 'KH001', 'MGG001', 'NV001');
+INSERT INTO `donhang` (`idDH`, `trangthai`, `tongtien`, `diachigiaohang`, `ngaydathang`, `phuongthucthanhtoan`, `idKH`, `idMGG`, `idNV`, `ghichu`) VALUES
+('DH000002', 'Chờ xác nhận', 270000.00, '246 Nguyễn Văn Luông, phường 10, quận 6, TPHCM', '2025-01-31 00:00:00', 'Paypal', 'KH00002', 'MGG001', 'NV001', NULL),
+('DH000003', 'Đã xác nhận', 270000.00, '246 Nguyễn Văn Luông, phường 10, quận 6, TPHCM', '2025-01-31 00:00:00', 'Paypal', 'KH00002', 'MGG001', 'NV001', NULL),
+('DH000004', 'Đang giao', 300000.00, '246 Nguyễn Văn Luông, phường 10, quận 6, TPHCM', '2025-01-31 00:00:00', 'VNPay', 'KH00002', NULL, 'NV001', NULL),
+('DH001', 'Đang Xử Lý', 6700000.00, 'Hà Nội', '2024-01-20 00:00:00', 'Chuyển Khoản', 'KH001', 'MGG001', 'NV001', NULL);
 
 -- --------------------------------------------------------
 
@@ -198,7 +201,7 @@ CREATE TABLE `magiamgia` (
 --
 
 INSERT INTO `magiamgia` (`idMGG`, `ten`, `ngaysudung`, `ngayhethan`, `tilechietkhau`, `soluong`, `idNV`) VALUES
-('MGG001', 'Khuyến mãi Tết', '2024-01-20', '2024-02-15', 0.10, 100, 'NV001');
+('MGG001', 'Khuyến mãi Tết', '2025-01-20', '2025-02-15', 0.10, 100, 'NV001');
 
 -- --------------------------------------------------------
 
@@ -240,17 +243,19 @@ CREATE TABLE `sanpham` (
   `thongSoKyThuat` text DEFAULT NULL,
   `loaiSP` varchar(50) NOT NULL,
   `idNV` varchar(10) NOT NULL,
-  `hinh_anh` varchar(255) DEFAULT NULL
+  `hinh_anh` varchar(255) DEFAULT NULL,
+  `soluotxem` int(11) DEFAULT NULL,
+  `damuahang` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `sanpham`
 --
 
-INSERT INTO `sanpham` (`idSP`, `tenSP`, `gia`, `soLuongTon`, `thuongHieu`, `moTa`, `thongSoKyThuat`, `loaiSP`, `idNV`, `hinh_anh`) VALUES
-('SP00003', 'CPU Intel core i5-12400F 14 nhân 24 luồng', 300000.00, 17, 'intel', '<strike style=\"\">CPU Intel core i5-12400F 14 core 28 thread</strike>', '[{\"key\":\"Số nhân xử lý\",\"value\":\"6\"},{\"key\":\"Số luồng xử lý\",\"value\":\"12\"},{\"key\":\"brand\",\"value\":\"Intel\"}]', 'CPU', 'NV001', '/Images/ProductImage/2vu3tuc3.v0v.jpg'),
-('SP001', 'Mainboard ASUS ROG', 5500000.00, 50, 'ASUS', 'Mainboard chơi game cao cấp', 'CPU Socket: LGA 1200, Chipset: Intel Z490', 'Linh Kiện Máy Tính', 'NV001', 'Images/Products/123.jpg'),
-('SP002', 'RAM Corsair 16GB', 1200000.00, 100, 'Corsair', 'RAM dung lượng cao', 'DDR4, 3200MHz, 16GB', 'Linh Kiện Máy Tính', 'NV001', 'Images/Products/123.jpg');
+INSERT INTO `sanpham` (`idSP`, `tenSP`, `gia`, `soLuongTon`, `thuongHieu`, `moTa`, `thongSoKyThuat`, `loaiSP`, `idNV`, `hinh_anh`, `soluotxem`, `damuahang`) VALUES
+('SP00003', 'CPU Intel core i5-12400F 14 nhân 24 luồng', 300000.00, 17, 'intel', '<strike style=\"\">CPU Intel core i5-12400F 14 core 28 thread</strike>', '[{\"key\":\"Số nhân xử lý\",\"value\":\"6\"},{\"key\":\"Số luồng xử lý\",\"value\":\"12\"},{\"key\":\"Danh mục \",\"value\":\"CPU\"},{\"key\":\"brand\",\"value\":\"Intel\"}]', 'Components', 'NV001', '/Images/ProductImage/2vu3tuc3.v0v.jpg', 12, 0),
+('SP001', 'Mainboard ASUS ROG', 5500000.00, 50, 'ASUS', 'Mainboard chơi game cao cấp', '[{\"key\":\"Số nhân xử lý\",\"value\":\"6\"},{\"key\":\"Số luồng xử lý\",\"value\":\"12\"},{\"key\":\"Danh mục \",\"value\":\"CPU\"},{\"key\":\"brand\",\"value\":\"Intel\"}]', 'Components', 'NV001', 'Images/Products/123.jpg', 0, 0),
+('SP002', 'RAM Corsair 16GB', 1200000.00, 100, 'Corsair', 'RAM dung lượng cao', '[{\"key\":\"Số nhân xử lý\",\"value\":\"6\"},\n{\"key\":\"Số luồng xử lý\",\"value\":\"12\"},\n{\"key\":\"Danh mục \",\"value\":\"VGA\"},\n{\"key\":\"brand\",\"value\":\"Intel\"}]', 'LinhKien', 'NV001', 'Images/Products/123.jpg', 0, 0);
 
 -- --------------------------------------------------------
 
@@ -272,7 +277,7 @@ CREATE TABLE `taikhoan` (
 --
 
 INSERT INTO `taikhoan` (`idTK`, `matkhau`, `tentaikhoan`, `ngaytaotk`, `ngaysuadoi`, `quyentruycap`) VALUES
-('TK00004', 'NupOniiBaka089', 'nup', '2025-01-27', NULL, 'KhachHang'),
+('TK00004', 'NupOniiBaka089', 'nup', '2025-01-27', '2025-01-30', 'KhachHang'),
 ('TK001', 'hashed_password1', 'admin_user', '2024-01-15', NULL, 'ADMIN'),
 ('TK002', 'hashed_password2', 'staff_user', '2024-01-16', NULL, 'STAFF'),
 ('TK003', 'hashed_password3', 'customer1', '2024-01-17', NULL, 'CUSTOMER');
@@ -285,21 +290,22 @@ INSERT INTO `taikhoan` (`idTK`, `matkhau`, `tentaikhoan`, `ngaytaotk`, `ngaysuad
 
 CREATE TABLE `thanhtoan` (
   `idTT` varchar(10) NOT NULL,
-  `mathanhtoannganhang` varchar(50) DEFAULT NULL,
   `trangthai` varchar(50) NOT NULL,
   `tienthanhtoan` decimal(10,2) NOT NULL,
-  `ngaythanhtoan` date NOT NULL,
+  `ngaythanhtoan` datetime DEFAULT NULL,
   `noidungthanhtoan` varchar(200) DEFAULT NULL,
   `idDH` varchar(10) NOT NULL,
-  `mathanhtoanapp` varchar(50) DEFAULT NULL
+  `mathanhtoan` varchar(50) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `thanhtoan`
 --
 
-INSERT INTO `thanhtoan` (`idTT`, `mathanhtoannganhang`, `trangthai`, `tienthanhtoan`, `ngaythanhtoan`, `noidungthanhtoan`, `idDH`, `mathanhtoanapp`) VALUES
-('TT001', 'BANK_TRANSFER_001', 'Thành Công', 6700000.00, '2024-01-20', 'Thanh toán đơn hàng DH001', 'DH001', NULL);
+INSERT INTO `thanhtoan` (`idTT`, `trangthai`, `tienthanhtoan`, `ngaythanhtoan`, `noidungthanhtoan`, `idDH`, `mathanhtoan`) VALUES
+('TT000001', 'Chờ xác nhận', 270000.00, '2025-01-31 00:00:00', 'THANH TOAN ORDER 00002', 'DH000002', 'PP029824213412'),
+('TT000002', 'Chờ xác nhận', 270000.00, '2025-01-31 00:00:00', 'asd', 'DH000003', 'PP029824213413'),
+('TT000003', 'Chờ xác nhận', 300000.00, '2025-01-31 00:00:00', 'THANH TOAN DON HANG ....', 'DH000004', 'VNP08276321');
 
 --
 -- Indexes for dumped tables

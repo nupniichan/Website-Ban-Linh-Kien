@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Admin_WBLK.Models;
+using System.Text.Json;
 
 namespace Admin_WBLK.Controllers
 {
@@ -23,16 +24,32 @@ namespace Admin_WBLK.Controllers
             ViewData["CurrentNgayDat"] = ngayDat?.ToString("yyyy-MM-dd");
 
             var query = _context.Donhangs
-                .Include(d => d.IdKhNavigation)    // Join với bảng khachhang
-                .Include(d => d.IdNvNavigation)    // Join với bảng nhanvien
-                .Include(d => d.IdMggNavigation)   // Join với bảng magiamgia
-                .AsQueryable();
+                .Include(d => d.IdKhNavigation)    
+                .Include(d => d.IdNvNavigation)    
+                .Include(d => d.IdMggNavigation)   
+                .Select(d => new Donhang
+                {
+                    IdDh = d.IdDh,
+                    Trangthai = d.Trangthai,
+                    Tongtien = d.Tongtien,
+                    Diachigiaohang = d.Diachigiaohang,
+                    Ngaydathang = d.Ngaydathang,
+                    Phuongthucthanhtoan = d.Phuongthucthanhtoan,
+                    IdKh = d.IdKh,
+                    IdMgg = d.IdMgg,
+                    IdNv = d.IdNv,
+                    ghichu = d.ghichu ?? "",
+                    IdKhNavigation = d.IdKhNavigation,
+                    IdNvNavigation = d.IdNvNavigation,
+                    IdMggNavigation = d.IdMggNavigation
+                });
 
             if (!string.IsNullOrEmpty(searchString))
             {
                 searchString = searchString.ToLower();
                 query = query.Where(d => d.IdDh.ToLower().Contains(searchString) ||
-                                       d.IdKhNavigation.Hoten.ToLower().Contains(searchString));
+                                       (d.IdKhNavigation != null && 
+                                        d.IdKhNavigation.Hoten.ToLower().Contains(searchString)));
             }
 
             if (!string.IsNullOrEmpty(trangThai))
@@ -42,7 +59,8 @@ namespace Admin_WBLK.Controllers
 
             if (ngayDat.HasValue)
             {
-                query = query.Where(d => d.Ngaydathang == ngayDat.Value);
+                var ngayDatDateTime = ngayDat.Value.ToDateTime(TimeOnly.MinValue);
+                query = query.Where(d => d.Ngaydathang.Date == ngayDatDateTime.Date);
             }
 
             // Lấy danh sách trạng thái để làm dropdown filter
@@ -50,19 +68,34 @@ namespace Admin_WBLK.Controllers
             { 
                 "Chờ xác nhận",
                 "Đã xác nhận",
-                "Đang giao",
-                "Đã giao",
-                "Đã hủy",
-                "Yêu cầu hủy"
+                "Chờ giao hàng",
+                "Đang giao hàng",
+                "Đã giao hàng",
+                "Đã huỷ",
+                "Yêu cầu huỷ",
+                "Đã hoàn tiền",
+                "Đang yêu cầu đổi trả",
+                "Chờ nhận hàng trả",
+                "Đổi trả thành công",
+                "Đổi trả thất bại"
             };
 
-            var totalItems = await query.CountAsync();
-            var items = await query.Skip((pageNumber - 1) * pageSize)
-                                 .Take(pageSize)
-                                 .ToListAsync();
+            try 
+            {
+                var totalItems = await query.CountAsync();
+                var items = await query.Skip((pageNumber - 1) * pageSize)
+                                     .Take(pageSize)
+                                     .ToListAsync();
 
-            var model = new PaginatedList<Donhang>(items, totalItems, pageNumber, pageSize);
-            return View(model);
+                var model = new PaginatedList<Donhang>(items, totalItems, pageNumber, pageSize);
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in Index: {ex.Message}");
+                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
+                throw;
+            }
         }
 
         [HttpGet]
@@ -91,9 +124,11 @@ namespace Admin_WBLK.Controllers
             }
 
             var donhang = await _context.Donhangs
-                .Include(d => d.IdKhNavigation)    // Include thông tin khách hàng
-                .Include(d => d.IdNvNavigation)    // Include thông tin nhân viên
-                .Include(d => d.IdMggNavigation)   // Include thông tin mã giảm giá
+                .Include(d => d.IdKhNavigation)
+                .Include(d => d.IdNvNavigation)
+                .Include(d => d.IdMggNavigation)
+                .Include(d => d.Chitietdonhangs)
+                    .ThenInclude(c => c.IdSpNavigation)
                 .FirstOrDefaultAsync(m => m.IdDh == id);
 
             if (donhang == null)
@@ -113,25 +148,128 @@ namespace Admin_WBLK.Controllers
         // POST: OrderManagement/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("IdKh,Diachigiaohang,Phuongthucthanhtoan,IdMgg")] Donhang donhang)
+        public async Task<IActionResult> Create([Bind("IdKh,IdNv,Diachigiaohang,Phuongthucthanhtoan,IdMgg,ghichu,Tongtien,Trangthai")] Donhang donhang, 
+            string chitietdonhangs, string? Mathanhtoan, string? NoiDungThanhToan)
         {
-            if (ModelState.IsValid)
+            try
             {
-                donhang.IdDh = GenerateOrderId(); // Tạo mã đơn hàng tự động
-                donhang.Ngaydathang = DateOnly.FromDateTime(DateTime.Now);
-                donhang.Trangthai = "Chờ xác nhận";
+                using var transaction = await _context.Database.BeginTransactionAsync();
                 
-                _context.Add(donhang);
+                // Kiểm tra mã thanh toán nếu là thanh toán online
+                if (donhang.Phuongthucthanhtoan != "COD")
+                {
+                    if (string.IsNullOrEmpty(Mathanhtoan))
+                    {
+                        throw new Exception("Vui lòng nhập mã thanh toán cho phương thức thanh toán online!");
+                    }
+
+                    // Kiểm tra mã thanh toán có tồn tại chưa
+                    var existingPayment = await _context.Thanhtoans
+                        .FirstOrDefaultAsync(t => t.Mathanhtoan == Mathanhtoan);
+                    if (existingPayment != null)
+                    {
+                        throw new Exception("Mã thanh toán này đã tồn tại trong hệ thống!");
+                    }
+                }
+
+                // Tạo mã đơn hàng mới
+                donhang.IdDh = await GenerateOrderId();
+                donhang.Ngaydathang = DateTime.Now;
+
+                // Thêm đơn hàng
+                _context.Donhangs.Add(donhang);
+
+                // Kiểm tra và cập nhật số lượng tồn kho
+                if (!string.IsNullOrEmpty(chitietdonhangs))
+                {
+                    var chitietList = JsonSerializer.Deserialize<List<Chitietdonhang>>(chitietdonhangs);
+                    foreach (var chitiet in chitietList)
+                    {
+                        chitiet.IdDh = donhang.IdDh;
+                        var product = await _context.Sanphams.FindAsync(chitiet.IdSp);
+                        if (product == null)
+                        {
+                            throw new Exception($"Không tìm thấy sản phẩm {chitiet.IdSp}!");
+                        }
+
+                        // Kiểm tra số lượng tồn
+                        if (product.SoLuongTon < chitiet.Soluong)
+                        {
+                            throw new Exception($"Sản phẩm {product.TenSp} chỉ còn {product.SoLuongTon} sản phẩm!");
+                        }
+
+                        // Nếu đơn hàng đã xác nhận thì trừ số lượng tồn ngay
+                        if (donhang.Trangthai == "Đã xác nhận")
+                        {
+                            product.SoLuongTon -= chitiet.Soluong;
+                            _context.Update(product);
+                        }
+
+                        _context.Chitietdonhangs.Add(chitiet);
+                    }
+                }
+
                 await _context.SaveChangesAsync();
+
+                // Thêm thông tin thanh toán nếu là thanh toán online
+                if (!string.IsNullOrEmpty(Mathanhtoan) && donhang.Phuongthucthanhtoan != "COD")
+                {
+                    var thanhtoan = new Thanhtoan
+                    {
+                        IdTt = await GeneratePaymentId(),
+                        Mathanhtoan = Mathanhtoan,
+                        Trangthai = "Chờ xác nhận",
+                        Tienthanhtoan = donhang.Tongtien,
+                        Ngaythanhtoan = DateTime.Now,
+                        Noidungthanhtoan = NoiDungThanhToan ?? "",
+                        IdDh = donhang.IdDh
+                    };
+                    _context.Thanhtoans.Add(thanhtoan);
+                    await _context.SaveChangesAsync();
+                }
+
+                await transaction.CommitAsync();
+                
+                TempData["Success"] = "Tạo đơn hàng thành công!";
                 return RedirectToAction(nameof(Index));
             }
-            return View(donhang);
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", ex.Message);
+                return View(donhang);
+            }
         }
 
-        private string GenerateOrderId()
+        private async Task<string> GenerateOrderId()
         {
-            // Logic tạo mã đơn hàng tự động
-            return "DH" + DateTime.Now.ToString("yyyyMMddHHmmss");
+            var lastOrder = await _context.Donhangs
+                .OrderByDescending(d => Convert.ToInt32(d.IdDh.Substring(2)))
+                .FirstOrDefaultAsync();
+
+            if (lastOrder == null)
+            {
+                return "DH000001";
+            }
+
+            int lastNumber = Convert.ToInt32(lastOrder.IdDh.Substring(2));
+            return $"DH{(lastNumber + 1):D6}";
+        }
+
+        private async Task<string> GeneratePaymentId()
+        {
+            string newId = "TT000001";
+            var lastPayment = await _context.Thanhtoans
+                .OrderByDescending(t => t.IdTt)
+                .Select(t => new { t.IdTt })
+                .FirstOrDefaultAsync();
+
+            if (lastPayment != null)
+            {
+                int lastNumber = int.Parse(lastPayment.IdTt.Substring(2));
+                newId = $"TT{(lastNumber + 1):D6}";
+            }
+
+            return newId;
         }
 
         // API endpoints for AJAX calls
@@ -206,6 +344,16 @@ namespace Admin_WBLK.Controllers
             }
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetStaffInfo(string id)
+        {
+            var staff = await _context.Nhanviens
+                .Where(n => n.IdNv == id)
+                .Select(n => new { n.IdNv, n.Hoten })
+                .FirstOrDefaultAsync();
+            return Json(staff);
+        }
+
         // GET: OrderManagement/Delete/5
         public async Task<IActionResult> Delete(string id)
         {
@@ -261,11 +409,29 @@ namespace Admin_WBLK.Controllers
                 .Include(d => d.IdKhNavigation)
                 .Include(d => d.IdNvNavigation)
                 .Include(d => d.IdMggNavigation)
+                .Include(d => d.Chitietdonhangs)
+                    .ThenInclude(c => c.IdSpNavigation)
                 .FirstOrDefaultAsync(m => m.IdDh == id);
 
             if (donhang == null)
             {
                 return NotFound();
+            }
+
+            // Load thông tin thanh toán nếu có
+            if (donhang.Phuongthucthanhtoan != "COD")
+            {
+                var thanhtoan = await _context.Thanhtoans
+                    .Where(t => t.IdDh == id)
+                    .OrderByDescending(t => t.Ngaythanhtoan)
+                    .FirstOrDefaultAsync();
+
+                if (thanhtoan != null)
+                {
+                    ViewBag.Mathanhtoan = thanhtoan.Mathanhtoan;
+                    ViewBag.TrangthaiThanhtoan = thanhtoan.Trangthai;
+                    ViewBag.Noidungthanhtoan = thanhtoan.Noidungthanhtoan;
+                }
             }
 
             return View(donhang);
@@ -274,7 +440,8 @@ namespace Admin_WBLK.Controllers
         // POST: OrderManagement/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(string id, [Bind("IdDh,IdKh,IdNv,Trangthai,Tongtien,Diachigiaohang,Ngaydathang,Phuongthucthanhtoan,IdMgg")] Donhang donhang)
+        public async Task<IActionResult> Edit(string id, [Bind("IdDh,IdKh,IdNv,Trangthai,Tongtien,Diachigiaohang,Ngaydathang,Phuongthucthanhtoan,IdMgg,ghichu")] Donhang donhang,
+            string chitietdonhangs, string? Mathanhtoan, string? TrangthaiThanhtoan, string? Noidungthanhtoan)
         {
             if (id != donhang.IdDh)
             {
@@ -283,6 +450,8 @@ namespace Admin_WBLK.Controllers
 
             try
             {
+                using var transaction = await _context.Database.BeginTransactionAsync();
+
                 // Bỏ qua validation cho các trường sẽ được tự động set
                 ModelState.Remove("IdKhNavigation");
                 ModelState.Remove("IdNvNavigation");
@@ -293,8 +462,9 @@ namespace Admin_WBLK.Controllers
                     return View(donhang);
                 }
 
-                // Lấy đơn hàng hiện tại từ database
-                var existingOrder = await _context.Donhangs.AsNoTracking()
+                // Lấy đơn hàng hiện tại và chi tiết
+                var existingOrder = await _context.Donhangs
+                    .Include(d => d.Chitietdonhangs)
                     .FirstOrDefaultAsync(d => d.IdDh == id);
 
                 if (existingOrder == null)
@@ -302,39 +472,235 @@ namespace Admin_WBLK.Controllers
                     return NotFound();
                 }
 
-                // Cập nhật các trường có thể sửa
-                existingOrder.IdKh = donhang.IdKh;
-                existingOrder.IdNv = donhang.IdNv;
-                existingOrder.Trangthai = donhang.Trangthai;
-                existingOrder.Diachigiaohang = donhang.Diachigiaohang;
-                existingOrder.Phuongthucthanhtoan = donhang.Phuongthucthanhtoan;
-                existingOrder.IdMgg = donhang.IdMgg;
-                existingOrder.Ngaydathang = donhang.Ngaydathang;
-                existingOrder.Tongtien = donhang.Tongtien;
+                // Hoàn trả số lượng tồn kho cho các sản phẩm cũ
+                foreach (var detail in existingOrder.Chitietdonhangs)
+                {
+                    var product = await _context.Sanphams.FindAsync(detail.IdSp);
+                    if (product != null)
+                    {
+                        product.SoLuongTon += detail.Soluong;
+                        _context.Update(product);
+                    }
+                }
 
-                _context.Update(existingOrder);
+                // Xóa chi tiết đơn hàng cũ
+                _context.Chitietdonhangs.RemoveRange(existingOrder.Chitietdonhangs);
+
+                // Thêm chi tiết đơn hàng mới
+                if (!string.IsNullOrEmpty(chitietdonhangs))
+                {
+                    var details = JsonSerializer.Deserialize<List<ChitietdonhangDTO>>(chitietdonhangs);
+                    foreach (var detail in details)
+                    {
+                        var product = await _context.Sanphams.FindAsync(detail.IdSp);
+                        if (product == null)
+                        {
+                            throw new Exception($"Không tìm thấy sản phẩm {detail.IdSp}");
+                        }
+
+                        // Kiểm tra và trừ số lượng tồn kho nếu đơn hàng đã xác nhận
+                        if (donhang.Trangthai == "Chờ xác nhận")
+                        {
+                            if (product.SoLuongTon < detail.Soluong)
+                            {
+                                throw new Exception($"Sản phẩm {product.TenSp} chỉ còn {product.SoLuongTon} sản phẩm!");
+                            }
+                            product.SoLuongTon -= detail.Soluong;
+                            _context.Update(product);
+                        }
+
+                        var chitiet = new Chitietdonhang
+                        {
+                            IdDh = id,
+                            IdSp = detail.IdSp,
+                            Soluong = detail.Soluong,
+                            Dongia = detail.Dongia
+                        };
+                        _context.Chitietdonhangs.Add(chitiet);
+                    }
+                }
+
+                // Cập nhật thông tin đơn hàng
+                _context.Entry(existingOrder).CurrentValues.SetValues(donhang);
+
+                // Xử lý thông tin thanh toán
+                if (donhang.Phuongthucthanhtoan != "COD" && !string.IsNullOrEmpty(Mathanhtoan))
+                {
+                    var thanhtoan = await _context.Thanhtoans
+                        .FirstOrDefaultAsync(t => t.IdDh == id);
+
+                    if (thanhtoan == null)
+                    {
+                        thanhtoan = new Thanhtoan
+                        {
+                            IdTt = await GeneratePaymentId(),
+                            Mathanhtoan = Mathanhtoan,
+                            IdDh = id,
+                            Trangthai = TrangthaiThanhtoan ?? "Chờ thanh toán",
+                            Tienthanhtoan = donhang.Tongtien,
+                            Ngaythanhtoan = DateTime.Now,
+                            Noidungthanhtoan = Noidungthanhtoan ?? ""
+                        };
+                        _context.Thanhtoans.Add(thanhtoan);
+                    }
+                    else
+                    {
+                        thanhtoan.Mathanhtoan = Mathanhtoan;
+                        thanhtoan.Trangthai = TrangthaiThanhtoan ?? thanhtoan.Trangthai;
+                        thanhtoan.Tienthanhtoan = donhang.Tongtien;
+                        thanhtoan.Noidungthanhtoan = Noidungthanhtoan ?? thanhtoan.Noidungthanhtoan;
+                        _context.Update(thanhtoan);
+                    }
+                }
+
                 await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
 
                 TempData["Success"] = "Cập nhật đơn hàng thành công!";
                 return RedirectToAction(nameof(Index));
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Exception ex)
             {
-                if (!DonhangExists(donhang.IdDh))
+                ModelState.AddModelError("", $"Có lỗi xảy ra: {ex.Message}");
+                return View(donhang);
+            }
+        }
+
+        public class ChitietdonhangDTO
+        {
+            public string IdSp { get; set; }
+            public int Soluong { get; set; }
+            public decimal Dongia { get; set; }
+        }
+
+        // API endpoint để lấy chi tiết đơn hàng
+        [HttpGet]
+        public async Task<IActionResult> GetOrderDetails(string id)
+        {
+            var details = await _context.Chitietdonhangs
+                .Include(c => c.IdSpNavigation)
+                .Where(c => c.IdDh == id)
+                .Select(c => new
+                {
+                    idSp = c.IdSp,
+                    tenSp = c.IdSpNavigation.TenSp,
+                    soluong = c.Soluong,
+                    dongia = c.Dongia
+                })
+                .ToListAsync();
+
+            return Json(details);
+        }
+
+        // GET: OrderManagement/UpdateStatus/5
+        [HttpGet]
+        public async Task<IActionResult> UpdateStatus(string id, string newStatus)
+        {
+            if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(newStatus))
+            {
+                return BadRequest();
+            }
+
+            try
+            {
+                using var transaction = await _context.Database.BeginTransactionAsync();
+                
+                var donhang = await _context.Donhangs
+                    .Include(d => d.Chitietdonhangs)
+                    .FirstOrDefaultAsync(d => d.IdDh == id);
+
+                if (donhang == null)
                 {
                     return NotFound();
                 }
-                else
+
+                // Kiểm tra tính hợp lệ của trạng thái mới
+                var validTransitions = new Dictionary<string, string[]>
                 {
-                    throw;
+                    { "Chờ xác nhận", new[] { "Đã xác nhận", "Đã huỷ" } },
+                    { "Đã xác nhận", new[] { "Chờ giao hàng", "Đã huỷ" } },
+                    { "Chờ giao hàng", new[] { "Đang giao hàng", "Đã huỷ" } },
+                    { "Đang giao hàng", new[] { "Đã giao hàng", "Đang yêu cầu đổi trả" } },
+                    { "Yêu cầu huỷ", new[] { "Đã huỷ", "Đã hoàn tiền" } },
+                    { "Đang yêu cầu đổi trả", new[] { "Chờ nhận hàng trả" } },
+                    { "Chờ nhận hàng trả", new[] { "Đổi trả thành công", "Đổi trả thất bại" } }
+                };
+
+                if (!validTransitions.ContainsKey(donhang.Trangthai) || 
+                    !validTransitions[donhang.Trangthai].Contains(newStatus))
+                {
+                    TempData["Error"] = "Không thể chuyển trạng thái đơn hàng!";
+                    return RedirectToAction(nameof(Index));
                 }
+
+                // Xử lý các logic bổ sung theo trạng thái
+                switch (newStatus)
+                {
+                    case "Chờ xác nhận":
+                        // Kiểm tra và trừ số lượng tồn kho
+                        foreach (var detail in donhang.Chitietdonhangs)
+                        {
+                            var product = await _context.Sanphams.FindAsync(detail.IdSp);
+                            if (product == null)
+                            {
+                                throw new Exception($"Không tìm thấy sản phẩm {detail.IdSp}");
+                            }
+
+                            if (product.SoLuongTon < detail.Soluong)
+                            {
+                                throw new Exception($"Sản phẩm {product.TenSp} chỉ còn {product.SoLuongTon} sản phẩm!");
+                            }
+
+                            product.SoLuongTon -= detail.Soluong;
+                            _context.Update(product);
+                        }
+                        break;
+
+                    case "Đã huỷ":
+                        // Hoàn trả số lượng tồn kho khi hủy đơn
+                        foreach (var detail in donhang.Chitietdonhangs)
+                        {
+                            var product = await _context.Sanphams.FindAsync(detail.IdSp);
+                            if (product != null)
+                            {
+                                // Hoàn trả số lượng sản phẩm vào kho
+                                product.SoLuongTon += detail.Soluong;
+                                _context.Update(product);
+                                
+                                // Log để theo dõi
+                                Console.WriteLine($"Đã hoàn trả {detail.Soluong} sản phẩm {product.TenSp} vào kho");
+                            }
+                        }
+                        break;
+
+                    case "Đổi trả thành công":
+                        // Xử lý tương tự như hủy đơn
+                        foreach (var detail in donhang.Chitietdonhangs)
+                        {
+                            var product = await _context.Sanphams.FindAsync(detail.IdSp);
+                            if (product != null)
+                            {
+                                product.SoLuongTon += detail.Soluong;
+                                _context.Update(product);
+                            }
+                        }
+                        break;
+                }
+
+                // Cập nhật trạng thái đơn hàng
+                donhang.Trangthai = newStatus;
+                _context.Update(donhang);
+                
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                TempData["Success"] = $"Đã cập nhật trạng thái đơn hàng thành '{newStatus}'!";
+                return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error: {ex.Message}");
-                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
-                ModelState.AddModelError("", $"Có lỗi xảy ra: {ex.Message}");
-                return View(donhang);
+                TempData["Error"] = $"Lỗi: {ex.Message}";
+                return RedirectToAction(nameof(Index));
             }
         }
     }

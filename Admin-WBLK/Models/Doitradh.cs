@@ -13,9 +13,9 @@ public partial class Doitradh
 
     public string Lydo { get; set; } = null!;
 
-    public DateOnly Ngayyeucau { get; set; }
+    public DateTime Ngayyeucau { get; set; }
 
-    public DateOnly? Ngayxuly { get; set; }
+    public DateTime? Ngayxuly { get; set; }
 
     public string? Ghichu { get; set; }
 

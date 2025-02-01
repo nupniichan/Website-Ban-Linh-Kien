@@ -1,4 +1,4 @@
-@model IEnumerable<Admin_WBLK.Models.Khachhang>
+@model PaginatedList<Admin_WBLK.Models.Khachhang>
 
 @{
     ViewData["Title"] = "Quản lý khách hàng";
@@ -14,7 +14,7 @@
         </div>
     }
 
-<!-- Search Bar và Filters -->
+    <!-- Search Bar và Filters -->
     <div class="mb-6 space-y-4">
         <form asp-action="Index" method="get" class="flex flex-wrap gap-4">
             <!-- Search Bar -->
@@ -46,9 +46,39 @@
                         </button>
                     }
                 </div>
+                <!-- Search Results Dropdown -->
                 <div id="searchResults" class="absolute mt-1 w-80 bg-white border border-gray-200 rounded-lg shadow-lg hidden max-h-60 overflow-y-auto z-10">
                 </div>
             </div>
+
+            <!-- Sort Order -->
+            <select name="sortOrder" 
+                    class="px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm"
+                    onchange="this.form.submit()">
+                @if (ViewData["CurrentSort"]?.ToString() == "name_desc")
+                {
+                    <option value="">Tên A-Z</option>
+                    <option value="name_desc" selected>Tên Z-A</option>
+                }
+                else
+                {
+                    <option value="" selected>Tên A-Z</option>
+                    <option value="name_desc">Tên Z-A</option>
+                }
+            </select>
+
+            <!-- Clear Filters -->
+            @if (!string.IsNullOrEmpty(ViewData["CurrentFilter"]?.ToString()) || 
+                 !string.IsNullOrEmpty(ViewData["CurrentSort"]?.ToString()))
+            {
+                <a asp-action="Index" 
+                   class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    Xóa bộ lọc
+                </a>
+            }
         </form>
     </div>
 
@@ -57,22 +87,6 @@
         <a asp-action="Create" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
             Thêm tài khoản khách hàng
         </a>
-
-        <select id="sortOrder" class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-            <option value="asc">A-Z</option>
-            <option value="desc">Z-A</option>
-        </select>
-
-        @if (!string.IsNullOrEmpty(ViewData["CurrentFilter"]?.ToString()))
-        {
-            <a asp-action="Index" 
-               class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-                Xóa bộ lọc
-            </a>
-        }
     </div>
 
     <!-- Customers Table -->
@@ -91,12 +105,16 @@
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-200">
-                @foreach (var item in Model)
+                @foreach (var item in Model.Items)
                 {
                     <tr class="hover:bg-gray-50">
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@item.IdKh</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@item.Hoten</td>
-                        <td class="px-6 py-4 text-sm text-gray-900 max-w-xs truncate" title="@item.Diachi">@item.Diachi</td>
+                        <td class="px-6 py-4 text-sm text-gray-900">
+                            <span class="block max-w-xs truncate" title="@item.Diachi">
+                                @(item.Diachi?.Length > 10 ? item.Diachi.Substring(0, 10) + "..." : item.Diachi)
+                            </span>
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@item.Email</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@item.Gioitinh</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@item.Ngaysinh.ToString("dd/MM/yyyy")</td>
@@ -132,6 +150,53 @@
             </tbody>
         </table>
     </div>
+
+    <!-- Pagination -->
+    <div class="flex justify-between items-center mt-6">
+        <div class="text-sm text-gray-500">
+            Hiển thị @(((Model.PageNumber - 1) * Model.PageSize) + 1) đến @(Math.Min(Model.PageNumber * Model.PageSize, Model.TotalCount)) trong tổng số @Model.TotalCount khách hàng
+        </div>
+        <nav class="flex items-center space-x-2">
+            @if (Model.HasPreviousPage)
+            {
+                <a asp-action="Index" 
+                   asp-route-pageNumber="@(Model.PageNumber - 1)"
+                   asp-route-searchString="@ViewData["CurrentFilter"]"
+                   asp-route-sortOrder="@ViewData["CurrentSort"]"
+                   class="px-3 py-2 rounded-lg border hover:bg-gray-50">
+                    <span class="sr-only">Previous</span>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                </a>
+            }
+
+            @for (int i = 1; i <= Model.TotalPages; i++)
+            {
+                <a asp-action="Index" 
+                   asp-route-pageNumber="@i"
+                   asp-route-searchString="@ViewData["CurrentFilter"]"
+                   asp-route-sortOrder="@ViewData["CurrentSort"]"
+                   class="px-3 py-2 rounded-lg border @(i == Model.PageNumber ? "bg-blue-50 text-blue-600 font-medium" : "hover:bg-gray-50")">
+                    @i
+                </a>
+            }
+
+            @if (Model.HasNextPage)
+            {
+                <a asp-action="Index" 
+                   asp-route-pageNumber="@(Model.PageNumber + 1)"
+                   asp-route-searchString="@ViewData["CurrentFilter"]"
+                   asp-route-sortOrder="@ViewData["CurrentSort"]"
+                   class="px-3 py-2 rounded-lg border hover:bg-gray-50">
+                    <span class="sr-only">Next</span>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </a>
+            }
+        </nav>
+    </div>
 </div>
 
 @section Scripts {
@@ -159,6 +224,7 @@
                                 div.innerHTML = `
                                     <div class="font-medium">${item.hoten}</div>
                                     <div class="text-sm text-gray-500">Mã KH: ${item.idKh}</div>
+                                    <div class="text-sm text-gray-500">Email: ${item.email}</div>
                                 `;
                                 div.onclick = () => {
                                     document.getElementById('searchInput').value = item.hoten;
@@ -180,6 +246,7 @@
             document.querySelector('form').submit();
         }
 
+        // Đóng dropdown khi click ra ngoài
         document.addEventListener('click', function(event) {
             const resultsDiv = document.getElementById('searchResults');
             const searchInput = document.getElementById('searchInput');

@@ -49,12 +49,12 @@ namespace Admin_WBLK.Controllers
             // Lọc theo ngày (nếu có)
             if (DateOnly.TryParse(fromDate, out var fromDateParsed))
             {
-                query = query.Where(r => r.Ngayyeucau >= fromDateParsed);
+                query = query.Where(r => DateOnly.FromDateTime(r.Ngayyeucau) >= fromDateParsed);
             }
 
             if (DateOnly.TryParse(toDate, out var toDateParsed))
             {
-                query = query.Where(r => r.Ngayyeucau <= toDateParsed);
+                query = query.Where(r => DateOnly.FromDateTime(r.Ngayyeucau) <= toDateParsed);
             }
 
             // Phân trang
@@ -85,8 +85,8 @@ namespace Admin_WBLK.Controllers
                 return NotFound();
             }
 
-            request.Trangthai = "Chấp nhận";
-            request.Ngayxuly = DateOnly.FromDateTime(DateTime.Now);
+            request.Trangthai = "Chấp nhận đổi";
+            request.Ngayxuly = DateTime.Now;
             request.Ghichu = note;
 
             _context.Update(request);
@@ -112,8 +112,8 @@ namespace Admin_WBLK.Controllers
                 return NotFound();
             }
 
-            request.Trangthai = "Từ chối";
-            request.Ngayxuly = DateOnly.FromDateTime(DateTime.Now);
+            request.Trangthai = "Từ chối đổi";
+            request.Ngayxuly = DateTime.Now;
             request.Ghichu = note;
 
             _context.Update(request);
@@ -134,7 +134,7 @@ namespace Admin_WBLK.Controllers
                 nextId = $"DTR{(lastId + 1).ToString("D3")}";
             }
 
-            var model = new Doitradh { Id = nextId, Ngayyeucau = DateOnly.FromDateTime(DateTime.Now), Trangthai = "Chờ xử lý" };
+            var model = new Doitradh { Id = nextId, Ngayyeucau = DateTime.Now, Trangthai = "Chờ xử lý" };
 
             ViewData["IdKh"] = new SelectList(_context.Khachhangs.Select(k => new { IdKh = k.IdKh, DisplayName = k.Hoten + " - " + k.IdKh }), "IdKh", "DisplayName");
             ViewData["IdNv"] = new SelectList(_context.Nhanviens.Select(n => new { IdNv = n.IdNv, DisplayName = n.Hoten + " - " + n.IdNv }), "IdNv", "DisplayName");
@@ -177,7 +177,7 @@ namespace Admin_WBLK.Controllers
                 return View(request);
             }
 
-            request.Ngayyeucau = DateOnly.FromDateTime(DateTime.Now);
+            request.Ngayyeucau = DateTime.Now;
             request.Trangthai = "Chờ xử lý";
 
             _context.Add(request);
@@ -267,7 +267,7 @@ namespace Admin_WBLK.Controllers
                 }
                 else
                 {
-                    request.Ngayxuly = DateOnly.FromDateTime(DateTime.Now);
+                    request.Ngayxuly = DateTime.Now;
                 }
                 request.Ngayyeucau = existingRequest.Ngayyeucau;
 
