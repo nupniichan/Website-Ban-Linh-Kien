@@ -365,30 +365,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 chitietdonhangs.push({ IdSp: idSp, Soluong: soluong, Dongia: dongia });
             }
 
-            // Tạo FormData
-            const formData = new FormData(form);
-            formData.append('chitietdonhangs', JSON.stringify(chitietdonhangs));
-
-            try {
-                const response = await fetch(form.action, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
-                    }
-                });
-
-                const result = await response.json();
-                if (result.success) {
-                    alert(result.message);
-                    window.location.href = '/OrderManagement';
-                } else {
-                    alert(result.message);
-                }
-            } catch (error) {
-                alert('Có lỗi xảy ra khi tạo đơn hàng');
-                console.error('Error:', error);
+            // Thêm hidden input cho chitietdonhangs
+            let chitietdonhangsInput = form.querySelector('input[name="chitietdonhangs"]');
+            if (!chitietdonhangsInput) {
+                chitietdonhangsInput = document.createElement('input');
+                chitietdonhangsInput.type = 'hidden';
+                chitietdonhangsInput.name = 'chitietdonhangs';
+                form.appendChild(chitietdonhangsInput);
             }
+            chitietdonhangsInput.value = JSON.stringify(chitietdonhangs);
+
+            // Log để debug
+            console.log('Submitting form with chitietdonhangs:', chitietdonhangsInput.value);
+
+            // Submit form
+            form.submit();
         });
     }
 });
