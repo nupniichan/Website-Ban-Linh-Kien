@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Admin_WBLK.Models;
 
@@ -7,7 +9,7 @@ public partial class Doitradh
 {
     public string Id { get; set; } = null!;
 
-    public string Trangthai { get; set; } = null!;
+    public string Trangthai { get; set; } = "Chờ xử lý";
 
     public string Lydo { get; set; } = null!;
 
@@ -23,9 +25,15 @@ public partial class Doitradh
 
     public string IdDh { get; set; } = null!;
 
-    public virtual Donhang IdDhNavigation { get; set; } = null!;
+    [JsonIgnore]
+    [BindNever]
+    public virtual Donhang? IdDhNavigation { get; set; }
 
-    public virtual Khachhang IdKhNavigation { get; set; } = null!;
+    [JsonIgnore]
+    [BindNever]
+    public virtual Khachhang? IdKhNavigation { get; set; }
 
-    public virtual Nhanvien IdNvNavigation { get; set; } = null!;
+    [JsonIgnore]
+    [BindNever]
+    public virtual Nhanvien? IdNvNavigation { get; set; }
 }
