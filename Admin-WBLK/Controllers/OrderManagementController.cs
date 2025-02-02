@@ -25,6 +25,8 @@ namespace Admin_WBLK.Controllers
 
             var query = _context.Donhangs
                 .Include(d => d.IdKhNavigation)    
+                .Include(d => d.IdNvNavigation)    
+                .Include(d => d.IdMggNavigation)   
                 .Select(d => new Donhang
                 {
                     IdDh = d.IdDh,
@@ -34,8 +36,12 @@ namespace Admin_WBLK.Controllers
                     Ngaydathang = d.Ngaydathang,
                     Phuongthucthanhtoan = d.Phuongthucthanhtoan,
                     IdKh = d.IdKh,
+                    IdMgg = d.IdMgg,
+                    IdNv = d.IdNv,
                     ghichu = d.ghichu ?? "",
-                    IdKhNavigation = d.IdKhNavigation
+                    IdKhNavigation = d.IdKhNavigation,
+                    IdNvNavigation = d.IdNvNavigation,
+                    IdMggNavigation = d.IdMggNavigation
                 });
 
             if (!string.IsNullOrEmpty(searchString))
@@ -53,9 +59,8 @@ namespace Admin_WBLK.Controllers
 
             if (ngayDat.HasValue)
             {
-                var startDate = ngayDat.Value.ToDateTime(TimeOnly.MinValue);
-                var endDate = ngayDat.Value.ToDateTime(TimeOnly.MaxValue);
-                query = query.Where(d => d.Ngaydathang >= startDate && d.Ngaydathang <= endDate);
+                var ngayDatDateTime = ngayDat.Value.ToDateTime(TimeOnly.MinValue);
+                query = query.Where(d => d.Ngaydathang.Date == ngayDatDateTime.Date);
             }
 
             // Lấy danh sách trạng thái để làm dropdown filter
@@ -66,8 +71,8 @@ namespace Admin_WBLK.Controllers
                 "Chờ giao hàng",
                 "Đang giao hàng",
                 "Đã giao hàng",
-                "Yêu cầu huỷ",
                 "Đã huỷ",
+                "Yêu cầu huỷ",
                 "Đã hoàn tiền",
                 "Đang yêu cầu đổi trả",
                 "Chờ nhận hàng trả",
@@ -104,11 +109,7 @@ namespace Admin_WBLK.Controllers
                 .Where(d => d.IdDh.ToLower().Contains(term) ||
                            d.IdKhNavigation.Hoten.ToLower().Contains(term))
                 .Take(5)
-                .Select(d => new { 
-                    d.IdDh, 
-                    CustomerName = d.IdKhNavigation.Hoten,
-                    OrderDate = d.Ngaydathang
-                })
+                .Select(d => new { d.IdDh, CustomerName = d.IdKhNavigation.Hoten })
                 .ToListAsync();
 
             return Json(suggestions);
@@ -152,6 +153,9 @@ namespace Admin_WBLK.Controllers
         {
             try
             {
+                // Log để debug
+                Console.WriteLine($"Received chitietdonhangs: {chitietdonhangs}");
+                
                 using var transaction = await _context.Database.BeginTransactionAsync();
                 
                 // Kiểm tra mã thanh toán nếu là thanh toán online
@@ -440,7 +444,7 @@ namespace Admin_WBLK.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(string id, [Bind("IdDh,IdKh,IdNv,Trangthai,Tongtien,Diachigiaohang,Ngaydathang,Phuongthucthanhtoan,IdMgg,ghichu")] Donhang donhang,
-            string chitietdonhangs, string? Mathanhtoan, string? TrangthaiThanhtoan, string? Noidungthanhtoan)
+            string? Mathanhtoan, string? TrangthaiThanhtoan, string? Noidungthanhtoan)
         {
             if (id != donhang.IdDh)
             {
@@ -471,53 +475,8 @@ namespace Admin_WBLK.Controllers
                     return NotFound();
                 }
 
-                // Hoàn trả số lượng tồn kho cho các sản phẩm cũ
-                foreach (var detail in existingOrder.Chitietdonhangs)
-                {
-                    var product = await _context.Sanphams.FindAsync(detail.IdSp);
-                    if (product != null)
-                    {
-                        product.SoLuongTon += detail.Soluong;
-                        _context.Update(product);
-                    }
-                }
-
-                // Xóa chi tiết đơn hàng cũ
-                _context.Chitietdonhangs.RemoveRange(existingOrder.Chitietdonhangs);
-
-                // Thêm chi tiết đơn hàng mới
-                if (!string.IsNullOrEmpty(chitietdonhangs))
-                {
-                    var details = JsonSerializer.Deserialize<List<ChitietdonhangDTO>>(chitietdonhangs);
-                    foreach (var detail in details)
-                    {
-                        var product = await _context.Sanphams.FindAsync(detail.IdSp);
-                        if (product == null)
-                        {
-                            throw new Exception($"Không tìm thấy sản phẩm {detail.IdSp}");
-                        }
-
-                        // Kiểm tra và trừ số lượng tồn kho nếu đơn hàng đã xác nhận
-                        if (donhang.Trangthai == "Chờ xác nhận")
-                        {
-                            if (product.SoLuongTon < detail.Soluong)
-                            {
-                                throw new Exception($"Sản phẩm {product.TenSp} chỉ còn {product.SoLuongTon} sản phẩm!");
-                            }
-                            product.SoLuongTon -= detail.Soluong;
-                            _context.Update(product);
-                        }
-
-                        var chitiet = new Chitietdonhang
-                        {
-                            IdDh = id,
-                            IdSp = detail.IdSp,
-                            Soluong = detail.Soluong,
-                            Dongia = detail.Dongia
-                        };
-                        _context.Chitietdonhangs.Add(chitiet);
-                    }
-                }
+                // Giữ nguyên chi tiết đơn hàng cũ
+                donhang.Chitietdonhangs = existingOrder.Chitietdonhangs;
 
                 // Cập nhật thông tin đơn hàng
                 _context.Entry(existingOrder).CurrentValues.SetValues(donhang);
@@ -613,29 +572,30 @@ namespace Admin_WBLK.Controllers
                     return NotFound();
                 }
 
-                // Kiểm tra tính hợp lệ của trạng thái mới
+                // Cập nhật Dictionary các trạng thái hợp lệ
                 var validTransitions = new Dictionary<string, string[]>
                 {
                     { "Chờ xác nhận", new[] { "Đã xác nhận", "Đã huỷ" } },
                     { "Đã xác nhận", new[] { "Chờ giao hàng", "Đã huỷ" } },
                     { "Chờ giao hàng", new[] { "Đang giao hàng", "Đã huỷ" } },
-                    { "Đang giao hàng", new[] { "Đã giao hàng", "Đang yêu cầu đổi trả" } },
-                    { "Yêu cầu huỷ", new[] { "Đã huỷ", "Đã hoàn tiền" } },
-                    { "Đang yêu cầu đổi trả", new[] { "Chờ nhận hàng trả" } },
-                    { "Chờ nhận hàng trả", new[] { "Đổi trả thành công", "Đổi trả thất bại" } }
+                    { "Đang giao hàng", new[] { "Đã giao hàng", "Đã huỷ" } },
+                    { "Đã giao hàng", new[] { "Đang yêu cầu đổi trả" } },
+                    { "Yêu cầu huỷ", new[] { "Đã huỷ", "Đã xác nhận" } },
+                    { "Đang yêu cầu đổi trả", new[] { "Chờ nhận hàng trả", "Đổi trả thất bại" } },
+                    { "Chờ nhận hàng trả", new[] { "Đổi trả thành công" } }
                 };
 
                 if (!validTransitions.ContainsKey(donhang.Trangthai) || 
                     !validTransitions[donhang.Trangthai].Contains(newStatus))
                 {
-                    TempData["Error"] = "Không thể chuyển trạng thái đơn hàng!";
+                    TempData["Error"] = $"Không thể chuyển trạng thái từ '{donhang.Trangthai}' sang '{newStatus}'!";
                     return RedirectToAction(nameof(Index));
                 }
 
                 // Xử lý các logic bổ sung theo trạng thái
                 switch (newStatus)
                 {
-                    case "Chờ xác nhận":
+                    case "Đã xác nhận":
                         // Kiểm tra và trừ số lượng tồn kho
                         foreach (var detail in donhang.Chitietdonhangs)
                         {
@@ -656,24 +616,25 @@ namespace Admin_WBLK.Controllers
                         break;
 
                     case "Đã huỷ":
-                        // Hoàn trả số lượng tồn kho khi hủy đơn
-                        foreach (var detail in donhang.Chitietdonhangs)
+                        // Hoàn trả số lượng tồn kho nếu đơn hàng đã được xác nhận trước đó
+                        if (donhang.Trangthai == "Đã xác nhận" || 
+                            donhang.Trangthai == "Chờ giao hàng" || 
+                            donhang.Trangthai == "Đang giao hàng")
                         {
-                            var product = await _context.Sanphams.FindAsync(detail.IdSp);
-                            if (product != null)
+                            foreach (var detail in donhang.Chitietdonhangs)
                             {
-                                // Hoàn trả số lượng sản phẩm vào kho
-                                product.SoLuongTon += detail.Soluong;
-                                _context.Update(product);
-                                
-                                // Log để theo dõi
-                                Console.WriteLine($"Đã hoàn trả {detail.Soluong} sản phẩm {product.TenSp} vào kho");
+                                var product = await _context.Sanphams.FindAsync(detail.IdSp);
+                                if (product != null)
+                                {
+                                    product.SoLuongTon += detail.Soluong;
+                                    _context.Update(product);
+                                }
                             }
                         }
                         break;
 
                     case "Đổi trả thành công":
-                        // Xử lý tương tự như hủy đơn
+                        // Hoàn trả số lượng tồn kho khi đổi trả thành công
                         foreach (var detail in donhang.Chitietdonhangs)
                         {
                             var product = await _context.Sanphams.FindAsync(detail.IdSp);
