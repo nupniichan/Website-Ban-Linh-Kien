@@ -13,37 +13,57 @@
             <span class="block sm:inline">@TempData["Success"]</span>
         </div>
     }
-        <form asp-action="Index" method="get" class="flex flex-wrap gap-4">
-            <div class="w-80 relative">
-                <input type="text" id="searchInput" name="searchString" value="@ViewData["CurrentFilter"]" 
-                    class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 text-sm" 
-                    placeholder="Tìm kiếm theo mã" autocomplete="off">
-                <div class="absolute inset-y-0 left-0 flex items-center pl-3">
+    <form asp-action="Index" method="get" class="flex flex-wrap gap-4">
+        <!-- Search Bar -->
+        <div class="w-80">
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                     <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                 </div>
+                <input
+                    type="text"
+                    id="searchInput"
+                    name="searchString"
+                    value="@ViewData["CurrentFilter"]"
+                    class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 text-sm"
+                    placeholder="Tìm kiếm theo mã yêu cầu..."
+                    oninput="handleSearch(this.value)"
+                    autocomplete="off"
+                >
+                @if (!string.IsNullOrEmpty(ViewData["CurrentFilter"]?.ToString()))
+                {
+                    <button type="button" 
+                            class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none"
+                            onclick="clearSearch()">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                }
             </div>
+            <div id="searchResults" class="absolute mt-1 w-80 bg-white border border-gray-200 rounded-lg shadow-lg hidden max-h-60 overflow-y-auto z-10">
+            </div>
+        </div>
 
-            <select name="filterType" class="border border-gray-300 rounded-lg px-4 py-2">
-                <option value="">Tất cả trạng thái</option>
-                <option value="Chờ xử lý" selected="@(ViewData["CurrentType"]?.ToString() == "Chờ xử lý")">Chờ xử lý</option>
-                <option value="Chấp nhận đổi" selected="@(ViewData["CurrentType"]?.ToString() == "Chấp nhận đổi")">Chấp nhận đổi</option>
-                <option value="Từ chối đổi" selected="@(ViewData["CurrentType"]?.ToString() == "Từ chối đổi")">Từ chối đổi</option>
-            </select>
+        <select name="filterType" onchange="this.form.submit()" class="border border-gray-300 rounded-lg px-4 py-2">
+            <option value="">Tất cả trạng thái</option>
+            <option value="Chờ xử lý" selected="@(ViewData["CurrentType"]?.ToString() == "Chờ xử lý")">Chờ xử lý</option>
+            <option value="Chấp nhận đổi" selected="@(ViewData["CurrentType"]?.ToString() == "Chấp nhận đổi")">Chấp nhận đổi</option>
+            <option value="Từ chối đổi" selected="@(ViewData["CurrentType"]?.ToString() == "Từ chối đổi")">Từ chối đổi</option>
+        </select>
 
-            <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Tìm kiếm</button>
-            
-            @if (!string.IsNullOrEmpty(ViewData["CurrentFilter"]?.ToString()) || !string.IsNullOrEmpty(ViewData["CurrentType"]?.ToString()))
-            {
-                <a asp-action="Index" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                    Xóa bộ lọc
-                </a>
-            }
-        </form>
+        @if (!string.IsNullOrEmpty(ViewData["CurrentFilter"]?.ToString()) || !string.IsNullOrEmpty(ViewData["CurrentType"]?.ToString()))
+        {
+            <a asp-action="Index" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Xóa bộ lọc
+            </a>
+        }
+    </form>
 
     <div class="overflow-x-auto">
         <table class="min-w-full bg-white border rounded-lg">
@@ -155,8 +175,7 @@
                 <a asp-action="Index" 
                    asp-route-pageNumber="@(Model.PageNumber - 1)"
                    asp-route-searchString="@ViewData["CurrentFilter"]"
-                   asp-route-loaiSp="@ViewData["CurrentLoaiSp"]"
-                   asp-route-thuongHieu="@ViewData["CurrentThuongHieu"]"
+                   asp-route-filterType="@ViewData["CurrentType"]"
                    class="px-3 py-2 rounded-lg border hover:bg-gray-50">
                     <span class="sr-only">Previous</span>
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -170,8 +189,7 @@
                 <a asp-action="Index" 
                    asp-route-pageNumber="@i"
                    asp-route-searchString="@ViewData["CurrentFilter"]"
-                   asp-route-loaiSp="@ViewData["CurrentLoaiSp"]"
-                   asp-route-thuongHieu="@ViewData["CurrentThuongHieu"]"
+                   asp-route-filterType="@ViewData["CurrentType"]"
                    class="px-3 py-2 rounded-lg border @(i == Model.PageNumber ? "bg-blue-50 text-blue-600 font-medium" : "hover:bg-gray-50")">
                     @i
                 </a>
@@ -182,8 +200,7 @@
                 <a asp-action="Index" 
                    asp-route-pageNumber="@(Model.PageNumber + 1)"
                    asp-route-searchString="@ViewData["CurrentFilter"]"
-                   asp-route-loaiSp="@ViewData["CurrentLoaiSp"]"
-                   asp-route-thuongHieu="@ViewData["CurrentThuongHieu"]"
+                   asp-route-filterType="@ViewData["CurrentType"]"
                    class="px-3 py-2 rounded-lg border hover:bg-gray-50">
                     <span class="sr-only">Next</span>
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -201,4 +218,56 @@
         let detail = document.getElementById(`detail-${id}`);
         detail.classList.toggle("hidden");
     }
+
+    let searchTimeout;
+
+    function handleSearch(value) {
+        clearTimeout(searchTimeout);
+        const resultsDiv = document.getElementById('searchResults');
+
+        if (value.length < 1) {
+            resultsDiv.classList.add('hidden');
+            return;
+        }
+
+        searchTimeout = setTimeout(() => {
+            fetch(`/RequestManagement/SearchSuggestions?term=${encodeURIComponent(value)}`)
+                .then(response => response.json())
+                .then(data => {
+                    resultsDiv.innerHTML = '';
+                    if (data.length > 0) {
+                        data.forEach(item => {
+                            const div = document.createElement('div');
+                            div.className = 'px-4 py-2 hover:bg-gray-100 cursor-pointer';
+                            div.innerHTML = `
+                                <div class="font-medium">Mã YC: ${item.id}</div>
+                                <div class="text-sm text-gray-500">Khách hàng: ${item.customerName}</div>
+                            `;
+                            div.onclick = () => {
+                                document.getElementById('searchInput').value = item.id;
+                                resultsDiv.classList.add('hidden');
+                                document.querySelector('form').submit();
+                            };
+                            resultsDiv.appendChild(div);
+                        });
+                        resultsDiv.classList.remove('hidden');
+                    } else {
+                        resultsDiv.classList.add('hidden');
+                    }
+                });
+        }, 300);
+    }
+
+    function clearSearch() {
+        document.getElementById('searchInput').value = '';
+        document.querySelector('form').submit();
+    }
+
+    document.addEventListener('click', function(event) {
+        const resultsDiv = document.getElementById('searchResults');
+        const searchInput = document.getElementById('searchInput');
+        if (!searchInput.contains(event.target) && !resultsDiv.contains(event.target)) {
+            resultsDiv.classList.add('hidden');
+        }
+    });
 </script>

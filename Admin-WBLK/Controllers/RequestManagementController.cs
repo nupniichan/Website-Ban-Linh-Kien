@@ -18,42 +18,41 @@ namespace Admin_WBLK.Controllers
 
         // GET: RequestManagement
         public async Task<IActionResult> Index(string searchString, string filterType = "", int pageNumber = 1)
-{
-        int pageSize = 10;
-        ViewData["CurrentFilter"] = searchString;
-        ViewData["CurrentType"] = filterType;
-
-        var query = _context.Doitradhs
-                            .Include(r => r.IdKhNavigation)
-                            .Include(r => r.IdDhNavigation)
-                            .AsQueryable();
-
-        // Xử lý tìm kiếm theo mã yêu cầu, mã khách hàng, mã đơn hàng
-        if (!string.IsNullOrEmpty(searchString))
         {
-            string lowerSearchString = searchString.ToLower();
-            query = query.Where(r => r.Id.ToLower().Contains(lowerSearchString) || 
-                                    (r.IdKhNavigation != null && r.IdKhNavigation.IdKh.ToLower().Contains(lowerSearchString)) || 
-                                    (r.IdDh != null && r.IdDh.ToLower().Contains(lowerSearchString)));
+            int pageSize = 10;
+            ViewData["CurrentFilter"] = searchString;
+            ViewData["CurrentType"] = filterType;
+
+            var query = _context.Doitradhs
+                                .Include(r => r.IdKhNavigation)
+                                .Include(r => r.IdDhNavigation)
+                                .AsQueryable();
+
+            // Xử lý tìm kiếm theo mã yêu cầu, mã khách hàng, mã đơn hàng
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                string lowerSearchString = searchString.ToLower();
+                query = query.Where(r => r.Id.ToLower().Contains(lowerSearchString) || 
+                                        (r.IdKhNavigation != null && r.IdKhNavigation.Hoten.ToLower().Contains(lowerSearchString)) || 
+                                        (r.IdDh != null && r.IdDh.ToLower().Contains(lowerSearchString)));
+            }
+
+            // Lọc theo trạng thái (nếu có)
+            if (!string.IsNullOrEmpty(filterType))
+            {
+                query = query.Where(r => EF.Functions.Like(r.Trangthai.Trim(), filterType.Trim()));
+            }
+
+            // Phân trang
+            var totalItems = await query.CountAsync();
+            var items = await query.OrderByDescending(r => r.Ngayyeucau)
+                                .Skip((pageNumber - 1) * pageSize)
+                                .Take(pageSize)
+                                .ToListAsync();
+
+            var model = new PaginatedList<Doitradh>(items, totalItems, pageNumber, pageSize);
+            return View(model);
         }
-
-        // Lọc theo trạng thái (nếu có)
-        if (!string.IsNullOrEmpty(filterType))
-        {
-            query = query.Where(r => r.Trangthai.Trim().ToLower() == filterType.Trim().ToLower());
-        }
-
-        // Phân trang
-        var totalItems = await query.CountAsync();
-        var items = await query.OrderByDescending(r => r.Ngayyeucau)
-                            .Skip((pageNumber - 1) * pageSize)
-                            .Take(pageSize)
-                            .ToListAsync();
-
-        var model = new PaginatedList<Doitradh>(items, totalItems, pageNumber, pageSize);
-        return View(model);
-    }
-
 
         // POST: RequestManagement/Accept
         [HttpPost("Accept")]
@@ -107,6 +106,23 @@ namespace Admin_WBLK.Controllers
 
             TempData["Success"] = "Yêu cầu đã bị từ chối thành công.";
             return RedirectToAction(nameof(Index));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> SearchSuggestions(string term)
+        {
+            if (string.IsNullOrEmpty(term)) return Json(new List<object>());
+
+            term = term.ToLower();
+            var suggestions = await _context.Doitradhs
+                .Include(d => d.IdKhNavigation)
+                .Where(d => d.Id.ToLower().Contains(term) ||
+                           d.IdKhNavigation.Hoten.ToLower().Contains(term))
+                .Take(5)
+                .Select(d => new { d.Id, CustomerName = d.IdKhNavigation.Hoten })
+                .ToListAsync();
+
+            return Json(suggestions);
         }
     }
 }

@@ -40,6 +40,21 @@ namespace Admin_WBLK.Controllers
             return View(model);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> SearchSuggestions(string term)
+        {
+            if (string.IsNullOrEmpty(term)) return Json(new List<object>());
+
+            term = term.ToLower();
+            var suggestions = await _context.Taikhoans
+                .Where(t => t.IdTk.ToLower().Contains(term) ||
+                            t.Tentaikhoan.ToLower().Contains(term))
+                .Take(5)
+                .Select(t => new { t.IdTk, t.Tentaikhoan })
+                .ToListAsync();
+
+            return Json(suggestions);
+        }
 
         // GET: AccountManagement/Details/5
         public async Task<IActionResult> Details(string id)
