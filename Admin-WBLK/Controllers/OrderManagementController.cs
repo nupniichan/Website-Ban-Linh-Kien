@@ -73,7 +73,6 @@ namespace Admin_WBLK.Controllers
                 "Đã giao hàng",
                 "Đã huỷ",
                 "Yêu cầu huỷ",
-                "Đã hoàn tiền",
                 "Đang yêu cầu đổi trả",
                 "Chờ nhận hàng trả",
                 "Đổi trả thành công",
@@ -575,14 +574,14 @@ namespace Admin_WBLK.Controllers
                 // Cập nhật Dictionary các trạng thái hợp lệ
                 var validTransitions = new Dictionary<string, string[]>
                 {
-                    { "Chờ xác nhận", new[] { "Đã xác nhận", "Đã huỷ" } },
+                    { "Chờ xác nhận", new[] { "Đã xác nhận", "Yêu cầu huỷ" } },
                     { "Đã xác nhận", new[] { "Chờ giao hàng", "Đã huỷ" } },
                     { "Chờ giao hàng", new[] { "Đang giao hàng", "Đã huỷ" } },
                     { "Đang giao hàng", new[] { "Đã giao hàng", "Đã huỷ" } },
                     { "Đã giao hàng", new[] { "Đang yêu cầu đổi trả" } },
                     { "Yêu cầu huỷ", new[] { "Đã huỷ", "Đã xác nhận" } },
                     { "Đang yêu cầu đổi trả", new[] { "Chờ nhận hàng trả", "Đổi trả thất bại" } },
-                    { "Chờ nhận hàng trả", new[] { "Đổi trả thành công" } }
+                    { "Chờ nhận hàng trả", new[] { "Đổi trả thành công", "Đổi trả thất bại" } }
                 };
 
                 if (!validTransitions.ContainsKey(donhang.Trangthai) || 
