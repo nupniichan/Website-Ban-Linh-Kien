@@ -73,7 +73,6 @@ namespace Admin_WBLK.Controllers
                 "Đã giao hàng",
                 "Đã huỷ",
                 "Yêu cầu huỷ",
-                "Đã hoàn tiền",
                 "Đang yêu cầu đổi trả",
                 "Chờ nhận hàng trả",
                 "Đổi trả thành công",
@@ -444,7 +443,7 @@ namespace Admin_WBLK.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(string id, [Bind("IdDh,IdKh,IdNv,Trangthai,Tongtien,Diachigiaohang,Ngaydathang,Phuongthucthanhtoan,IdMgg,ghichu")] Donhang donhang,
-            string chitietdonhangs, string? Mathanhtoan, string? TrangthaiThanhtoan, string? Noidungthanhtoan)
+            string? Mathanhtoan, string? TrangthaiThanhtoan, string? Noidungthanhtoan)
         {
             if (id != donhang.IdDh)
             {
@@ -475,53 +474,8 @@ namespace Admin_WBLK.Controllers
                     return NotFound();
                 }
 
-                // Hoàn trả số lượng tồn kho cho các sản phẩm cũ
-                foreach (var detail in existingOrder.Chitietdonhangs)
-                {
-                    var product = await _context.Sanphams.FindAsync(detail.IdSp);
-                    if (product != null)
-                    {
-                        product.SoLuongTon += detail.Soluong;
-                        _context.Update(product);
-                    }
-                }
-
-                // Xóa chi tiết đơn hàng cũ
-                _context.Chitietdonhangs.RemoveRange(existingOrder.Chitietdonhangs);
-
-                // Thêm chi tiết đơn hàng mới
-                if (!string.IsNullOrEmpty(chitietdonhangs))
-                {
-                    var details = JsonSerializer.Deserialize<List<ChitietdonhangDTO>>(chitietdonhangs);
-                    foreach (var detail in details)
-                    {
-                        var product = await _context.Sanphams.FindAsync(detail.IdSp);
-                        if (product == null)
-                        {
-                            throw new Exception($"Không tìm thấy sản phẩm {detail.IdSp}");
-                        }
-
-                        // Kiểm tra và trừ số lượng tồn kho nếu đơn hàng đã xác nhận
-                        if (donhang.Trangthai == "Chờ xác nhận")
-                        {
-                            if (product.SoLuongTon < detail.Soluong)
-                            {
-                                throw new Exception($"Sản phẩm {product.TenSp} chỉ còn {product.SoLuongTon} sản phẩm!");
-                            }
-                            product.SoLuongTon -= detail.Soluong;
-                            _context.Update(product);
-                        }
-
-                        var chitiet = new Chitietdonhang
-                        {
-                            IdDh = id,
-                            IdSp = detail.IdSp,
-                            Soluong = detail.Soluong,
-                            Dongia = detail.Dongia
-                        };
-                        _context.Chitietdonhangs.Add(chitiet);
-                    }
-                }
+                // Giữ nguyên chi tiết đơn hàng cũ
+                donhang.Chitietdonhangs = existingOrder.Chitietdonhangs;
 
                 // Cập nhật thông tin đơn hàng
                 _context.Entry(existingOrder).CurrentValues.SetValues(donhang);
@@ -620,14 +574,14 @@ namespace Admin_WBLK.Controllers
                 // Cập nhật Dictionary các trạng thái hợp lệ
                 var validTransitions = new Dictionary<string, string[]>
                 {
-                    { "Chờ xác nhận", new[] { "Đã xác nhận", "Đã huỷ" } },
+                    { "Chờ xác nhận", new[] { "Đã xác nhận", "Yêu cầu huỷ" } },
                     { "Đã xác nhận", new[] { "Chờ giao hàng", "Đã huỷ" } },
                     { "Chờ giao hàng", new[] { "Đang giao hàng", "Đã huỷ" } },
                     { "Đang giao hàng", new[] { "Đã giao hàng", "Đã huỷ" } },
                     { "Đã giao hàng", new[] { "Đang yêu cầu đổi trả" } },
                     { "Yêu cầu huỷ", new[] { "Đã huỷ", "Đã xác nhận" } },
                     { "Đang yêu cầu đổi trả", new[] { "Chờ nhận hàng trả", "Đổi trả thất bại" } },
-                    { "Chờ nhận hàng trả", new[] { "Đổi trả thành công" } }
+                    { "Chờ nhận hàng trả", new[] { "Đổi trả thành công", "Đổi trả thất bại" } }
                 };
 
                 if (!validTransitions.ContainsKey(donhang.Trangthai) || 
