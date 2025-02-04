@@ -36,25 +36,27 @@ namespace Admin_WBLK.Controllers
             {
                 string lowerSearchString = searchString.ToLower();
                 query = query.Where(r => r.Id.ToLower().Contains(lowerSearchString) || 
-                                        (r.IdKhNavigation != null && r.IdKhNavigation.IdKh.ToLower().Contains(lowerSearchString)) || 
+                                        (r.IdKhNavigation != null && r.IdKhNavigation.Hoten.ToLower().Contains(lowerSearchString)) || 
                                         (r.IdDh != null && r.IdDh.ToLower().Contains(lowerSearchString)));
             }
 
             // Lọc theo trạng thái (nếu có)
             if (!string.IsNullOrEmpty(filterType))
             {
-                query = query.Where(r => r.Trangthai.Trim().ToLower() == filterType.Trim().ToLower());
+                query = query.Where(r => EF.Functions.Like(r.Trangthai.Trim(), filterType.Trim()));
             }
 
-            // Lọc theo ngày (nếu có)
-            if (DateOnly.TryParse(fromDate, out var fromDateParsed))
+            // Trong phương thức Index, thêm xử lý lọc theo ngày
+            if (!string.IsNullOrEmpty(fromDate))
             {
-                query = query.Where(r => DateOnly.FromDateTime(r.Ngayyeucau) >= fromDateParsed);
+                DateTime fromDateParsed = DateTime.Parse(fromDate);
+                query = query.Where(r => r.Ngayyeucau >= fromDateParsed);
             }
 
-            if (DateOnly.TryParse(toDate, out var toDateParsed))
+            if (!string.IsNullOrEmpty(toDate))
             {
-                query = query.Where(r => DateOnly.FromDateTime(r.Ngayyeucau) <= toDateParsed);
+                DateTime toDateParsed = DateTime.Parse(toDate);
+                query = query.Where(r => r.Ngayyeucau <= toDateParsed.AddDays(1));
             }
 
             // Phân trang
@@ -67,7 +69,6 @@ namespace Admin_WBLK.Controllers
             var model = new PaginatedList<Doitradh>(items, totalItems, pageNumber, pageSize);
             return View(model);
         }
-
 
         // POST: RequestManagement/Accept
         [HttpPost("Accept")]
@@ -121,6 +122,23 @@ namespace Admin_WBLK.Controllers
 
             TempData["Success"] = "Yêu cầu đã bị từ chối thành công.";
             return RedirectToAction(nameof(Index));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> SearchSuggestions(string term)
+        {
+            if (string.IsNullOrEmpty(term)) return Json(new List<object>());
+
+            term = term.ToLower();
+            var suggestions = await _context.Doitradhs
+                .Include(d => d.IdKhNavigation)
+                .Where(d => d.Id.ToLower().Contains(term) ||
+                           d.IdKhNavigation.Hoten.ToLower().Contains(term))
+                .Take(5)
+                .Select(d => new { d.Id, CustomerName = d.IdKhNavigation.Hoten })
+                .ToListAsync();
+
+            return Json(suggestions);
         }
         // GET: RequestManagement/Create
         public IActionResult Create()

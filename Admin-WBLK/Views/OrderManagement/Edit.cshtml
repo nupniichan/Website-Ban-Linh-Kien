@@ -87,64 +87,56 @@
 
                 <!-- Sản phẩm đặt -->
                 <div class="mt-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Sản phẩm đặt</label>
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Chi tiết sản phẩm</h3>
                     <div class="border border-gray-300 rounded-lg overflow-hidden">
-                        <table class="w-full" id="productTable">
+                        <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b">Mã SP</th>
-                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b">Tên SP</th>
-                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b">Số lượng</th>
-                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b">Đơn giá</th>
-                                    <th class="px-4 py-3 w-16 border-b"></th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mã SP</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tên SP</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Số lượng</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Đơn giá</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Thành tiền</th>
                                 </tr>
                             </thead>
                             <tbody>
+                            @if (Model.Chitietdonhangs != null && Model.Chitietdonhangs.Any())
+                            {
                                 @foreach (var item in Model.Chitietdonhangs)
                                 {
-                                    <tr>
-                                        <td>
-                                            <input type="text" value="@item.IdSp" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
-                                                   required pattern="^SP[0-9]{5}$" title="Mã sản phẩm phải bắt đầu bằng 'SP' và theo sau là 5 số" />
-                                        </td>
-                                        <td>
-                                            <input type="text" value="@item.IdSpNavigation?.TenSp" readonly 
-                                                   class="w-full px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg" />
-                                        </td>
-                                        <td>
-                                            <input type="number" value="@item.Soluong" min="1" 
-                                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
-                                        </td>
-                                        <td>
-                                            <input type="number" value="@item.Dongia" readonly 
-                                                   class="w-full px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg" />
-                                        </td>
-                                        <td>
-                                            <button type="button" onclick="removeProductRow(this)" 
-                                                    class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition-colors">
-                                                Xóa
-                                            </button>
-                                        </td>
-                                    </tr>
+                                    if (item != null && item.IdSp != null)
+                                    {
+                                        <tr class="bg-white">
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                @item.IdSp
+                                                <input type="hidden" name="Chitietdonhangs[@item.IdSp].IdSp" value="@item.IdSp" />
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                @item.IdSpNavigation?.TenSp
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                @item.Soluong
+                                                <input type="hidden" name="Chitietdonhangs[@item.IdSp].Soluong" value="@item.Soluong" />
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                @item.Dongia.ToString("#,##0") VNĐ
+                                                <input type="hidden" name="Chitietdonhangs[@item.IdSp].Dongia" value="@item.Dongia" />
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                @((item.Soluong * item.Dongia).ToString("#,##0")) VNĐ
+                                            </td>
+                                        </tr>
+                                    }
                                 }
+                            }
                             </tbody>
                         </table>
-                        <div class="p-4 bg-gray-50 border-t border-gray-300">
-                            <button type="button" onclick="addProductRow()" 
-                                    class="flex items-center text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors">
-                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                </svg>
-                                Thêm sản phẩm
-                            </button>
-                        </div>
                     </div>
                 </div>
 
                 <!-- Sau bảng sản phẩm -->
                 <div class="mt-4 text-right">
                     <input type="hidden" asp-for="Tongtien" id="Tongtien" />
-                    <input type="hidden" name="chitietdonhangs" id="chitietdonhangs" />
                     <!-- Thông tin giảm giá -->
                     <div id="discountInfo" class="text-green-600 text-base mb-2"></div>
                     <!-- Tổng tiền -->
@@ -209,80 +201,27 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Tính lại tổng tiền khi load trang
             updateTotalAmount();
-
-            // Thêm event listener cho các input số lượng
-            document.querySelectorAll('input[type="number"]').forEach(input => {
-                input.addEventListener('change', function() {
-                    updateTotalAmount();
-                });
-            });
-
-            // Thêm event listener cho các input mã sản phẩm
-            document.querySelectorAll('input[pattern]').forEach(input => {
-                input.addEventListener('change', async function() {
-                    const row = this.closest('tr');
-                    const productId = this.value;
-                    if (productId) {
-                        await fetchProductInfo(productId, row);
-                        updateTotalAmount();
-                    }
-                });
-            });
         });
 
         // Cập nhật tổng tiền
         function updateTotalAmount() {
             let total = 0;
-            const rows = document.querySelectorAll('#productTable tbody tr');
+            const rows = document.querySelectorAll('.min-w-full tbody tr');
             
             rows.forEach(row => {
-                const quantity = parseInt(row.querySelector('input[type="number"]').value) || 0;
-                const price = parseFloat(row.querySelectorAll('input')[3].value) || 0;
+                const quantity = parseInt(row.querySelector('input[name*="Soluong"]').value) || 0;
+                const price = parseFloat(row.querySelector('input[name*="Dongia"]').value) || 0;
                 total += quantity * price;
             });
 
-            // Cập nhật hiển thị
             document.getElementById('originalTotal').textContent = formatCurrency(total);
             document.getElementById('displayTotal').textContent = formatCurrency(total);
             document.getElementById('Tongtien').value = total;
-
-            // Kiểm tra mã giảm giá nếu có
-            const discountCode = document.getElementById('IdMgg')?.value;
-            if (discountCode) {
-                checkDiscount(discountCode, total);
-            }
         }
 
         // Format số tiền
         function formatCurrency(amount) {
             return new Intl.NumberFormat('vi-VN').format(amount);
         }
-
-        // Cập nhật JSON chi tiết đơn hàng trước khi submit
-        document.getElementById('editOrderForm').addEventListener('submit', function(e) {
-            const details = [];
-            const rows = document.querySelectorAll('#productTable tbody tr');
-            
-            rows.forEach(row => {
-                const inputs = row.querySelectorAll('input');
-                details.push({
-                    IdSp: inputs[0].value,
-                    Soluong: parseInt(inputs[2].value),
-                    Dongia: parseFloat(inputs[3].value)
-                });
-            });
-
-            document.getElementById('chitietdonhangs').value = JSON.stringify(details);
-        });
-
-        // Xử lý hiển thị form thanh toán online
-        document.getElementById('paymentMethod')?.addEventListener('change', function() {
-            const onlinePaymentInfo = document.getElementById('onlinePaymentInfo');
-            if (this.value === 'VNPay' || this.value === 'Paypal') {
-                onlinePaymentInfo.classList.remove('hidden');
-            } else {
-                onlinePaymentInfo.classList.add('hidden');
-            }
-        });
     </script>
 } 
