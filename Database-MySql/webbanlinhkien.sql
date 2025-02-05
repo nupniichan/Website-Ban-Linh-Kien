@@ -215,7 +215,7 @@ CREATE TABLE `khachhang` (
   `email` varchar(100) NOT NULL,
   `gioitinh` varchar(5) NOT NULL,
   `ngaysinh` date NOT NULL,
-  `sodienthoai` int(11) NOT NULL,
+  `sodienthoai` varchar(11) NOT NULL,
   `diemtichluy` int(11) DEFAULT 0,
   `id_taikhoan` varchar(10) NOT NULL,
   `id_xephangvip` varchar(10) DEFAULT NULL
@@ -299,7 +299,7 @@ CREATE TABLE `nhanvien` (
   `hoten` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   `chucvu` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   `luong` decimal(10,2) NOT NULL,
-  `sodienthoai` int(11) NOT NULL,
+  `sodienthoai` varchar(11) NOT NULL,
   `email` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   `diachi` varchar(200) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   `ngayvaolam` date NOT NULL,
