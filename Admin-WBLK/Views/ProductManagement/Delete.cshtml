@@ -34,18 +34,18 @@
             <!-- Phần trên: Hình ảnh và thông tin cơ bản -->
             <div class="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
                 <!-- Hình ảnh sản phẩm -->
-                @if (!string.IsNullOrEmpty(Model.hinh_anh))
+                @if (!string.IsNullOrEmpty(Model.Hinhanh))
                 {
                     <div class="md:col-span-1">
                         <div class="aspect-square rounded-lg overflow-hidden bg-gray-100 border">
-                            <img src="@Model.hinh_anh" alt="@Model.TenSp" class="w-full h-full object-contain" />
+                            <img src="@Model.Hinhanh" alt="@Model.Tensanpham" class="w-full h-full object-contain" />
                         </div>
                     </div>
                 }
 
                 <!-- Thông tin cơ bản -->
                 <div class="md:col-span-2 space-y-4">
-                    <h2 class="text-2xl font-bold text-gray-900">@Model.TenSp</h2>
+                    <h2 class="text-2xl font-bold text-gray-900">@Model.Tensanpham</h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="space-y-2">
                             <div class="flex items-center">
@@ -54,17 +54,17 @@
                             </div>
                             <div class="flex items-center">
                                 <span class="text-gray-600">Số lượng tồn:</span>
-                                <span class="ml-2 font-medium">@Model.SoLuongTon</span>
+                                <span class="ml-2 font-medium">@Model.Soluongton</span>
                             </div>
                         </div>
                         <div class="space-y-2">
                             <div class="flex items-center">
                                 <span class="text-gray-600">Thương hiệu:</span>
-                                <span class="ml-2 font-medium">@Model.ThuongHieu</span>
+                                <span class="ml-2 font-medium">@Model.Thuonghieu</span>
                             </div>
                             <div class="flex items-center">
                                 <span class="text-gray-600">Loại sản phẩm:</span>
-                                <span class="ml-2 font-medium">@Model.LoaiSp</span>
+                                <span class="ml-2 font-medium">@Model.Loaisanpham</span>
                             </div>
                         </div>
                     </div>
@@ -92,7 +92,7 @@
                 <div class="p-6">
                     <!-- Mô tả -->
                     <div id="description-tab" class="tab-content prose max-w-none">
-                        @Html.Raw(Model.MoTa)
+                        @Html.Raw(Model.Mota)
                     </div>
 
                     <!-- Thông số kỹ thuật -->
@@ -107,7 +107,7 @@
                                 </thead>
                                 <tbody>
                                     @{
-                                        var specs = Newtonsoft.Json.JsonConvert.DeserializeObject<List<dynamic>>(Model.ThongSoKyThuat);
+                                        var specs = Newtonsoft.Json.JsonConvert.DeserializeObject<List<dynamic>>(Model.Thongsokythuat);
                                         foreach (var spec in specs)
                                         {
                                             <tr class="border-b hover:bg-gray-50">

@@ -17,9 +17,7 @@ public partial class Magiamgia
 
     public int Soluong { get; set; }
 
-    public string? IdNv { get; set; }
+    public bool? Trangthai { get; set; }
 
     public virtual ICollection<Donhang> Donhangs { get; set; } = new List<Donhang>();
-
-    public virtual Nhanvien? IdNvNavigation { get; set; }
 }

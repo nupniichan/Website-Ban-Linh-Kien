@@ -147,37 +147,14 @@ document.getElementById('IdKh').addEventListener('input', async function() {
     }
 });
 
-// Kiểm tra nhân viên
-document.getElementById('IdNv').addEventListener('input', async function() {
-    const staffId = this.value;
-    if (!staffId) {
-        document.getElementById('tenNhanVien').value = '';
-        return;
-    }
-
-    try {
-        const response = await fetch(`/OrderManagement/GetStaffInfo?id=${encodeURIComponent(staffId)}`);
-        const data = await response.json();
-        if (data) {
-            document.getElementById('tenNhanVien').value = data.hoten;
-            document.getElementById('staffError').classList.add('hidden');
-        } else {
-            document.getElementById('tenNhanVien').value = '';
-            document.getElementById('staffError').textContent = "Không tìm thấy nhân viên";
-            document.getElementById('staffError').classList.remove('hidden');
-        }
-    } catch (error) {
-        document.getElementById('staffError').textContent = "Lỗi khi kiểm tra thông tin nhân viên";
-        document.getElementById('staffError').classList.remove('hidden');
-    }
-});
-
 // Biến lưu giá trị giảm giá hiện tại
 let currentDiscount = 0;
 
 // Kiểm tra mã giảm giá
-document.getElementById('IdMgg').addEventListener('input', async function() {
+document.getElementById('IdMgg')?.addEventListener('input', async function() {
     const discountId = this.value;
+    const isEditMode = document.getElementById('editOrderForm') !== null; // Kiểm tra có phải trang Edit không
+
     if (!discountId) {
         document.getElementById('discountInfo').textContent = '';
         document.getElementById('discountError').classList.add('hidden');
@@ -188,7 +165,8 @@ document.getElementById('IdMgg').addEventListener('input', async function() {
     }
 
     try {
-        const response = await fetch(`/OrderManagement/GetDiscountInfo?id=${encodeURIComponent(discountId)}`);
+        // Thêm tham số isEdit vào URL
+        const response = await fetch(`/OrderManagement/GetDiscountInfo?id=${encodeURIComponent(discountId)}&isEdit=${isEditMode}`);
         const data = await response.json();
         
         if (data.success) {
@@ -206,8 +184,7 @@ document.getElementById('IdMgg').addEventListener('input', async function() {
         }
         updateTotal();
     } catch (error) {
-        document.getElementById('discountError').textContent = 
-            "Lỗi khi kiểm tra mã giảm giá";
+        document.getElementById('discountError').textContent = "Lỗi khi kiểm tra mã giảm giá";
         document.getElementById('discountError').classList.remove('hidden');
         document.getElementById('discountSuccess').classList.add('hidden');
         document.getElementById('discountInfo').classList.add('hidden');
@@ -259,8 +236,9 @@ function addProductRow() {
         try {
             const response = await fetch(`/OrderManagement/GetProductInfo?id=${encodeURIComponent(productId)}`);
             const data = await response.json();
-            if (data) {
-                row.querySelector('.product-name').value = data.tenSp;
+            console.log(data);
+            if (data && data.tensanpham) {
+                row.querySelector('.product-name').value = data.tensanpham;
                 row.querySelector('.product-price').value = data.gia;
                 updateTotal();
             } else {
@@ -329,7 +307,6 @@ document.addEventListener('DOMContentLoaded', function() {
             // Kiểm tra các trường bắt buộc
             const requiredFields = {
                 'IdKh': 'Mã khách hàng',
-                'IdNv': 'Mã nhân viên',
                 'Diachigiaohang': 'Địa chỉ giao hàng',
                 'paymentMethod': 'Phương thức thanh toán'
             };

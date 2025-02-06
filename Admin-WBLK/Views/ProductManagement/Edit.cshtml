@@ -1,5 +1,7 @@
 ﻿@model Admin_WBLK.Models.Sanpham
 
+<script src="~/js/ProductManagement.js"></script>
+
 @{
     ViewData["Title"] = "Chỉnh sửa sản phẩm";
 }
@@ -14,8 +16,12 @@
 
         <!-- Card chứa form -->
         <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
-            <form asp-action="Edit" method="post" enctype="multipart/form-data" class="w-full h-full">
-                <input type="hidden" name="ThongSoKyThuat" />
+            <form id="productForm" 
+                  asp-action="Edit" 
+                  method="post" 
+                  enctype="multipart/form-data" 
+                  class="w-full h-full">
+                <input type="hidden" name="thongsokythuat" />
                 <input type="hidden" asp-for="IdSp" />
                 <div asp-validation-summary="ModelOnly" class="mb-4 p-4 rounded-lg bg-red-50 text-red-500"></div>
 
@@ -23,9 +29,9 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- Tên sản phẩm - full width -->
                     <div class="md:col-span-2">
-                        <label asp-for="TenSp" class="block text-sm font-medium text-gray-700 mb-1">Tên sản phẩm</label>
-                        <input asp-for="TenSp" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required />
-                        <span asp-validation-for="TenSp" class="text-red-500 text-sm mt-1"></span>
+                        <label asp-for="Tensanpham" class="block text-sm font-medium text-gray-700 mb-1">Tên sản phẩm</label>
+                        <input asp-for="Tensanpham" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required />
+                        <span asp-validation-for="Tensanpham" class="text-red-500 text-sm mt-1"></span>
                     </div>
 
                     <!-- Giá -->
@@ -40,15 +46,15 @@
 
                     <!-- Số lượng tồn -->
                     <div>
-                        <label asp-for="SoLuongTon" class="block text-sm font-medium text-gray-700 mb-1">Số lượng tồn</label>
-                        <input asp-for="SoLuongTon" type="number" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required />
-                        <span asp-validation-for="SoLuongTon" class="text-red-500 text-sm mt-1"></span>
+                        <label asp-for="Soluongton" class="block text-sm font-medium text-gray-700 mb-1">Số lượng tồn</label>
+                        <input asp-for="Soluongton" type="number" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required />
+                        <span asp-validation-for="Soluongton" class="text-red-500 text-sm mt-1"></span>
                     </div>
 
                     <!-- Loại sản phẩm -->
                     <div>
-                        <label asp-for="LoaiSp" class="block text-sm font-medium text-gray-700 mb-1">Loại sản phẩm</label>
-                        <select asp-for="LoaiSp" 
+                        <label asp-for="Loaisanpham" class="block text-sm font-medium text-gray-700 mb-1">Loại sản phẩm</label>
+                        <select asp-for="Loaisanpham"
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
                                 required>
                             <option value="">Chọn loại sản phẩm</option>
@@ -61,14 +67,14 @@
                             <option value="Peripherals">Thiết bị ngoại vi</option>
                             <option value="Storage">Thiết bị lưu trữ</option>
                         </select>
-                        <span asp-validation-for="LoaiSp" class="text-red-500 text-sm mt-1"></span>
+                        <span asp-validation-for="Loaisanpham" class="text-red-500 text-sm mt-1"></span>
                     </div>
 
                     <!-- Thương hiệu -->
                     <div>
-                        <label asp-for="ThuongHieu" class="block text-sm font-medium text-gray-700 mb-1">Thương hiệu</label>
-                        <input asp-for="ThuongHieu" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required />
-                        <span asp-validation-for="ThuongHieu" class="text-red-500 text-sm mt-1"></span>
+                        <label asp-for="Thuonghieu" class="block text-sm font-medium text-gray-700 mb-1">Thương hiệu</label>
+                        <input asp-for="Thuonghieu" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required />
+                        <span asp-validation-for="Thuonghieu" class="text-red-500 text-sm mt-1"></span>
                     </div>
                 </div>
 
@@ -78,7 +84,7 @@
                     <div class="flex items-start gap-6">
                         <!-- Preview hình ảnh -->
                         <div class="w-48 h-48 border border-gray-300 rounded-lg overflow-hidden bg-gray-50">
-                            <img id="currentImage" src="@Model.hinh_anh" alt="Hình ảnh sản phẩm" 
+                            <img id="currentImage" src="@Model.Hinhanh" alt="Hình ảnh sản phẩm" 
                                  class="w-full h-full object-contain" />
                         </div>
                         
@@ -91,7 +97,7 @@
                                 <input type="file" id="imageFile" name="imageFile" accept="image/*" 
                                        class="w-full"
                                        onchange="previewImage(this)" />
-                                <input type="hidden" asp-for="hinh_anh" />
+                                <input type="hidden" asp-for="Hinhanh" />
                                 <p class="mt-2 text-sm text-gray-500">
                                     Kéo thả hoặc click để chọn hình ảnh. Kích thước tối đa 5MB.
                                 </p>
@@ -103,7 +109,7 @@
 
                 <!-- Mô tả -->
                 <div class="mt-6">
-                    <label asp-for="MoTa" class="block text-sm font-medium text-gray-700 mb-2">Mô tả</label>
+                    <label asp-for="Mota" class="block text-sm font-medium text-gray-700 mb-2">Mô tả</label>
                     <div class="border border-gray-300 rounded-lg overflow-hidden">
                         <!-- Thanh công cụ định dạng -->
                         <div class="flex flex-wrap gap-1 p-2 bg-gray-50 border-b border-gray-300">
@@ -139,9 +145,9 @@
                             </div>
                         </div>
                         <div contenteditable="true" id="moTaEditor" class="min-h-[250px] p-4 focus:outline-none"></div>
-                        <textarea asp-for="MoTa" class="hidden"></textarea>
+                        <textarea asp-for="Mota" class="hidden"></textarea>
                     </div>
-                    <span asp-validation-for="MoTa" class="text-red-500 text-sm mt-1"></span>
+                    <span asp-validation-for="Mota" class="text-red-500 text-sm mt-1"></span>
                 </div>
 
                 <!-- Thông số kỹ thuật -->
@@ -248,7 +254,7 @@
         };
 
         document.addEventListener('DOMContentLoaded', function() {
-            const loaiSpSelect = document.querySelector('select[name="LoaiSp"]');
+            const loaiSpSelect = document.querySelector('select[name="loaisanpham"]');
             
             if (loaiSpSelect) {
                 // Hiển thị section thông số kỹ thuật nếu đã có loại sản phẩm được chọn
@@ -326,57 +332,47 @@
 
             // Khôi phục thông số kỹ thuật từ dữ liệu đã lưu
             try {
-                const thongSoKyThuat = @Html.Raw(Json.Serialize(Model.ThongSoKyThuat));
+                const thongSoKyThuat = @Html.Raw(Json.Serialize(Model.Thongsokythuat));
                 if (thongSoKyThuat) {
-                    const specs = typeof thongSoKyThuat === 'string' ? JSON.parse(thongSoKyThuat) : thongSoKyThuat;
+                    let specs;
+                    if (typeof thongSoKyThuat === 'string') {
+                        specs = JSON.parse(thongSoKyThuat);
+                    } else {
+                        specs = thongSoKyThuat;
+                    }
+
+                    // Xóa các hàng hiện tại
                     const tbody = document.querySelector('#specTable tbody');
                     tbody.innerHTML = '';
-                    
-                    specs.forEach((spec, index) => {
+
+                    // Thêm các thông số từ dữ liệu
+                    Object.entries(specs).forEach(([key, value], index) => {
                         const row = document.createElement('tr');
                         row.className = 'border';
-                        const isCategory = spec.key === 'Danh mục';
-                        const inputClass = "w-full px-2 py-1 border-0 focus:outline-none focus:ring-0";
                         
-                        let valueCell;
-                        if (isCategory && categoryMapping[loaiSpSelect.value]) {
-                            valueCell = `
-                                <select name="specs[${index}].value" 
-                                        class="${inputClass} bg-white"
-                                        required>
-                                    <option value="">Chọn danh mục</option>
-                                    ${categoryMapping[loaiSpSelect.value]
-                                        .map(cat => `<option value="${cat}" ${cat === spec.value ? 'selected' : ''}>${cat}</option>`)
-                                        .join('')}
-                                </select>`;
-                        } else {
-                            valueCell = `
-                                <input type="text" 
-                                       name="specs[${index}].value" 
-                                       value="${spec.value}"
-                                       class="${inputClass}"
-                                       placeholder="Giá trị">`;
-                        }
+                        const inputClass = "w-full px-2 py-1 border-0 focus:outline-none focus:ring-0";
                         
                         row.innerHTML = `
                             <td class="px-4 py-2 border">
                                 <input type="text" 
                                        name="specs[${index}].key" 
-                                       value="${spec.key}" 
+                                       value="${key}"
                                        class="${inputClass}"
-                                       ${isCategory ? 'readonly' : ''}>
+                                       placeholder="Tên thông số">
                             </td>
                             <td class="px-4 py-2 border">
-                                ${valueCell}
+                                <input type="text" 
+                                       name="specs[${index}].value" 
+                                       value="${value}"
+                                       class="${inputClass}"
+                                       placeholder="Giá trị">
                             </td>
                             <td class="px-4 py-2 border text-center">
-                                ${!isCategory ? `
-                                    <button type="button" onclick="removeRow(this)" class="text-red-500 hover:text-red-700">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                    </button>
-                                ` : ''}
+                                <button type="button" onclick="removeRow(this)" class="text-red-500 hover:text-red-700">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
                             </td>
                         `;
                         tbody.appendChild(row);
@@ -384,6 +380,20 @@
                 }
             } catch (e) {
                 console.error('Lỗi khi parse thông số kỹ thuật:', e);
+                console.error('Dữ liệu gốc:', @Html.Raw(Json.Serialize(Model.Thongsokythuat)));
+            }
+
+            // Khôi phục nội dung mô tả
+            const moTaEditor = document.getElementById('moTaEditor');
+            const moTaInput = document.querySelector('textarea[name="Mota"]');
+            if (moTaEditor && moTaInput) {
+                const decodedMota = @Html.Raw(Json.Serialize(Model.Mota));
+                moTaEditor.innerHTML = decodedMota || '';
+                
+                // Cập nhật textarea ẩn khi nội dung editor thay đổi
+                moTaEditor.addEventListener('input', function() {
+                    moTaInput.value = this.innerHTML;
+                });
             }
         });
 
@@ -412,48 +422,6 @@
                 return true;
             }
         }
-
-        // Cập nhật form submit
-        document.querySelector('form').addEventListener('submit', function(e) {
-            const allInputs = document.querySelectorAll('#specTable tbody tr input[name$="].key"]');
-            const keys = new Set();
-            let hasError = false;
-
-            allInputs.forEach(input => {
-                const key = input.value.trim().toLowerCase();
-                if (key && keys.has(key)) {
-                    hasError = true;
-                    validateKey(input);
-                }
-                keys.add(key);
-            });
-
-            if (hasError) {
-                e.preventDefault();
-                alert('Vui lòng sửa các thông số trùng lặp trước khi lưu');
-                return false;
-            }
-
-            // Xử lý thông số kỹ thuật
-            const specs = [];
-            const rows = document.querySelectorAll('#specTable tbody tr');
-            rows.forEach(row => {
-                const keyInput = row.querySelector('input[name$="].key"]');
-                const valueInput = row.querySelector('input[name$="].value"], select[name$="].value"]');
-                
-                if (keyInput.value && valueInput.value) {
-                    specs.push({
-                        key: keyInput.value,
-                        value: valueInput.value
-                    });
-                }
-            });
-
-            // Lưu thông số kỹ thuật vào input hidden
-            document.querySelector('input[name="ThongSoKyThuat"]').value = JSON.stringify(specs);
-
-            return true;
-        });
 
         // Các hàm khác giữ nguyên như cũ
         function formatText(command, value = null) {
@@ -543,5 +511,42 @@
                 }
             }
         }
+
+        function addRow() {
+            const tbody = document.querySelector('#specTable tbody');
+            const rowCount = tbody.children.length;
+            const row = document.createElement('tr');
+            row.className = 'border';
+            
+            const inputClass = "w-full px-2 py-1 border-0 focus:outline-none focus:ring-0";
+            
+            row.innerHTML = `
+                <td class="px-4 py-2 border">
+                    <input type="text" 
+                           name="specs[${rowCount}].key" 
+                           class="${inputClass}"
+                           placeholder="Tên thông số">
+                </td>
+                <td class="px-4 py-2 border">
+                    <input type="text" 
+                           name="specs[${rowCount}].value" 
+                           class="${inputClass}"
+                           placeholder="Giá trị">
+                </td>
+                <td class="px-4 py-2 border text-center">
+                    <button type="button" onclick="removeRow(this)" class="text-red-500 hover:text-red-700">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        }
+
+        function removeRow(button) {
+            button.closest('tr').remove();
+        }
     </script>
+    
 }

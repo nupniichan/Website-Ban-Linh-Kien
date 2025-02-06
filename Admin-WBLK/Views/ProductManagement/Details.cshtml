@@ -1,4 +1,6 @@
-﻿@model Admin_WBLK.Models.Sanpham
+﻿@using System.Text.Json
+
+@model Admin_WBLK.Models.Sanpham
 
 @{
     ViewData["Title"] = "Chi tiết sản phẩm";
@@ -19,14 +21,14 @@
                 <!-- Hình ảnh sản phẩm -->
                 <div class="md:col-span-1">
                     <div class="aspect-square rounded-lg overflow-hidden bg-gray-100 border">
-                        <img src="@Model.hinh_anh" alt="@Model.TenSp" 
+                        <img src="@Model.Hinhanh" alt="@Model.Tensanpham" 
                              class="w-full h-full object-contain" />
                     </div>
                 </div>
 
                 <!-- Thông tin cơ bản -->
                 <div class="md:col-span-2 space-y-4">
-                    <h2 class="text-2xl font-bold text-gray-900">@Model.TenSp</h2>
+                    <h2 class="text-2xl font-bold text-gray-900">@Model.Tensanpham</h2>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="space-y-2">
@@ -38,17 +40,17 @@
                             </div>
                             <div class="flex items-center">
                                 <span class="text-gray-600">Số lượng tồn:</span>
-                                <span class="ml-2 font-medium">@Model.SoLuongTon</span>
+                                <span class="ml-2 font-medium">@Model.Soluongton</span>
                             </div>
                         </div>
                         <div class="space-y-2">
                             <div class="flex items-center">
                                 <span class="text-gray-600">Thương hiệu:</span>
-                                <span class="ml-2 font-medium">@Model.ThuongHieu</span>
+                                <span class="ml-2 font-medium">@Model.Thuonghieu</span>
                             </div>
                             <div class="flex items-center">
                                 <span class="text-gray-600">Loại sản phẩm:</span>
-                                <span class="ml-2 font-medium">@Model.LoaiSp</span>
+                                <span class="ml-2 font-medium">@Model.Loaisanpham</span>
                             </div>
                         </div>
                     </div>
@@ -76,7 +78,7 @@
                 <div class="p-6">
                     <!-- Mô tả -->
                     <div id="description-tab" class="tab-content prose max-w-none">
-                        @Html.Raw(Model.MoTa)
+                        @Html.Raw(Model.Mota)
                     </div>
 
                     <!-- Thông số kỹ thuật -->
@@ -91,12 +93,23 @@
                                 </thead>
                                 <tbody>
                                     @{
-                                        var specs = Newtonsoft.Json.JsonConvert.DeserializeObject<List<dynamic>>(Model.ThongSoKyThuat);
-                                        foreach (var spec in specs)
+                                        try
                                         {
-                                            <tr class="border-b hover:bg-gray-50">
-                                                <td class="px-4 py-3 text-sm text-gray-600">@spec.key</td>
-                                                <td class="px-4 py-3 text-sm font-medium text-gray-900">@spec.value</td>
+                                            var specs = JsonSerializer.Deserialize<Dictionary<string, string>>(Model.Thongsokythuat);
+                                            foreach (var spec in specs)
+                                            {
+                                                <tr class="border-b hover:bg-gray-50">
+                                                    <td class="px-4 py-3 text-sm text-gray-600">@spec.Key</td>
+                                                    <td class="px-4 py-3 text-sm font-medium text-gray-900">@spec.Value</td>
+                                                </tr>
+                                            }
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            <tr>
+                                                <td colspan="2" class="px-4 py-3 text-sm text-red-500">
+                                                    Không thể hiển thị thông số kỹ thuật
+                                                </td>
                                             </tr>
                                         }
                                     }
