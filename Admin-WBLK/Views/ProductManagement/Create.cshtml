@@ -1,5 +1,7 @@
 ﻿@model Admin_WBLK.Models.Sanpham
 
+<script src="~/js/ProductManagement.js"></script>
+
 @{
     ViewData["Title"] = "Thêm sản phẩm mới";
 }
@@ -14,7 +16,11 @@
 
         <!-- Card chứa form -->
         <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
-            <form asp-action="Create" method="post" enctype="multipart/form-data" class="w-full h-full">
+            <form asp-action="Create" 
+                  method="post" 
+                  enctype="multipart/form-data" 
+                  class="w-full h-full"
+                  id="productForm">
                 <input type="hidden" name="thongsokythuat" id="thongsokythuat" />
                 <div asp-validation-summary="ModelOnly" class="mb-4 p-4 rounded-lg bg-red-50 text-red-500"></div>
 

@@ -1,5 +1,7 @@
 ﻿@model Admin_WBLK.Models.Sanpham
 
+<script src="~/js/ProductManagement.js"></script>
+
 @{
     ViewData["Title"] = "Chỉnh sửa sản phẩm";
 }
@@ -14,7 +16,11 @@
 
         <!-- Card chứa form -->
         <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
-            <form asp-action="Edit" method="post" enctype="multipart/form-data" class="w-full h-full">
+            <form id="productForm" 
+                  asp-action="Edit" 
+                  method="post" 
+                  enctype="multipart/form-data" 
+                  class="w-full h-full">
                 <input type="hidden" name="thongsokythuat" />
                 <input type="hidden" asp-for="IdSp" />
                 <div asp-validation-summary="ModelOnly" class="mb-4 p-4 rounded-lg bg-red-50 text-red-500"></div>
@@ -417,34 +423,6 @@
             }
         }
 
-        // Cập nhật form submit
-        document.querySelector('form').addEventListener('submit', function(e) {
-            e.preventDefault(); // Ngăn form submit mặc định
-            
-            // Xử lý thông số kỹ thuật
-            const specs = {};
-            const rows = document.querySelectorAll('#specTable tbody tr');
-            
-            rows.forEach(row => {
-                const keyInput = row.querySelector('input[name$="].key"]');
-                const valueInput = row.querySelector('input[name$="].value"]');
-                
-                if (keyInput && valueInput && keyInput.value.trim() && valueInput.value.trim()) {
-                    specs[keyInput.value.trim()] = valueInput.value.trim();
-                }
-            });
-
-            // Lưu thông số kỹ thuật vào input hidden
-            document.querySelector('input[name="thongsokythuat"]').value = JSON.stringify(specs);
-
-            // Kiểm tra xem có dữ liệu không
-            console.log('Thông số kỹ thuật được gửi:', specs);
-            console.log('JSON string:', JSON.stringify(specs));
-
-            // Submit form
-            this.submit();
-        });
-
         // Các hàm khác giữ nguyên như cũ
         function formatText(command, value = null) {
             if (command === 'lineHeight') {
@@ -570,4 +548,5 @@
             button.closest('tr').remove();
         }
     </script>
+    
 }

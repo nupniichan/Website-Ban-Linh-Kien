@@ -17,6 +17,13 @@ namespace Admin_WBLK.Controllers
         // =============== IdNV tui đang set tạm nào có login đồ xong tui đổi lại ===============
         private readonly DatabaseContext _context;
 
+        // Thêm options cho JsonSerializer để không escape Unicode characters
+        private static readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
+        {
+            Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+            WriteIndented = true
+        };
+
         public ProductManagementController(DatabaseContext context)
         {
             _context = context;
@@ -298,7 +305,6 @@ namespace Admin_WBLK.Controllers
                     try
                     {
                         specs = JsonSerializer.Deserialize<Dictionary<string, string>>(thongSoKyThuatJson);
-                        Console.WriteLine("Specs sau khi deserialize: " + JsonSerializer.Serialize(specs));
                     }
                     catch (Exception ex)
                     {
@@ -306,17 +312,14 @@ namespace Admin_WBLK.Controllers
                     }
                 }
 
-                // Nếu có specs mới, cập nhật
+                // Nếu có specs mới, cập nhật với options để không escape Unicode
                 if (specs.Any())
                 {
-                    sanpham.Thongsokythuat = JsonSerializer.Serialize(specs);
-                    Console.WriteLine("Thông số kỹ thuật sau khi serialize: " + sanpham.Thongsokythuat);
+                    sanpham.Thongsokythuat = JsonSerializer.Serialize(specs, _jsonOptions);
                 }
                 else
                 {
-                    // Giữ lại thông số cũ
                     sanpham.Thongsokythuat = existingProduct?.Thongsokythuat;
-                    Console.WriteLine("Giữ lại thông số cũ: " + sanpham.Thongsokythuat);
                 }
 
                 // Cập nhật sản phẩm

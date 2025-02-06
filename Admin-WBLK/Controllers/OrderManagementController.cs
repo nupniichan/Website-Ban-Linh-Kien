@@ -123,6 +123,8 @@ namespace Admin_WBLK.Controllers
             var donhang = await _context.Donhangs
                 .Include(d => d.IdKhNavigation)
                 .Include(d => d.IdMggNavigation)
+                .Include(d => d.Chitietdonhangs)
+                    .ThenInclude(c => c.IdSpNavigation)
                 .FirstOrDefaultAsync(m => m.IdDh == id);
 
             if (donhang == null)
@@ -147,9 +149,6 @@ namespace Admin_WBLK.Controllers
         {
             try
             {
-                // Log để debug
-                Console.WriteLine($"Received chitietdonhangs: {chitietdonhangs}");
-                
                 using var transaction = await _context.Database.BeginTransactionAsync();
                 
                 // Kiểm tra mã thanh toán nếu là thanh toán online
@@ -160,7 +159,6 @@ namespace Admin_WBLK.Controllers
                         throw new Exception("Vui lòng nhập mã thanh toán cho phương thức thanh toán online!");
                     }
 
-                    // Kiểm tra mã thanh toán có tồn tại chưa
                     var existingPayment = await _context.Thanhtoans
                         .FirstOrDefaultAsync(t => t.Mathanhtoan == Mathanhtoan);
                     if (existingPayment != null)
@@ -195,12 +193,9 @@ namespace Admin_WBLK.Controllers
                             throw new Exception($"Sản phẩm {product.Tensanpham} chỉ còn {product.Soluongton} sản phẩm!");
                         }
 
-                        // Nếu đơn hàng đã xác nhận thì trừ số lượng tồn ngay
-                        if (donhang.Trangthai == "Đã xác nhận")
-                        {
-                            product.Soluongton -= chitiet.Soluong;
-                            _context.Update(product);
-                        }
+                        // Trừ số lượng tồn ngay khi tạo đơn hàng
+                        product.Soluongton -= chitiet.Soluong;
+                        _context.Update(product);
 
                         _context.Chitietdonhangs.Add(chitiet);
                     }
@@ -283,21 +278,49 @@ namespace Admin_WBLK.Controllers
         [HttpGet]
         public async Task<IActionResult> GetProductInfo(string id)
         {
-            var product = await _context.Sanphams
-                .Where(s => s.IdSp == id)
-                .Select(s => new { s.IdSp, s.Tensanpham, s.Gia, s.Soluongton })
-                .FirstOrDefaultAsync();
-            return Json(product);
+            try 
+            {
+                if (string.IsNullOrEmpty(id))
+                {
+                    return Json(new { success = false, message = "Mã sản phẩm không được để trống" });
+                }
+
+                // Thêm log để debug
+                Console.WriteLine($"Searching for product with ID: {id}");
+
+                var product = await _context.Sanphams
+                    .Where(s => s.IdSp == id) // Bỏ Trim() và ToUpper() vì có thể gây lỗi
+                    .Select(s => new { 
+                        s.IdSp, 
+                        s.Tensanpham, 
+                        s.Gia, 
+                        s.Soluongton,
+                        success = true 
+                    })
+                    .FirstOrDefaultAsync();
+
+                if (product == null)
+                {
+                    Console.WriteLine($"Product not found: {id}");
+                    return Json(new { success = false, message = $"Không tìm thấy sản phẩm với mã {id}" });
+                }
+
+                Console.WriteLine($"Product found: {product.Tensanpham}");
+                return Json(product);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetProductInfo: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                return Json(new { success = false, message = "Có lỗi xảy ra khi tìm sản phẩm" });
+            }
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetDiscountInfo(string id)
+        public async Task<IActionResult> GetDiscountInfo(string id, bool isEdit = false)
         {
             try 
             {
-                var today = DateOnly.FromDateTime(DateTime.Now);
-                Console.WriteLine($"Debug - Today: {today:dd/MM/yyyy}");
-
                 var discount = await _context.Magiamgia
                     .Where(m => m.IdMgg == id)
                     .FirstOrDefaultAsync();
@@ -306,6 +329,19 @@ namespace Admin_WBLK.Controllers
                 {
                     return Json(new { success = false, message = "Mã giảm giá không tồn tại" });
                 }
+
+                // Nếu đang ở chế độ Edit, bỏ qua kiểm tra hạn sử dụng
+                if (isEdit)
+                {
+                    return Json(new { 
+                        success = true,
+                        tilechietkhau = discount.Tilechietkhau,
+                        message = $"Áp dụng giảm giá {discount.Tilechietkhau}%"
+                    });
+                }
+
+                // Kiểm tra các điều kiện cho trang Create
+                var today = DateOnly.FromDateTime(DateTime.Now);
 
                 if (today < discount.Ngaysudung)
                 {
@@ -330,8 +366,8 @@ namespace Admin_WBLK.Controllers
 
                 return Json(new { 
                     success = true,
-                    tilechietkhau = discount.Tilechietkhau * 100,
-                    message = $"Áp dụng giảm giá {discount.Tilechietkhau * 100}% (Có hiệu lực đến {discount.Ngayhethan:dd/MM/yyyy})"
+                    tilechietkhau = discount.Tilechietkhau,
+                    message = $"Áp dụng giảm giá {discount.Tilechietkhau}% (Có hiệu lực đến {discount.Ngayhethan:dd/MM/yyyy})"
                 });
             }
             catch (Exception ex)
@@ -404,6 +440,8 @@ namespace Admin_WBLK.Controllers
             var donhang = await _context.Donhangs
                 .Include(d => d.IdKhNavigation)
                 .Include(d => d.IdMggNavigation)
+                .Include(d => d.Chitietdonhangs)
+                    .ThenInclude(c => c.IdSpNavigation)
                 .FirstOrDefaultAsync(m => m.IdDh == id);
 
             if (donhang == null)
@@ -584,53 +622,30 @@ namespace Admin_WBLK.Controllers
                 // Xử lý các logic bổ sung theo trạng thái
                 switch (newStatus)
                 {
-                    case "Đã xác nhận":
-                        // Kiểm tra và trừ số lượng tồn kho
-                        foreach (var detail in donhang.Chitietdonhangs)
-                        {
-                            var product = await _context.Sanphams.FindAsync(detail.IdSp);
-                            if (product == null)
-                            {
-                                throw new Exception($"Không tìm thấy sản phẩm {detail.IdSp}");
-                            }
-
-                            if (product.Soluongton < detail.Soluong)
-                            {
-                                throw new Exception($"Sản phẩm {product.Tensanpham} chỉ còn {product.Soluongton} sản phẩm!");
-                            }
-
-                            product.Soluongton -= detail.Soluong;
-                            _context.Update(product);
-                        }
-                        break;
-
                     case "Đã huỷ":
-                        // Hoàn trả số lượng tồn kho nếu đơn hàng đã được xác nhận trước đó
-                        if (donhang.Trangthai == "Đã xác nhận" || 
-                            donhang.Trangthai == "Chờ giao hàng" || 
-                            donhang.Trangthai == "Đang giao hàng")
+                        // Hoàn trả số lượng tồn kho khi hủy đơn
+                        foreach (var chitiet in donhang.Chitietdonhangs)
                         {
-                            foreach (var detail in donhang.Chitietdonhangs)
+                            var product = await _context.Sanphams.FindAsync(chitiet.IdSp);
+                            if (product != null)
                             {
-                                var product = await _context.Sanphams.FindAsync(detail.IdSp);
-                                if (product != null)
-                                {
-                                    product.Soluongton += detail.Soluong;
-                                    _context.Update(product);
-                                }
+                                product.Soluongton += chitiet.Soluong;
+                                _context.Update(product);
+                                await _context.SaveChangesAsync();
                             }
                         }
                         break;
 
                     case "Đổi trả thành công":
                         // Hoàn trả số lượng tồn kho khi đổi trả thành công
-                        foreach (var detail in donhang.Chitietdonhangs)
+                        foreach (var chitiet in donhang.Chitietdonhangs)
                         {
-                            var product = await _context.Sanphams.FindAsync(detail.IdSp);
+                            var product = await _context.Sanphams.FindAsync(chitiet.IdSp);
                             if (product != null)
                             {
-                                product.Soluongton += detail.Soluong;
+                                product.Soluongton += chitiet.Soluong;
                                 _context.Update(product);
+                                await _context.SaveChangesAsync();
                             }
                         }
                         break;
@@ -651,6 +666,33 @@ namespace Admin_WBLK.Controllers
                 TempData["Error"] = $"Lỗi: {ex.Message}";
                 return RedirectToAction(nameof(Index));
             }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetDiscountSuggestions(string term)
+        {
+            if (string.IsNullOrEmpty(term))
+                return Json(new List<object>());
+
+            var today = DateOnly.FromDateTime(DateTime.Now);
+            var suggestions = await _context.Magiamgia
+                .Where(m => (m.IdMgg.Contains(term) || m.Ten.Contains(term)) &&
+                            m.Ngaysudung <= today &&
+                            m.Ngayhethan >= today &&
+                            m.Soluong > 0 &&
+                            m.Trangthai == true)
+                .Take(5)
+                .Select(m => new
+                {
+                    id = m.IdMgg,
+                    ten = m.Ten,
+                    tilechietkhau = m.Tilechietkhau,
+                    ngayhethan = m.Ngayhethan.ToString("dd/MM/yyyy"),
+                    soluong = m.Soluong
+                })
+                .ToListAsync();
+
+            return Json(suggestions);
         }
     }
 }
