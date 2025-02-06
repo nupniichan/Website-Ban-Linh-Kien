@@ -25,7 +25,7 @@
                 <!-- Ngày đặt hàng -->
                 <div>
                     <dt class="text-sm font-medium text-gray-500">Ngày đặt hàng</dt>
-                    <dd class="mt-1 text-gray-900">@Model.Ngaydathang.ToString("dd/MM/yyyy HH:mm:ss")</dd>
+                    <dd class="mt-1 text-gray-900">@(Model.Ngaydathang.HasValue ? Model.Ngaydathang.Value.ToString("dd/MM/yyyy HH:mm:ss") : "N/A")</dd>
                 </div>
 
                 <!-- Trạng thái -->
@@ -79,21 +79,6 @@
                         </div>
                     </dl>
                 </div>
-
-                <!-- Thông tin nhân viên -->
-                <div class="bg-gray-50 p-4 rounded-lg">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Nhân viên phụ trách</h3>
-                    <dl class="space-y-2">
-                        <div>
-                            <dt class="text-sm font-medium text-gray-500">Mã nhân viên</dt>
-                            <dd class="mt-1 text-gray-900">@Model.IdNv</dd>
-                        </div>
-                        <div>
-                            <dt class="text-sm font-medium text-gray-500">Tên nhân viên</dt>
-                            <dd class="mt-1 text-gray-900">@Model.IdNvNavigation?.Hoten</dd>
-                        </div>
-                    </dl>
-                </div>
             </div>
 
             <!-- Chi tiết sản phẩm -->
@@ -115,7 +100,7 @@
                             {
                                 <tr>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@item.IdSp</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@item.IdSpNavigation?.TenSp</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@item.IdSpNavigation?.Tensanpham</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@item.Soluong</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@item.Dongia.ToString("#,##0") VNĐ</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@((item.Soluong * item.Dongia).ToString("#,##0")) VNĐ</td>
@@ -152,11 +137,11 @@
             </div>
 
             <!-- Ghi chú -->
-            @if (!string.IsNullOrEmpty(Model.ghichu))
+            @if (!string.IsNullOrEmpty(Model.Ghichu))
             {
                 <div class="mb-8">
                     <h3 class="text-lg font-medium text-gray-900 mb-4">Ghi chú</h3>
-                    <p class="text-gray-900 bg-gray-50 p-4 rounded-lg">@Model.ghichu</p>
+                    <p class="text-gray-900 bg-gray-50 p-4 rounded-lg">@Model.Ghichu</p>
                 </div>
             }
 

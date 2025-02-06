@@ -80,6 +80,13 @@
                     }
                 </select>
 
+                <select name="sortOrder" 
+                        onchange="this.form.submit()"
+                        class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                    <option value="newest" selected="@(ViewData["CurrentSort"]?.ToString() == "newest")">Mới nhất</option>
+                    <option value="oldest" selected="@(ViewData["CurrentSort"]?.ToString() == "oldest")">Cũ nhất</option>
+                </select>
+
                 <!-- Clear Filters -->
                 @if (!string.IsNullOrEmpty(ViewData["CurrentFilter"]?.ToString()) || 
                      !string.IsNullOrEmpty(ViewData["CurrentLoaiSp"]?.ToString()) || 
@@ -123,11 +130,11 @@
                 {
                     <tr class="hover:bg-gray-50">
                         <td class="px-6 py-4 whitespace-nowrap">@item.IdSp</td>
-                        <td class="px-6 py-4">@item.TenSp</td>
-                        <td class="px-6 py-4">@item.SoLuongTon</td>
+                        <td class="px-6 py-4">@item.Tensanpham</td>
+                        <td class="px-6 py-4">@item.Soluongton</td>
                         <td class="px-6 py-4">@item.Gia.ToString("#,##0")</td>
-                        <td class="px-6 py-4">@item.ThuongHieu</td>
-                        <td class="px-6 py-4">@item.LoaiSp</td>
+                        <td class="px-6 py-4">@item.Thuonghieu</td>
+                        <td class="px-6 py-4">@item.Loaisanpham</td>
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-2">
                                 <a asp-action="Details" asp-route-id="@item.IdSp" 

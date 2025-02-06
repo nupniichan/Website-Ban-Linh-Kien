@@ -7,15 +7,15 @@ public partial class Thanhtoan
 {
     public string IdTt { get; set; } = null!;
 
-    public string? Mathanhtoan { get; set; } = null!;
-
     public string Trangthai { get; set; } = null!;
 
     public decimal Tienthanhtoan { get; set; }
 
-    public DateTime Ngaythanhtoan { get; set; }
+    public DateTime? Ngaythanhtoan { get; set; }
 
     public string? Noidungthanhtoan { get; set; }
+
+    public string? Mathanhtoan { get; set; }
 
     public string IdDh { get; set; } = null!;
 

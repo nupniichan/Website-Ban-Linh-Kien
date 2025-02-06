@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Admin_WBLK.Models;
 using Microsoft.AspNetCore.Http;
 using System.IO;
+using System.Text.Json;
 
 namespace Admin_WBLK.Controllers
 {
@@ -22,12 +23,13 @@ namespace Admin_WBLK.Controllers
         }
 
         // GET: ProductManagement
-        public async Task<IActionResult> Index(string searchString, string loaiSp, string thuongHieu, int pageNumber = 1)
+        public async Task<IActionResult> Index(string searchString, string loaiSp, string thuongHieu, string sortOrder = "newest", int pageNumber = 1)
         {
             int pageSize = 10;
             ViewData["CurrentFilter"] = searchString;
             ViewData["CurrentLoaiSp"] = loaiSp;
             ViewData["CurrentThuongHieu"] = thuongHieu;
+            ViewData["CurrentSort"] = sortOrder;
 
             var query = _context.Sanphams.AsQueryable();
 
@@ -35,21 +37,33 @@ namespace Admin_WBLK.Controllers
             {
                 searchString = searchString.ToLower();
                 query = query.Where(s => s.IdSp.ToLower().Contains(searchString) || 
-                                        s.TenSp.ToLower().Contains(searchString));
+                                        s.Tensanpham.ToLower().Contains(searchString));
             }
 
             if (!string.IsNullOrEmpty(loaiSp))
             {
-                query = query.Where(s => s.LoaiSp == loaiSp);
+                query = query.Where(s => s.Loaisanpham == loaiSp);
             }
 
             if (!string.IsNullOrEmpty(thuongHieu))
             {
-                query = query.Where(s => s.ThuongHieu == thuongHieu);
+                query = query.Where(s => s.Thuonghieu == thuongHieu);
             }
 
-            ViewBag.LoaiSps = await _context.Sanphams.Select(s => s.LoaiSp).Distinct().ToListAsync();
-            ViewBag.ThuongHieus = await _context.Sanphams.Select(s => s.ThuongHieu).Distinct().ToListAsync();
+            // Sắp xếp theo tùy chọn người dùng
+            switch (sortOrder)
+            {
+                case "oldest":
+                    query = query.OrderBy(s => s.IdSp);
+                    break;
+                case "newest":
+                default:
+                    query = query.OrderByDescending(s => s.IdSp);
+                    break;
+            }
+
+            ViewBag.LoaiSps = await _context.Sanphams.Select(s => s.Loaisanpham).Distinct().ToListAsync();
+            ViewBag.ThuongHieus = await _context.Sanphams.Select(s => s.Thuonghieu).Distinct().ToListAsync();
 
             var totalItems = await query.CountAsync();
             var items = await query.Skip((pageNumber - 1) * pageSize)
@@ -69,7 +83,6 @@ namespace Admin_WBLK.Controllers
             }
 
             var sanpham = await _context.Sanphams
-                .Include(s => s.IdNvNavigation)
                 .FirstOrDefaultAsync(m => m.IdSp == id);
             if (sanpham == null)
             {
@@ -82,7 +95,6 @@ namespace Admin_WBLK.Controllers
         // GET: ProductManagement/Create
         public IActionResult Create()
         {
-            ViewData["IdNv"] = "NV001";
             return View();
         }
 
@@ -91,20 +103,19 @@ namespace Admin_WBLK.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("IdSp,TenSp,Gia,SoLuongTon,ThuongHieu,MoTa,ThongSoKyThuat,LoaiSp,IdNv,hinh_anh")] Sanpham sanpham, IFormFile? imageFile)
+        public async Task<IActionResult> Create([Bind("IdSp,Tensanpham,Gia,Soluongton,Thuonghieu,Mota,Thongsokythuat,Loaisanpham,Hinhanh,Soluotxem,Damuahang")] Sanpham sanpham, IFormFile? imageFile)
         {
             try
             {
                 // Bỏ qua validation cho các trường sẽ được tự động set
                 ModelState.Remove("IdSp");
-                ModelState.Remove("IdNv");
-                ModelState.Remove("IdNvNavigation");
-                ModelState.Remove("hinh_anh");
-                // Bỏ ThongSoKyThuat khỏi danh sách remove validation
-                // ModelState.Remove("ThongSoKyThuat");
+                ModelState.Remove("Hinhanh");
+                ModelState.Remove("Soluotxem");
+                ModelState.Remove("Damuahang");
 
                 if (!ModelState.IsValid)
                 {
+                    // Debug: In ra các lỗi validation
                     foreach (var modelState in ModelState.Values)
                     {
                         foreach (var error in modelState.Errors)
@@ -112,7 +123,6 @@ namespace Admin_WBLK.Controllers
                             Console.WriteLine(error.ErrorMessage);
                         }
                     }
-                    ViewData["IdNv"] = "NV001";
                     return View(sanpham);
                 }
 
@@ -120,12 +130,8 @@ namespace Admin_WBLK.Controllers
                 if (imageFile == null || imageFile.Length == 0)
                 {
                     ModelState.AddModelError("ImageFile", "Vui lòng chọn hình ảnh sản phẩm");
-                    ViewData["IdNv"] = "NV001";
                     return View(sanpham);
                 }
-
-                // Set các giá trị mặc định
-                sanpham.IdNv = "NV001";
 
                 // Tạo ID sản phẩm tự động tăng
                 string newId = "SP00001";
@@ -157,18 +163,17 @@ namespace Admin_WBLK.Controllers
                     await imageFile.CopyToAsync(stream);
                 }
 
-                sanpham.hinh_anh = "/Images/ProductImage/" + fileName;
+                sanpham.Hinhanh = "/Images/ProductImage/" + fileName;
 
                 // Lấy thông số kỹ thuật từ form và xử lý
-                var thongSoKyThuat = Request.Form["ThongSoKyThuat"].ToString();
+                var thongSoKyThuat = Request.Form["thongsokythuat"].ToString();
                 if (!string.IsNullOrEmpty(thongSoKyThuat))
                 {
-                    sanpham.ThongSoKyThuat = thongSoKyThuat;
+                    sanpham.Thongsokythuat = thongSoKyThuat;
                 }
                 else
                 {
-                    ModelState.AddModelError("ThongSoKyThuat", "Thông số kỹ thuật không được để trống");
-                    ViewData["IdNv"] = "NV001";
+                    ModelState.AddModelError("Thongsokythuat", "Thông số kỹ thuật không được để trống");
                     return View(sanpham);
                 }
 
@@ -181,10 +186,7 @@ namespace Admin_WBLK.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error: {ex.Message}");
-                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
                 ModelState.AddModelError("", $"Có lỗi xảy ra: {ex.Message}");
-                ViewData["IdNv"] = "NV001";
                 return View(sanpham);
             }
         }
@@ -203,8 +205,6 @@ namespace Admin_WBLK.Controllers
                 return NotFound();
             }
             
-            // Set IdNv mặc định là "NV001"
-            ViewData["IdNv"] = "NV001";
             return View(sanpham);
         }
 
@@ -213,7 +213,7 @@ namespace Admin_WBLK.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(string id, [Bind("IdSp,TenSp,Gia,SoLuongTon,ThuongHieu,MoTa,ThongSoKyThuat,LoaiSp,IdNv,hinh_anh")] Sanpham sanpham, IFormFile? imageFile)
+        public async Task<IActionResult> Edit(string id, [Bind("IdSp,Tensanpham,Gia,Soluongton,Thuonghieu,Mota,Thongsokythuat,Loaisanpham,Hinhanh")] Sanpham sanpham, IFormFile? imageFile)
         {
             if (id != sanpham.IdSp)
             {
@@ -238,9 +238,6 @@ namespace Admin_WBLK.Controllers
                     return View(sanpham);
                 }
 
-                // Set IdNv cố định là "NV001"
-                sanpham.IdNv = "NV001";
-
                 // Lấy sản phẩm hiện tại từ database
                 var existingProduct = await _context.Sanphams.AsNoTracking()
                     .FirstOrDefaultAsync(s => s.IdSp == id);
@@ -254,12 +251,12 @@ namespace Admin_WBLK.Controllers
                 if (imageFile != null && imageFile.Length > 0)
                 {
                     // Xóa file ảnh cũ nếu tồn tại
-                    if (!string.IsNullOrEmpty(existingProduct.hinh_anh))
+                    if (!string.IsNullOrEmpty(existingProduct.Hinhanh))
                     {
                         var oldImagePath = Path.Combine(
                             Directory.GetCurrentDirectory(),
                             "wwwroot",
-                            existingProduct.hinh_anh.TrimStart('/')
+                            existingProduct.Hinhanh.TrimStart('/')
                         );
                         if (System.IO.File.Exists(oldImagePath))
                         {
@@ -282,24 +279,44 @@ namespace Admin_WBLK.Controllers
                         await imageFile.CopyToAsync(stream);
                     }
 
-                    sanpham.hinh_anh = "/Images/ProductImage/" + fileName;
+                    sanpham.Hinhanh = "/Images/ProductImage/" + fileName;
                 }
                 else
                 {
                     // Giữ nguyên đường dẫn hình ảnh cũ
-                    sanpham.hinh_anh = existingProduct.hinh_anh;
+                    sanpham.Hinhanh = existingProduct.Hinhanh;
                 }
 
-                // Xử lý thông số kỹ thuật
-                var thongSoKyThuat = Request.Form["ThongSoKyThuat"].ToString();
-                if (!string.IsNullOrEmpty(thongSoKyThuat))
+                // Debug logging
+                Console.WriteLine("Thông số kỹ thuật từ form: " + Request.Form["thongsokythuat"]);
+
+                var specs = new Dictionary<string, string>();
+                var thongSoKyThuatJson = Request.Form["thongsokythuat"].ToString();
+                
+                if (!string.IsNullOrEmpty(thongSoKyThuatJson))
                 {
-                    sanpham.ThongSoKyThuat = thongSoKyThuat;
+                    try
+                    {
+                        specs = JsonSerializer.Deserialize<Dictionary<string, string>>(thongSoKyThuatJson);
+                        Console.WriteLine("Specs sau khi deserialize: " + JsonSerializer.Serialize(specs));
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("Lỗi khi deserialize thông số kỹ thuật: " + ex.Message);
+                    }
+                }
+
+                // Nếu có specs mới, cập nhật
+                if (specs.Any())
+                {
+                    sanpham.Thongsokythuat = JsonSerializer.Serialize(specs);
+                    Console.WriteLine("Thông số kỹ thuật sau khi serialize: " + sanpham.Thongsokythuat);
                 }
                 else
                 {
-                    ModelState.AddModelError("ThongSoKyThuat", "Thông số kỹ thuật không được để trống");
-                    return View(sanpham);
+                    // Giữ lại thông số cũ
+                    sanpham.Thongsokythuat = existingProduct?.Thongsokythuat;
+                    Console.WriteLine("Giữ lại thông số cũ: " + sanpham.Thongsokythuat);
                 }
 
                 // Cập nhật sản phẩm
@@ -322,8 +339,8 @@ namespace Admin_WBLK.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error: {ex.Message}");
-                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
+                Console.WriteLine("Lỗi: " + ex.Message);
+                Console.WriteLine("Stack trace: " + ex.StackTrace);
                 ModelState.AddModelError("", $"Có lỗi xảy ra: {ex.Message}");
                 return View(sanpham);
             }
@@ -338,7 +355,6 @@ namespace Admin_WBLK.Controllers
             }
 
             var sanpham = await _context.Sanphams
-                .Include(s => s.IdNvNavigation)
                 .FirstOrDefaultAsync(m => m.IdSp == id);
             if (sanpham == null)
             {
@@ -376,9 +392,9 @@ namespace Admin_WBLK.Controllers
             term = term.ToLower();
             var suggestions = await _context.Sanphams
                 .Where(s => s.IdSp.ToLower().Contains(term) || 
-                            s.TenSp.ToLower().Contains(term))
+                            s.Tensanpham.ToLower().Contains(term))
                 .Take(5)
-                .Select(s => new { s.IdSp, s.TenSp })
+                .Select(s => new { s.IdSp, s.Tensanpham })
                 .ToListAsync();
 
             return Json(suggestions);

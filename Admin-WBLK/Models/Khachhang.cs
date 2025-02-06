@@ -19,15 +19,21 @@ public partial class Khachhang
 
     public string Sodienthoai { get; set; } = null!;
 
+    public int? Diemtichluy { get; set; }
+
     public string IdTk { get; set; } = null!;
 
-    public virtual ICollection<Danhgia> Danhgia { get; set; } = new List<Danhgia>();
+    public string? IdXephangvip { get; set; }
 
-    public virtual ICollection<Doitradh> Doitradhs { get; set; } = new List<Doitradh>();
+    public virtual ICollection<Chitietgiohang> Chitietgiohangs { get; set; } = new List<Chitietgiohang>();
+
+    public virtual ICollection<Danhgia> Danhgia { get; set; } = new List<Danhgia>();
 
     public virtual ICollection<Donhang> Donhangs { get; set; } = new List<Donhang>();
 
     public virtual ICollection<Giohang> Giohangs { get; set; } = new List<Giohang>();
 
     public virtual Taikhoan IdTkNavigation { get; set; } = null!;
+
+    public virtual Xephangvip? IdXephangvipNavigation { get; set; }
 }

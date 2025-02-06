@@ -25,7 +25,6 @@ namespace Admin_WBLK.Controllers
 
             var query = _context.Donhangs
                 .Include(d => d.IdKhNavigation)    
-                .Include(d => d.IdNvNavigation)    
                 .Include(d => d.IdMggNavigation)   
                 .Select(d => new Donhang
                 {
@@ -37,10 +36,9 @@ namespace Admin_WBLK.Controllers
                     Phuongthucthanhtoan = d.Phuongthucthanhtoan,
                     IdKh = d.IdKh,
                     IdMgg = d.IdMgg,
-                    IdNv = d.IdNv,
-                    ghichu = d.ghichu ?? "",
+                    Ghichu = d.Ghichu,
+                    LydoHuy = d.LydoHuy,
                     IdKhNavigation = d.IdKhNavigation,
-                    IdNvNavigation = d.IdNvNavigation,
                     IdMggNavigation = d.IdMggNavigation
                 });
 
@@ -60,7 +58,7 @@ namespace Admin_WBLK.Controllers
             if (ngayDat.HasValue)
             {
                 var ngayDatDateTime = ngayDat.Value.ToDateTime(TimeOnly.MinValue);
-                query = query.Where(d => d.Ngaydathang.Date == ngayDatDateTime.Date);
+                query = query.Where(d => d.Ngaydathang == ngayDatDateTime.Date);
             }
 
             // Lấy danh sách trạng thái để làm dropdown filter
@@ -124,10 +122,7 @@ namespace Admin_WBLK.Controllers
 
             var donhang = await _context.Donhangs
                 .Include(d => d.IdKhNavigation)
-                .Include(d => d.IdNvNavigation)
                 .Include(d => d.IdMggNavigation)
-                .Include(d => d.Chitietdonhangs)
-                    .ThenInclude(c => c.IdSpNavigation)
                 .FirstOrDefaultAsync(m => m.IdDh == id);
 
             if (donhang == null)
@@ -147,7 +142,7 @@ namespace Admin_WBLK.Controllers
         // POST: OrderManagement/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("IdKh,IdNv,Diachigiaohang,Phuongthucthanhtoan,IdMgg,ghichu,Tongtien,Trangthai")] Donhang donhang, 
+        public async Task<IActionResult> Create([Bind("IdKh,Diachigiaohang,Phuongthucthanhtoan,IdMgg,Ghichu,LydoHuy,Tongtien,Trangthai")] Donhang donhang, 
             string chitietdonhangs, string? Mathanhtoan, string? NoiDungThanhToan)
         {
             try
@@ -195,15 +190,15 @@ namespace Admin_WBLK.Controllers
                         }
 
                         // Kiểm tra số lượng tồn
-                        if (product.SoLuongTon < chitiet.Soluong)
+                        if (product.Soluongton < chitiet.Soluong)
                         {
-                            throw new Exception($"Sản phẩm {product.TenSp} chỉ còn {product.SoLuongTon} sản phẩm!");
+                            throw new Exception($"Sản phẩm {product.Tensanpham} chỉ còn {product.Soluongton} sản phẩm!");
                         }
 
                         // Nếu đơn hàng đã xác nhận thì trừ số lượng tồn ngay
                         if (donhang.Trangthai == "Đã xác nhận")
                         {
-                            product.SoLuongTon -= chitiet.Soluong;
+                            product.Soluongton -= chitiet.Soluong;
                             _context.Update(product);
                         }
 
@@ -290,7 +285,7 @@ namespace Admin_WBLK.Controllers
         {
             var product = await _context.Sanphams
                 .Where(s => s.IdSp == id)
-                .Select(s => new { s.IdSp, s.TenSp, s.Gia, s.SoLuongTon })
+                .Select(s => new { s.IdSp, s.Tensanpham, s.Gia, s.Soluongton })
                 .FirstOrDefaultAsync();
             return Json(product);
         }
@@ -366,7 +361,6 @@ namespace Admin_WBLK.Controllers
 
             var donhang = await _context.Donhangs
                 .Include(d => d.IdKhNavigation)
-                .Include(d => d.IdNvNavigation)
                 .Include(d => d.IdMggNavigation)
                 .FirstOrDefaultAsync(m => m.IdDh == id);
 
@@ -409,10 +403,7 @@ namespace Admin_WBLK.Controllers
 
             var donhang = await _context.Donhangs
                 .Include(d => d.IdKhNavigation)
-                .Include(d => d.IdNvNavigation)
                 .Include(d => d.IdMggNavigation)
-                .Include(d => d.Chitietdonhangs)
-                    .ThenInclude(c => c.IdSpNavigation)
                 .FirstOrDefaultAsync(m => m.IdDh == id);
 
             if (donhang == null)
@@ -442,7 +433,7 @@ namespace Admin_WBLK.Controllers
         // POST: OrderManagement/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(string id, [Bind("IdDh,IdKh,IdNv,Trangthai,Tongtien,Diachigiaohang,Ngaydathang,Phuongthucthanhtoan,IdMgg,ghichu")] Donhang donhang,
+        public async Task<IActionResult> Edit(string id, [Bind("IdDh,IdKh,Trangthai,Tongtien,Diachigiaohang,Ngaydathang,Phuongthucthanhtoan,IdMgg,Ghichu,LydoHuy")] Donhang donhang,
             string? Mathanhtoan, string? TrangthaiThanhtoan, string? Noidungthanhtoan)
         {
             if (id != donhang.IdDh)
@@ -456,7 +447,6 @@ namespace Admin_WBLK.Controllers
 
                 // Bỏ qua validation cho các trường sẽ được tự động set
                 ModelState.Remove("IdKhNavigation");
-                ModelState.Remove("IdNvNavigation");
                 ModelState.Remove("IdMggNavigation");
 
                 if (!ModelState.IsValid)
@@ -535,12 +525,12 @@ namespace Admin_WBLK.Controllers
         public async Task<IActionResult> GetOrderDetails(string id)
         {
             var details = await _context.Chitietdonhangs
-                .Include(c => c.IdSpNavigation)
+                .Include(c => c.IdSp)
                 .Where(c => c.IdDh == id)
                 .Select(c => new
                 {
                     idSp = c.IdSp,
-                    tenSp = c.IdSpNavigation.TenSp,
+                    tenSp = c.IdSpNavigation.Tensanpham,
                     soluong = c.Soluong,
                     dongia = c.Dongia
                 })
@@ -604,12 +594,12 @@ namespace Admin_WBLK.Controllers
                                 throw new Exception($"Không tìm thấy sản phẩm {detail.IdSp}");
                             }
 
-                            if (product.SoLuongTon < detail.Soluong)
+                            if (product.Soluongton < detail.Soluong)
                             {
-                                throw new Exception($"Sản phẩm {product.TenSp} chỉ còn {product.SoLuongTon} sản phẩm!");
+                                throw new Exception($"Sản phẩm {product.Tensanpham} chỉ còn {product.Soluongton} sản phẩm!");
                             }
 
-                            product.SoLuongTon -= detail.Soluong;
+                            product.Soluongton -= detail.Soluong;
                             _context.Update(product);
                         }
                         break;
@@ -625,7 +615,7 @@ namespace Admin_WBLK.Controllers
                                 var product = await _context.Sanphams.FindAsync(detail.IdSp);
                                 if (product != null)
                                 {
-                                    product.SoLuongTon += detail.Soluong;
+                                    product.Soluongton += detail.Soluong;
                                     _context.Update(product);
                                 }
                             }
@@ -639,7 +629,7 @@ namespace Admin_WBLK.Controllers
                             var product = await _context.Sanphams.FindAsync(detail.IdSp);
                             if (product != null)
                             {
-                                product.SoLuongTon += detail.Soluong;
+                                product.Soluongton += detail.Soluong;
                                 _context.Update(product);
                             }
                         }

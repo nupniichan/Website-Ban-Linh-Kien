@@ -14,6 +14,5 @@ public partial class Chitietdonhang
     public decimal Dongia { get; set; }
 
     public virtual Donhang IdDhNavigation { get; set; } = null!;
-
     public virtual Sanpham IdSpNavigation { get; set; } = null!;
 }
