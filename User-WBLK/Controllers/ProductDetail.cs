@@ -20,24 +20,49 @@ namespace Website_Ban_Linh_Kien.Controllers
         {
             // Parse thongSoKyThuat từ JSON string sang Dictionary
             Dictionary<string, string> specifications = new Dictionary<string, string>();
-            if (!string.IsNullOrEmpty(sp.ThongSoKyThuat))
+            if (!string.IsNullOrEmpty(sp.Thongsokythuat))
             {
                 try
                 {
-                    var specList = JsonSerializer.Deserialize<List<Dictionary<string, string>>>(sp.ThongSoKyThuat);
-                    foreach (var spec in specList)
+                    // Thử parse trực tiếp từ JSON object
+                    var jsonDoc = JsonSerializer.Deserialize<Dictionary<string, string>>(sp.Thongsokythuat);
+                    if (jsonDoc != null)
                     {
-                        if (spec.ContainsKey("key") && spec.ContainsKey("value"))
+                        foreach (var kvp in jsonDoc)
                         {
-                            specifications.Add(spec["key"], spec["value"]);
+                            specifications.Add(kvp.Key, kvp.Value);
                         }
                     }
                 }
-                catch (Exception ex) 
-                { 
-                    // Log lỗi nếu cần
-                    System.Diagnostics.Debug.WriteLine($"Error parsing specifications: {ex.Message}");
+                catch (Exception ex)
+                {
+                    try
+                    {
+                        // Nếu không được, thử parse từ array của JSON objects
+                        var specList = JsonSerializer.Deserialize<List<Dictionary<string, string>>>(sp.Thongsokythuat);
+                        if (specList != null)
+                        {
+                            foreach (var spec in specList)
+                            {
+                                if (spec.ContainsKey("key") && spec.ContainsKey("value"))
+                                {
+                                    specifications.Add(spec["key"], spec["value"]);
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception innerEx)
+                    {
+                        // Log lỗi nếu cần
+                        System.Diagnostics.Debug.WriteLine($"Error parsing specifications: {innerEx.Message}");
+                    }
                 }
+            }
+
+            // Debug: In ra các thông số đã parse được
+            foreach (var spec in specifications)
+            {
+                System.Diagnostics.Debug.WriteLine($"Spec: {spec.Key} = {spec.Value}");
             }
 
             // Tính toán thống kê đánh giá
@@ -60,9 +85,9 @@ namespace Website_Ban_Linh_Kien.Controllers
                 {
                     try
                     {
-                        if (string.IsNullOrEmpty(p.ThongSoKyThuat)) return false;
+                        if (string.IsNullOrEmpty(p.Thongsokythuat)) return false;
                         
-                        var specs = JsonSerializer.Deserialize<List<Dictionary<string, string>>>(p.ThongSoKyThuat);
+                        var specs = JsonSerializer.Deserialize<List<Dictionary<string, string>>>(p.Thongsokythuat);
                         return specs.Any(spec => 
                             spec.ContainsKey("key") && 
                             spec.ContainsKey("value") && 
@@ -82,16 +107,14 @@ namespace Website_Ban_Linh_Kien.Controllers
                 .Select(p => new ProductCardViewModel
                 {
                     IdSp = p.IdSp,
-                    TenSp = p.TenSp,
+                    TenSp = p.Tensanpham,
                     Gia = p.Gia,
-                    ImageUrl = p.hinh_anh,
-                    LoaiSp = p.LoaiSp,
-                    SoLuongTon = p.SoLuongTon
+                    ImageUrl = p.Hinhanh,
+                    LoaiSp = p.Loaisanpham,
+                    SoLuongTon = p.Soluongton
                 })
                 .ToList();
 
-            // Thêm log để debug
-            System.Diagnostics.Debug.WriteLine($"Found {relatedProducts.Count} related products");
             foreach (var product in relatedProducts)
             {
                 System.Diagnostics.Debug.WriteLine($"Related product: {product.IdSp} - {product.TenSp}");
@@ -100,17 +123,17 @@ namespace Website_Ban_Linh_Kien.Controllers
             return new ProductDetailViewModel
             {
                 Id = sp.IdSp,
-                Name = sp.TenSp,
+                Name = sp.Tensanpham,
                 Price = sp.Gia,
-                ImageUrl = sp.hinh_anh,
-                Description = sp.MoTa,
+                ImageUrl = sp.Hinhanh,
+                Description = sp.Mota,
                 Specifications = specifications,
-                Brand = sp.ThuongHieu,
-                InStock = sp.SoLuongTon > 0,
+                Brand = sp.Thuonghieu,
+                InStock = sp.Soluongton > 0,
                 ProductCode = sp.IdSp,
-                Category = sp.LoaiSp,
-                TotalReviews = totalReviews,
-                AverageRating = Math.Round(averageRating, 1),
+                Category = sp.Loaisanpham,
+                TotalReviews = sp.Danhgia?.Count ?? 0,
+                AverageRating = sp.Danhgia?.Any() == true ? Math.Round(sp.Danhgia.Average(r => r.Sosao), 1) : 0,
                 RatingDistribution = ratingDistribution,
                 Reviews = reviews.Select(r => new ProductReviewViewModel
                 {
@@ -120,11 +143,11 @@ namespace Website_Ban_Linh_Kien.Controllers
                     Date = r.Ngaydanhgia
                 }).ToList(),
                 // Các thuộc tính khác có thể thêm theo nhu cầu
-                ViewCount = sp.soluotxem,
-                PurchaseCount = sp.damuahang,
+                ViewCount = sp.Soluotxem,
+                PurchaseCount = sp.Damuahang,
                 Rating = averageRating,
                 Warranty = 24, // Có thể thêm trường này vào database nếu cần
-                SoLuongTon = sp.SoLuongTon,
+                SoLuongTon = sp.Soluongton,
                 RelatedProducts = relatedProducts
             };
         }
@@ -136,12 +159,12 @@ namespace Website_Ban_Linh_Kien.Controllers
             var product = _context.Sanphams
                 .Include(s => s.Danhgia)
                 .ThenInclude(d => d.IdKhNavigation)
-                .FirstOrDefault(s => s.IdSp == id && s.LoaiSp.ToLower() == "pc");
+                .FirstOrDefault(s => s.IdSp == id && s.Loaisanpham.ToLower() == "pc");
             if (product == null)
                 return NotFound();
 
             // Tăng số lượt xem
-            product.soluotxem += 1;
+            product.Soluotxem += 1;
             _context.SaveChanges();
 
             var viewModel = MapSanphamToViewModel(product);
@@ -159,7 +182,7 @@ namespace Website_Ban_Linh_Kien.Controllers
             var product = _context.Sanphams
                 .Include(s => s.Danhgia)
                 .ThenInclude(d => d.IdKhNavigation)
-                .FirstOrDefault(s => s.IdSp == id && s.LoaiSp.ToLower() == "laptop");
+                .FirstOrDefault(s => s.IdSp == id && s.Loaisanpham.ToLower() == "laptop");
             if (product == null)
                 return NotFound();
 
@@ -184,7 +207,7 @@ namespace Website_Ban_Linh_Kien.Controllers
                 return NotFound();
 
             // Tăng số lượt xem
-            product.soluotxem += 1;
+            product.Soluotxem += 1;
             _context.SaveChanges();
 
             var viewModel = MapSanphamToViewModel(product);
@@ -203,13 +226,13 @@ namespace Website_Ban_Linh_Kien.Controllers
             var product = _context.Sanphams
                 .Include(s => s.Danhgia)
                 .ThenInclude(d => d.IdKhNavigation)
-                .FirstOrDefault(s => s.IdSp == id && s.LoaiSp.ToLower() == category.ToLower());
+                .FirstOrDefault(s => s.IdSp == id && s.Loaisanpham.ToLower() == category.ToLower());
 
             if (product == null)
                 return NotFound();
 
             // Tăng số lượt xem
-            product.soluotxem += 1;
+            product.Soluotxem += 1;
             _context.SaveChanges();
 
             var viewModel = MapSanphamToViewModel(product);
@@ -229,7 +252,7 @@ namespace Website_Ban_Linh_Kien.Controllers
             var product = _context.Sanphams
                 .Include(s => s.Danhgia)
                 .ThenInclude(d => d.IdKhNavigation)
-                .FirstOrDefault(s => s.IdSp == id && s.LoaiSp.ToLower() == "storage");
+                .FirstOrDefault(s => s.IdSp == id && s.Loaisanpham.ToLower() == "storage");
             if (product == null)
                 return NotFound();
 
@@ -248,7 +271,7 @@ namespace Website_Ban_Linh_Kien.Controllers
             var product = _context.Sanphams
                 .Include(s => s.Danhgia)
                 .ThenInclude(d => d.IdKhNavigation)
-                .FirstOrDefault(s => s.IdSp == id && s.LoaiSp.ToLower() == "monitor");
+                .FirstOrDefault(s => s.IdSp == id && s.Loaisanpham.ToLower() == "monitor");
             if (product == null)
                 return NotFound();
 
@@ -264,7 +287,7 @@ namespace Website_Ban_Linh_Kien.Controllers
         [Route("audio/{category}/{id}")]
         public ActionResult Audio(string category, string id)
         {
-            var product = _context.Sanphams.FirstOrDefault(s => s.IdSp == id && s.LoaiSp.ToLower() == category.ToLower());
+            var product = _context.Sanphams.FirstOrDefault(s => s.IdSp == id && s.Loaisanpham.ToLower() == category.ToLower());
             if (product == null)
                 return NotFound();
 
@@ -281,7 +304,7 @@ namespace Website_Ban_Linh_Kien.Controllers
         [Route("peripherals/{category}/{id}")]
         public ActionResult Peripherals(string category, string id)
         {
-            var product = _context.Sanphams.FirstOrDefault(s => s.IdSp == id && s.LoaiSp.ToLower() == category.ToLower());
+            var product = _context.Sanphams.FirstOrDefault(s => s.IdSp == id && s.Loaisanpham.ToLower() == category.ToLower());
             if (product == null)
                 return NotFound();
 
@@ -301,7 +324,7 @@ namespace Website_Ban_Linh_Kien.Controllers
             var product = _context.Sanphams
                 .Include(s => s.Danhgia)
                 .ThenInclude(d => d.IdKhNavigation)
-                .FirstOrDefault(s => s.IdSp == id && s.LoaiSp.ToLower() == "network");
+                .FirstOrDefault(s => s.IdSp == id && s.Loaisanpham.ToLower() == "network");
             if (product == null)
                 return NotFound();
 

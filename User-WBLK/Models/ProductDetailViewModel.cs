@@ -16,8 +16,8 @@ namespace Website_Ban_Linh_Kien.Models
         public bool InStock { get; set; }
         public int Warranty { get; set; }
         public string ProductCode { get; set; }
-        public int ViewCount { get; set; }
-        public int PurchaseCount { get; set; }
+        public int? ViewCount { get; set; }
+        public int? PurchaseCount { get; set; }
         public double Rating { get; set; }
         public int ReviewCount { get; set; }
         public List<ProductReviewViewModel> Reviews { get; set; } = new List<ProductReviewViewModel>();

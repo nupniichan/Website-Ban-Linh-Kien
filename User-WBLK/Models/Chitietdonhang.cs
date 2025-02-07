@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Admin_WBLK.Models;
+namespace Website_Ban_Linh_Kien.Models;
 
 public partial class Chitietdonhang
 {
@@ -12,8 +12,4 @@ public partial class Chitietdonhang
     public int Soluong { get; set; }
 
     public decimal Dongia { get; set; }
-
-    public virtual Donhang IdDhNavigation { get; set; } = null!;
-
-    public virtual Sanpham IdSpNavigation { get; set; } = null!;
 }

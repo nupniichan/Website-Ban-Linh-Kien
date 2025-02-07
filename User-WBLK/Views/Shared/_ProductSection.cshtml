@@ -1,5 +1,4 @@
 @model ProductSectionViewModel
-@inject DatabaseContext _context
 
 <div class="bg-white rounded-lg p-4 relative">
     <div class="flex justify-between items-center mb-4">
@@ -8,42 +7,32 @@
     </div>
     
     <div class="products-container flex gap-4 overflow-x-auto pb-4 scrollbar-hide" style="scroll-snap-type: x mandatory;">
-        @{
-            var products = _context.Sanphams
-                .Where(p => p.LoaiSp.ToLower() == Model.Category.ToLower())
-                .Take(10)
-                .Select(p => new ProductCardViewModel
-                {
-                    IdSp = p.IdSp,
-                    TenSp = p.TenSp,
-                    Gia = p.Gia,
-                    ImageUrl = p.hinh_anh,
-                    LoaiSp = p.LoaiSp
-                })
-                .ToList();
-
-            foreach (var product in products)
+        @if (Model.Products != null && Model.Products.Any())
+        {
+            foreach (var product in Model.Products)
             {
                 <partial name="_ProductCard" model="product" />
             }
         }
+        else
+        {
+            <div class="text-center py-8">
+                <p class="text-gray-500">Không có sản phẩm nào trong danh mục này</p>
+            </div>
+        }
     </div>
 
-    <button class="absolute left-2 top-1/2 -translate-y-1/2 bg-white/50 p-2 rounded-full hover:bg-white/80 transition-colors" onclick="slideProducts('@Model.Category', 'prev')">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-        </svg>
-    </button>
-    <button class="absolute right-2 top-1/2 -translate-y-1/2 bg-white/50 p-2 rounded-full hover:bg-white/80 transition-colors" onclick="slideProducts('@Model.Category', 'next')">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-        </svg>
-    </button>
+    @if (Model.Products != null && Model.Products.Any())
+    {
+        <button class="absolute left-2 top-1/2 -translate-y-1/2 bg-white/50 p-2 rounded-full hover:bg-white/80 transition-colors" onclick="slideProducts('@Model.Title', 'prev')">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+        </button>
+        <button class="absolute right-2 top-1/2 -translate-y-1/2 bg-white/50 p-2 rounded-full hover:bg-white/80 transition-colors" onclick="slideProducts('@Model.Title', 'next')">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+        </button>
+    }
 </div>
-
-@if (!products.Any())
-{
-    <div class="text-center py-8">
-        <p class="text-gray-500">Không có sản phẩm nào trong danh mục này</p>
-    </div>
-}

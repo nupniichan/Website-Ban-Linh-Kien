@@ -65,48 +65,47 @@
     <div class="space-y-10">
         <partial name="_ProductSection" model='new ProductSectionViewModel { 
             Title = "PC - Máy tính cá nhân", 
-            Category = "pc",
-            ViewAllLink = "/productslist/pc" 
-        }' />
-        <partial name="_ProductSection" model='new ProductSectionViewModel { 
-            Title = "Laptop", 
-            Category = "laptop",
-            ViewAllLink = "/productslist/laptop" 
+            ViewAllLink = "/productslist/pc",
+            Products = ViewBag.PCProducts 
         }' />
         <partial name="_ProductSection" model='new ProductSectionViewModel { 
             Title = "Server", 
-            Category = "server",
-            ViewAllLink = "/productslist/server" 
+            ViewAllLink = "/productslist/server",
+            Products = ViewBag.ServerProducts
+        }' />
+        <partial name="_ProductSection" model='new ProductSectionViewModel { 
+            Title = "Laptop", 
+            ViewAllLink = "/productslist/laptop",
+            Products = ViewBag.LaptopProducts 
         }' />
         <partial name="_ProductSection" model='new ProductSectionViewModel { 
             Title = "CPU - Bộ vi xử lý", 
-            Category = "cpu",
-            ViewAllLink = "/productslist/components/cpu" 
+            ViewAllLink = "/productslist/components/cpu",
+            Products = ViewBag.CPUProducts 
         }' />
         <partial name="_ProductSection" model='new ProductSectionViewModel { 
             Title = "VGA - Card màn hình", 
-            Category = "vga",
-            ViewAllLink = "/productslist/components/vga" 
+            ViewAllLink = "/productslist/components/vga",
+            Products = ViewBag.VGAProducts 
         }' />
         <partial name="_ProductSection" model='new ProductSectionViewModel { 
             Title = "RAM - Bộ nhớ", 
-            Category = "ram",
-            ViewAllLink = "/productslist/components/ram" 
+            ViewAllLink = "/productslist/components/ram", 
+            Products = ViewBag.RAMProducts 
         }' />
         <partial name="_ProductSection" model='new ProductSectionViewModel { 
             Title = "Mainboard - Bo mạch chủ", 
-            Category = "mainboard",
-            ViewAllLink = "/productslist/components/mainboard" 
+            ViewAllLink = "/productslist/components/mainboard",
+            Products = ViewBag.MainboardProducts 
         }' />
         <partial name="_ProductSection" model='new ProductSectionViewModel { 
             Title = "Màn hình máy tính", 
-            Category = "monitor",
             ViewAllLink = "/productslist/monitor" 
         }' />
         <partial name="_ProductSection" model='new ProductSectionViewModel { 
             Title = "Thiết bị lưu trữ", 
-            Category = "storage",
-            ViewAllLink = "/productslist/storage" 
+            ViewAllLink = "/productslist/storage",
+            Products = ViewBag.StorageProducts
         }' />
     </div>
 

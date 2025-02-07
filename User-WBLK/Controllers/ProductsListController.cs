@@ -21,36 +21,36 @@ namespace Website_Ban_Linh_Kien.Controllers
             string cpuType = null, string ram = null, string gpu = null, 
             string priceRange = null, int page = 1)
         {
-            var query = _context.Sanphams.Where(p => p.LoaiSp.ToLower() == "pc");
+            var query = _context.Sanphams.Where(p => p.Loaisanpham.ToLower() == "pc");
 
             // Lọc theo thương hiệu
             if (!string.IsNullOrEmpty(brand))
             {
-                query = query.Where(p => p.ThuongHieu.ToLower() == brand.ToLower());
+                query = query.Where(p => p.Thuonghieu.ToLower() == brand.ToLower());
             }
 
             // Lọc theo nhu cầu sử dụng
             if (!string.IsNullOrEmpty(usage))
             {
-                query = query.Where(p => p.ThongSoKyThuat.Contains($"\"usage\":\"{usage}\""));
+                query = query.Where(p => p.Thongsokythuat.Contains($"\"usage\":\"{usage}\""));
             }
 
             // Lọc theo CPU
             if (!string.IsNullOrEmpty(cpuType))
             {
-                query = query.Where(p => p.ThongSoKyThuat.Contains($"\"cpu\":\"{cpuType}\""));
+                query = query.Where(p => p.Thongsokythuat.Contains($"\"cpu\":\"{cpuType}\""));
             }
 
             // Lọc theo RAM
             if (!string.IsNullOrEmpty(ram))
             {
-                query = query.Where(p => p.ThongSoKyThuat.Contains($"\"ram\":\"{ram}\""));
+                query = query.Where(p => p.Thongsokythuat.Contains($"\"ram\":\"{ram}\""));
             }
 
             // Lọc theo GPU
             if (!string.IsNullOrEmpty(gpu))
             {
-                query = query.Where(p => p.ThongSoKyThuat.Contains($"\"gpu\":\"{gpu}\""));
+                query = query.Where(p => p.Thongsokythuat.Contains($"\"gpu\":\"{gpu}\""));
             }
 
             // Lọc theo khoảng giá
@@ -96,36 +96,36 @@ namespace Website_Ban_Linh_Kien.Controllers
             string priceRange = null,
             int page = 1)
         {
-            var query = _context.Sanphams.Where(p => p.LoaiSp.ToLower() == "laptop");
+            var query = _context.Sanphams.Where(p => p.Loaisanpham.ToLower() == "laptop");
 
             // Lọc theo nhu cầu sử dụng
             if (!string.IsNullOrEmpty(usage))
             {
-                query = query.Where(p => p.ThongSoKyThuat.Contains($"\"usage\":\"{usage}\""));
+                query = query.Where(p => p.Thongsokythuat.Contains($"\"usage\":\"{usage}\""));
             }
 
             // Lọc theo thương hiệu
             if (!string.IsNullOrEmpty(brand))
             {
-                query = query.Where(p => p.ThuongHieu.ToLower() == brand.ToLower());
+                query = query.Where(p => p.Thuonghieu.ToLower() == brand.ToLower());
             }
 
             // Lọc theo CPU
             if (!string.IsNullOrEmpty(cpuType))
             {
-                query = query.Where(p => p.ThongSoKyThuat.Contains($"\"cpu\":\"{cpuType}\""));
+                query = query.Where(p => p.Thongsokythuat.Contains($"\"cpu\":\"{cpuType}\""));
             }
 
             // Lọc theo RAM
             if (!string.IsNullOrEmpty(ram))
             {
-                query = query.Where(p => p.ThongSoKyThuat.Contains($"\"ram\":\"{ram}\""));
+                query = query.Where(p => p.Thongsokythuat.Contains($"\"ram\":\"{ram}\""));
             }
 
             // Lọc theo GPU
             if (!string.IsNullOrEmpty(gpu))
             {
-                query = query.Where(p => p.ThongSoKyThuat.Contains($"\"gpu\":\"{gpu}\""));
+                query = query.Where(p => p.Thongsokythuat.Contains($"\"gpu\":\"{gpu}\""));
             }
 
             // Lọc theo khoảng giá
@@ -184,13 +184,12 @@ namespace Website_Ban_Linh_Kien.Controllers
             Dictionary<string, string> specifications = null,
             int page = 1)
         {
-            var query = _context.Sanphams.Where(p => p.LoaiSp.ToLower() == "components");
+            var query = _context.Sanphams.Where(p => p.Loaisanpham == "Components");
 
             // Lọc theo danh mục con (category)
             if (!string.IsNullOrEmpty(category))
             {
-                query = query.Where(p => p.ThongSoKyThuat.Contains($"\"Danh mục \"") && 
-                                        p.ThongSoKyThuat.Contains($"\"value\":\"{category}\""));
+                query = query.Where(p => p.Thongsokythuat.Contains($"\"Danh mục\": \"{category}\""));
             }
 
             // Debug: In ra câu query
@@ -199,13 +198,13 @@ namespace Website_Ban_Linh_Kien.Controllers
             // Lọc theo thương hiệu
             if (!string.IsNullOrEmpty(brand))
             {
-                query = query.Where(p => p.ThuongHieu.ToLower() == brand.ToLower());
+                query = query.Where(p => p.Thuonghieu.ToLower() == brand.ToLower());
             }
 
             // Tìm kiếm theo tên
             if (!string.IsNullOrEmpty(searchTerm))
             {
-                query = query.Where(p => p.TenSp.Contains(searchTerm));
+                query = query.Where(p => p.Tensanpham.Contains(searchTerm));
             }
 
             // Lọc theo thông số kỹ thuật
@@ -213,8 +212,8 @@ namespace Website_Ban_Linh_Kien.Controllers
             {
                 foreach (var spec in specifications)
                 {
-                    query = query.Where(p => p.ThongSoKyThuat.Contains($"\"key\":\"{spec.Key}\"") &&
-                                           p.ThongSoKyThuat.Contains($"\"value\":\"{spec.Value}\""));
+                    query = query.Where(p => p.Thongsokythuat.Contains($"\"key\":\"{spec.Key}\"") &&
+                                           p.Thongsokythuat.Contains($"\"value\":\"{spec.Value}\""));
                 }
             }
 
@@ -269,10 +268,10 @@ namespace Website_Ban_Linh_Kien.Controllers
         [Route("productslist/monitor")]
         public async Task<IActionResult> Monitor(string brand = null, string priceRange = null, int page = 1)
         {
-            var query = _context.Sanphams.Where(p => p.LoaiSp.ToLower() == "monitor");
+            var query = _context.Sanphams.Where(p => p.Loaisanpham.ToLower() == "monitor");
 
             if (!string.IsNullOrEmpty(brand))
-                query = query.Where(p => p.ThuongHieu.ToLower() == brand.ToLower());
+                query = query.Where(p => p.Thuonghieu.ToLower() == brand.ToLower());
 
             if (!string.IsNullOrEmpty(priceRange))
             {
@@ -310,25 +309,25 @@ namespace Website_Ban_Linh_Kien.Controllers
             string priceRange = null,
             int page = 1)
         {
-            var query = _context.Sanphams.Where(p => p.LoaiSp.ToLower() == "audio");
+            var query = _context.Sanphams.Where(p => p.Loaisanpham.ToLower() == "audio");
 
             // Lọc theo danh mục con (category)
             if (!string.IsNullOrEmpty(category))
             {
-                query = query.Where(p => p.ThongSoKyThuat.Contains($"\"Danh mục \"") && 
-                                        p.ThongSoKyThuat.Contains($"\"value\":\"{category}\""));
+                query = query.Where(p => p.Thongsokythuat.Contains($"\"Danh mục \"") && 
+                                        p.Thongsokythuat.Contains($"\"value\":\"{category}\""));
             }
 
             // Lọc theo thương hiệu
             if (!string.IsNullOrEmpty(brand))
             {
-                query = query.Where(p => p.ThuongHieu.ToLower() == brand.ToLower());
+                query = query.Where(p => p.Thuonghieu.ToLower() == brand.ToLower());
             }
 
             // Lọc theo loại
             if (!string.IsNullOrEmpty(type))
             {
-                query = query.Where(p => p.ThongSoKyThuat.Contains($"\"type\":\"{type}\""));
+                query = query.Where(p => p.Thongsokythuat.Contains($"\"type\":\"{type}\""));
             }
 
             // Lọc theo khoảng giá
@@ -385,30 +384,30 @@ namespace Website_Ban_Linh_Kien.Controllers
             string priceRange = null,
             int page = 1)
         {
-            var query = _context.Sanphams.Where(p => p.LoaiSp.ToLower() == "network");
+            var query = _context.Sanphams.Where(p => p.Loaisanpham.ToLower() == "network");
 
             // Lọc theo danh mục
             if (!string.IsNullOrEmpty(category))
             {
-                query = query.Where(p => p.ThongSoKyThuat.Contains($"\"Danh mục\":\"{category}\""));
+                query = query.Where(p => p.Thongsokythuat.Contains($"\"Danh mục\":\"{category}\""));
             }
 
             // Lọc theo thương hiệu
             if (!string.IsNullOrEmpty(brand))
             {
-                query = query.Where(p => p.ThuongHieu.ToLower() == brand.ToLower());
+                query = query.Where(p => p.Thuonghieu.ToLower() == brand.ToLower());
             }
 
             // Lọc theo loại
             if (!string.IsNullOrEmpty(type))
             {
-                query = query.Where(p => p.ThongSoKyThuat.Contains($"\"type\":\"{type}\""));
+                query = query.Where(p => p.Thongsokythuat.Contains($"\"type\":\"{type}\""));
             }
 
             // Lọc theo kết nối
             if (!string.IsNullOrEmpty(connection))
             {
-                query = query.Where(p => p.ThongSoKyThuat.Contains($"\"connection\":\"{connection}\""));
+                query = query.Where(p => p.Thongsokythuat.Contains($"\"connection\":\"{connection}\""));
             }
 
             // Lọc theo khoảng giá
@@ -466,30 +465,30 @@ namespace Website_Ban_Linh_Kien.Controllers
             string priceRange = null,
             int page = 1)
         {
-            var query = _context.Sanphams.Where(p => p.LoaiSp.ToLower() == "peripherals");
+            var query = _context.Sanphams.Where(p => p.Loaisanpham.ToLower() == "peripherals");
 
             // Lọc theo danh mục
             if (!string.IsNullOrEmpty(category))
             {
-                query = query.Where(p => p.ThongSoKyThuat.Contains($"\"Danh mục\":\"{category}\""));
+                query = query.Where(p => p.Thongsokythuat.Contains($"\"Danh mục\":\"{category}\""));
             }
 
             // Lọc theo thương hiệu
             if (!string.IsNullOrEmpty(brand))
             {
-                query = query.Where(p => p.ThuongHieu.ToLower() == brand.ToLower());
+                query = query.Where(p => p.Thuonghieu.ToLower() == brand.ToLower());
             }
 
             // Lọc theo loại
             if (!string.IsNullOrEmpty(type))
             {
-                query = query.Where(p => p.ThongSoKyThuat.Contains($"\"type\":\"{type}\""));
+                query = query.Where(p => p.Thongsokythuat.Contains($"\"type\":\"{type}\""));
             }
 
             // Lọc theo kết nối
             if (!string.IsNullOrEmpty(connection))
             {
-                query = query.Where(p => p.ThongSoKyThuat.Contains($"\"connection\":\"{connection}\""));
+                query = query.Where(p => p.Thongsokythuat.Contains($"\"connection\":\"{connection}\""));
             }
 
             // Lọc theo khoảng giá
@@ -547,30 +546,30 @@ namespace Website_Ban_Linh_Kien.Controllers
             string priceRange = null,
             int page = 1)
         {
-            var query = _context.Sanphams.Where(p => p.LoaiSp.ToLower() == "storage");
+            var query = _context.Sanphams.Where(p => p.Loaisanpham.ToLower() == "storage");
 
             // Lọc theo danh mục
             if (!string.IsNullOrEmpty(category))
             {
-                query = query.Where(p => p.ThongSoKyThuat.Contains($"\"Danh mục\":\"{category}\""));
+                query = query.Where(p => p.Thongsokythuat.Contains($"\"Danh mục\":\"{category}\""));
             }
 
             // Lọc theo thương hiệu
             if (!string.IsNullOrEmpty(brand))
             {
-                query = query.Where(p => p.ThuongHieu.ToLower() == brand.ToLower());
+                query = query.Where(p => p.Thuonghieu.ToLower() == brand.ToLower());
             }
 
             // Lọc theo dung lượng
             if (!string.IsNullOrEmpty(capacity))
             {
-                query = query.Where(p => p.ThongSoKyThuat.Contains($"\"capacity\":\"{capacity}\""));
+                query = query.Where(p => p.Thongsokythuat.Contains($"\"capacity\":\"{capacity}\""));
             }
 
             // Lọc theo loại
             if (!string.IsNullOrEmpty(type))
             {
-                query = query.Where(p => p.ThongSoKyThuat.Contains($"\"type\":\"{type}\""));
+                query = query.Where(p => p.Thongsokythuat.Contains($"\"type\":\"{type}\""));
             }
 
             // Lọc theo khoảng giá

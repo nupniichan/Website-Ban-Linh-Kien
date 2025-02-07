@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 06, 2025 at 12:54 PM
+-- Generation Time: Feb 07, 2025 at 09:09 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -100,25 +100,11 @@ CREATE TABLE `danhgia` (
 
 INSERT INTO `danhgia` (`IdDg`, `sosao`, `noidung`, `ngaydanhgia`, `IdKh`, `IdSp`) VALUES
 ('DG000001', 5, 'Sản phẩm tuyệt vời, chạy mượt!', '2025-02-01 10:30:00', 'KH000001', 'SP000001'),
-('DG000002', 4, 'Hàng tốt nhưng giao hơi lâu.', '2025-02-02 14:20:00', 'KH000002', 'SP000002'),
-('DG000003', 5, 'CPU mạnh mẽ, giá hợp lý!', '2025-02-03 09:15:00', 'KH000003', 'SP000003'),
-('DG000004', 5, 'Mainboard ổn định, chạy rất mát.', '2025-02-04 16:45:00', 'KH000004', 'SP000004'),
 ('DG000005', 3, 'Sản phẩm bình thường, chưa test kỹ.', '2025-02-05 11:30:00', 'KH000005', 'SP000001'),
-('DG000006', 4, 'Hiệu năng tốt', '2025-02-06 13:15:00', 'KH000006', 'SP000002'),
-('DG000007', 5, 'Chơi game rất mượt', '2025-02-07 14:30:00', 'KH000007', 'SP000003'),
 ('DG000008', 3, 'Laptop hơi nóng khi chơi game', '2025-02-08 15:45:00', 'KH000008', 'SP000015'),
-('DG000009', 5, 'Bàn phím gõ rất thích', '2025-02-09 16:20:00', 'KH000009', 'SP000018'),
-('DG000010', 4, 'Màn hình hiển thị sắc nét', '2025-02-10 17:30:00', 'KH000010', 'SP000024'),
-('DG000011', 5, 'Router phủ sóng tốt', '2025-02-11 18:45:00', 'KH000011', 'SP000025'),
-('DG000012', 4, 'SSD tốc độ nhanh', '2025-02-12 19:15:00', 'KH000012', 'SP000028'),
 ('DG000013', 5, 'Laptop cao cấp, đáng tiền', '2025-02-13 20:30:00', 'KH000013', 'SP000016'),
-('DG000014', 3, 'Sản phẩm tạm ổn', '2025-02-14 21:45:00', 'KH000014', 'SP000004'),
 ('DG000015', 4, 'Đóng gói cẩn thận', '2025-02-15 22:20:00', 'KH000015', 'SP000015'),
-('DG000016', 5, 'Giá cả hợp lý', '2025-02-16 23:30:00', 'KH000016', 'SP000016'),
-('DG000017', 4, 'Dịch vụ tốt', '2025-02-17 08:45:00', 'KH000017', 'SP000018'),
-('DG000018', 5, 'Rất hài lòng', '2025-02-18 09:15:00', 'KH000018', 'SP000024'),
-('DG000019', 4, 'Sẽ ủng hộ shop dài dài', '2025-02-19 10:30:00', 'KH000019', 'SP000025'),
-('DG000020', 5, 'Tuyệt vời!', '2025-02-20 11:45:00', 'KH000001', 'SP000028');
+('DG000016', 5, 'Giá cả hợp lý', '2025-02-16 23:30:00', 'KH000016', 'SP000016');
 
 -- --------------------------------------------------------
 
@@ -358,27 +344,13 @@ CREATE TABLE `sanpham` (
 --
 
 INSERT INTO `sanpham` (`IdSp`, `tensanpham`, `gia`, `soluongton`, `thuonghieu`, `mota`, `thongsokythuat`, `loaisanpham`, `hinhanh`, `soluotxem`, `damuahang`) VALUES
-('SP000001', 'CPU Intel Core i9-13900K', 15990000.00, 50, 'Intel', 'CPU Intel thế hệ 13 cao cấp nhất', '{\"Danh m\\u1EE5c\":\"CPU\"}', 'Components', 'cpu_i9_13900k.jpg', NULL, NULL),
-('SP000002', 'CPU AMD Ryzen 9 7950X', 14990000.00, 40, 'AMD', 'CPU AMD thế hệ mới nhất', '{\r\n    \"Socket\": \"AM5\",\r\n    \"Số nhân\": 16,\r\n    \"Số luồng\": 32,\r\n    \"Xung nhịp cơ bản\": \"4.5 GHz\",\r\n    \"Xung nhịp tối đa\": \"5.7 GHz\",\r\n    \"Cache\": \"64MB L3\",\r\n    \"TDP\": \"170W\",\r\n    \"Công nghệ\": \"TSMC 5nm\",\r\n    \"Hỗ trợ RAM\": \"DDR5\"\r\n}', 'CPU', 'cpu_r9_7950x.jpg', 0, 0),
-('SP000003', 'CPU Intel Core i5-13600K', 7990000.00, 60, 'Intel', 'CPU Intel tầm trung', '{\r\n    \"Socket\": \"LGA 1700\",\r\n    \"Số nhân\": 14,\r\n    \"Số luồng\": 20,\r\n    \"Xung nhịp cơ bản\": \"3.5 GHz\",\r\n    \"Xung nhịp tối đa\": \"5.1 GHz\",\r\n    \"Cache\": \"24MB L3\",\r\n    \"TDP\": \"125W\",\r\n    \"Công nghệ\": \"Intel 7\",\r\n    \"Hỗ trợ RAM\": \"DDR4/DDR5\"\r\n}', 'CPU', 'cpu_i5_13600k.jpg', 0, 0),
-('SP000004', 'MAINBOARD ASUS ROG MAXIMUS Z790 HERO', 12990000.00, 30, 'ASUS', 'Bo mạch chủ cao cấp cho Intel', '{\r\n    \"Socket\": \"LGA 1700\",\r\n    \"Chipset\": \"Intel Z790\",\r\n    \"Kích thước\": \"ATX\",\r\n    \"Khe RAM\": \"4 khe DDR5\",\r\n    \"Hỗ trợ RAM tối đa\": \"128GB\",\r\n    \"Khe M.2\": \"4 khe\",\r\n    \"Cổng SATA\": \"6 cổng\",\r\n    \"USB\": {\r\n        \"USB 3.2 Gen 2x2\": \"2 cổng\",\r\n        \"USB 3.2 Gen 2\": \"4 cổng\",\r\n        \"USB 3.2 Gen 1\": \"6 cổng\"\r\n    }\r\n}', 'Mainboard', 'mb_asus_z790.jpg', 0, 0),
-('SP000005', 'MAINBOARD MSI MEG X670E ACE', 15990000.00, 25, 'MSI', 'Bo mạch chủ cao cấp cho AMD', '{\r\n    \"Socket\": \"AM5\",\r\n    \"Chipset\": \"X670E\",\r\n    \"Kích thước\": \"E-ATX\",\r\n    \"Khe RAM\": \"4 khe DDR5\",\r\n    \"Hỗ trợ RAM tối đa\": \"128GB\",\r\n    \"Khe M.2\": \"5 khe\",\r\n    \"Cổng SATA\": \"6 cổng\"\r\n}', 'Mainboard', 'mb_msi_x670e.jpg', 0, 0),
-('SP000006', 'RAM G.Skill Trident Z5 RGB 32GB', 4990000.00, 80, 'G.Skill', 'Kit RAM DDR5 hiệu năng cao', '{\r\n    \"Dung lượng\": \"32GB (2x16GB)\",\r\n    \"Thế hệ\": \"DDR5\",\r\n    \"Tốc độ\": \"6000MHz\",\r\n    \"Timing\": \"36-36-36-96\",\r\n    \"Điện áp\": \"1.35V\",\r\n    \"Tản nhiệt\": \"Nhôm\",\r\n    \"LED\": \"RGB\"\r\n}', 'RAM', 'ram_gskill_z5.jpg', 0, 0),
-('SP000007', 'RAM Corsair Vengeance 16GB', 1590000.00, 100, 'Corsair', 'RAM DDR4 giá tốt', '{\r\n    \"Dung lượng\": \"16GB (2x8GB)\",\r\n    \"Thế hệ\": \"DDR4\",\r\n    \"Tốc độ\": \"3200MHz\",\r\n    \"Timing\": \"16-18-18-36\",\r\n    \"Điện áp\": \"1.35V\"\r\n}', 'RAM', 'ram_corsair_vengeance.jpg', 0, 0),
-('SP000008', 'RAM Kingston Fury Beast 64GB', 7990000.00, 30, 'Kingston', 'RAM DDR5 dung lượng cao', '{\r\n    \"Dung lượng\": \"64GB (2x32GB)\",\r\n    \"Thế hệ\": \"DDR5\",\r\n    \"Tốc độ\": \"6000MHz\",\r\n    \"Timing\": \"40-40-40-80\",\r\n    \"Điện áp\": \"1.35V\"\r\n}', 'RAM', 'ram_kingston_fury.jpg', 0, 0),
-('SP000009', 'VGA MSI Gaming X RTX 4070', 15990000.00, 35, 'MSI', 'Card đồ họa tầm trung', '{\r\n    \"GPU\": \"NVIDIA Ada Lovelace\",\r\n    \"VRAM\": \"12GB GDDR6X\",\r\n    \"Xung nhịp Boost\": \"2475 MHz\",\r\n    \"Ray Tracing\": \"3rd Generation\",\r\n    \"DLSS\": \"DLSS 3\",\r\n    \"Nguồn đề xuất\": \"650W\"\r\n}', 'VGA', 'vga_msi_4070.jpg', 0, 0),
-('SP000010', 'VGA ASUS ROG STRIX RTX 4090 OC', 49990000.00, 15, 'ASUS', 'Card đồ họa NVIDIA flagship', '{\r\n    \"GPU\": \"NVIDIA Ada Lovelace\",\r\n    \"VRAM\": \"24GB GDDR6X\",\r\n    \"Xung nhịp Boost\": \"2640 MHz\",\r\n    \"Băng thông bộ nhớ\": \"1008 GB/s\",\r\n    \"Ray Tracing\": \"3rd Generation\",\r\n    \"DLSS\": \"DLSS 3\",\r\n    \"Nguồn đề xuất\": \"1000W\"\r\n}', 'VGA', 'vga_asus_4090.jpg', 0, 0),
-('SP000011', 'VGA Gigabyte RTX 4060 Gaming OC', 8990000.00, 45, 'Gigabyte', 'Card đồ họa giá tốt', '{\r\n    \"GPU\": \"NVIDIA Ada Lovelace\",\r\n    \"VRAM\": \"8GB GDDR6\",\r\n    \"Xung nhịp Boost\": \"2460 MHz\",\r\n    \"Ray Tracing\": \"3rd Generation\",\r\n    \"DLSS\": \"DLSS 3\",\r\n    \"Nguồn đề xuất\": \"550W\"\r\n}', 'VGA', 'vga_gigabyte_4060.jpg', 0, 0),
+('SP000001', 'CPU Intel Core i9-13900K', 15990000.00, 50, 'Intel', 'CPU Intel thế hệ 13 cao cấp nhất', '{\"Danh mục\": \"CPU\"}', 'Components', 'cpu_i9_13900k.jpg', 0, 0),
 ('SP000012', 'LAPTOP gaming MSI Katana GF66', 25990000.00, 20, 'MSI', 'Laptop gaming tầm trung', '{\r\n    \"CPU\": \"Intel Core i7-12700H\",\r\n    \"GPU\": \"NVIDIA RTX 3060 Laptop\",\r\n    \"RAM\": \"16GB DDR4-3200\",\r\n    \"Màn hình\": \"15.6 inch FHD 144Hz\"\r\n}', 'Laptop', 'laptop_msi_katana.jpg', 0, 0),
 ('SP000013', 'LAPTOP Dell XPS 13 Plus', 39990000.00, 15, 'Dell', 'Laptop doanh nhân cao cấp', '{\r\n    \"CPU\": \"Intel Core i7-1260P\",\r\n    \"GPU\": \"Intel Iris Xe\",\r\n    \"RAM\": \"16GB LPDDR5\",\r\n    \"Màn hình\": \"13.4 inch 3.5K OLED\"\r\n}', 'Laptop', 'laptop_dell_xps.jpg', 0, 0),
 ('SP000014', 'LAPTOP gaming Gigabyte AERO 16', 69990000.00, 10, 'Gigabyte', 'Laptop gaming cho người sáng tạo', '{\r\n    \"CPU\": \"Intel Core i9-12900HK\",\r\n    \"GPU\": \"NVIDIA RTX 3080 Ti Laptop\",\r\n    \"RAM\": \"32GB DDR5\",\r\n    \"Màn hình\": \"16 inch 4K OLED\"\r\n}', 'Laptop', 'laptop_gigabyte_aero.jpg', 0, 0),
 ('SP000015', 'LAPTOP Acer Nitro 5', 19990000.00, 30, 'Acer', 'Laptop gaming giá tốt', '{\r\n    \"CPU\": \"AMD Ryzen 5 7600H\",\r\n    \"GPU\": \"NVIDIA RTX 4050 Laptop\",\r\n    \"RAM\": \"8GB DDR5\",\r\n    \"Màn hình\": \"15.6 inch FHD 144Hz\"\r\n}', 'Laptop', 'laptop_acer_nitro.jpg', 0, 0),
 ('SP000016', 'LAPTOP ASUS ROG Zephyrus G14', 59990000.00, 10, 'ASUS', 'Laptop gaming cao cấp nhỏ gọn', '{\r\n    \"CPU\": \"AMD Ryzen 9 7940HS\",\r\n    \"GPU\": \"NVIDIA RTX 4090 Laptop\",\r\n    \"RAM\": \"32GB DDR5-4800\",\r\n    \"Màn hình\": \"14 inch QHD+ 165Hz\"\r\n}', 'Laptop', 'laptop_asus_g14.jpg', 0, 0),
-('SP000018', 'KEYBOARD Logitech G Pro X', 2990000.00, 50, 'Logitech', 'Bàn phím cơ gaming cao cấp', '{\r\n    \"Kiểu\": \"Tenkeyless\",\r\n    \"Switch\": \"GX Blue Clicky\",\r\n    \"Keycap\": \"PBT Double-shot\",\r\n    \"Kết nối\": \"USB-C có thể tháo rời\",\r\n    \"LED\": \"RGB 16.8M màu\"\r\n}', 'Keyboard', 'kb_logitech_prox.jpg', 0, 0),
-('SP000024', 'MONITOR LG 27GP950-B', 19990000.00, 20, 'LG', 'Màn hình gaming 4K cao cấp', '{\r\n    \"Kích thước\": \"27 inch\",\r\n    \"Độ phân giải\": \"3840x2160\",\r\n    \"Tần số quét\": \"144Hz\",\r\n    \"Tấm nền\": \"Nano IPS\",\r\n    \"HDR\": \"VESA DisplayHDR 600\"\r\n}', 'Monitor', 'monitor_lg_27gp950.jpg', 0, 0),
-('SP000025', 'ROUTER ASUS ROG Rapture GT-AX11000', 12990000.00, 15, 'ASUS', 'Router WiFi 6 cao cấp cho gaming', '{\r\n    \"Chuẩn WiFi\": \"WiFi 6 (802.11ax)\",\r\n    \"CPU\": \"1.8GHz Quad-core\",\r\n    \"RAM\": \"1GB\",\r\n    \"Cổng mạng\": \"1x 2.5G WAN, 4x 1G LAN\"\r\n}', 'Router', 'router_asus_gt11000.jpg', 0, 0),
-('SP000028', 'SSD Samsung 990 PRO 2TB', 6990000.00, 25, 'Samsung', 'SSD NVMe PCIe 4.0 hiệu năng cao', '{\r\n    \"Dung lượng\": \"2TB\",\r\n    \"Giao tiếp\": \"PCIe 4.0 x4 NVMe\",\r\n    \"Tốc độ đọc\": \"7450MB/s\",\r\n    \"Tốc độ ghi\": \"6900MB/s\"\r\n}', 'Storage', 'ssd_samsung_990pro.jpg', 0, 0),
-('SP00029', 'VGA ASUS TUF RTX 4060Ti 8GB Gaming GDDR6', 13000000.00, 18, 'Asus', 'sa', '{\r\n  \"Danh mục\": \"VGA\"\r\n}', 'Components', '/Images/ProductImage/01fpseci.cbf.png', NULL, NULL);
+('SP00029', 'VGA ASUS TUF RTX 4060Ti 8GB Gaming GDDR6', 13000000.00, 18, 'Asus', 'sa', '{\r\n  \"Danh mục\": \"VGA\"\r\n}', 'Components', '/Images/ProductImage/01fpseci.cbf.png', 0, 0);
 
 -- --------------------------------------------------------
 

@@ -17,18 +17,149 @@ namespace Website_Ban_Linh_Kien.Controllers
 
         public IActionResult Index()
         {
-            var products = _context.Sanphams
+            // Debug để xem dữ liệu
+            var allComponents = _context.Sanphams
+                .Where(p => p.Loaisanpham == "Components")
+                .ToList();
+
+            foreach (var comp in allComponents)
+            {
+                Console.WriteLine($"Component: {comp.Tensanpham}");
+                Console.WriteLine($"ThongSoKyThuat: {comp.Thongsokythuat}");
+            }
+
+            // Lấy sản phẩm theo từng section
+            var pcProducts = _context.Sanphams
+                .Where(p => p.Loaisanpham.ToLower() == "pc")
                 .Select(p => new ProductCardViewModel
                 {
                     IdSp = p.IdSp,
-                    TenSp = p.TenSp,
+                    TenSp = p.Tensanpham,
                     Gia = p.Gia,
-                    ImageUrl = p.hinh_anh,
-                    LoaiSp = p.LoaiSp
+                    ImageUrl = p.Hinhanh,
+                    LoaiSp = p.Loaisanpham
                 })
                 .ToList();
 
-            return View(products);
+            var laptopProducts = _context.Sanphams
+                .Where(p => p.Loaisanpham.ToLower() == "laptop")
+                .Select(p => new ProductCardViewModel
+                {
+                    IdSp = p.IdSp,
+                    TenSp = p.Tensanpham,
+                    Gia = p.Gia,
+                    ImageUrl = p.Hinhanh,
+                    LoaiSp = p.Loaisanpham
+                })
+                .ToList();
+
+            // Lấy sản phẩm components theo Danh mục trong thongsokythuat
+            var cpuProducts = _context.Sanphams
+                .Where(p => p.Loaisanpham == "Components" && 
+                       p.Thongsokythuat.Contains("\"Danh mục\": \"CPU\""))
+                .Select(p => new ProductCardViewModel
+                {
+                    IdSp = p.IdSp,
+                    TenSp = p.Tensanpham,
+                    Gia = p.Gia,
+                    ImageUrl = p.Hinhanh,
+                    LoaiSp = p.Loaisanpham,
+                    DanhMuc = "CPU",
+                    SoLuongTon = p.Soluongton
+                })
+                .ToList();
+
+            // Debug để kiểm tra CPU products
+            Console.WriteLine($"Found {cpuProducts.Count} CPU products:");
+            foreach (var product in cpuProducts)
+            {
+                Console.WriteLine($"CPU Product: {product.TenSp}");
+            }
+
+            var vgaProducts = _context.Sanphams
+                .Where(p => p.Loaisanpham == "Components" && 
+                       p.Thongsokythuat.Contains("\"Danh mục\": \"VGA\""))
+                .Select(p => new ProductCardViewModel
+                {
+                    IdSp = p.IdSp,
+                    TenSp = p.Tensanpham,
+                    Gia = p.Gia,
+                    ImageUrl = p.Hinhanh,
+                    LoaiSp = p.Loaisanpham,
+                    DanhMuc = "VGA"
+                })
+                .ToList();
+
+            // Debug để kiểm tra VGA products
+            Console.WriteLine($"Found {vgaProducts.Count} VGA products:");
+            foreach (var product in vgaProducts)
+            {
+                Console.WriteLine($"VGA Product: {product.TenSp}");
+            }
+
+            var ramProducts = _context.Sanphams
+                .Where(p => p.Loaisanpham == "Components" && 
+                       p.Thongsokythuat.Contains("\"Danh mục\":\"RAM\""))
+                .Select(p => new ProductCardViewModel
+                {
+                    IdSp = p.IdSp,
+                    TenSp = p.Tensanpham,
+                    Gia = p.Gia,
+                    ImageUrl = p.Hinhanh,
+                    LoaiSp = p.Loaisanpham,
+                    DanhMuc = "RAM"
+                })
+                .ToList();
+
+            var mainboardProducts = _context.Sanphams
+                .Where(p => p.Loaisanpham == "Components" && 
+                       p.Thongsokythuat.Contains("\"Danh mục\":\"Mainboard\""))
+                .Select(p => new ProductCardViewModel
+                {
+                    IdSp = p.IdSp,
+                    TenSp = p.Tensanpham,
+                    Gia = p.Gia,
+                    ImageUrl = p.Hinhanh,
+                    LoaiSp = p.Loaisanpham,
+                    DanhMuc = "Mainboard"
+                })
+                .ToList();
+
+            var monitorProducts = _context.Sanphams
+                .Where(p => p.Loaisanpham.ToLower() == "monitor")
+                .Select(p => new ProductCardViewModel
+                {
+                    IdSp = p.IdSp,
+                    TenSp = p.Tensanpham,
+                    Gia = p.Gia,
+                    ImageUrl = p.Hinhanh,
+                    LoaiSp = p.Loaisanpham
+                })
+                .ToList();
+
+            var storageProducts = _context.Sanphams
+                .Where(p => p.Loaisanpham.ToLower() == "storage")
+                .Select(p => new ProductCardViewModel
+                {
+                    IdSp = p.IdSp,
+                    TenSp = p.Tensanpham,
+                    Gia = p.Gia,
+                    ImageUrl = p.Hinhanh,
+                    LoaiSp = p.Loaisanpham
+                })
+                .ToList();
+
+            // Gán sản phẩm vào từng section
+            ViewBag.PCProducts = pcProducts;
+            ViewBag.LaptopProducts = laptopProducts;
+            ViewBag.CPUProducts = cpuProducts;
+            ViewBag.VGAProducts = vgaProducts;
+            ViewBag.RAMProducts = ramProducts;
+            ViewBag.MainboardProducts = mainboardProducts;
+            ViewBag.MonitorProducts = monitorProducts;
+            ViewBag.StorageProducts = storageProducts;
+
+            return View();
         }
 
         public IActionResult Privacy()
