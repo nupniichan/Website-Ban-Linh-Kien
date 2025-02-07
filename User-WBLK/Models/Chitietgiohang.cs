@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Admin_WBLK.Models;
+namespace Website_Ban_Linh_Kien.Models;
 
 public partial class Chitietgiohang
 {
@@ -10,6 +10,8 @@ public partial class Chitietgiohang
     public string IdSp { get; set; } = null!;
 
     public int Soluong { get; set; }
+
+    public virtual Khachhang IdGh1 { get; set; } = null!;
 
     public virtual Giohang IdGhNavigation { get; set; } = null!;
 

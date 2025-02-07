@@ -275,7 +275,7 @@
                                         }
                                     </div>
                                     <span class="text-gray-400">•</span>
-                                    <span class="text-sm text-gray-500">@review.Date.ToString("dd/MM/yyyy")</span>
+                                    <span class="text-sm text-gray-500">@String.Format("{0:dd/MM/yyyy}", review.Date)</span>
                                 </div>
                                 <p class="text-gray-600">@review.Comment</p>
                             </div>

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Admin_WBLK.Models;
+namespace Website_Ban_Linh_Kien.Models;
 
 public partial class Magiamgia
 {
@@ -17,9 +17,7 @@ public partial class Magiamgia
 
     public int Soluong { get; set; }
 
-    public string? IdNv { get; set; }
+    public bool? Trangthai { get; set; }
 
     public virtual ICollection<Donhang> Donhangs { get; set; } = new List<Donhang>();
-
-    public virtual Nhanvien? IdNvNavigation { get; set; }
 }
