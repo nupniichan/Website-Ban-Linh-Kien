@@ -26,7 +26,18 @@
                     <!-- Quyền truy cập -->
                     <div>
                         <h3 class="text-sm font-medium text-gray-600">Quyền truy cập</h3>
-                        <p class="text-base font-semibold text-gray-900">@Model.Quyentruycap</p>
+                        <p class="text-base font-semibold text-gray-900">
+                            @(Model.Quyentruycap switch
+                            {
+                                "quantrivien" => "Quản trị viên",
+                                "nhanvienkho" => "Nhân viên kho",
+                                "nhanvienkinhdoanh" => "Nhân viên kinh doanh",
+                                "nhanvienmarketing" => "Nhân viên marketing",
+                                "khachhang" => "Khách hàng",
+                                _ => "Không xác định"
+                            })
+                        </p>
+
                     </div>
 
                     <!-- Ngày tạo tài khoản -->
