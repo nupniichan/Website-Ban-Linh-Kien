@@ -9,7 +9,7 @@
         <!-- Header -->
         <div class="mb-6">
             <h1 class="text-3xl font-bold text-gray-900">Chỉnh sửa đơn hàng</h1>
-            <p class="mt-2 text-sm text-gray-600">Chỉnh sửa thông tin đơn hàng @Model.IdDh</p>
+            <p class="mt-2 text-sm text-gray-600">Chỉnh sửa thông tin cho đơn hàng @Model.IdDh</p>
         </div>
 
         <!-- Card chứa form -->
@@ -19,7 +19,6 @@
                 <input type="hidden" asp-for="IdDh" />
                 <input type="hidden" asp-for="Ngaydathang" />
                 <input type="hidden" asp-for="IdKh" />
-                <input type="hidden" asp-for="IdMgg" />
                 <input type="hidden" asp-for="Phuongthucthanhtoan" />
 
                 <!-- Grid layout cho các trường input -->
@@ -27,7 +26,7 @@
                     <!-- Mã khách hàng -->
                     <div>
                         <label asp-for="IdKh" class="block text-sm font-medium text-gray-700 mb-1">Mã khách hàng</label>
-                        <input asp-for="IdKh" class="w-full px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg" readonly />
+                        <input asp-for="IdKh" readonly class="w-full px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg" />
                     </div>
 
                     <!-- Tên khách hàng (readonly) -->
@@ -43,10 +42,19 @@
                         <input asp-for="Phuongthucthanhtoan" readonly class="w-full px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg" />
                     </div>
 
-                    <!-- Mã giảm giá -->
+                    <!-- Mã giảm giá (Discount Section) -->
                     <div>
                         <label asp-for="IdMgg" class="block text-sm font-medium text-gray-700 mb-1">Mã giảm giá</label>
-                        <input asp-for="IdMgg" readonly class="w-full px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg" />
+                        <!-- Added id="discountCode" so we can target it in JavaScript -->
+                        <input asp-for="IdMgg" id="discountCode"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                               pattern="^MGG[0-9]{3}$" 
+                               title="Mã giảm giá phải bắt đầu bằng 'MGG' và theo sau là 3 số" />
+                        @* If you no longer need the duplicate hidden field, you can remove it *@
+                        @* <input type="hidden" asp-for="IdMgg" /> *@
+                        <span asp-validation-for="IdMgg" class="text-red-500 text-sm mt-1"></span>
+                        <span id="discountError" class="text-red-500 text-sm mt-1 hidden"></span>
+                        <span id="discountSuccess" class="text-green-500 text-sm mt-1 hidden"></span>
                     </div>
 
                     <!-- Trạng thái -->
@@ -70,7 +78,7 @@
                     </div>
                 </div>
 
-                <!-- Sản phẩm đặt -->
+                <!-- Sản phẩm đặt (danh sách sản phẩm, table, etc.) -->
                 <div class="mt-6">
                     <h3 class="text-lg font-medium text-gray-900 mb-4">Chi tiết sản phẩm</h3>
                     <div class="border border-gray-300 rounded-lg overflow-hidden">
@@ -85,36 +93,36 @@
                                 </tr>
                             </thead>
                             <tbody>
-                            @if (Model.Chitietdonhangs != null && Model.Chitietdonhangs.Any())
-                            {
-                                @foreach (var item in Model.Chitietdonhangs)
+                                @if (Model.Chitietdonhangs != null && Model.Chitietdonhangs.Any())
                                 {
-                                    if (item != null && item.IdSp != null)
+                                    @foreach (var item in Model.Chitietdonhangs)
                                     {
-                                        <tr class="bg-white">
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                @item.IdSp
-                                                <input type="hidden" name="Chitietdonhangs[@item.IdSp].IdDh" value="@Model.IdDh" />
-                                                <input type="hidden" name="Chitietdonhangs[@item.IdSp].IdSp" value="@item.IdSp" />
-                                                <input type="hidden" name="Chitietdonhangs[@item.IdSp].Soluong" value="@item.Soluong" />
-                                                <input type="hidden" name="Chitietdonhangs[@item.IdSp].Dongia" value="@item.Dongia" />
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                @item.IdSpNavigation?.Tensanpham
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                @item.Soluong
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                @item.Dongia.ToString("#,##0") VNĐ
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                @((item.Soluong * item.Dongia).ToString("#,##0")) VNĐ
-                                            </td>
-                                        </tr>
+                                        if (item != null && item.IdSp != null)
+                                        {
+                                            <tr class="bg-white">
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                    @item.IdSp
+                                                    <input type="hidden" name="Chitietdonhangs[@item.IdSp].IdDh" value="@Model.IdDh" />
+                                                    <input type="hidden" name="Chitietdonhangs[@item.IdSp].IdSp" value="@item.IdSp" />
+                                                    <input type="hidden" name="Chitietdonhangs[@item.IdSp].Soluong" value="@item.Soluong" />
+                                                    <input type="hidden" name="Chitietdonhangs[@item.IdSp].Dongia" value="@item.Dongia" />
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                    @item.IdSpNavigation?.Tensanpham
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                    @item.Soluong
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                    @item.Dongia.ToString("#,##0") VNĐ
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                    @((item.Soluong * item.Dongia).ToString("#,##0")) VNĐ
+                                                </td>
+                                            </tr>
+                                        }
                                     }
                                 }
-                            }
                             </tbody>
                         </table>
                     </div>
@@ -128,12 +136,12 @@
                     <!-- Tổng tiền -->
                     <div class="text-lg space-y-1">
                         <div>Tạm tính: <span id="originalTotal" class="font-medium">0</span> VNĐ</div>
-                        <div id="discountAmount" class="text-green-600 font-medium hidden"></div>
+                        <div><span id="discountAmount" class="text-green-600 font-medium hidden">0</span> VNĐ</div>
                         <div>Tổng tiền: <span id="displayTotal" class="font-bold text-red-600">0</span> VNĐ</div>
                     </div>
                 </div>
 
-                <!-- Thông tin thanh toán online -->
+                <!-- Thông tin thanh toán online (nếu có) -->
                 <div id="onlinePaymentInfo" class="mt-6 @(Model.Phuongthucthanhtoan != "COD" ? "" : "hidden")">
                     <h3 class="text-lg font-medium text-gray-900 mb-4">Thông tin thanh toán</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -164,6 +172,7 @@
                 <div class="mt-6">
                     <label asp-for="Ghichu" class="block text-sm font-medium text-gray-700 mb-1">Ghi chú</label>
                     <textarea asp-for="Ghichu" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" rows="3"></textarea>
+                    <span asp-validation-for="Ghichu" class="text-red-500 text-sm mt-1"></span>
                 </div>
 
                 <!-- Buttons -->
@@ -184,27 +193,102 @@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script src="~/js/OrderManagement.js"></script>
     <script>
+        // When the DOM is loaded, recalc the totals and listen for discount code changes
         document.addEventListener('DOMContentLoaded', function() {
             updateTotalAmount();
+            // Recalculate totals each time the discount code input changes
+            document.getElementById('discountCode').addEventListener('input', function() {
+                updateTotalAmount();
+            });
         });
 
-        function updateTotalAmount() {
+        // Convert a number to currency format (Vietnamese format)
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('vi-VN').format(amount);
+        }
+
+        // Calculate the order's original total from the products in the table,
+        // then apply discount (if any) by calling the async applyDiscount function.
+        async function updateTotalAmount() {
             let total = 0;
             const rows = document.querySelectorAll('.min-w-full tbody tr');
             
             rows.forEach(row => {
+                // Get quantity and price from the hidden inputs
                 const quantity = parseInt(row.querySelector('input[name*="Soluong"]').value) || 0;
                 const price = parseFloat(row.querySelector('input[name*="Dongia"]').value) || 0;
                 total += quantity * price;
             });
-
+            
+            // Display the original total
             document.getElementById('originalTotal').textContent = formatCurrency(total);
-            document.getElementById('displayTotal').textContent = formatCurrency(total);
-            document.getElementById('Tongtien').value = total;
+            // Get the new total (after discount, if any) and update the hidden field
+            let newTotal = await applyDiscount(total);
+            document.getElementById('Tongtien').value = newTotal;
         }
 
-        function formatCurrency(amount) {
-            return new Intl.NumberFormat('vi-VN').format(amount);
+        // This async function calls the server to check the discount code.
+        // It returns the new total after discount is applied.
+        async function applyDiscount(total) {
+            const discountCode = document.getElementById('discountCode').value.trim();
+            const discountErrorEl = document.getElementById('discountError');
+            const discountSuccessEl = document.getElementById('discountSuccess');
+            const discountInfoEl = document.getElementById('discountInfo');
+            const discountAmountEl = document.getElementById('discountAmount');
+
+            // If no discount code is entered, clear any messages and return the original total.
+            if (discountCode === "") {
+                discountErrorEl.classList.add('hidden');
+                discountSuccessEl.classList.add('hidden');
+                discountInfoEl.textContent = "";
+                discountAmountEl.classList.add('hidden');
+                document.getElementById('displayTotal').textContent = formatCurrency(total);
+                return total;
+            }
+
+            try {
+                // Call the API endpoint to get discount info.
+                // We pass isEdit=true so that the API skips the validity date check if desired.
+                const response = await fetch('/OrderManagement/GetDiscountInfo?id=' + encodeURIComponent(discountCode) + '&isEdit=true');
+                const data = await response.json();
+
+                if (data.success) {
+                    // Parse the discount percentage from the response.
+                    let discountPercentage = parseFloat(data.tilechietkhau);
+                    let discountAmount = total * discountPercentage / 100;
+                    let newTotal = total - discountAmount;
+                    
+                    // Update UI messages and amounts
+                    discountInfoEl.textContent = data.message; // e.g.: "Áp dụng giảm giá 18%"
+                    discountAmountEl.textContent = formatCurrency(discountAmount);
+                    discountAmountEl.classList.remove('hidden');
+                    discountSuccessEl.textContent = "Mã giảm giá hợp lệ!";
+                    discountSuccessEl.classList.remove('hidden');
+                    discountErrorEl.classList.add('hidden');
+                    
+                    document.getElementById('displayTotal').textContent = formatCurrency(newTotal);
+                    return newTotal;
+                } else {
+                    // If the discount code is invalid, show the error message and use the original total.
+                    discountErrorEl.textContent = data.message;
+                    discountErrorEl.classList.remove('hidden');
+                    discountSuccessEl.classList.add('hidden');
+                    discountInfoEl.textContent = "";
+                    discountAmountEl.classList.add('hidden');
+                    document.getElementById('displayTotal').textContent = formatCurrency(total);
+                    return total;
+                }
+            }
+            catch (error) {
+                // In case of any error during the fetch, show a generic error message.
+                discountErrorEl.textContent = "Có lỗi khi kiểm tra mã giảm giá";
+                discountErrorEl.classList.remove('hidden');
+                discountSuccessEl.classList.add('hidden');
+                discountInfoEl.textContent = "";
+                discountAmountEl.classList.add('hidden');
+                document.getElementById('displayTotal').textContent = formatCurrency(total);
+                return total;
+            }
         }
     </script>
-} 
+}

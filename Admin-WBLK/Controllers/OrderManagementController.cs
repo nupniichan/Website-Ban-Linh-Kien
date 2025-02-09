@@ -519,7 +519,7 @@ namespace Admin_WBLK.Controllers
                         };
                         _context.Thanhtoans.Add(thanhtoan);
                     }
-                    else
+                    else\
                     {
                         thanhtoan.Mathanhtoan = Mathanhtoan;
                         thanhtoan.Trangthai = TrangthaiThanhtoan ?? thanhtoan.Trangthai;
