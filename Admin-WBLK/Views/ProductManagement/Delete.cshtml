@@ -105,18 +105,54 @@
                                         <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b">Giá trị</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    @{
-                                        var specs = Newtonsoft.Json.JsonConvert.DeserializeObject<List<dynamic>>(Model.Thongsokythuat);
-                                        foreach (var spec in specs)
-                                        {
-                                            <tr class="border-b hover:bg-gray-50">
-                                                <td class="px-4 py-3 text-sm text-gray-600">@spec.key</td>
-                                                <td class="px-4 py-3 text-sm font-medium text-gray-900">@spec.value</td>
-                                            </tr>
-                                        }
-                                    }
-                                </tbody>
+                                        <tbody>
+                                            @{
+                                                var specsJson = Model.Thongsokythuat;
+                                                if (!string.IsNullOrEmpty(specsJson))
+                                                {
+                                                    try
+                                                    {
+                                                        var jsonElement = System.Text.Json.JsonDocument.Parse(specsJson).RootElement;
+
+                                                        if (jsonElement.ValueKind == System.Text.Json.JsonValueKind.Array)
+                                                        {
+                                                            var specs = Newtonsoft.Json.JsonConvert.DeserializeObject<List<dynamic>>(specsJson);
+                                                            foreach (var spec in specs)
+                                                            {
+                                                                <tr class="border-b hover:bg-gray-50">
+                                                                    <td class="px-4 py-3 text-sm text-gray-600">@spec.key</td>
+                                                                    <td class="px-4 py-3 text-sm font-medium text-gray-900">@spec.value</td>
+                                                                </tr>
+                                                            }
+                                                        }
+                                                        else if (jsonElement.ValueKind == System.Text.Json.JsonValueKind.Object)
+                                                        {
+                                                            var specs = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, string>>(specsJson);
+                                                            foreach (var spec in specs)
+                                                            {
+                                                                <tr class="border-b hover:bg-gray-50">
+                                                                    <td class="px-4 py-3 text-sm text-gray-600">@spec.Key</td>
+                                                                    <td class="px-4 py-3 text-sm font-medium text-gray-900">@spec.Value</td>
+                                                                </tr>
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            <tr><td colspan="2" class="text-center text-gray-500">Dữ liệu không hợp lệ</td></tr>
+                                                        }
+                                                    }
+                                                    catch
+                                                    {
+                                                        <tr><td colspan="2" class="text-center text-gray-500">Không thể đọc thông số kỹ thuật</td></tr>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <tr><td colspan="2" class="text-center text-gray-500">Không có thông số kỹ thuật</td></tr>
+                                                }
+                                            }
+                                        </tbody>
+
                             </table>
                         </div>
                     </div>

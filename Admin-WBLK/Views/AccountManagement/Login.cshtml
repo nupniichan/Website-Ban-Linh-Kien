@@ -1,0 +1,116 @@
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @@keyframes dots {
+            0% {
+                content: '';
+            }
+            33% {
+                content: '.';
+            }
+            66% {
+                content: '..';
+            }
+            100% {
+                content: '...';
+            }
+        }
+        .dots::after {
+            content: '';
+            animation: dots 1s steps(3, end) infinite;
+        }
+    </style>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const validRoles = ["quantrivien", "nhanvienkho", "nhanvienkinhdoanh", "nhanvienmarketing"];
+        const Quyentruycap = sessionStorage.getItem('Quyentruycap');
+
+        if (validRoles.includes(Quyentruycap)) {
+            document.querySelector('.overlay').classList.add('hidden');
+        }
+    });
+
+    async function handleLogin(event) {
+        event.preventDefault();
+
+        const messageBox = document.getElementById('messageBox');
+        const username = document.querySelector('[name="Tentaikhoan"]').value;
+        const password = document.querySelector('[name="Matkhau"]').value;
+
+        messageBox.textContent = "Checking Database...";
+        messageBox.classList.remove('hidden');
+
+        try {
+            await new Promise(resolve => setTimeout(resolve, 800)); // 0.8s delay for checking DB
+            const validRoles = ["quantrivien", "nhanvienkho", "nhanvienkinhdoanh", "nhanvienmarketing"];
+            const response = await fetch('/AccountManagement/Login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ Tentaikhoan: username, Matkhau: password }),
+            });
+
+            if (response.status === 403) {
+                messageBox.textContent = "Bạn không có quyền truy cập!";
+                return;
+            }
+
+            if (response.ok) {
+                messageBox.textContent = "Fetching Roles...";
+                await new Promise(resolve => setTimeout(resolve, 700)); // 0.7s delay for fetching roles
+
+                const data = await response.json();
+
+                messageBox.textContent = "Comparing Roles...";
+                await new Promise(resolve => setTimeout(resolve, 1000)); // 1s delay for role comparison
+
+                if (validRoles.includes(data.role)) {
+                    messageBox.textContent = "Login Successful!";
+                    sessionStorage.setItem('Quyentruycap', data.role);
+                    setTimeout(() => {
+                        window.location.href = "/"; // Redirect after 500ms
+                    }, 500);
+                } else {
+                    messageBox.textContent = "Role không hợp lệ!";
+                }
+            } else {
+                const error = await response.json();
+                messageBox.textContent = error.message || "Đăng nhập không thành công!";
+            }
+        } catch (error) {
+            console.error("Lỗi:", error);
+            messageBox.textContent = "Role không hợp lệ!";
+      }
+    }
+</script>
+
+</head>
+<body class="bg-gray-100">
+    <!-- Login Form -->
+    <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-80">
+            <h4 class="text-center text-lg font-semibold mb-4">Đăng nhập</h4>
+            <form onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label for="Tentaikhoan" class="block text-sm font-medium text-gray-700">Tên tài khoản</label>
+                    <input type="text" name="Tentaikhoan" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
+                </div>
+                <div>
+                    <label for="Matkhau" class="block text-sm font-medium text-gray-700">Mật khẩu</label>
+                    <input type="password" name="Matkhau" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
+                </div>
+                <div id="messageBox" class="text-blue-500 text-sm mt-2 hidden dots"></div>
+                <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700">Đăng nhập</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

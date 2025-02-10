@@ -4,6 +4,11 @@ using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
 using Admin_WBLK.Models;
 
 
@@ -96,11 +101,11 @@ namespace Admin_WBLK.Controllers
         {
             // Generate next IdTk
             var lastAccount = _context.Taikhoans.OrderByDescending(t => t.IdTk).FirstOrDefault();
-            var nextId = "TK001";
+            var nextId = "TK000001";
 
             if (lastAccount != null && int.TryParse(lastAccount.IdTk.Substring(2), out int lastId))
             {
-                nextId = $"TK{(lastId + 1).ToString("D3")}";
+                nextId = $"TK{(lastId + 1).ToString("D6")}";
             }
 
             var model = new Taikhoan { IdTk = nextId, Ngaytaotk = DateOnly.FromDateTime(DateTime.Now) };
@@ -250,6 +255,63 @@ namespace Admin_WBLK.Controllers
         {
             return _context.Taikhoans.Any(e => e.IdTk == id);
         }
-        
+        [HttpGet]
+        public IActionResult Login()
+        {
+            return View();
+        }
+        [HttpPost]
+        public async Task<IActionResult> Login([FromBody] Taikhoan loginRequest)
+{
+            if (string.IsNullOrWhiteSpace(loginRequest.Tentaikhoan) || string.IsNullOrWhiteSpace(loginRequest.Matkhau))
+            {
+                return BadRequest(new { message = "Tên tài khoản và mật khẩu không được để trống." });
+            }
+
+            // Find user by username
+            var user = await _context.Taikhoans.FirstOrDefaultAsync(t => t.Tentaikhoan == loginRequest.Tentaikhoan);
+
+            if (user == null)
+            {
+                return Unauthorized(new { message = "Tài khoản không tồn tại." });
+            }
+
+            // Prevent users with the "KhachHang" role from logging in
+            if (user.Quyentruycap == "khachhang")
+            {
+                return Forbid(); // Returns a 403 Forbidden response
+            }
+
+            // Compare plaintext passwords
+            if (user.Matkhau != loginRequest.Matkhau)
+            {
+                return Unauthorized(new { message = "Mật khẩu không chính xác." });
+            }
+
+            // Generate claims for user authentication
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, user.Tentaikhoan),
+                new Claim(ClaimTypes.Role, user.Quyentruycap),
+                new Claim("UserId", user.IdTk)
+            };
+
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var authProperties = new AuthenticationProperties { IsPersistent = true };
+
+            // Sign the user in
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity), authProperties);
+
+            // Return success response
+            return Json(new { role = user.Quyentruycap });
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> Logout()
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return Ok(); // Trả về phản hồi thành công
+        }
     }
 }
