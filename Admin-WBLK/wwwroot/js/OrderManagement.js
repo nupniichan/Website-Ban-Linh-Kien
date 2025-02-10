@@ -117,8 +117,11 @@ function resetValidation() {
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.querySelector('form');
     if (form) {
-        form.addEventListener('submit', validateOrderForm);
-        resetValidation();
+        // Chỉ áp dụng validation cho form Create
+        if (!form.id || form.id !== 'editOrderForm') {
+            form.addEventListener('submit', validateOrderForm);
+            resetValidation();
+        }
     }
 });
 
