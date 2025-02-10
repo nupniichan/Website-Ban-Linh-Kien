@@ -64,17 +64,12 @@ namespace Admin_WBLK.Controllers
             // Lấy danh sách trạng thái để làm dropdown filter
             ViewBag.TrangThais = new List<string> 
             { 
-                "Chờ xác nhận",
-                "Đã xác nhận",
-                "Chờ giao hàng",
-                "Đang giao hàng",
-                "Đã giao hàng",
-                "Đã huỷ",
-                "Yêu cầu huỷ",
-                "Đang yêu cầu đổi trả",
-                "Chờ nhận hàng trả",
-                "Đổi trả thành công",
-                "Đổi trả thất bại"
+                "Đặt hàng thành công",
+                "Đã duyệt đơn",
+                "Đang giao",
+                "Giao thành công",
+                "Không giao",
+                "Hủy đơn"
             };
 
             try 
@@ -483,18 +478,15 @@ namespace Admin_WBLK.Controllers
             {
                 using var transaction = await _context.Database.BeginTransactionAsync();
 
-                // Bỏ qua validation cho các trường sẽ được tự động set
+                // Bỏ qua validation cho các trường không cần thiết
                 ModelState.Remove("IdKhNavigation");
                 ModelState.Remove("IdMggNavigation");
-
-                if (!ModelState.IsValid)
-                {
-                    return View(donhang);
-                }
+                ModelState.Remove("Chitietdonhangs");
 
                 // Lấy đơn hàng hiện tại và chi tiết
                 var existingOrder = await _context.Donhangs
                     .Include(d => d.Chitietdonhangs)
+                    .AsNoTracking()
                     .FirstOrDefaultAsync(d => d.IdDh == id);
 
                 if (existingOrder == null)
@@ -502,11 +494,10 @@ namespace Admin_WBLK.Controllers
                     return NotFound();
                 }
 
-                // Giữ nguyên chi tiết đơn hàng cũ
-                donhang.Chitietdonhangs = existingOrder.Chitietdonhangs;
-
                 // Cập nhật thông tin đơn hàng
-                _context.Entry(existingOrder).CurrentValues.SetValues(donhang);
+                donhang.Chitietdonhangs = existingOrder.Chitietdonhangs;
+                _context.Entry(existingOrder).State = EntityState.Detached;
+                _context.Update(donhang);
 
                 // Xử lý thông tin thanh toán
                 if (donhang.Phuongthucthanhtoan != "COD" && !string.IsNullOrEmpty(Mathanhtoan))
@@ -599,19 +590,18 @@ namespace Admin_WBLK.Controllers
                     return NotFound();
                 }
 
-                // Cập nhật Dictionary các trạng thái hợp lệ
+                // Cập nhật Dictionary các trạng thái hợp lệ theo flow mới
                 var validTransitions = new Dictionary<string, string[]>
                 {
-                    { "Chờ xác nhận", new[] { "Đã xác nhận", "Yêu cầu huỷ" } },
-                    { "Đã xác nhận", new[] { "Chờ giao hàng", "Đã huỷ" } },
-                    { "Chờ giao hàng", new[] { "Đang giao hàng", "Đã huỷ" } },
-                    { "Đang giao hàng", new[] { "Đã giao hàng", "Đã huỷ" } },
-                    { "Đã giao hàng", new[] { "Đang yêu cầu đổi trả" } },
-                    { "Yêu cầu huỷ", new[] { "Đã huỷ", "Đã xác nhận" } },
-                    { "Đang yêu cầu đổi trả", new[] { "Chờ nhận hàng trả", "Đổi trả thất bại" } },
-                    { "Chờ nhận hàng trả", new[] { "Đổi trả thành công", "Đổi trả thất bại" } }
+                    { "Đặt hàng thành công", new[] { "Đã duyệt đơn", "Hủy đơn" } },
+                    { "Đã duyệt đơn", new[] { "Đang giao" } },
+                    { "Đang giao", new[] { "Giao thành công", "Không giao" } },
+                    { "Giao thành công", Array.Empty<string>() }, // Trạng thái cuối
+                    { "Không giao", Array.Empty<string>() }, // Trạng thái cuối
+                    { "Hủy đơn", Array.Empty<string>() } // Trạng thái cuối
                 };
 
+                // Kiểm tra tính hợp lệ của việc chuyển trạng thái
                 if (!validTransitions.ContainsKey(donhang.Trangthai) || 
                     !validTransitions[donhang.Trangthai].Contains(newStatus))
                 {
@@ -622,8 +612,9 @@ namespace Admin_WBLK.Controllers
                 // Xử lý các logic bổ sung theo trạng thái
                 switch (newStatus)
                 {
-                    case "Đã huỷ":
-                        // Hoàn trả số lượng tồn kho khi hủy đơn
+                    case "Hủy đơn":
+                    case "Không giao":
+                        // Hoàn trả số lượng tồn kho
                         foreach (var chitiet in donhang.Chitietdonhangs)
                         {
                             var product = await _context.Sanphams.FindAsync(chitiet.IdSp);
@@ -631,21 +622,6 @@ namespace Admin_WBLK.Controllers
                             {
                                 product.Soluongton += chitiet.Soluong;
                                 _context.Update(product);
-                                await _context.SaveChangesAsync();
-                            }
-                        }
-                        break;
-
-                    case "Đổi trả thành công":
-                        // Hoàn trả số lượng tồn kho khi đổi trả thành công
-                        foreach (var chitiet in donhang.Chitietdonhangs)
-                        {
-                            var product = await _context.Sanphams.FindAsync(chitiet.IdSp);
-                            if (product != null)
-                            {
-                                product.Soluongton += chitiet.Soluong;
-                                _context.Update(product);
-                                await _context.SaveChangesAsync();
                             }
                         }
                         break;
