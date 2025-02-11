@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 09, 2025 at 03:57 PM
+-- Generation Time: Feb 11, 2025 at 05:27 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -28,6 +28,7 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `chitietdonhang` (
+  `Idchitietdonhang` varchar(10) NOT NULL,
   `IdDh` varchar(10) NOT NULL,
   `IdSp` varchar(10) NOT NULL,
   `soluong` int(11) NOT NULL,
@@ -38,34 +39,34 @@ CREATE TABLE `chitietdonhang` (
 -- Dumping data for table `chitietdonhang`
 --
 
-INSERT INTO `chitietdonhang` (`IdDh`, `IdSp`, `soluong`, `dongia`) VALUES
-('DH000001', 'SP000001', 2, 15990000.00),
-('DH000001', 'SP000002', 1, 14990000.00),
-('DH000002', 'SP000003', 1, 7990000.00),
-('DH000002', 'SP000004', 1, 12990000.00),
-('DH000003', 'SP000001', 1, 15990000.00),
-('DH000003', 'SP000003', 2, 7990000.00),
-('DH000004', 'SP000002', 2, 14990000.00),
-('DH000004', 'SP000004', 1, 12990000.00),
-('DH000005', 'SP000018', 1, 2990000.00),
-('DH000006', 'SP000003', 1, 7990000.00),
-('DH000007', 'SP000004', 2, 12990000.00),
-('DH000008', 'SP000001', 2, 15990000.00),
-('DH000008', 'SP000002', 1, 14990000.00),
-('DH000009', 'SP000015', 1, 19990000.00),
-('DH000009', 'SP000016', 1, 59990000.00),
-('DH000010', 'SP000024', 1, 19990000.00),
-('DH000010', 'SP000025', 1, 12990000.00),
-('DH000011', 'SP000016', 1, 59990000.00),
-('DH000012', 'SP000018', 1, 2990000.00),
-('DH000013', 'SP000024', 1, 19990000.00),
-('DH000014', 'SP000025', 1, 12990000.00),
-('DH000015', 'SP000018', 1, 2990000.00),
-('DH000016', 'SP000025', 1, 12990000.00),
-('DH000016', 'SP000028', 1, 6990000.00),
-('DH000017', 'SP000003', 2, 7990000.00),
-('DH000019', 'SP000028', 1, 6990000.00),
-('DH000020', 'SP000018', 2, 2990000.00);
+INSERT INTO `chitietdonhang` (`Idchitietdonhang`, `IdDh`, `IdSp`, `soluong`, `dongia`) VALUES
+('CTDH000001', 'DH000001', 'SP000001', 2, 15990000.00),
+('CTDH000002', 'DH000001', 'SP000002', 1, 14990000.00),
+('CTDH000003', 'DH000002', 'SP000003', 1, 7990000.00),
+('CTDH000004', 'DH000002', 'SP000004', 1, 12990000.00),
+('CTDH000005', 'DH000003', 'SP000001', 1, 15990000.00),
+('CTDH000006', 'DH000003', 'SP000003', 2, 7990000.00),
+('CTDH000007', 'DH000004', 'SP000002', 2, 14990000.00),
+('CTDH000008', 'DH000004', 'SP000004', 1, 12990000.00),
+('CTDH000009', 'DH000005', 'SP000018', 1, 2990000.00),
+('CTDH000010', 'DH000006', 'SP000003', 1, 7990000.00),
+('CTDH000011', 'DH000007', 'SP000004', 2, 12990000.00),
+('CTDH000012', 'DH000008', 'SP000001', 2, 15990000.00),
+('CTDH000013', 'DH000008', 'SP000002', 1, 14990000.00),
+('CTDH000014', 'DH000009', 'SP000015', 1, 19990000.00),
+('CTDH000015', 'DH000009', 'SP000016', 1, 59990000.00),
+('CTDH000016', 'DH000010', 'SP000024', 1, 19990000.00),
+('CTDH000017', 'DH000010', 'SP000025', 1, 12990000.00),
+('CTDH000018', 'DH000011', 'SP000016', 1, 59990000.00),
+('CTDH000019', 'DH000012', 'SP000018', 1, 2990000.00),
+('CTDH000020', 'DH000013', 'SP000024', 1, 19990000.00),
+('CTDH000021', 'DH000014', 'SP000025', 1, 12990000.00),
+('CTDH000022', 'DH000015', 'SP000018', 1, 2990000.00),
+('CTDH000023', 'DH000016', 'SP000025', 1, 12990000.00),
+('CTDH000024', 'DH000016', 'SP000028', 1, 6990000.00),
+('CTDH000025', 'DH000017', 'SP000003', 2, 7990000.00),
+('CTDH000026', 'DH000019', 'SP000028', 1, 6990000.00),
+('CTDH000027', 'DH000020', 'SP000018', 2, 2990000.00);
 
 -- --------------------------------------------------------
 
@@ -76,7 +77,8 @@ INSERT INTO `chitietdonhang` (`IdDh`, `IdSp`, `soluong`, `dongia`) VALUES
 CREATE TABLE `chitietgiohang` (
   `IdGh` varchar(10) NOT NULL,
   `IdSp` varchar(10) NOT NULL,
-  `soluong` int(11) NOT NULL
+  `soluongsanpham` int(11) NOT NULL,
+  `thoigiancapnhat` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -147,34 +149,35 @@ INSERT INTO `donhang` (`IdDh`, `trangthai`, `tongtien`, `diachigiaohang`, `ngayd
 
 CREATE TABLE `giohang` (
   `IdGh` varchar(10) NOT NULL,
-  `IdKh` varchar(10) NOT NULL
+  `IdKh` varchar(10) NOT NULL,
+  `thoigianthaydoi` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `giohang`
 --
 
-INSERT INTO `giohang` (`IdGh`, `IdKh`) VALUES
-('GH000001', 'KH000001'),
-('GH000020', 'KH000001'),
-('GH000002', 'KH000002'),
-('GH000003', 'KH000003'),
-('GH000004', 'KH000004'),
-('GH000005', 'KH000005'),
-('GH000006', 'KH000006'),
-('GH000007', 'KH000007'),
-('GH000008', 'KH000008'),
-('GH000009', 'KH000009'),
-('GH000010', 'KH000010'),
-('GH000011', 'KH000011'),
-('GH000012', 'KH000012'),
-('GH000013', 'KH000013'),
-('GH000014', 'KH000014'),
-('GH000015', 'KH000015'),
-('GH000016', 'KH000016'),
-('GH000017', 'KH000017'),
-('GH000018', 'KH000018'),
-('GH000019', 'KH000019');
+INSERT INTO `giohang` (`IdGh`, `IdKh`, `thoigianthaydoi`) VALUES
+('GH000001', 'KH000001', NULL),
+('GH000002', 'KH000002', NULL),
+('GH000003', 'KH000003', NULL),
+('GH000004', 'KH000004', NULL),
+('GH000005', 'KH000005', NULL),
+('GH000006', 'KH000006', NULL),
+('GH000007', 'KH000007', NULL),
+('GH000008', 'KH000008', NULL),
+('GH000009', 'KH000009', NULL),
+('GH000010', 'KH000010', NULL),
+('GH000011', 'KH000011', NULL),
+('GH000012', 'KH000012', NULL),
+('GH000013', 'KH000013', NULL),
+('GH000014', 'KH000014', NULL),
+('GH000015', 'KH000015', NULL),
+('GH000016', 'KH000016', NULL),
+('GH000017', 'KH000017', NULL),
+('GH000018', 'KH000018', NULL),
+('GH000019', 'KH000019', NULL),
+('GH000020', 'KH000001', NULL);
 
 -- --------------------------------------------------------
 
@@ -186,39 +189,40 @@ CREATE TABLE `khachhang` (
   `IdKh` varchar(10) NOT NULL,
   `hoten` varchar(100) NOT NULL,
   `diachi` varchar(200) NOT NULL,
-  `email` varchar(100) NOT NULL,
-  `gioitinh` varchar(5) NOT NULL,
-  `ngaysinh` date NOT NULL,
+  `email` varchar(100) DEFAULT NULL,
+  `gioitinh` varchar(5) DEFAULT NULL,
+  `ngaysinh` date DEFAULT NULL,
   `sodienthoai` varchar(11) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   `diemtichluy` int(11) DEFAULT 0,
   `IdTk` varchar(10) NOT NULL,
-  `id_xephangvip` varchar(10) DEFAULT NULL
+  `id_xephangvip` varchar(10) DEFAULT NULL,
+  `loaikhachhang` bit(1) DEFAULT b'0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `khachhang`
 --
 
-INSERT INTO `khachhang` (`IdKh`, `hoten`, `diachi`, `email`, `gioitinh`, `ngaysinh`, `sodienthoai`, `diemtichluy`, `IdTk`, `id_xephangvip`) VALUES
-('KH000001', 'Nguyễn Văn A', 'Hà Nội', 'a@gmail.com', 'Nam', '1990-01-01', '0987654321', 100, 'TK000002', 'THANTHIET'),
-('KH000002', 'Trần Thị B', 'Hồ Chí Minh', 'b@gmail.com', 'Nữ', '1995-02-15', '0912345678', 777, 'TK000003', 'BAC'),
-('KH000003', 'Phạm Văn C', 'Đà Nẵng', 'c@gmail.com', 'Nam', '1992-03-20', '0934567890', 1002, 'TK000004', 'VANG'),
-('KH000004', 'Kim Đăng D', 'Hải Phòng', 'd@gmail.com', 'Nữ', '1998-04-25', '0956789012', 10000, 'TK000005', 'KIMCUONG'),
-('KH000005', 'Nguyễn Văn E', 'Hà Nội', 'e@gmail.com', 'Nam', '1993-05-30', '0978901234', 300, 'TK000006', 'THANTHIET'),
-('KH000006', 'Phạm Hải A', 'Hồ Chí Minh', 'pha@gmail.com', 'Nữ', '2001-06-05', '0967890123', 600, 'TK000007', 'BAC'),
-('KH000007', 'Trần Minh B', 'Đà Nẵng', 'tmb@gmail.com', 'Nam', '2000-07-10', '0945678901', 3333, 'TK000008', 'VANG'),
-('KH000008', 'Nguyễn Hà C', 'Hải Phòng', 'nhc@gmail.com', 'Nữ', '2001-08-15', '0934567890', 30832, 'TK000009', 'KIMCUONG'),
-('KH000009', 'Lê Văn D', 'Đà Nẵng', 'lvd@gmail.com', 'Nam', '2000-09-20', '0923456789', 450, 'TK000010', 'THANTHIET'),
-('KH000010', 'Phạm Thị E', 'Hà Nội', 'pte@gmail.com', 'Nữ', '1996-10-25', '0912345678', 800, 'TK000011', 'BAC'),
-('KH000011', 'Hoàng Văn F', 'Hồ Chí Minh', 'hvf@gmail.com', 'Nam', '1990-11-30', '0934567890', 2500, 'TK000012', 'VANG'),
-('KH000012', 'Trần Thu G', 'Đà Nẵng', 'ttg@gmail.com', 'Nữ', '1994-12-05', '0945678901', 15000, 'TK000013', 'KIMCUONG'),
-('KH000013', 'Nguyễn Nam H', 'Hà Nội', 'nnh@gmail.com', 'Nam', '1997-01-10', '0956789012', 350, 'TK000014', 'THANTHIET'),
-('KH000014', 'Vũ Thị I', 'Hà Nội', 'vti@gmail.com', 'Nữ', '1992-02-15', '0967890123', 900, 'TK000015', 'BAC'),
-('KH000015', 'Đặng Văn K', 'Hồ Chí Minh', 'dvk@gmail.com', 'Nam', '1995-03-20', '0978901234', 4000, 'TK000016', 'VANG'),
-('KH000016', 'Mai Thị L', 'Đà Nẵng', 'mtl@gmail.com', 'Nữ', '1991-04-25', '0989012345', 20000, 'TK000017', 'KIMCUONG'),
-('KH000017', 'Phan Văn M', 'Hải Phòng', 'pvm@gmail.com', 'Nam', '1998-05-30', '0990123456', 250, 'TK000018', 'THANTHIET'),
-('KH000018', 'Trương Thị N', 'Hà Nội', 'ttn@gmail.com', 'Nữ', '2004-06-05', '0901234567', 1200, 'TK000019', 'BAC'),
-('KH000019', 'Bùi Văn O', 'Hồ Chí Minh', 'bvo@gmail.com', 'Nam', '2002-07-10', '0912345678', 5000, 'TK000020', 'VANG');
+INSERT INTO `khachhang` (`IdKh`, `hoten`, `diachi`, `email`, `gioitinh`, `ngaysinh`, `sodienthoai`, `diemtichluy`, `IdTk`, `id_xephangvip`, `loaikhachhang`) VALUES
+('KH000001', 'Nguyễn Văn A', 'Hà Nội', 'a@gmail.com', 'Nam', '1990-01-01', '0987654321', 100, 'TK000002', 'THANTHIET', NULL),
+('KH000002', 'Trần Thị B', 'Hồ Chí Minh', 'b@gmail.com', 'Nữ', '1995-02-15', '0912345678', 777, 'TK000003', 'BAC', NULL),
+('KH000003', 'Phạm Văn C', 'Đà Nẵng', 'c@gmail.com', 'Nam', '1992-03-20', '0934567890', 1002, 'TK000004', 'VANG', NULL),
+('KH000004', 'Kim Đăng D', 'Hải Phòng', 'd@gmail.com', 'Nữ', '1998-04-25', '0956789012', 10000, 'TK000005', 'KIMCUONG', NULL),
+('KH000005', 'Nguyễn Văn E', 'Hà Nội', 'e@gmail.com', 'Nam', '1993-05-30', '0978901234', 300, 'TK000006', 'THANTHIET', NULL),
+('KH000006', 'Phạm Hải A', 'Hồ Chí Minh', 'pha@gmail.com', 'Nữ', '2001-06-05', '0967890123', 600, 'TK000007', 'BAC', NULL),
+('KH000007', 'Trần Minh B', 'Đà Nẵng', 'tmb@gmail.com', 'Nam', '2000-07-10', '0945678901', 3333, 'TK000008', 'VANG', NULL),
+('KH000008', 'Nguyễn Hà C', 'Hải Phòng', 'nhc@gmail.com', 'Nữ', '2001-08-15', '0934567890', 30832, 'TK000009', 'KIMCUONG', NULL),
+('KH000009', 'Lê Văn D', 'Đà Nẵng', 'lvd@gmail.com', 'Nam', '2000-09-20', '0923456789', 450, 'TK000010', 'THANTHIET', NULL),
+('KH000010', 'Phạm Thị E', 'Hà Nội', 'pte@gmail.com', 'Nữ', '1996-10-25', '0912345678', 800, 'TK000011', 'BAC', NULL),
+('KH000011', 'Hoàng Văn F', 'Hồ Chí Minh', 'hvf@gmail.com', 'Nam', '1990-11-30', '0934567890', 2500, 'TK000012', 'VANG', NULL),
+('KH000012', 'Trần Thu G', 'Đà Nẵng', 'ttg@gmail.com', 'Nữ', '1994-12-05', '0945678901', 15000, 'TK000013', 'KIMCUONG', NULL),
+('KH000013', 'Nguyễn Nam H', 'Hà Nội', 'nnh@gmail.com', 'Nam', '1997-01-10', '0956789012', 350, 'TK000014', 'THANTHIET', NULL),
+('KH000014', 'Vũ Thị I', 'Hà Nội', 'vti@gmail.com', 'Nữ', '1992-02-15', '0967890123', 900, 'TK000015', 'BAC', NULL),
+('KH000015', 'Đặng Văn K', 'Hồ Chí Minh', 'dvk@gmail.com', 'Nam', '1995-03-20', '0978901234', 4000, 'TK000016', 'VANG', NULL),
+('KH000016', 'Mai Thị L', 'Đà Nẵng', 'mtl@gmail.com', 'Nữ', '1991-04-25', '0989012345', 20000, 'TK000017', 'KIMCUONG', NULL),
+('KH000017', 'Phan Văn M', 'Hải Phòng', 'pvm@gmail.com', 'Nam', '1998-05-30', '0990123456', 250, 'TK000018', 'THANTHIET', NULL),
+('KH000018', 'Trương Thị N', 'Hà Nội', 'ttn@gmail.com', 'Nữ', '2004-06-05', '0901234567', 1200, 'TK000019', 'BAC', NULL),
+('KH000019', 'Bùi Văn O', 'Hồ Chí Minh', 'bvo@gmail.com', 'Nam', '2002-07-10', '0912345678', 5000, 'TK000020', 'VANG', NULL);
 
 -- --------------------------------------------------------
 
@@ -829,8 +833,9 @@ INSERT INTO `xephangvip` (`id`, `tenhang`, `diemtoithieu`, `diemtoida`, `phantra
 -- Indexes for table `chitietdonhang`
 --
 ALTER TABLE `chitietdonhang`
-  ADD PRIMARY KEY (`IdDh`,`IdSp`),
-  ADD KEY `IdSp` (`IdSp`);
+  ADD PRIMARY KEY (`Idchitietdonhang`),
+  ADD KEY `chitietdonhang_fk_1` (`IdDh`),
+  ADD KEY `chitietdonhang_fk_2` (`IdSp`);
 
 --
 -- Indexes for table `chitietgiohang`
@@ -926,6 +931,13 @@ ALTER TABLE `xephangvip`
 --
 -- Constraints for dumped tables
 --
+
+--
+-- Constraints for table `chitietdonhang`
+--
+ALTER TABLE `chitietdonhang`
+  ADD CONSTRAINT `chitietdonhang_fk_1` FOREIGN KEY (`IdDh`) REFERENCES `donhang` (`IdDh`) ON DELETE CASCADE,
+  ADD CONSTRAINT `chitietdonhang_fk_2` FOREIGN KEY (`IdSp`) REFERENCES `sanpham` (`IdSp`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `chitietgiohang`
