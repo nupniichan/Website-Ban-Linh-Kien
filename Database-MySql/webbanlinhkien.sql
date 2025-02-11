@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 11, 2025 at 05:27 AM
+-- Generation Time: Feb 11, 2025 at 05:55 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -122,9 +122,9 @@ CREATE TABLE `donhang` (
 INSERT INTO `donhang` (`IdDh`, `trangthai`, `tongtien`, `diachigiaohang`, `ngaydathang`, `phuongthucthanhtoan`, `ghichu`, `lydo_huy`, `IdKh`, `IdMgg`) VALUES
 ('DH000001', 'Giao thành công', 52490000.00, 'Hà Nội, Đống Đa', '2025-02-01 08:30:00', 'COD', NULL, NULL, 'KH000001', 'MG000001'),
 ('DH000002', 'Đang giao', 15990000.00, 'Hồ Chí Minh', '2025-02-02 09:15:00', 'VNPAY', 'Giao trong ngày', NULL, 'KH000002', 'MG000002'),
-('DH000003', 'Đã duyệt đơn', 7990000.00, 'Đà Nẵng', '2025-02-03 10:45:00', 'VNPAY', NULL, NULL, 'KH000003', NULL),
+('DH000003', 'da_duyet_don', 7990000.00, 'Đà Nẵng', '2025-02-03 10:45:00', 'VNPAY', NULL, NULL, 'KH000003', NULL),
 ('DH000004', 'Giao thành công', 49990000.00, 'Hải Phòng', '2025-02-04 13:20:00', 'Paypal', NULL, NULL, 'KH000004', 'MG000003'),
-('DH000005', 'Hủy đơn', 2990000.00, 'Hà Nội', '2025-02-05 14:30:00', 'Paypal', 'Khách đổi ý', 'Tôi không muốn đặt hàng nữa', 'KH000005', NULL),
+('DH000005', 'huy_don', 2990000.00, 'Hà Nội', '2025-02-05 14:30:00', 'Paypal', 'Khách đổi ý', 'Tôi không muốn đặt hàng nữa', 'KH000005', NULL),
 ('DH000006', 'Đặt hàng thành công', 8990000.00, 'Hồ Chí Minh', '2025-02-06 15:30:00', 'VNPAY', NULL, NULL, 'KH000006', NULL),
 ('DH000007', 'Đang giao', 25990000.00, 'Đà Nẵng', '2025-02-07 16:15:00', 'COD', NULL, NULL, 'KH000007', 'MG000004'),
 ('DH000008', 'Giao thành công', 39990000.00, 'Hải Phòng', '2025-02-08 17:45:00', 'VNPAY', NULL, NULL, 'KH000008', 'MG000005'),
@@ -132,7 +132,7 @@ INSERT INTO `donhang` (`IdDh`, `trangthai`, `tongtien`, `diachigiaohang`, `ngayd
 ('DH000010', 'Đặt hàng thành công', 19990000.00, 'Hồ Chí Minh', '2025-02-10 19:30:00', 'Paypal', NULL, NULL, 'KH000010', 'MG000006'),
 ('DH000011', 'Giao thành công', 59990000.00, 'Đà Nẵng', '2025-02-11 20:15:00', 'VNPAY', NULL, NULL, 'KH000011', NULL),
 ('DH000012', 'Đang giao', 2990000.00, 'Hải Phòng', '2025-02-12 21:45:00', 'COD', NULL, NULL, 'KH000012', 'MG000007'),
-('DH000013', 'Đã duyệt đơn', 19990000.00, 'Hà Nội', '2025-02-13 22:20:00', 'VNPAY', NULL, NULL, 'KH000013', NULL),
+('DH000013', 'da_duyet_don', 19990000.00, 'Hà Nội', '2025-02-13 22:20:00', 'VNPAY', NULL, NULL, 'KH000013', NULL),
 ('DH000014', 'Giao thành công', 12990000.00, 'Hồ Chí Minh', '2025-02-14 07:30:00', 'Paypal', NULL, NULL, 'KH000014', 'MG000008'),
 ('DH000015', 'Đặt hàng thành công', 3990000.00, 'Đà Nẵng', '2025-02-15 08:15:00', 'COD', NULL, NULL, 'KH000015', NULL),
 ('DH000016', 'Đang giao', 25990000.00, 'Hải Phòng', '2025-02-16 09:45:00', 'VNPAY', NULL, NULL, 'KH000016', 'MG000009'),
