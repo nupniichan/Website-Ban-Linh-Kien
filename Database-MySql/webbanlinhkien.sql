@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 11, 2025 at 05:55 AM
+-- Generation Time: Feb 12, 2025 at 10:47 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -31,7 +31,8 @@ CREATE TABLE `chitietdonhang` (
   `Idchitietdonhang` varchar(10) NOT NULL,
   `IdDh` varchar(10) NOT NULL,
   `IdSp` varchar(10) NOT NULL,
-  `soluong` int(11) NOT NULL,
+  `IdDg` varchar(10) DEFAULT NULL,
+  `soluongsanpham` int(11) NOT NULL,
   `dongia` decimal(10,2) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -39,34 +40,34 @@ CREATE TABLE `chitietdonhang` (
 -- Dumping data for table `chitietdonhang`
 --
 
-INSERT INTO `chitietdonhang` (`Idchitietdonhang`, `IdDh`, `IdSp`, `soluong`, `dongia`) VALUES
-('CTDH000001', 'DH000001', 'SP000001', 2, 15990000.00),
-('CTDH000002', 'DH000001', 'SP000002', 1, 14990000.00),
-('CTDH000003', 'DH000002', 'SP000003', 1, 7990000.00),
-('CTDH000004', 'DH000002', 'SP000004', 1, 12990000.00),
-('CTDH000005', 'DH000003', 'SP000001', 1, 15990000.00),
-('CTDH000006', 'DH000003', 'SP000003', 2, 7990000.00),
-('CTDH000007', 'DH000004', 'SP000002', 2, 14990000.00),
-('CTDH000008', 'DH000004', 'SP000004', 1, 12990000.00),
-('CTDH000009', 'DH000005', 'SP000018', 1, 2990000.00),
-('CTDH000010', 'DH000006', 'SP000003', 1, 7990000.00),
-('CTDH000011', 'DH000007', 'SP000004', 2, 12990000.00),
-('CTDH000012', 'DH000008', 'SP000001', 2, 15990000.00),
-('CTDH000013', 'DH000008', 'SP000002', 1, 14990000.00),
-('CTDH000014', 'DH000009', 'SP000015', 1, 19990000.00),
-('CTDH000015', 'DH000009', 'SP000016', 1, 59990000.00),
-('CTDH000016', 'DH000010', 'SP000024', 1, 19990000.00),
-('CTDH000017', 'DH000010', 'SP000025', 1, 12990000.00),
-('CTDH000018', 'DH000011', 'SP000016', 1, 59990000.00),
-('CTDH000019', 'DH000012', 'SP000018', 1, 2990000.00),
-('CTDH000020', 'DH000013', 'SP000024', 1, 19990000.00),
-('CTDH000021', 'DH000014', 'SP000025', 1, 12990000.00),
-('CTDH000022', 'DH000015', 'SP000018', 1, 2990000.00),
-('CTDH000023', 'DH000016', 'SP000025', 1, 12990000.00),
-('CTDH000024', 'DH000016', 'SP000028', 1, 6990000.00),
-('CTDH000025', 'DH000017', 'SP000003', 2, 7990000.00),
-('CTDH000026', 'DH000019', 'SP000028', 1, 6990000.00),
-('CTDH000027', 'DH000020', 'SP000018', 2, 2990000.00);
+INSERT INTO `chitietdonhang` (`Idchitietdonhang`, `IdDh`, `IdSp`, `IdDg`, `soluongsanpham`, `dongia`) VALUES
+('CTDH000001', 'DH000001', 'SP000001', NULL, 2, 15990000.00),
+('CTDH000002', 'DH000001', 'SP000002', NULL, 1, 14990000.00),
+('CTDH000003', 'DH000002', 'SP000003', NULL, 1, 7990000.00),
+('CTDH000004', 'DH000002', 'SP000004', NULL, 1, 12990000.00),
+('CTDH000005', 'DH000003', 'SP000001', NULL, 1, 15990000.00),
+('CTDH000006', 'DH000003', 'SP000003', NULL, 2, 7990000.00),
+('CTDH000007', 'DH000004', 'SP000002', NULL, 2, 14990000.00),
+('CTDH000008', 'DH000004', 'SP000004', NULL, 1, 12990000.00),
+('CTDH000009', 'DH000005', 'SP000018', NULL, 1, 2990000.00),
+('CTDH000010', 'DH000006', 'SP000003', NULL, 1, 7990000.00),
+('CTDH000011', 'DH000007', 'SP000004', NULL, 2, 12990000.00),
+('CTDH000012', 'DH000008', 'SP000001', NULL, 2, 15990000.00),
+('CTDH000013', 'DH000008', 'SP000002', NULL, 1, 14990000.00),
+('CTDH000014', 'DH000009', 'SP000015', NULL, 1, 19990000.00),
+('CTDH000015', 'DH000009', 'SP000016', NULL, 1, 59990000.00),
+('CTDH000016', 'DH000010', 'SP000024', NULL, 1, 19990000.00),
+('CTDH000017', 'DH000010', 'SP000025', NULL, 1, 12990000.00),
+('CTDH000018', 'DH000011', 'SP000016', NULL, 1, 59990000.00),
+('CTDH000019', 'DH000012', 'SP000018', NULL, 1, 2990000.00),
+('CTDH000020', 'DH000013', 'SP000024', NULL, 1, 19990000.00),
+('CTDH000021', 'DH000014', 'SP000025', NULL, 1, 12990000.00),
+('CTDH000022', 'DH000015', 'SP000018', NULL, 1, 2990000.00),
+('CTDH000023', 'DH000016', 'SP000025', NULL, 1, 12990000.00),
+('CTDH000024', 'DH000016', 'SP000028', NULL, 1, 6990000.00),
+('CTDH000025', 'DH000017', 'SP000003', NULL, 2, 7990000.00),
+('CTDH000026', 'DH000019', 'SP000028', NULL, 1, 6990000.00),
+('CTDH000027', 'DH000020', 'SP000018', NULL, 2, 2990000.00);
 
 -- --------------------------------------------------------
 
@@ -92,8 +93,7 @@ CREATE TABLE `danhgia` (
   `sosao` int(5) NOT NULL CHECK (`sosao` between 1 and 5),
   `noidung` text DEFAULT NULL,
   `ngaydanhgia` datetime DEFAULT current_timestamp(),
-  `IdKh` varchar(10) NOT NULL,
-  `IdSp` varchar(10) NOT NULL
+  `IdKh` varchar(10) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -122,7 +122,7 @@ CREATE TABLE `donhang` (
 INSERT INTO `donhang` (`IdDh`, `trangthai`, `tongtien`, `diachigiaohang`, `ngaydathang`, `phuongthucthanhtoan`, `ghichu`, `lydo_huy`, `IdKh`, `IdMgg`) VALUES
 ('DH000001', 'Giao thành công', 52490000.00, 'Hà Nội, Đống Đa', '2025-02-01 08:30:00', 'COD', NULL, NULL, 'KH000001', 'MG000001'),
 ('DH000002', 'Đang giao', 15990000.00, 'Hồ Chí Minh', '2025-02-02 09:15:00', 'VNPAY', 'Giao trong ngày', NULL, 'KH000002', 'MG000002'),
-('DH000003', 'da_duyet_don', 7990000.00, 'Đà Nẵng', '2025-02-03 10:45:00', 'VNPAY', NULL, NULL, 'KH000003', NULL),
+('DH000003', 'Đã duyệt đơn', 7990000.00, 'Đà Nẵng', '2025-02-03 10:45:00', 'VNPAY', NULL, NULL, 'KH000003', NULL),
 ('DH000004', 'Giao thành công', 49990000.00, 'Hải Phòng', '2025-02-04 13:20:00', 'Paypal', NULL, NULL, 'KH000004', 'MG000003'),
 ('DH000005', 'huy_don', 2990000.00, 'Hà Nội', '2025-02-05 14:30:00', 'Paypal', 'Khách đổi ý', 'Tôi không muốn đặt hàng nữa', 'KH000005', NULL),
 ('DH000006', 'Đặt hàng thành công', 8990000.00, 'Hồ Chí Minh', '2025-02-06 15:30:00', 'VNPAY', NULL, NULL, 'KH000006', NULL),
@@ -132,7 +132,7 @@ INSERT INTO `donhang` (`IdDh`, `trangthai`, `tongtien`, `diachigiaohang`, `ngayd
 ('DH000010', 'Đặt hàng thành công', 19990000.00, 'Hồ Chí Minh', '2025-02-10 19:30:00', 'Paypal', NULL, NULL, 'KH000010', 'MG000006'),
 ('DH000011', 'Giao thành công', 59990000.00, 'Đà Nẵng', '2025-02-11 20:15:00', 'VNPAY', NULL, NULL, 'KH000011', NULL),
 ('DH000012', 'Đang giao', 2990000.00, 'Hải Phòng', '2025-02-12 21:45:00', 'COD', NULL, NULL, 'KH000012', 'MG000007'),
-('DH000013', 'da_duyet_don', 19990000.00, 'Hà Nội', '2025-02-13 22:20:00', 'VNPAY', NULL, NULL, 'KH000013', NULL),
+('DH000013', 'Đã duyệt đơn', 19990000.00, 'Hà Nội', '2025-02-13 22:20:00', 'VNPAY', NULL, NULL, 'KH000013', NULL),
 ('DH000014', 'Giao thành công', 12990000.00, 'Hồ Chí Minh', '2025-02-14 07:30:00', 'Paypal', NULL, NULL, 'KH000014', 'MG000008'),
 ('DH000015', 'Đặt hàng thành công', 3990000.00, 'Đà Nẵng', '2025-02-15 08:15:00', 'COD', NULL, NULL, 'KH000015', NULL),
 ('DH000016', 'Đang giao', 25990000.00, 'Hải Phòng', '2025-02-16 09:45:00', 'VNPAY', NULL, NULL, 'KH000016', 'MG000009'),
@@ -150,14 +150,14 @@ INSERT INTO `donhang` (`IdDh`, `trangthai`, `tongtien`, `diachigiaohang`, `ngayd
 CREATE TABLE `giohang` (
   `IdGh` varchar(10) NOT NULL,
   `IdKh` varchar(10) NOT NULL,
-  `thoigianthaydoi` datetime DEFAULT NULL
+  `thoigiancapnhat` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `giohang`
 --
 
-INSERT INTO `giohang` (`IdGh`, `IdKh`, `thoigianthaydoi`) VALUES
+INSERT INTO `giohang` (`IdGh`, `IdKh`, `thoigiancapnhat`) VALUES
 ('GH000001', 'KH000001', NULL),
 ('GH000002', 'KH000002', NULL),
 ('GH000003', 'KH000003', NULL),
@@ -236,35 +236,34 @@ CREATE TABLE `magiamgia` (
   `ngaysudung` date NOT NULL,
   `ngayhethan` date NOT NULL,
   `tilechietkhau` decimal(5,2) NOT NULL,
-  `soluong` int(11) NOT NULL,
-  `trangthai` tinyint(1) DEFAULT 1
+  `soluong` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `magiamgia`
 --
 
-INSERT INTO `magiamgia` (`IdMgg`, `ten`, `ngaysudung`, `ngayhethan`, `tilechietkhau`, `soluong`, `trangthai`) VALUES
-('MG000001', 'Giảm giá đầu năm', '2025-01-01', '2025-01-31', 10.00, 100, 1),
-('MG000002', 'Mừng xuân 2025', '2025-02-01', '2025-02-15', 15.00, 50, 1),
-('MG000003', 'Khách hàng VIP', '2025-02-01', '2025-12-31', 20.00, 30, 1),
-('MG000004', 'Sinh nhật shop', '2025-03-01', '2025-03-31', 25.00, 40, 1),
-('MG000005', 'Mua hè sôi động', '2025-06-01', '2025-06-30', 12.00, 80, 1),
-('MG000006', 'Back to school', '2025-08-15', '2025-09-15', 18.00, 60, 1),
-('MG000007', 'Black Friday', '2025-11-20', '2025-11-30', 30.00, 20, 1),
-('MG000008', 'Noel 2025', '2025-12-20', '2025-12-25', 20.00, 45, 1),
-('MG000009', 'Tết 2026', '2026-01-20', '2026-02-05', 25.00, 55, 1),
-('MG000010', 'Valentine', '2025-02-10', '2025-02-14', 14.00, 70, 1),
-('MG000011', 'Mừng 8/3', '2025-03-05', '2025-03-08', 15.00, 65, 1),
-('MG000012', 'Quốc tế thiếu nhi', '2025-05-25', '2025-06-01', 10.00, 90, 1),
-('MG000013', 'Quốc khánh', '2025-09-01', '2025-09-03', 20.00, 40, 1),
-('MG000014', 'Halloween', '2025-10-25', '2025-10-31', 13.00, 75, 1),
-('MG000015', 'Cyber Monday', '2025-11-25', '2025-11-26', 28.00, 25, 1),
-('MG000016', 'Khách hàng mới', '2025-01-01', '2025-12-31', 10.00, 200, 1),
-('MG000017', 'Mua nhiều giảm nhiều', '2025-01-01', '2025-12-31', 15.00, 150, 1),
-('MG000018', 'Flash Sale', '2025-07-07', '2025-07-07', 35.00, 15, 1),
-('MG000019', 'Giờ vàng', '2025-04-15', '2025-04-15', 40.00, 10, 1),
-('MG000020', 'Cuối năm', '2025-12-26', '2025-12-31', 22.00, 35, 1);
+INSERT INTO `magiamgia` (`IdMgg`, `ten`, `ngaysudung`, `ngayhethan`, `tilechietkhau`, `soluong`) VALUES
+('MG000001', 'Giảm giá đầu năm', '2025-01-01', '2025-01-31', 10.00, 100),
+('MG000002', 'Mừng xuân 2025', '2025-02-01', '2025-02-15', 15.00, 50),
+('MG000003', 'Khách hàng VIP', '2025-02-01', '2025-12-31', 20.00, 30),
+('MG000004', 'Sinh nhật shop', '2025-03-01', '2025-03-31', 25.00, 40),
+('MG000005', 'Mua hè sôi động', '2025-06-01', '2025-06-30', 12.00, 80),
+('MG000006', 'Back to school', '2025-08-15', '2025-09-15', 18.00, 60),
+('MG000007', 'Black Friday', '2025-11-20', '2025-11-30', 30.00, 20),
+('MG000008', 'Noel 2025', '2025-12-20', '2025-12-25', 20.00, 45),
+('MG000009', 'Tết 2026', '2026-01-20', '2026-02-05', 25.00, 55),
+('MG000010', 'Valentine', '2025-02-10', '2025-02-14', 14.00, 70),
+('MG000011', 'Mừng 8/3', '2025-03-05', '2025-03-08', 15.00, 65),
+('MG000012', 'Quốc tế thiếu nhi', '2025-05-25', '2025-06-01', 10.00, 90),
+('MG000013', 'Quốc khánh', '2025-09-01', '2025-09-03', 20.00, 40),
+('MG000014', 'Halloween', '2025-10-25', '2025-10-31', 13.00, 75),
+('MG000015', 'Cyber Monday', '2025-11-25', '2025-11-26', 28.00, 25),
+('MG000016', 'Khách hàng mới', '2025-01-01', '2025-12-31', 10.00, 200),
+('MG000017', 'Mua nhiều giảm nhiều', '2025-01-01', '2025-12-31', 15.00, 150),
+('MG000018', 'Flash Sale', '2025-07-07', '2025-07-07', 35.00, 15),
+('MG000019', 'Giờ vàng', '2025-04-15', '2025-04-15', 40.00, 10),
+('MG000020', 'Cuối năm', '2025-12-26', '2025-12-31', 22.00, 35);
 
 -- --------------------------------------------------------
 
@@ -835,7 +834,8 @@ INSERT INTO `xephangvip` (`id`, `tenhang`, `diemtoithieu`, `diemtoida`, `phantra
 ALTER TABLE `chitietdonhang`
   ADD PRIMARY KEY (`Idchitietdonhang`),
   ADD KEY `chitietdonhang_fk_1` (`IdDh`),
-  ADD KEY `chitietdonhang_fk_2` (`IdSp`);
+  ADD KEY `fk_chitietdonhang_sanpham` (`IdSp`),
+  ADD KEY `fk_chitietdonhang_danhgia` (`IdDg`);
 
 --
 -- Indexes for table `chitietgiohang`
@@ -849,10 +849,9 @@ ALTER TABLE `chitietgiohang`
 --
 ALTER TABLE `danhgia`
   ADD PRIMARY KEY (`IdDg`),
-  ADD UNIQUE KEY `IdKh` (`IdKh`,`IdSp`),
-  ADD KEY `IdSp` (`IdSp`),
   ADD KEY `idx_danhgia_sosao` (`sosao`),
-  ADD KEY `idx_danhgia_ngaydanhgia` (`ngaydanhgia`);
+  ADD KEY `idx_danhgia_ngaydanhgia` (`ngaydanhgia`),
+  ADD KEY `fk_danhgia_khachhang` (`IdKh`);
 
 --
 -- Indexes for table `donhang`
@@ -936,8 +935,9 @@ ALTER TABLE `xephangvip`
 -- Constraints for table `chitietdonhang`
 --
 ALTER TABLE `chitietdonhang`
-  ADD CONSTRAINT `chitietdonhang_fk_1` FOREIGN KEY (`IdDh`) REFERENCES `donhang` (`IdDh`) ON DELETE CASCADE,
-  ADD CONSTRAINT `chitietdonhang_fk_2` FOREIGN KEY (`IdSp`) REFERENCES `sanpham` (`IdSp`) ON DELETE CASCADE;
+  ADD CONSTRAINT `fk_chitietdonhang_danhgia` FOREIGN KEY (`IdDg`) REFERENCES `danhgia` (`IdDg`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_chitietdonhang_donhang` FOREIGN KEY (`IdDh`) REFERENCES `donhang` (`IdDh`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_chitietdonhang_sanpham` FOREIGN KEY (`IdSp`) REFERENCES `sanpham` (`IdSp`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `chitietgiohang`
@@ -952,8 +952,7 @@ ALTER TABLE `chitietgiohang`
 -- Constraints for table `danhgia`
 --
 ALTER TABLE `danhgia`
-  ADD CONSTRAINT `danhgia_ibfk_1` FOREIGN KEY (`IdKh`) REFERENCES `khachhang` (`IdKh`) ON DELETE CASCADE,
-  ADD CONSTRAINT `danhgia_ibfk_2` FOREIGN KEY (`IdSp`) REFERENCES `sanpham` (`IdSp`) ON DELETE CASCADE;
+  ADD CONSTRAINT `fk_danhgia_khachhang` FOREIGN KEY (`IdKh`) REFERENCES `khachhang` (`IdKh`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `donhang`
