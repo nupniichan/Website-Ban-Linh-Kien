@@ -262,48 +262,59 @@ namespace Admin_WBLK.Controllers
         }
         [HttpPost]
         public async Task<IActionResult> Login([FromBody] Taikhoan loginRequest)
-{
-            if (string.IsNullOrWhiteSpace(loginRequest.Tentaikhoan) || string.IsNullOrWhiteSpace(loginRequest.Matkhau))
+        {
+            try
             {
-                return BadRequest(new { message = "Tên tài khoản và mật khẩu không được để trống." });
+                if (string.IsNullOrWhiteSpace(loginRequest.Tentaikhoan) || string.IsNullOrWhiteSpace(loginRequest.Matkhau))
+                {
+                    return BadRequest(new { message = "Tên tài khoản và mật khẩu không được để trống." });
+                }
+
+                // Find user by username
+                var user = await _context.Taikhoans.FirstOrDefaultAsync(t => t.Tentaikhoan == loginRequest.Tentaikhoan);
+
+                if (user == null)
+                {
+                    return Unauthorized(new { message = "Tài khoản không tồn tại." });
+                }
+
+                // Check role
+                if (user.Quyentruycap == "khachhang")
+                {
+                    // 403 returns HTML by default, so let's return JSON
+                    return StatusCode(403, new { message = "Bạn không có quyền truy cập!" });
+                }
+
+                // Compare plaintext passwords
+                if (user.Matkhau != loginRequest.Matkhau)
+                {
+                    return Unauthorized(new { message = "Mật khẩu không chính xác." });
+                }
+
+                // Create claims and sign in
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Name, user.Tentaikhoan),
+                    new Claim(ClaimTypes.Role, user.Quyentruycap),
+                    new Claim("UserId", user.IdTk)
+                };
+
+                var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                var authProperties = new AuthenticationProperties { IsPersistent = true };
+
+                await HttpContext.SignInAsync(
+                    CookieAuthenticationDefaults.AuthenticationScheme,
+                    new ClaimsPrincipal(claimsIdentity),
+                    authProperties);
+
+                // Return success as JSON
+                return Json(new { role = user.Quyentruycap });
             }
-
-            // Find user by username
-            var user = await _context.Taikhoans.FirstOrDefaultAsync(t => t.Tentaikhoan == loginRequest.Tentaikhoan);
-
-            if (user == null)
+            catch (Exception ex)
             {
-                return Unauthorized(new { message = "Tài khoản không tồn tại." });
+                // If something unexpected happens, return JSON with status 500
+                return StatusCode(500, new { message = ex.Message });
             }
-
-            // Prevent users with the "KhachHang" role from logging in
-            if (user.Quyentruycap == "khachhang")
-            {
-                return Forbid(); // Returns a 403 Forbidden response
-            }
-
-            // Compare plaintext passwords
-            if (user.Matkhau != loginRequest.Matkhau)
-            {
-                return Unauthorized(new { message = "Mật khẩu không chính xác." });
-            }
-
-            // Generate claims for user authentication
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Name, user.Tentaikhoan),
-                new Claim(ClaimTypes.Role, user.Quyentruycap),
-                new Claim("UserId", user.IdTk)
-            };
-
-            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-            var authProperties = new AuthenticationProperties { IsPersistent = true };
-
-            // Sign the user in
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity), authProperties);
-
-            // Return success response
-            return Json(new { role = user.Quyentruycap });
         }
 
 

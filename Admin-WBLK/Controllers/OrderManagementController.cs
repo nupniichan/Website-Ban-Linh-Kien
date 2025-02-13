@@ -24,8 +24,8 @@ namespace Admin_WBLK.Controllers
             ViewData["CurrentNgayDat"] = ngayDat?.ToString("yyyy-MM-dd");
 
             var query = _context.Donhangs
-                .Include(d => d.IdKhNavigation)    
-                .Include(d => d.IdMggNavigation)   
+                .Include(d => d.IdKhNavigation)
+                .Include(d => d.IdMggNavigation)
                 .Select(d => new Donhang
                 {
                     IdDh = d.IdDh,
@@ -46,7 +46,7 @@ namespace Admin_WBLK.Controllers
             {
                 searchString = searchString.ToLower();
                 query = query.Where(d => d.IdDh.ToLower().Contains(searchString) ||
-                                       (d.IdKhNavigation != null && 
+                                       (d.IdKhNavigation != null &&
                                         d.IdKhNavigation.Hoten.ToLower().Contains(searchString)));
             }
 
@@ -62,8 +62,8 @@ namespace Admin_WBLK.Controllers
             }
 
             // Lấy danh sách trạng thái để làm dropdown filter
-            ViewBag.TrangThais = new List<string> 
-            { 
+            ViewBag.TrangThais = new List<string>
+            {
                 "Đặt hàng thành công",
                 "Đã duyệt đơn",
                 "Đang giao",
@@ -72,7 +72,7 @@ namespace Admin_WBLK.Controllers
                 "Hủy đơn"
             };
 
-            try 
+            try
             {
                 var totalItems = await query.CountAsync();
                 var items = await query.Skip((pageNumber - 1) * pageSize)
@@ -93,7 +93,8 @@ namespace Admin_WBLK.Controllers
         [HttpGet]
         public async Task<IActionResult> SearchSuggestions(string term)
         {
-            if (string.IsNullOrEmpty(term)) return Json(new List<object>());
+            if (string.IsNullOrEmpty(term))
+                return Json(new List<object>());
 
             term = term.ToLower();
             var suggestions = await _context.Donhangs
@@ -139,13 +140,13 @@ namespace Admin_WBLK.Controllers
         // POST: OrderManagement/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("IdKh,Diachigiaohang,Phuongthucthanhtoan,IdMgg,Ghichu,LydoHuy,Tongtien,Trangthai")] Donhang donhang, 
+        public async Task<IActionResult> Create([Bind("IdKh,Diachigiaohang,Phuongthucthanhtoan,IdMgg,Ghichu,LydoHuy,Tongtien,Trangthai")] Donhang donhang,
             string chitietdonhangs, string? Mathanhtoan, string? NoiDungThanhToan)
         {
             try
             {
                 using var transaction = await _context.Database.BeginTransactionAsync();
-                
+
                 // Kiểm tra mã thanh toán nếu là thanh toán online
                 if (donhang.Phuongthucthanhtoan != "COD")
                 {
@@ -182,14 +183,13 @@ namespace Admin_WBLK.Controllers
                             throw new Exception($"Không tìm thấy sản phẩm {chitiet.IdSp}!");
                         }
 
-                        // Kiểm tra số lượng tồn
-                        if (product.Soluongton < chitiet.Soluong)
+                        // Sử dụng property 'Soluongsanpham'
+                        if (product.Soluongton < chitiet.Soluongsanpham)
                         {
                             throw new Exception($"Sản phẩm {product.Tensanpham} chỉ còn {product.Soluongton} sản phẩm!");
                         }
 
-                        // Trừ số lượng tồn ngay khi tạo đơn hàng
-                        product.Soluongton -= chitiet.Soluong;
+                        product.Soluongton -= chitiet.Soluongsanpham;
                         _context.Update(product);
 
                         _context.Chitietdonhangs.Add(chitiet);
@@ -216,7 +216,7 @@ namespace Admin_WBLK.Controllers
                 }
 
                 await transaction.CommitAsync();
-                
+
                 TempData["Success"] = "Tạo đơn hàng thành công!";
                 return RedirectToAction(nameof(Index));
             }
@@ -273,24 +273,24 @@ namespace Admin_WBLK.Controllers
         [HttpGet]
         public async Task<IActionResult> GetProductInfo(string id)
         {
-            try 
+            try
             {
                 if (string.IsNullOrEmpty(id))
                 {
                     return Json(new { success = false, message = "Mã sản phẩm không được để trống" });
                 }
 
-                // Thêm log để debug
                 Console.WriteLine($"Searching for product with ID: {id}");
 
                 var product = await _context.Sanphams
-                    .Where(s => s.IdSp == id) // Bỏ Trim() và ToUpper() vì có thể gây lỗi
-                    .Select(s => new { 
-                        s.IdSp, 
-                        s.Tensanpham, 
-                        s.Gia, 
+                    .Where(s => s.IdSp == id)
+                    .Select(s => new
+                    {
+                        s.IdSp,
+                        s.Tensanpham,
+                        s.Gia,
                         s.Soluongton,
-                        success = true 
+                        success = true
                     })
                     .FirstOrDefaultAsync();
 
@@ -314,7 +314,7 @@ namespace Admin_WBLK.Controllers
         [HttpGet]
         public async Task<IActionResult> GetDiscountInfo(string id, bool isEdit = false)
         {
-            try 
+            try
             {
                 var discount = await _context.Magiamgia
                     .Where(m => m.IdMgg == id)
@@ -325,32 +325,33 @@ namespace Admin_WBLK.Controllers
                     return Json(new { success = false, message = "Mã giảm giá không tồn tại" });
                 }
 
-                // Nếu đang ở chế độ Edit, bỏ qua kiểm tra hạn sử dụng
                 if (isEdit)
                 {
-                    return Json(new { 
+                    return Json(new
+                    {
                         success = true,
                         tilechietkhau = discount.Tilechietkhau,
                         message = $"Áp dụng giảm giá {discount.Tilechietkhau}%"
                     });
                 }
 
-                // Kiểm tra các điều kiện cho trang Create
                 var today = DateOnly.FromDateTime(DateTime.Now);
 
                 if (today < discount.Ngaysudung)
                 {
-                    return Json(new { 
-                        success = false, 
-                        message = $"Mã giảm giá chưa đến ngày sử dụng (Bắt đầu từ: {discount.Ngaysudung:dd/MM/yyyy})" 
+                    return Json(new
+                    {
+                        success = false,
+                        message = $"Mã giảm giá chưa đến ngày sử dụng (Bắt đầu từ: {discount.Ngaysudung:dd/MM/yyyy})"
                     });
                 }
 
                 if (today > discount.Ngayhethan)
                 {
-                    return Json(new { 
-                        success = false, 
-                        message = $"Mã giảm giá đã hết hạn (Hết hạn ngày: {discount.Ngayhethan:dd/MM/yyyy})" 
+                    return Json(new
+                    {
+                        success = false,
+                        message = $"Mã giảm giá đã hết hạn (Hết hạn ngày: {discount.Ngayhethan:dd/MM/yyyy})"
                     });
                 }
 
@@ -359,7 +360,8 @@ namespace Admin_WBLK.Controllers
                     return Json(new { success = false, message = "Mã giảm giá đã hết lượt sử dụng" });
                 }
 
-                return Json(new { 
+                return Json(new
+                {
                     success = true,
                     tilechietkhau = discount.Tilechietkhau,
                     message = $"Áp dụng giảm giá {discount.Tilechietkhau}% (Có hiệu lực đến {discount.Ngayhethan:dd/MM/yyyy})"
@@ -415,7 +417,7 @@ namespace Admin_WBLK.Controllers
                 await _context.SaveChangesAsync();
                 TempData["Success"] = "Xóa đơn hàng thành công!";
             }
-            
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -554,13 +556,13 @@ namespace Admin_WBLK.Controllers
         public async Task<IActionResult> GetOrderDetails(string id)
         {
             var details = await _context.Chitietdonhangs
-                .Include(c => c.IdSp)
+                .Include(c => c.IdSpNavigation)
                 .Where(c => c.IdDh == id)
                 .Select(c => new
                 {
                     idSp = c.IdSp,
                     tenSp = c.IdSpNavigation.Tensanpham,
-                    soluong = c.Soluong,
+                    soluong = c.Soluongsanpham,
                     dongia = c.Dongia
                 })
                 .ToListAsync();
@@ -580,7 +582,7 @@ namespace Admin_WBLK.Controllers
             try
             {
                 using var transaction = await _context.Database.BeginTransactionAsync();
-                
+
                 var donhang = await _context.Donhangs
                     .Include(d => d.Chitietdonhangs)
                     .FirstOrDefaultAsync(d => d.IdDh == id);
@@ -590,47 +592,44 @@ namespace Admin_WBLK.Controllers
                     return NotFound();
                 }
 
-                // Cập nhật Dictionary các trạng thái hợp lệ theo flow mới
+                // Dictionary các trạng thái hợp lệ
                 var validTransitions = new Dictionary<string, string[]>
                 {
                     { "Đặt hàng thành công", new[] { "Đã duyệt đơn", "Hủy đơn" } },
                     { "Đã duyệt đơn", new[] { "Đang giao" } },
                     { "Đang giao", new[] { "Giao thành công", "Không giao" } },
-                    { "Giao thành công", Array.Empty<string>() }, // Trạng thái cuối
-                    { "Không giao", Array.Empty<string>() }, // Trạng thái cuối
-                    { "Hủy đơn", Array.Empty<string>() } // Trạng thái cuối
+                    { "Giao thành công", Array.Empty<string>() },
+                    { "Không giao", Array.Empty<string>() },
+                    { "Hủy đơn", Array.Empty<string>() }
                 };
 
-                // Kiểm tra tính hợp lệ của việc chuyển trạng thái
-                if (!validTransitions.ContainsKey(donhang.Trangthai) || 
+                if (!validTransitions.ContainsKey(donhang.Trangthai) ||
                     !validTransitions[donhang.Trangthai].Contains(newStatus))
                 {
                     TempData["Error"] = $"Không thể chuyển trạng thái từ '{donhang.Trangthai}' sang '{newStatus}'!";
                     return RedirectToAction(nameof(Index));
                 }
 
-                // Xử lý các logic bổ sung theo trạng thái
+                // Xử lý logic bổ sung
                 switch (newStatus)
                 {
                     case "Hủy đơn":
                     case "Không giao":
-                        // Hoàn trả số lượng tồn kho
                         foreach (var chitiet in donhang.Chitietdonhangs)
                         {
                             var product = await _context.Sanphams.FindAsync(chitiet.IdSp);
                             if (product != null)
                             {
-                                product.Soluongton += chitiet.Soluong;
+                                product.Soluongton += chitiet.Soluongsanpham;
                                 _context.Update(product);
                             }
                         }
                         break;
                 }
 
-                // Cập nhật trạng thái đơn hàng
                 donhang.Trangthai = newStatus;
                 _context.Update(donhang);
-                
+
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
@@ -655,8 +654,7 @@ namespace Admin_WBLK.Controllers
                 .Where(m => (m.IdMgg.Contains(term) || m.Ten.Contains(term)) &&
                             m.Ngaysudung <= today &&
                             m.Ngayhethan >= today &&
-                            m.Soluong > 0 &&
-                            m.Trangthai == true)
+                            m.Soluong > 0)
                 .Take(5)
                 .Select(m => new
                 {
