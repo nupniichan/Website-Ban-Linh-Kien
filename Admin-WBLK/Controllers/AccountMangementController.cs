@@ -170,6 +170,7 @@ namespace Admin_WBLK.Controllers
                 return NotFound();
             }
 
+            // Validate input as before...
             if (!IsValidInput(taikhoan.Tentaikhoan))
             {
                 ModelState.AddModelError("Tentaikhoan", "Tên tài khoản không hợp lệ. Không chứa khoảng trắng ở đầu/cuối và chỉ gồm chữ, số, dấu gạch dưới.");
@@ -186,13 +187,38 @@ namespace Admin_WBLK.Controllers
 
             try
             {
+                // Retrieve the existing account from the database (without tracking)
                 var existingAccount = await _context.Taikhoans.AsNoTracking().FirstOrDefaultAsync(t => t.IdTk == id);
                 if (existingAccount == null)
                 {
                     return NotFound();
                 }
 
+                // Define employee roles allowed for change
+                var nhanvienRoles = new[] { "nhanvienkho", "nhanvienkinhdoanh", "nhanvienmarketing" };
+
+                // If the existing account is either "khachhang" or "quantrivien", its role cannot be changed.
+                if (existingAccount.Quyentruycap == "khachhang" || existingAccount.Quyentruycap == "quantrivien")
+                {
+                    if (!string.Equals(existingAccount.Quyentruycap, taikhoan.Quyentruycap, StringComparison.OrdinalIgnoreCase))
+                    {
+                        ModelState.AddModelError("Quyentruycap", $"Không được thay đổi quyền truy cập từ '{existingAccount.Quyentruycap}' sang '{taikhoan.Quyentruycap}'.");
+                        return View(taikhoan);
+                    }
+                }
+                // Otherwise, if the account is in one of the employee roles, allow changes only within the employee roles.
+                else if (nhanvienRoles.Contains(existingAccount.Quyentruycap, StringComparer.OrdinalIgnoreCase))
+                {
+                    if (!nhanvienRoles.Contains(taikhoan.Quyentruycap, StringComparer.OrdinalIgnoreCase))
+                    {
+                        ModelState.AddModelError("Quyentruycap", $"Nếu tài khoản hiện tại là nhân viên (hiện là '{existingAccount.Quyentruycap}'), chỉ được chuyển sang các quyền nhân viên: nhanvienkho, nhanvienkinhdoanh, hoặc nhanvienmarketing. Bạn đã cố gắng chuyển sang '{taikhoan.Quyentruycap}'.");
+                        return View(taikhoan);
+                    }
+                }
+
+                // Preserve original creation date
                 taikhoan.Ngaytaotk = existingAccount.Ngaytaotk;
+                // If password is left blank, retain the original password.
                 if (string.IsNullOrWhiteSpace(taikhoan.Matkhau))
                 {
                     taikhoan.Matkhau = existingAccount.Matkhau;
@@ -215,6 +241,7 @@ namespace Admin_WBLK.Controllers
             }
             return RedirectToAction(nameof(Index));
         }
+
 
 
 
