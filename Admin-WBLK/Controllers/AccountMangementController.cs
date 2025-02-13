@@ -112,7 +112,6 @@ namespace Admin_WBLK.Controllers
             return View(model);
         }
 
-        // POST: AccountManagement/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("IdTk, Tentaikhoan, Matkhau, Quyentruycap")] Taikhoan taikhoan)
@@ -125,7 +124,6 @@ namespace Admin_WBLK.Controllers
             {
                 ModelState.AddModelError("Matkhau", "Mật khẩu phải có ít nhất 8 ký tự, ít nhất một chữ cái viết hoa, một số và một ký tự đặc biệt, không có khoảng trắng.");
             }
-
             if (_context.Taikhoans.Any(t => t.Tentaikhoan == taikhoan.Tentaikhoan))
             {
                 ModelState.AddModelError("Tentaikhoan", "Tên tài khoản đã tồn tại.");
@@ -139,7 +137,48 @@ namespace Admin_WBLK.Controllers
             taikhoan.Ngaysuadoi = null;
             _context.Add(taikhoan);
             await _context.SaveChangesAsync();
+
+            // Automatically create a Nhanvien record if the role is one of the employee roles.
+            var employeeRoles = new[] { "nhanvienkho", "nhanvienkinhdoanh", "nhanvienmarketing" };
+            if (employeeRoles.Contains(taikhoan.Quyentruycap, StringComparer.OrdinalIgnoreCase))
+            {
+                string newNhanvienId = await GenerateNhanvienId();
+
+                var newNhanvien = new Nhanvien
+                {
+                    IdNv = newNhanvienId,
+                    Hoten = taikhoan.Tentaikhoan, // You may collect a proper name separately
+                    Chucvu = taikhoan.Quyentruycap, // Set employee position equal to the account role
+                    Luong = 0, // Default salary; adjust as needed
+                    Gioitinh = "Chưa xác định", // Not provided during account creation
+                    Sodienthoai = "0000000000", // Not provided
+                    Email = "abc@gmail.com", // Not provided
+                    Diachi = "Road A", // Not provided
+                    Ngayvaolam = DateOnly.FromDateTime(DateTime.Now),
+                    Idtk = taikhoan.IdTk
+                };
+
+                _context.Nhanviens.Add(newNhanvien);
+                await _context.SaveChangesAsync();
+
+                // Set a TempData flag to be picked up on the Index view.
+                TempData["CreatedNhanvien"] = newNhanvien.IdNv;
+            }
+
             return RedirectToAction(nameof(Index));
+        }
+
+        private async Task<string> GenerateNhanvienId()
+        {
+            var lastNhanvien = await _context.Nhanviens
+                                    .OrderByDescending(n => n.IdNv)
+                                    .FirstOrDefaultAsync();
+            if (lastNhanvien == null)
+            {
+                return "NV0001";
+            }
+            int lastNumber = int.Parse(lastNhanvien.IdNv.Substring(2));
+            return $"NV{(lastNumber + 1):D4}";
         }
 
 

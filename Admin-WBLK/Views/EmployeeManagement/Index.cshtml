@@ -1,1 +1,292 @@
-﻿
+﻿@model PaginatedList<Admin_WBLK.Models.Nhanvien>
+
+@{
+    ViewData["Title"] = "Quản lý nhân viên";
+}
+
+<div class="w-full h-full p-6">
+    <h1 class="text-2xl font-bold mb-6">Quản lý nhân viên</h1>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+            <span class="block sm:inline">@TempData["Success"]</span>
+        </div>
+    }
+
+    <!-- Search and Filters -->
+    <form asp-action="Index" method="get" class="flex flex-wrap gap-4 relative">
+        <!-- Search Bar -->
+        <div class="w-80 relative">
+            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+            </div>
+            <input type="text" 
+                   id="searchInput" 
+                   name="searchString" 
+                   value="@ViewData["CurrentFilter"]" 
+                   class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 text-sm" 
+                   placeholder="Tìm kiếm theo mã hoặc tên nhân viên" 
+                   oninput="handleSearch(this.value)" 
+                   autocomplete="off" />
+            @if (!string.IsNullOrEmpty(ViewData["CurrentFilter"]?.ToString()))
+            {
+                <button type="button" 
+                        class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none"
+                        onclick="clearSearch()">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            }
+            <div id="searchResults" class="absolute mt-1 w-80 bg-white border border-gray-200 rounded-lg shadow-lg hidden max-h-60 overflow-y-auto z-10"></div>
+        </div>
+
+        <!-- Clear Filters -->
+        @if (!string.IsNullOrEmpty(ViewData["CurrentFilter"]?.ToString()))
+        {
+            <a asp-action="Index" 
+               class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Xóa bộ lọc
+            </a>
+        }
+    </form>
+
+    <!-- Add Employee Button -->
+    <div class="flex gap-3 mb-6">
+        <a asp-action="Create" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+            Thêm nhân viên
+        </a>
+    </div>
+
+    <!-- Employees Table -->
+    <div class="overflow-x-auto">
+        <table class="min-w-full bg-white border rounded-lg">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mã nhân viên</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên nhân viên</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Chức vụ</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hành động</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                @foreach (var item in Model.Items)
+                {
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap">@item.IdNv</td>
+                        <td class="px-6 py-4 whitespace-nowrap">@item.Hoten</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            @switch(item.Chucvu)
+                            {
+                                case "nhanvienkho":
+                                    @:Nhân viên kho
+                                    break;
+                                case "nhanvienmarketing":
+                                    @:Nhân viên marketing
+                                    break;
+                                case "nhanvienkinhdoanh":
+                                    @:Nhân viên kinh doanh
+                                    break;
+                                default:
+                                    @item.Chucvu
+                                    break;
+                            }
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap space-x-2">
+                            <a asp-action="Details" asp-route-id="@item.IdNv" 
+                               class="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                            </a>
+                            <a asp-action="Edit" asp-route-id="@item.IdNv" 
+                               class="inline-flex items-center px-3 py-1 bg-yellow-100 text-yellow-700 rounded-md hover:bg-yellow-200">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                            </a>
+                            <a asp-action="Delete" asp-route-id="@item.IdNv" 
+                               class="inline-flex items-center px-3 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="flex justify-between items-center mt-6">
+        <div class="text-sm text-gray-500">
+            Hiển thị @(((Model.PageNumber - 1) * Model.PageSize) + 1) đến @(Math.Min(Model.PageNumber * Model.PageSize, Model.TotalCount)) trong tổng số @Model.TotalCount nhân viên
+        </div>
+        <nav class="flex items-center space-x-2">
+            @if (Model.HasPreviousPage)
+            {
+                <a asp-action="Index" 
+                   asp-route-pageNumber="@(Model.PageNumber - 1)"
+                   asp-route-searchString="@ViewData["CurrentFilter"]"
+                   class="px-3 py-2 rounded-lg border hover:bg-gray-50">
+                    <span class="sr-only">Previous</span>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M15 19l-7-7 7-7" />
+                    </svg>
+                </a>
+            }
+
+            @{
+                var startPage = Math.Max(1, Model.PageNumber - 2);
+                var endPage = Math.Min(Model.TotalPages, startPage + 4);
+                if (endPage - startPage < 4)
+                {
+                    startPage = Math.Max(1, endPage - 4);
+                }
+            }
+
+            @if (startPage > 1)
+            {
+                <a asp-action="Index" 
+                   asp-route-pageNumber="1"
+                   asp-route-searchString="@ViewData["CurrentFilter"]"
+                   class="px-3 py-2 rounded-lg border hover:bg-gray-50">1</a>
+                @if (startPage > 2)
+                {
+                    <span class="px-3 py-2">...</span>
+                }
+            }
+
+            @for (int i = startPage; i <= endPage; i++)
+            {
+                <a asp-action="Index" 
+                   asp-route-pageNumber="@i"
+                   asp-route-searchString="@ViewData["CurrentFilter"]"
+                   class="px-3 py-2 rounded-lg border @(i == Model.PageNumber ? "bg-blue-50 text-blue-600 font-medium" : "hover:bg-gray-50")">
+                    @i
+                </a>
+            }
+
+            @if (endPage < Model.TotalPages)
+            {
+                @if (endPage < Model.TotalPages - 1)
+                {
+                    <span class="px-3 py-2">...</span>
+                }
+                <a asp-action="Index" 
+                   asp-route-pageNumber="@Model.TotalPages"
+                   asp-route-searchString="@ViewData["CurrentFilter"]"
+                   class="px-3 py-2 rounded-lg border hover:bg-gray-50">@Model.TotalPages</a>
+            }
+
+            @if (Model.HasNextPage)
+            {
+                <a asp-action="Index" 
+                   asp-route-pageNumber="@(Model.PageNumber + 1)"
+                   asp-route-searchString="@ViewData["CurrentFilter"]"
+                   class="px-3 py-2 rounded-lg border hover:bg-gray-50">
+                    <span class="sr-only">Next</span>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M9 5l7 7-7 7" />
+                    </svg>
+                </a>
+            }
+
+            <!-- Direct page navigation input -->
+            <div class="flex items-center space-x-2 ml-4">
+                <span class="text-sm text-gray-500">Đến trang:</span>
+                <input type="number" 
+                       id="pageInput" 
+                       min="1" 
+                       max="@Model.TotalPages" 
+                       class="w-16 px-2 py-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                       onkeypress="handlePageInput(event)" />
+            </div>
+        </nav>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let searchTimeout;
+        function handleSearch(value) {
+            clearTimeout(searchTimeout);
+            const resultsDiv = document.getElementById('searchResults');
+            if (value.length < 1) {
+                resultsDiv.classList.add('hidden');
+                return;
+            }
+            searchTimeout = setTimeout(() => {
+                fetch(`/EmployeeManagement/SearchSuggestions?term=${encodeURIComponent(value)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        resultsDiv.innerHTML = '';
+                        if (data.length > 0) {
+                            data.forEach(item => {
+                                const div = document.createElement('div');
+                                div.className = 'px-4 py-2 hover:bg-gray-100 cursor-pointer';
+                                div.innerHTML = `
+                                    <div class="font-medium">Mã NV: ${item.idNv}</div>
+                                    <div class="text-sm text-gray-500">Tên nhân viên: ${item.hoten}</div>
+                                `;
+                                div.onclick = () => {
+                                    document.getElementById('searchInput').value = item.idNv;
+                                    resultsDiv.classList.add('hidden');
+                                    document.querySelector('form').submit();
+                                };
+                                resultsDiv.appendChild(div);
+                            });
+                            resultsDiv.classList.remove('hidden');
+                        } else {
+                            resultsDiv.classList.add('hidden');
+                        }
+                    });
+            }, 300);
+        }
+
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            document.querySelector('form').submit();
+        }
+
+        document.addEventListener('click', function(event) {
+            const resultsDiv = document.getElementById('searchResults');
+            const searchInput = document.getElementById('searchInput');
+            if (!searchInput.contains(event.target) && !resultsDiv.contains(event.target)) {
+                resultsDiv.classList.add('hidden');
+            }
+        });
+
+        function handlePageInput(event) {
+            if (event.key === 'Enter') {
+                const pageNumber = parseInt(event.target.value);
+                const maxPage = @Model.TotalPages;
+                if (pageNumber >= 1 && pageNumber <= maxPage) {
+                    const currentUrl = new URL(window.location.href);
+                    currentUrl.searchParams.set('pageNumber', pageNumber);
+                    window.location.href = currentUrl.toString();
+                } else {
+                    alert(`Vui lòng nhập số trang từ 1 đến ${maxPage}`);
+                    event.target.value = '';
+                }
+            }
+        }
+    </script>
+}

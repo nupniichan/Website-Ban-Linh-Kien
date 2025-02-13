@@ -1,0 +1,107 @@
+@model Admin_WBLK.Models.Nhanvien
+
+@{
+    ViewData["Title"] = "Chi tiết nhân viên";
+}
+
+<div class="p-6 w-full h-full bg-gray-50">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="mb-6">
+            <h1 class="text-3xl font-bold text-gray-900">Chi tiết nhân viên</h1>
+            <p class="mt-2 text-sm text-gray-600">Thông tin chi tiết của nhân viên</p>
+        </div>
+
+        <!-- Card chứa thông tin -->
+        <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+            <!-- Nội dung -->
+            <div class="p-6 space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Mã nhân viên -->
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-600">Mã nhân viên</h3>
+                        <p class="text-base font-semibold text-gray-900">@Model.IdNv</p>
+                    </div>
+                    <!-- Tên nhân viên -->
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-600">Tên nhân viên</h3>
+                        <p class="text-base font-semibold text-gray-900">@Model.Hoten</p>
+                    </div>
+                    <!-- Chức vụ -->
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-600">Chức vụ</h3>
+                        <p class="text-base font-semibold text-gray-900">
+                            @switch(Model.Chucvu)
+                            {
+                                case "nhanvienkho":
+                                    @:Nhân viên kho
+                                    break;
+                                case "nhanvienkinhdoanh":
+                                    @:Nhân viên kinh doanh
+                                    break;
+                                case "nhanvienmarketing":
+                                    @:Nhân viên marketing
+                                    break;
+                                default:
+                                    @Model.Chucvu
+                                    break;
+                            }
+                        </p>
+                    </div>
+                    <!-- Lương -->
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-600">Lương</h3>
+                        <p class="text-base font-semibold text-gray-900">@Model.Luong.ToString("C0")</p>
+                    </div>
+                    <!-- Giới tính -->
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-600">Giới tính</h3>
+                        <p class="text-base font-semibold text-gray-900">@Model.Gioitinh</p>
+                    </div>
+                    <!-- Số điện thoại -->
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-600">Số điện thoại</h3>
+                        <p class="text-base font-semibold text-gray-900">@Model.Sodienthoai</p>
+                    </div>
+                    <!-- Email -->
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-600">Email</h3>
+                        <p class="text-base font-semibold text-gray-900">@Model.Email</p>
+                    </div>
+                    <!-- Địa chỉ -->
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-600">Địa chỉ</h3>
+                        <p class="text-base font-semibold text-gray-900">@Model.Diachi</p>
+                    </div>
+                    <!-- Ngày vào làm -->
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-600">Ngày vào làm</h3>
+                        <p class="text-base font-semibold text-gray-900">@Model.Ngayvaolam.ToShortDateString()</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                <div class="flex justify-between items-center">
+                    <a asp-action="Edit" asp-route-id="@Model.IdNv" 
+                       class="inline-flex items-center px-4 py-2 border border-blue-600 text-sm font-medium rounded-md text-blue-600 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        Chỉnh sửa
+                    </a>
+                    <a asp-action="Index" 
+                       class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        Quay lại
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
