@@ -430,26 +430,22 @@ namespace Admin_WBLK.Controllers
 
                 // Find user by username
                 var user = await _context.Taikhoans.FirstOrDefaultAsync(t => t.Tentaikhoan == loginRequest.Tentaikhoan);
-
                 if (user == null)
                 {
                     return Unauthorized(new { message = "Tài khoản không tồn tại." });
                 }
 
-                // Check role
-                if (user.Quyentruycap == "khachhang")
+                // Restrict access if the role is khachhang
+                if (user.Quyentruycap.Equals("khachhang", StringComparison.OrdinalIgnoreCase))
                 {
-                    // 403 returns HTML by default, so let's return JSON
                     return StatusCode(403, new { message = "Bạn không có quyền truy cập!" });
                 }
 
-                // Compare plaintext passwords
                 if (user.Matkhau != loginRequest.Matkhau)
                 {
                     return Unauthorized(new { message = "Mật khẩu không chính xác." });
                 }
 
-                // Create claims and sign in
                 var claims = new List<Claim>
                 {
                     new Claim(ClaimTypes.Name, user.Tentaikhoan),
@@ -457,6 +453,19 @@ namespace Admin_WBLK.Controllers
                     new Claim("UserId", user.IdTk)
                 };
 
+                // For employee roles, retrieve the employee's name from the Nhanvien table
+                if (user.Quyentruycap.Equals("nhanvienkho", StringComparison.OrdinalIgnoreCase) ||
+                    user.Quyentruycap.Equals("nhanvienkinhdoanh", StringComparison.OrdinalIgnoreCase) ||
+                    user.Quyentruycap.Equals("nhanvienmarketing", StringComparison.OrdinalIgnoreCase))
+                {
+                    var employee = await _context.Nhanviens.FirstOrDefaultAsync(n => n.Idtk == user.IdTk);
+                    if (employee != null)
+                    {
+                        claims.Add(new Claim("LinkedName", employee.Hoten));
+                    }
+                }
+                // (Optionally, for customers you could do the same if needed.)
+                
                 var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
                 var authProperties = new AuthenticationProperties { IsPersistent = true };
 
@@ -465,15 +474,15 @@ namespace Admin_WBLK.Controllers
                     new ClaimsPrincipal(claimsIdentity),
                     authProperties);
 
-                // Return success as JSON
                 return Json(new { role = user.Quyentruycap });
             }
             catch (Exception ex)
             {
-                // If something unexpected happens, return JSON with status 500
                 return StatusCode(500, new { message = ex.Message });
             }
         }
+
+
 
 
         [HttpPost]
