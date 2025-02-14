@@ -93,7 +93,44 @@ namespace Admin_WBLK.Controllers
                 return NotFound();
             }
 
+            // Check the role and get the linked record
+            if (taikhoan.Quyentruycap.Equals("nhanvienkho", StringComparison.OrdinalIgnoreCase) ||
+                taikhoan.Quyentruycap.Equals("nhanvienkinhdoanh", StringComparison.OrdinalIgnoreCase) ||
+                taikhoan.Quyentruycap.Equals("nhanvienmarketing", StringComparison.OrdinalIgnoreCase))
+            {
+                var employee = await _context.Nhanviens.FirstOrDefaultAsync(n => n.Idtk == taikhoan.IdTk);
+                if (employee != null)
+                {
+                    ViewBag.LinkedName = employee.Hoten;
+                    ViewBag.LinkedId = employee.IdNv;
+                    ViewBag.LinkedUrl = Url.Action("Details", "EmployeeManagement", new { id = employee.IdNv });
+                }
+            }
+            else if (taikhoan.Quyentruycap.Equals("khachhang", StringComparison.OrdinalIgnoreCase))
+            {
+                var customer = await _context.Khachhangs.FirstOrDefaultAsync(c => c.IdTk == taikhoan.IdTk);
+                if (customer != null)
+                {
+                    ViewBag.LinkedName = customer.Hoten;
+                    ViewBag.LinkedId = customer.IdKh;
+                    ViewBag.LinkedUrl = Url.Action("Details", "CustomerManagement", new { id = customer.IdKh });
+                }
+            }
+
             return View(taikhoan);
+        }
+
+        private string GetAlphabetSequence(int number)
+        {
+            string result = "";
+            while (number > 0)
+            {
+                number--; // Adjust to zero-based
+                char letter = (char)('A' + (number % 26));
+                result = letter + result;
+                number /= 26;
+            }
+            return result;
         }
 
         // GET: AccountManagement/Create
@@ -114,8 +151,11 @@ namespace Admin_WBLK.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("IdTk, Tentaikhoan, Matkhau, Quyentruycap")] Taikhoan taikhoan)
+        public async Task<IActionResult> Create(
+            [Bind("IdTk,Tentaikhoan,Matkhau,Quyentruycap")] Taikhoan taikhoan, 
+            string actionType)
         {
+            // Validate account inputs
             if (!IsValidInput(taikhoan.Tentaikhoan))
             {
                 ModelState.AddModelError("Tentaikhoan", "Tên tài khoản không hợp lệ. Không chứa khoảng trắng ở đầu/cuối và chỉ gồm chữ, số, dấu gạch dưới.");
@@ -138,22 +178,27 @@ namespace Admin_WBLK.Controllers
             _context.Add(taikhoan);
             await _context.SaveChangesAsync();
 
-            // Automatically create a Nhanvien record if the role is one of the employee roles.
-            var employeeRoles = new[] { "nhanvienkho", "nhanvienkinhdoanh", "nhanvienmarketing" };
-            if (employeeRoles.Contains(taikhoan.Quyentruycap, StringComparer.OrdinalIgnoreCase))
+            // For employees:
+            if (actionType == "AccountAndEmployee" &&
+            (taikhoan.Quyentruycap.Equals("nhanvienkho", StringComparison.OrdinalIgnoreCase) ||
+                taikhoan.Quyentruycap.Equals("nhanvienkinhdoanh", StringComparison.OrdinalIgnoreCase) ||
+                taikhoan.Quyentruycap.Equals("nhanvienmarketing", StringComparison.OrdinalIgnoreCase)))
             {
                 string newNhanvienId = await GenerateNhanvienId();
+                string baseName = "Nhân viên ";
+                int count = _context.Nhanviens.Count(n => n.Hoten.StartsWith(baseName));
+                string sequence = GetAlphabetSequence(count + 1);
 
                 var newNhanvien = new Nhanvien
                 {
                     IdNv = newNhanvienId,
-                    Hoten = taikhoan.Tentaikhoan, // You may collect a proper name separately
-                    Chucvu = taikhoan.Quyentruycap, // Set employee position equal to the account role
-                    Luong = 0, // Default salary; adjust as needed
-                    Gioitinh = "Chưa xác định", // Not provided during account creation
-                    Sodienthoai = "0000000000", // Not provided
-                    Email = "abc@gmail.com", // Not provided
-                    Diachi = "Road A", // Not provided
+                    Hoten = baseName + sequence,
+                    Chucvu = taikhoan.Quyentruycap,
+                    Luong = 0,
+                    Gioitinh = "Chưa xác định",
+                    Sodienthoai = "0000000000",
+                    Email = "abc@gmail.com",
+                    Diachi = "Road A",
                     Ngayvaolam = DateOnly.FromDateTime(DateTime.Now),
                     Idtk = taikhoan.IdTk
                 };
@@ -161,11 +206,58 @@ namespace Admin_WBLK.Controllers
                 _context.Nhanviens.Add(newNhanvien);
                 await _context.SaveChangesAsync();
 
-                // Set a TempData flag to be picked up on the Index view.
                 TempData["CreatedNhanvien"] = newNhanvien.IdNv;
+            }
+            // For customers:
+            else if (actionType == "AccountAndCustomer" &&
+                    taikhoan.Quyentruycap.Equals("khachhang", StringComparison.OrdinalIgnoreCase))
+            {
+                string newCustomerId = GenerateCustomerId();
+                string baseName = "Khách hàng ";
+                int count = _context.Khachhangs.Count(k => k.Hoten.StartsWith(baseName));
+                string sequence = GetAlphabetSequence(count + 1);
+
+                var newCustomer = new Khachhang
+                {
+                    IdKh = newCustomerId,
+                    Hoten = baseName + sequence,
+                    // Set default values (adjust these defaults as needed)
+                    Email = "default@gmail.com",
+                    Diachi = "Default Address",
+                    Sodienthoai = "0000000000",
+                    Gioitinh = "Chưa xác định",
+                    Ngaysinh = DateOnly.FromDateTime(new DateTime(1990, 1, 1)),
+                    IdTk = taikhoan.IdTk
+                };
+
+                _context.Khachhangs.Add(newCustomer);
+                await _context.SaveChangesAsync();
+
+                TempData["CreatedCustomer"] = newCustomer.IdKh;
+
+                // Instead of immediately redirecting to Index,
+                // redirect to a confirmation view asking if the user wants to edit the customer.
+                return RedirectToAction("Index");
             }
 
             return RedirectToAction(nameof(Index));
+        }
+
+
+        private string GenerateCustomerId()
+        {
+            var lastCustomer = _context.Khachhangs.OrderByDescending(k => k.IdKh).FirstOrDefault();
+            if (lastCustomer == null)
+                return "KH000001";
+            string numStr = lastCustomer.IdKh.Substring(2);
+            if (int.TryParse(numStr, out int lastNumber))
+            {
+                return $"KH{(lastNumber + 1):D6}";
+            }
+            else
+            {
+                throw new Exception($"Cannot parse customer ID number from {lastCustomer.IdKh}");
+            }
         }
 
         private async Task<string> GenerateNhanvienId()

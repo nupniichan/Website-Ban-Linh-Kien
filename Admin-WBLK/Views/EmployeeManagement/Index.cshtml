@@ -73,6 +73,7 @@
             <thead class="bg-gray-50">
                 <tr>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mã nhân viên</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tài khoản</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên nhân viên</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Chức vụ</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hành động</th>
@@ -83,7 +84,10 @@
                 {
                     <tr class="hover:bg-gray-50">
                         <td class="px-6 py-4 whitespace-nowrap">@item.IdNv</td>
-                        <td class="px-6 py-4 whitespace-nowrap">@item.Hoten</td>
+                        <td class="px-6 py-4 whitespace-nowrap">@item.Idtk</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            @(item.Hoten != null && item.Hoten.Length > 13 ? item.Hoten.Substring(0, 13) + "..." : item.Hoten)
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             @switch(item.Chucvu)
                             {

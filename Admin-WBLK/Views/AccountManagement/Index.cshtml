@@ -293,3 +293,11 @@
         }
     </script>
 }
+@if (TempData["CreatedCustomer"] != null)
+{
+    <script>
+        if (confirm("Tài khoản mới đã được tạo với vai trò khách hàng. Bạn có muốn chỉnh sửa thông tin khách hàng ngay bây giờ?")) {
+            window.location.href = "/CustomerManagement/Edit/" + "@TempData["CreatedCustomer"]";
+        }
+    </script>
+}

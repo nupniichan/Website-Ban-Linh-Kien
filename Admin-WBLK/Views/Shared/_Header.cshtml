@@ -39,33 +39,66 @@
     <div id="overlay" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50"></div>
     <aside id="mobileSidebar" class="hidden bg-white fixed top-0 left-0 h-full w-64 z-50">
         <nav class="flex flex-col p-4 space-y-4">
-            <a href="/dashboard" class="flex items-center text-gray-700 hover:text-blue-500">
-                <i class="bi bi-grid-3x3-gap-fill mr-2"></i> Dashboard
-            </a>
-            <a href="/productmanagement" class="flex items-center text-gray-700 hover:text-blue-500">
-                <i class="bi bi-calendar2-event-fill mr-2"></i> Quản lý sản phẩm
-            </a>
-            <a href="/OrderManagement" class="flex items-center text-gray-700 hover:text-blue-500">
-                <i class="bi bi-cart-fill mr-2"></i> Quản lý đơn hàng
-            </a>
-            <a href="/account-management" class="flex items-center text-gray-700 hover:text-blue-500">
-                <i class="bi bi-person-fill mr-2"></i> Quản lý tài khoản
-            </a>
-            <a class="nav-link text-dark d-flex align-items-center" href="/EmployeeManagement">
-                <i class="bi bi-person-badge mr-2"></i> Quản lý nhân viên
-            </a>
-            <a href="/CustomerManagement" class="flex items-center text-gray-700 hover:text-blue-500">
-                <i class="bi bi-people-fill mr-2"></i> Quản lý khách hàng
-            </a>
-            <a href="/DiscountManagement" class="flex items-center text-gray-700 hover:text-blue-500">
-                <i class="bi bi-percent mr-2"></i> Quản lý mã giảm giá
-            </a>
+            @if (User.IsInRole("quantrivien"))
+            {
+                <a href="/dashboard" class="flex items-center text-gray-700 hover:text-blue-500">
+                    <i class="bi bi-grid-3x3-gap-fill mr-2"></i> Dashboard
+                </a>
+                <a href="/productmanagement" class="flex items-center text-gray-700 hover:text-blue-500">
+                    <i class="bi bi-calendar2-event-fill mr-2"></i> Quản lý sản phẩm
+                </a>
+                <a href="/OrderManagement" class="flex items-center text-gray-700 hover:text-blue-500">
+                    <i class="bi bi-cart-fill mr-2"></i> Quản lý đơn hàng
+                </a>
+                <a href="/account-management" class="flex items-center text-gray-700 hover:text-blue-500">
+                    <i class="bi bi-person-fill mr-2"></i> Quản lý tài khoản
+                </a>
+                <a href="/EmployeeManagement" class="flex items-center text-gray-700 hover:text-blue-500">
+                    <i class="bi bi-person-badge mr-2"></i> Quản lý nhân viên
+                </a>
+                <a href="/CustomerManagement" class="flex items-center text-gray-700 hover:text-blue-500">
+                    <i class="bi bi-people-fill mr-2"></i> Quản lý khách hàng
+                </a>
+                <a href="/DiscountManagement" class="flex items-center text-gray-700 hover:text-blue-500">
+                    <i class="bi bi-percent mr-2"></i> Quản lý mã giảm giá
+                </a>
+            }
+            else if (User.IsInRole("nhanvienkho"))
+            {
+                <a href="/productmanagement" class="flex items-center text-gray-700 hover:text-blue-500">
+                    <i class="bi bi-calendar2-event-fill mr-2"></i> Quản lý sản phẩm
+                </a>
+            }
+            else if (User.IsInRole("nhanvienkinhdoanh"))
+            {
+                <a href="/OrderManagement" class="flex items-center text-gray-700 hover:text-blue-500">
+                    <i class="bi bi-cart-fill mr-2"></i> Quản lý đơn hàng
+                </a>
+            }
+            else if (User.IsInRole("nhanvienmarketing"))
+            {
+                <a href="/DiscountManagement" class="flex items-center text-gray-700 hover:text-blue-500">
+                    <i class="bi bi-percent mr-2"></i> Quản lý mã giảm giá
+                </a>
+            }
+            else if (User.IsInRole("khachhang"))
+            {
+                <!-- For customers, you might want to show limited options -->
+                <a href="/dashboard" class="flex items-center text-gray-700 hover:text-blue-500">
+                    <i class="bi bi-grid-3x3-gap-fill mr-2"></i> Dashboard
+                </a>
+            }
+            else
+            {
+                <p class="text-gray-500">Bạn không có quyền truy cập vào các chức năng.</p>
+            }
             <!-- Logout Button in Sidebar -->
             <button id="sidebarLogout" class="w-full bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
                 <i class="bi bi-box-arrow-right"></i> Đăng xuất
             </button>
         </nav>
     </aside>
+
 
     <script>
         const toggleMobileMenu = document.getElementById('toggleMobileMenu');
