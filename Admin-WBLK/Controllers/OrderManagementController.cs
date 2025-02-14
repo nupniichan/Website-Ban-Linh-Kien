@@ -170,20 +170,20 @@ namespace Admin_WBLK.Controllers
                 // Thêm đơn hàng
                 _context.Donhangs.Add(donhang);
 
-                // Kiểm tra và cập nhật số lượng tồn kho
+                // Process order details
                 if (!string.IsNullOrEmpty(chitietdonhangs))
                 {
                     var chitietList = JsonSerializer.Deserialize<List<Chitietdonhang>>(chitietdonhangs);
                     foreach (var chitiet in chitietList)
                     {
+                        // Generate and assign a new primary key for each order detail
+                        chitiet.Idchitietdonhang = await GenerateOrderDetailId();
                         chitiet.IdDh = donhang.IdDh;
                         var product = await _context.Sanphams.FindAsync(chitiet.IdSp);
                         if (product == null)
                         {
                             throw new Exception($"Không tìm thấy sản phẩm {chitiet.IdSp}!");
                         }
-
-                        // Sử dụng property 'Soluongsanpham'
                         if (product.Soluongton < chitiet.Soluongsanpham)
                         {
                             throw new Exception($"Sản phẩm {product.Tensanpham} chỉ còn {product.Soluongton} sản phẩm!");
@@ -198,7 +198,7 @@ namespace Admin_WBLK.Controllers
 
                 await _context.SaveChangesAsync();
 
-                // Thêm thông tin thanh toán nếu là thanh toán online
+                // Add payment info if needed
                 if (!string.IsNullOrEmpty(Mathanhtoan) && donhang.Phuongthucthanhtoan != "COD")
                 {
                     var thanhtoan = new Thanhtoan
@@ -642,7 +642,21 @@ namespace Admin_WBLK.Controllers
                 return RedirectToAction(nameof(Index));
             }
         }
+        // Add this helper method to generate a new order detail ID.
+        private async Task<string> GenerateOrderDetailId()
+        {
+            // Assuming the prefix "CTDH" followed by 6 digits
+            var lastDetail = await _context.Chitietdonhangs
+                .OrderByDescending(c => Convert.ToInt32(c.Idchitietdonhang.Substring(4)))
+                .FirstOrDefaultAsync();
 
+            if (lastDetail == null)
+            {
+                return "CTDH000001";
+            }
+            int lastNumber = int.Parse(lastDetail.Idchitietdonhang.Substring(4));
+            return $"CTDH{(lastNumber + 1):D6}";
+        }
         [HttpGet]
         public async Task<IActionResult> GetDiscountSuggestions(string term)
         {
