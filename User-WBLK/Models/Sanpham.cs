@@ -27,7 +27,7 @@ public partial class Sanpham
 
     public int? Damuahang { get; set; }
 
-    public virtual ICollection<Chitietgiohang> Chitietgiohangs { get; set; } = new List<Chitietgiohang>();
+    public virtual ICollection<Chitietdonhang> Chitietdonhangs { get; set; } = new List<Chitietdonhang>();
 
-    public virtual ICollection<Danhgia> Danhgia { get; set; } = new List<Danhgia>();
+    public virtual ICollection<Chitietgiohang> Chitietgiohangs { get; set; } = new List<Chitietgiohang>();
 }
