@@ -229,34 +229,158 @@
         const editor = document.getElementById('moTaEditor');
         let isResizing = false;
 
+        // Thêm định nghĩa needOptions trước khi sử dụng
+        const needOptions = ['Gaming', 'Graphics', 'Workstation', 'Office', 'Server'];
+
         // Định nghĩa mapping cho các danh mục
         const categoryMapping = {
             'Components': ['CPU', 'VGA', 'Mainboard', 'RAM', 'PSU', 'Case'],
-            'Audio': ['Speaker', 'Microphone','Webcam'],
+            'Audio': ['Speaker', 'Microphone'],
             'Network': ['Router Wifi', 'Wifi Card'],
-            'Peripherals': ['Keyboard', 'Mouse', 'Headphone'],
+            'Peripherals': ['Keyboard', 'Mouse', 'Headphone', 'Webcam'],
             'Storage': ['SSD', 'HDD']
         };
 
-        // Đảm bảo các mapping được định nghĩa trước khi sử dụng
+        // Định nghĩa mapping cho Components và thông số kỹ thuật tương ứng
+        const componentSpecs = {
+            'CPU': [
+                { key: 'Socket', value: '' },
+                { key: 'Dòng CPU', value: '' },
+                { key: 'Số nhân', value: '' },
+                { key: 'Số luồng', value: '' },
+                { key: 'Xung nhịp', value: '' },
+                { key: 'Xung nhịp cơ bản', value: '' },
+                { key: 'Điện năng tiêu thụ', value: '' },
+                { key: 'Bộ nhớ đệm', value: '' },
+                { key: 'Nhân đồ hoạ tích hợp', value: '' }
+            ],
+            'VGA': [
+                { key: 'Xung nhịp', value: '' },
+                { key: 'Nhân CUDA', value: '' },
+                { key: 'Bộ nhớ', value: '' },
+                { key: 'Cổng kết nối', value: '' },
+                { key: 'Nguồn khuyến nghị', value: '' },
+                { key: 'Điện năng tiêu thụ', value: '' }
+            ],
+            'Mainboard': [
+                { key: 'Socket hỗ trợ', value: '' },
+                { key: 'Kích thước', value: '' },
+                { key: 'Số khe RAM', value: '' }
+            ],
+            'RAM': [
+                { key: 'Dung lượng', value: '' },
+                { key: 'Chuẩn RAM', value: '' },
+                { key: 'Tốc độ', value: '' }
+            ],
+            'PSU': [
+                { key: 'Công suất', value: '' },
+                { key: 'Kích thước', value: '' }
+            ],
+            'Case': [
+                { key: 'Kích thước', value: '' },
+                { key: 'Chất liệu', value: '' },
+                { key: 'Khoang ổ đĩa', value: '' },
+                { key: 'Mainboard hỗ trợ', value: '' },
+                { key: 'Khối lượng', value: '' }
+            ]
+        };
+
+        // Định nghĩa mapping cho các danh mục khác
+        const categorySpecs = {
+            // Audio
+            'Speaker': [
+                { key: 'Kích thước', value: '' },
+                { key: 'Loại loa', value: '' }
+            ],
+            'Microphone': [
+                { key: 'Sample / bit rate', value: '' },
+                { key: 'Điện năng tiêu thụ', value: '' },
+                { key: 'Tần số đáp ứng', value: '' },
+                { key: 'Độ nhạy', value: '' }
+            ],
+
+            // Network
+            'Router Wifi': [
+                { key: 'Tiêu chuẩn mạng', value: '' },
+                { key: 'Công nghệ AX', value: '' },
+                { key: 'Truyền/nhận', value: '' },
+                { key: 'Bộ xử lý', value: '' },
+                { key: 'Bộ nhớ', value: '' }
+            ],
+            'Wifi Card': [
+                { key: 'Tiêu chuẩn mạng', value: '' },
+                { key: 'Công nghệ AX', value: '' },
+                { key: 'Truyền/nhận', value: '' },
+                { key: 'Bộ xử lý', value: '' },
+                { key: 'Bộ nhớ', value: '' }
+            ],
+
+            // Peripherals
+            'Keyboard': [
+                { key: 'Switch', value: '' },
+                { key: 'Màu sắc', value: '' },
+                { key: 'Kết nối', value: '' },
+                { key: 'Chất liệu', value: '' },
+                { key: 'Phụ kiện', value: '' },
+                { key: 'Kích thước', value: '' }
+            ],
+            'Mouse': [
+                { key: 'Switch', value: '' },
+                { key: 'Độ dài dây', value: '' },
+                { key: 'IPS', value: '' },
+                { key: 'Tuổi thọ', value: '' },
+                { key: 'Tần số', value: '' }
+            ],
+            'Headphone': [
+                { key: 'Drivers', value: '' },
+                { key: 'Dải tần số', value: '' },
+                { key: 'Kết nối', value: '' },
+                { key: 'Micro', value: '' },
+                { key: 'Chất liệu', value: '' },
+                { key: 'Trọng lượng', value: '' }
+            ],
+            'Webcam': [
+                { key: 'Góc nhìn', value: '' },
+                { key: 'Video encoding', value: '' },
+                { key: 'Độ phân giải', value: '' },
+                { key: 'Kết nối', value: '' }
+            ]
+        };
+
+        // Cập nhật defaultSpecsMapping
         const defaultSpecsMapping = {
             'PC': [
+                { key: 'Nhu cầu', value: '', type: 'select', options: needOptions },
+                { key: 'Mainboard', value: '' },
                 { key: 'CPU', value: '' },
                 { key: 'RAM', value: '' },
                 { key: 'VGA', value: '' },
-                { key: 'Mainboard', value: '' },
-                { key: 'SSD/HDD', value: '' },
+                { key: 'HDD', value: '' },
+                { key: 'SSD', value: '' },
                 { key: 'PSU', value: '' },
-                { key: 'Case', value: '' }
+                { key: 'Case', value: '' },
+                { key: 'Tản nhiệt', value: '' },
+                { key: 'Quạt', value: '' }
             ],
             'Laptop': [
+                { key: 'Nhu cầu', value: '', type: 'select', options: needOptions },
                 { key: 'CPU', value: '' },
                 { key: 'RAM', value: '' },
                 { key: 'VGA', value: '' },
+                { key: 'HDD', value: '' },
+                { key: 'SSD', value: '' },
                 { key: 'Màn hình', value: '' },
-                { key: 'Ổ cứng', value: '' },
+                { key: 'Cổng giao tiếp', value: '' },
+                { key: 'Bàn phím', value: '' },
+                { key: 'Chuẩn LAN', value: '' },
+                { key: 'Chuẩn Wifi', value: '' },
+                { key: 'Bluetooth', value: '' },
+                { key: 'Webcam', value: '' },
+                { key: 'Hệ điều hành', value: '' },
                 { key: 'Pin', value: '' },
-                { key: 'Trọng lượng', value: '' }
+                { key: 'Trọng lượng', value: '' },
+                { key: 'Màu sắc', value: '' },
+                { key: 'Kích thước', value: '' }
             ],
             'Monitor': [
                 { key: 'Kích thước', value: '' },
@@ -266,7 +390,7 @@
                 { key: 'Cổng kết nối', value: '' }
             ],
             'Components': [
-                { key: 'Danh mục', value: '' }
+                { key: 'Danh mục', value: '', type: 'select', options: ['CPU', 'VGA', 'Mainboard', 'RAM', 'PSU', 'Case'] }
             ],
             'Audio': [
                 { key: 'Danh mục', value: '' }
@@ -278,179 +402,205 @@
                 { key: 'Danh mục', value: '' }
             ],
             'Storage': [
-                { key: 'Danh mục', value: '' }
+                { key: 'Loại ổ cứng', value: '', type: 'select', options: ['SSD', 'HDD'] },
+                { key: 'Dung lượng', value: '' },
+                { key: 'Kích thước', value: '' },
+                { key: 'Chuẩn kết nối', value: '' },
+                { key: 'Tốc độ đọc', value: '' },
+                { key: 'Tốc độ ghi', value: '' }
             ]
         };
 
-        // Thêm event listener với debug logs
+        // Thêm biến để kiểm tra loại sản phẩm có cho phép thêm thông số
+        const allowAddSpecs = ['Components', 'Audio', 'Network', 'Peripherals'];
+
+        // Cập nhật phần xử lý hiển thị thông số
         document.addEventListener('DOMContentLoaded', function() {
             const loaiSpSelect = document.querySelector('select[name="Loaisanpham"]');
-            console.log('Found select element:', loaiSpSelect);
-
+            const specificationSection = document.getElementById('specificationSection');
+            const addSpecButton = document.querySelector('.p-4.bg-gray-50.border-t.border-gray-300');
+            
             if (loaiSpSelect) {
                 loaiSpSelect.addEventListener('change', function(e) {
                     const productType = e.target.value;
-                    console.log('Selected product type:', productType);
-
-                    const specificationSection = document.getElementById('specificationSection');
-                    console.log('Found specification section:', specificationSection);
-
+                    
+                    // Hiển thị section thông số kỹ thuật
                     if (!productType) {
                         specificationSection.style.display = 'none';
                         return;
                     }
 
-                    // Hiển thị phần thông số kỹ thuật
                     specificationSection.style.display = 'block';
-                    
                     const tbody = document.querySelector('#specTable tbody');
-                    console.log('Found tbody:', tbody);
-                    
-                    // Xóa tất cả rows hiện tại
                     tbody.innerHTML = '';
-                    
-                    // Thêm các thông số mặc định theo loại sản phẩm
-                    if (defaultSpecsMapping[productType]) {
-                        console.log('Adding specs for type:', productType);
-                        console.log('Specs to add:', defaultSpecsMapping[productType]);
 
-                        defaultSpecsMapping[productType].forEach((spec, index) => {
+                    // Xử lý hiển thị thông số kỹ thuật dựa trên loại sản phẩm
+                    if (['Audio', 'Network', 'Peripherals'].includes(productType)) {
+                        // Hiển thị dropdown danh mục
+                        const categories = categoryMapping[productType];
+                        const row = document.createElement('tr');
+                        row.className = 'border';
+                        row.innerHTML = `
+                            <td class="px-4 py-2 border">
+                                <input type="text" 
+                                       name="specs[0].key" 
+                                       value="Danh mục" 
+                                       class="w-full px-2 py-1 border-0 focus:outline-none focus:ring-0"
+                                       readonly>
+                            </td>
+                            <td class="px-4 py-2 border">
+                                <select name="specs[0].value" 
+                                        class="w-full px-2 py-1 border-0 focus:outline-none focus:ring-0"
+                                        onchange="handleCategoryChange(this.value, '${productType}')"
+                                        required>
+                                    <option value="">Chọn danh mục</option>
+                                    ${categories.map(cat => `<option value="${cat}">${cat}</option>`).join('')}
+                                </select>
+                            </td>
+                            <td class="px-4 py-2 border text-center"></td>
+                        `;
+                        tbody.appendChild(row);
+                        addSpecButton.style.display = 'block';
+                    } else {
+                        // Hiển thị thông số mặc định cho các loại sản phẩm khác
+                        const specs = defaultSpecsMapping[productType] || [];
+                        specs.forEach((spec, index) => {
                             const row = document.createElement('tr');
                             row.className = 'border';
                             
-                            const isCategory = spec.key === 'Danh mục';
-                            const inputClass = "w-full px-2 py-1 border-0 focus:outline-none focus:ring-0";
-                            
-                            // Tạo select dropdown cho danh mục
+                            // Tạo cell cho input hoặc select tùy thuộc vào type
                             let valueCell;
-                            if (isCategory && categoryMapping[productType]) {
+                            if (spec.type === 'select') {
                                 valueCell = `
                                     <select name="specs[${index}].value" 
-                                            class="${inputClass} bg-white"
+                                            class="w-full px-2 py-1 border-0 focus:outline-none focus:ring-0"
+                                            ${spec.key === 'Danh mục' ? 'onchange="handleComponentChange(this.value)"' : ''}
                                             required>
-                                        <option value="">Chọn danh mục</option>
-                                        ${categoryMapping[productType]
-                                            .map(cat => `<option value="${cat}">${cat}</option>`)
-                                            .join('')}
+                                        <option value="">Chọn ${spec.key.toLowerCase()}</option>
+                                        ${spec.options.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
                                     </select>`;
                             } else {
                                 valueCell = `
                                     <input type="text" 
                                            name="specs[${index}].value" 
                                            value="${spec.value}"
-                                           class="${inputClass}"
+                                           class="w-full px-2 py-1 border-0 focus:outline-none focus:ring-0"
                                            placeholder="Giá trị"
                                            required>`;
                             }
-                            
+
                             row.innerHTML = `
                                 <td class="px-4 py-2 border">
                                     <input type="text" 
                                            name="specs[${index}].key" 
                                            value="${spec.key}" 
-                                           class="${inputClass}"
-                                           ${isCategory ? 'readonly' : ''}
-                                           required>
+                                           class="w-full px-2 py-1 border-0 focus:outline-none focus:ring-0"
+                                           readonly>
                                 </td>
                                 <td class="px-4 py-2 border">
                                     ${valueCell}
                                 </td>
-                                <td class="px-4 py-2 border text-center">
-                                    ${!isCategory ? `
-                                        <button type="button" onclick="removeRow(this)" class="text-red-500 hover:text-red-700">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                            </svg>
-                                        </button>
-                                    ` : ''}
-                                </td>
+                                <td class="px-4 py-2 border text-center"></td>
                             `;
                             tbody.appendChild(row);
                         });
+                        
+                        // Hiển thị/ẩn nút thêm thông số
+                        addSpecButton.style.display = productType === 'Components' ? 'block' : 'none';
                     }
                 });
-            } else {
-                console.error('Could not find Loaisanpham select element!');
             }
         });
 
-        // Thêm hàm kiểm tra key trùng
-        function isDuplicateKey(key, currentRow) {
-            const allKeys = document.querySelectorAll('#specTable tbody tr input[name$="].key"]');
-            for (let input of allKeys) {
-                if (input !== currentRow && input.value.toLowerCase() === key.toLowerCase()) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        // Cập nhật hàm addRow để kiểm tra key trùng
-        function addRow() {
+        // Thêm hàm xử lý khi thay đổi danh mục
+        function handleCategoryChange(category, productType) {
             const tbody = document.querySelector('#specTable tbody');
-            const rowCount = tbody.children.length;
-            const newRow = document.createElement('tr');
-            newRow.className = 'border';
-            const index = rowCount;
+            const firstRow = tbody.querySelector('tr'); // Giữ lại row đầu tiên (Danh mục)
+            const customRows = Array.from(tbody.querySelectorAll('tr')).filter(row => 
+                !row.querySelector('input[readonly]') && row !== firstRow
+            );
             
-            newRow.innerHTML = `
-                <td class="px-4 py-2 border">
-                    <div class="relative">
-                        <input type="text" 
-                               name="specs[${index}].key" 
-                               class="w-full px-2 py-1 border-0 focus:outline-none focus:ring-0" 
-                               placeholder="Thông số"
-                               oninput="validateKey(this)">
-                        <div class="text-red-500 text-sm absolute"></div>
-                    </div>
-                </td>
-                <td class="px-4 py-2 border">
-                    <input type="text" 
-                           name="specs[${index}].value" 
-                           class="w-full px-2 py-1 border-0 focus:outline-none focus:ring-0" 
-                           placeholder="Giá trị">
-                </td>
-                <td class="px-4 py-2 border text-center">
-                    <button type="button" onclick="removeRow(this)" class="text-red-500 hover:text-red-700">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                    </button>
-                </td>
-            `;
-            tbody.appendChild(newRow);
-        }
+            tbody.innerHTML = '';
+            tbody.appendChild(firstRow);
 
-        // Thêm hàm validate key
-        function validateKey(input) {
-            const errorDiv = input.parentElement.querySelector('div.text-red-500');
-            const key = input.value.trim();
-            
-            if (isDuplicateKey(key, input)) {
-                errorDiv.textContent = 'Thông số này đã tồn tại';
-                input.classList.add('border-red-500');
-                return false;
-            } else {
-                errorDiv.textContent = '';
-                input.classList.remove('border-red-500');
-                return true;
+            if (categorySpecs[category]) {
+                categorySpecs[category].forEach((spec, index) => {
+                    const row = document.createElement('tr');
+                    row.className = 'border';
+                    
+                    row.innerHTML = `
+                        <td class="px-4 py-2 border">
+                            <input type="text" 
+                                   name="specs[${index + 1}].key" 
+                                   value="${spec.key}" 
+                                   class="w-full px-2 py-1 border-0 focus:outline-none focus:ring-0"
+                                   readonly>
+                        </td>
+                        <td class="px-4 py-2 border">
+                            <input type="text" 
+                                   name="specs[${index + 1}].value" 
+                                   value="${spec.value}"
+                                   class="w-full px-2 py-1 border-0 focus:outline-none focus:ring-0"
+                                   placeholder="Giá trị"
+                                   required>
+                        </td>
+                        <td class="px-4 py-2 border text-center">
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+
+                // Thêm lại các row tùy chỉnh
+                customRows.forEach(row => tbody.appendChild(row));
             }
         }
 
-        function removeRow(button) {
-            const row = button.closest('tr');
-            row.remove();
-            reindexRows();
+        // Thêm hàm xử lý khi chọn danh mục linh kiện
+        function handleComponentChange(category) {
+            if (!category) return;
+            
+            const tbody = document.querySelector('#specTable tbody');
+            const firstRow = tbody.querySelector('tr'); // Giữ lại row đầu tiên (Danh mục)
+            const customRows = Array.from(tbody.querySelectorAll('tr')).filter(row => 
+                !row.querySelector('input[readonly]') && row !== firstRow
+            );
+            
+            tbody.innerHTML = '';
+            tbody.appendChild(firstRow);
+
+            if (componentSpecs[category]) {
+                componentSpecs[category].forEach((spec, index) => {
+                    const row = document.createElement('tr');
+                    row.className = 'border';
+                    
+                    row.innerHTML = `
+                        <td class="px-4 py-2 border">
+                            <input type="text" 
+                                   name="specs[${index + 1}].key" 
+                                   value="${spec.key}" 
+                                   class="w-full px-2 py-1 border-0 focus:outline-none focus:ring-0"
+                                   readonly>
+                        </td>
+                        <td class="px-4 py-2 border">
+                            <input type="text" 
+                                   name="specs[${index + 1}].value" 
+                                   value="${spec.value}"
+                                   class="w-full px-2 py-1 border-0 focus:outline-none focus:ring-0"
+                                   placeholder="Giá trị"
+                                   required>
+                        </td>
+                        <td class="px-4 py-2 border text-center"></td>
+                    `;
+                    tbody.appendChild(row);
+                });
+
+                // Thêm lại các row tùy chỉnh
+                customRows.forEach(row => tbody.appendChild(row));
+            }
         }
 
-        function reindexRows() {
-            const rows = document.querySelectorAll('#specTable tbody tr');
-            rows.forEach((row, index) => {
-                const inputs = row.querySelectorAll('input');
-                inputs[0].name = `specs[${index}].key`;
-                inputs[1].name = `specs[${index}].value`;
-            });
-        }
+        // Xóa hoặc ẩn nút "Thêm thông số"
+        document.querySelector('.p-4.bg-gray-50.border-t.border-gray-300').style.display = 'none';
 
         function formatText(command, value = null) {
             if (command === 'lineHeight') {
@@ -636,6 +786,94 @@
                 .replace(/>/g, "&gt;")
                 .replace(/"/g, "&quot;")
                 .replace(/'/g, "&#039;");
+        }
+
+        // Thêm hàm isDuplicateKey
+        function isDuplicateKey(newKey) {
+            const tbody = document.querySelector('#specTable tbody');
+            const existingKeys = Array.from(tbody.querySelectorAll('input[name$="].key"]'))
+                .map(input => input.value.trim().toLowerCase());
+            
+            // Đếm số lần xuất hiện của key mới
+            return existingKeys.filter(key => key === newKey.toLowerCase()).length > 0;
+        }
+
+        // Cập nhật hàm validateKey
+        function validateKey(input) {
+            const key = input.value.trim();
+            if (!key) return; // Bỏ qua nếu input rỗng
+
+            // Kiểm tra trùng lặp với các key hiện có
+            if (isDuplicateKey(key)) {
+                alert('Thông số này đã tồn tại!');
+                input.value = '';
+                input.focus();
+            }
+        }
+
+        // Cập nhật hàm addRow
+        function addRow() {
+            const tbody = document.querySelector('#specTable tbody');
+            const index = tbody.children.length;
+            const row = document.createElement('tr');
+            row.className = 'border';
+            
+            row.innerHTML = `
+                <td class="px-4 py-2 border">
+                    <input type="text" 
+                           name="specs[${index}].key" 
+                           class="w-full px-2 py-1 border-0 focus:outline-none focus:ring-0"
+                           placeholder="Tên thông số"
+                           onblur="validateKey(this)"
+                           required>
+                </td>
+                <td class="px-4 py-2 border">
+                    <input type="text" 
+                           name="specs[${index}].value" 
+                           class="w-full px-2 py-1 border-0 focus:outline-none focus:ring-0"
+                           placeholder="Giá trị"
+                           required>
+                </td>
+                <td class="px-4 py-2 border text-center">
+                    <button type="button" onclick="removeRow(this)" 
+                            class="text-red-500 hover:text-red-700 transition-colors">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        }
+
+        // Cập nhật hàm removeRow
+        function removeRow(button) {
+            const row = button.closest('tr');
+            const tbody = row.parentElement;
+            
+            // Kiểm tra xem có phải là thông số mặc định không
+            const isDefaultSpec = row.querySelector('input[readonly]');
+            
+            if (!isDefaultSpec) {
+                tbody.removeChild(row);
+                reindexRows();
+            } else {
+                alert('Không thể xóa thông số mặc định!');
+            }
+        }
+
+        // Hàm đánh lại index cho các row
+        function reindexRows() {
+            const tbody = document.querySelector('#specTable tbody');
+            const rows = tbody.children;
+            
+            for (let i = 0; i < rows.length; i++) {
+                const inputs = rows[i].querySelectorAll('input');
+                inputs.forEach(input => {
+                    const name = input.getAttribute('name');
+                    if (name) {
+                        input.setAttribute('name', name.replace(/\d+/, i));
+                    }
+                });
+            }
         }
     </script>
 }

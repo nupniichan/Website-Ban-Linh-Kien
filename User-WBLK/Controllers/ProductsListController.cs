@@ -204,40 +204,71 @@ namespace Website_Ban_Linh_Kien.Controllers
             string category = null, 
             string brand = null,
             string priceRange = null,
-            string searchTerm = null,
-            Dictionary<string, string> specifications = null,
-            int page = 1)
+            Dictionary<string, string> additionalFilters = null)
         {
             var query = _context.Sanphams.Where(p => p.Loaisanpham == "Components");
 
             // Lọc theo danh mục con (category)
             if (!string.IsNullOrEmpty(category))
             {
-                query = query.Where(p => p.Thongsokythuat.Contains($"\"Danh mục\": \"{category}\""));
+                query = query.Where(p => p.Thongsokythuat.Contains($"\"{category}\""));
             }
 
-            // Debug: In ra câu query
-            Console.WriteLine($"Category filter: {category}");
-            
             // Lọc theo thương hiệu
             if (!string.IsNullOrEmpty(brand))
             {
                 query = query.Where(p => p.Thuonghieu.ToLower() == brand.ToLower());
             }
 
-            // Tìm kiếm theo tên
-            if (!string.IsNullOrEmpty(searchTerm))
+            // Lọc theo các bộ lọc bổ sung
+            if (additionalFilters != null)
             {
-                query = query.Where(p => p.Tensanpham.Contains(searchTerm));
-            }
-
-            // Lọc theo thông số kỹ thuật
-            if (specifications != null && specifications.Any())
-            {
-                foreach (var spec in specifications)
+                foreach (var filter in additionalFilters)
                 {
-                    query = query.Where(p => p.Thongsokythuat.Contains($"\"key\":\"{spec.Key}\"") &&
-                                           p.Thongsokythuat.Contains($"\"value\":\"{spec.Value}\""));
+                    if (!string.IsNullOrEmpty(filter.Value))
+                    {
+                        // Xử lý các bộ lọc theo category
+                        switch (category?.ToLower())
+                        {
+                            case "cpu":
+                                if (filter.Key == "cpuSeries")
+                                    query = query.Where(p => p.Thongsokythuat.Contains($"\"CPU Series\":\"{filter.Value}\""));
+                                else if (filter.Key == "cores")
+                                    query = query.Where(p => p.Thongsokythuat.Contains($"\"Cores\":\"{filter.Value}\""));
+                                break;
+
+                            case "vga":
+                                if (filter.Key == "memory")
+                                    query = query.Where(p => p.Thongsokythuat.Contains($"\"Memory\":\"{filter.Value}\""));
+                                break;
+
+                            case "mainboard":
+                                if (filter.Key == "socket")
+                                    query = query.Where(p => p.Thongsokythuat.Contains($"\"Socket\":\"{filter.Value}\""));
+                                else if (filter.Key == "formFactor")
+                                    query = query.Where(p => p.Thongsokythuat.Contains($"\"Form Factor\":\"{filter.Value}\""));
+                                break;
+
+                            case "ram":
+                                if (filter.Key == "capacity")
+                                    query = query.Where(p => p.Thongsokythuat.Contains($"\"Capacity\":\"{filter.Value}\""));
+                                else if (filter.Key == "ramType")
+                                    query = query.Where(p => p.Thongsokythuat.Contains($"\"RAM Type\":\"{filter.Value}\""));
+                                break;
+
+                            case "psu":
+                                if (filter.Key == "wattage")
+                                    query = query.Where(p => p.Thongsokythuat.Contains($"\"Wattage\":\"{filter.Value}\""));
+                                else if (filter.Key == "efficiency")
+                                    query = query.Where(p => p.Thongsokythuat.Contains($"\"Efficiency\":\"{filter.Value}\""));
+                                break;
+
+                            case "case":
+                                if (filter.Key == "caseSize")
+                                    query = query.Where(p => p.Thongsokythuat.Contains($"\"Case Size\":\"{filter.Value}\""));
+                                break;
+                        }
+                    }
                 }
             }
 
@@ -267,22 +298,15 @@ namespace Website_Ban_Linh_Kien.Controllers
                 }
             }
 
-            // Debug: In ra số lượng sản phẩm tìm thấy trước khi phân trang
-            var totalCount = await query.CountAsync();
-            Console.WriteLine($"Tổng số sản phẩm tìm thấy: {totalCount}");
-
-            var products = await GetPagedProductsAsync(query, page);
-            var totalPages = await GetTotalPagesAsync(query);
+            var products = await query.ToListAsync();
 
             var viewModel = new ProductListViewModel
             {
                 Products = products,
-                CurrentPage = page,
-                TotalPages = totalPages,
                 Category = category,
                 Brand = brand,
                 PriceRange = priceRange,
-                AdditionalFilters = specifications ?? new Dictionary<string, string>()
+                AdditionalFilters = additionalFilters ?? new Dictionary<string, string>()
             };
 
             return View(viewModel);
