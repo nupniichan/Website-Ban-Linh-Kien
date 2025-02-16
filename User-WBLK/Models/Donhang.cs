@@ -25,6 +25,8 @@ public partial class Donhang
 
     public string? IdMgg { get; set; }
 
+    public virtual ICollection<Chitietdonhang> Chitietdonhangs { get; set; } = new List<Chitietdonhang>();
+
     public virtual Khachhang IdKhNavigation { get; set; } = null!;
 
     public virtual Magiamgia? IdMggNavigation { get; set; }
