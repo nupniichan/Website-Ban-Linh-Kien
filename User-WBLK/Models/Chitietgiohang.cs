@@ -9,7 +9,9 @@ public partial class Chitietgiohang
 
     public string IdSp { get; set; } = null!;
 
-    public int Soluong { get; set; }
+    public int Soluongsanpham { get; set; }
+
+    public DateTime? Thoigiancapnhat { get; set; }
 
     public virtual Khachhang IdGh1 { get; set; } = null!;
 

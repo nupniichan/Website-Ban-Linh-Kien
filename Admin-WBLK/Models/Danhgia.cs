@@ -15,9 +15,7 @@ public partial class Danhgia
 
     public string IdKh { get; set; } = null!;
 
-    public string IdSp { get; set; } = null!;
+    public virtual ICollection<Chitietdonhang> Chitietdonhangs { get; set; } = new List<Chitietdonhang>();
 
     public virtual Khachhang IdKhNavigation { get; set; } = null!;
-
-    public virtual Sanpham IdSpNavigation { get; set; } = null!;
 }

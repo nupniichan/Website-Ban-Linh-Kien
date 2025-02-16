@@ -1,0 +1,69 @@
+@model Admin_WBLK.Models.Magiamgia
+
+@{
+    ViewData["Title"] = "Xóa mã giảm giá";
+}
+
+<div class="p-6 w-full h-full bg-gray-50">
+    <div class="max-w-3xl mx-auto">
+        <h1 class="text-3xl font-bold text-gray-900 mb-4">Xóa mã giảm giá</h1>
+        <div class="bg-yellow-50 border border-yellow-400 text-yellow-700 p-4 rounded-lg mb-6">
+            <h3 class="font-medium">Bạn có chắc chắn muốn xóa mã giảm giá này?</h3>
+            <p class="mt-1 text-sm">Hành động này không thể hoàn tác.</p>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-sm p-6">
+            <!-- Thông tin mã giảm giá -->
+            <div class="mb-6">
+                <h2 class="text-lg font-medium text-gray-900 mb-4">Thông tin mã giảm giá</h2>
+                <dl class="grid grid-cols-2 gap-4">
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Mã giảm giá</dt>
+                        <dd class="mt-1 text-gray-900 font-bold">@Model.IdMgg</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Tên mã giảm giá</dt>
+                        <dd class="mt-1 text-gray-900">@Model.Ten</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Ngày bắt đầu sử dụng</dt>
+                        <dd class="mt-1 text-gray-900">@Model.Ngaysudung.ToString("dd/MM/yyyy")</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Ngày hết hạn</dt>
+                        <dd class="mt-1 text-gray-900">@Model.Ngayhethan.ToString("dd/MM/yyyy")</dd>
+                    </div>
+                </dl>
+            </div>
+
+            <!-- Thông tin chi tiết -->
+            <div class="mb-6">
+                <h2 class="text-lg font-medium text-gray-900 mb-4">Thông tin chi tiết</h2>
+                <dl class="grid grid-cols-2 gap-4">
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Tỉ lệ chiết khấu</dt>
+                        <dd class="mt-1 text-gray-900">@Model.Tilechietkhau.ToString("N2") %</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Số lượng mã</dt>
+                        <dd class="mt-1 text-gray-900">@Model.Soluong</dd>
+                    </div>
+                </dl>
+            </div>
+
+            <div class="mt-8 flex justify-end gap-4">
+                <a asp-action="Index" 
+                   class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-800">
+                    Quay lại
+                </a>
+                <form asp-action="Delete" class="m-0">
+                    <input type="hidden" asp-for="IdMgg" />
+                    <button type="submit" 
+                            class="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                        Xác nhận xóa
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

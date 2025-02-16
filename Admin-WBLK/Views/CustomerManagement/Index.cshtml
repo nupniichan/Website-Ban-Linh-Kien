@@ -109,7 +109,9 @@
                 {
                     <tr class="hover:bg-gray-50">
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@item.IdKh</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@item.Hoten</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            @(item.Hoten != null && item.Hoten.Length > 13 ? item.Hoten.Substring(0, 13) + "..." : item.Hoten)
+                        </td>
                         <td class="px-6 py-4 text-sm text-gray-900">
                             <span class="block max-w-xs truncate" title="@item.Diachi">
                                 @(item.Diachi?.Length > 10 ? item.Diachi.Substring(0, 10) + "..." : item.Diachi)
@@ -117,7 +119,7 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@item.Email</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@item.Gioitinh</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@item.Ngaysinh.ToString("dd/MM/yyyy")</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@item.Ngaysinh?.ToString("dd/MM/yyyy")</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@item.Sodienthoai</td>
                         <td class="px-6 py-4">
                             <div class="flex items-center justify-center gap-2">

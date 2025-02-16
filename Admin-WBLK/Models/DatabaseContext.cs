@@ -52,34 +52,39 @@ public partial class DatabaseContext : DbContext
 
         modelBuilder.Entity<Chitietdonhang>(entity =>
         {
-            entity.HasKey(e => new { e.IdDh, e.IdSp })
-                .HasName("PRIMARY")
-                .HasAnnotation("MySql:IndexPrefixLength", new[] { 0, 0 });
+            entity.HasKey(e => e.Idchitietdonhang).HasName("PRIMARY");
 
             entity.ToTable("chitietdonhang");
 
-            entity.HasIndex(e => e.IdSp, "IdSp");
+            entity.HasIndex(e => e.IdDh, "chitietdonhang_fk_1");
 
-            entity.Property(e => e.IdDh).HasMaxLength(10);
-            entity.Property(e => e.IdSp).HasMaxLength(10);
+            entity.HasIndex(e => e.IdDg, "fk_chitietdonhang_danhgia");
+
+            entity.HasIndex(e => e.IdSp, "fk_chitietdonhang_sanpham");
+
+            entity.Property(e => e.Idchitietdonhang).HasMaxLength(10);
             entity.Property(e => e.Dongia)
                 .HasPrecision(10, 2)
                 .HasColumnName("dongia");
-            entity.Property(e => e.Soluong)
+            entity.Property(e => e.IdDg).HasMaxLength(10);
+            entity.Property(e => e.IdDh).HasMaxLength(10);
+            entity.Property(e => e.IdSp).HasMaxLength(10);
+            entity.Property(e => e.Soluongsanpham)
                 .HasColumnType("int(11)")
-                .HasColumnName("soluong");
+                .HasColumnName("soluongsanpham");
 
-            entity.HasOne(d => d.IdDhNavigation)
-                .WithMany(p => p.Chitietdonhangs)
+            entity.HasOne(d => d.IdDgNavigation).WithMany(p => p.Chitietdonhangs)
+                .HasForeignKey(d => d.IdDg)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("fk_chitietdonhang_danhgia");
+
+            entity.HasOne(d => d.IdDhNavigation).WithMany(p => p.Chitietdonhangs)
                 .HasForeignKey(d => d.IdDh)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("chitietdonhang_ibfk_1");
+                .HasConstraintName("fk_chitietdonhang_donhang");
 
-            entity.HasOne(d => d.IdSpNavigation)
-                .WithMany(p => p.Chitietdonhangs)
+            entity.HasOne(d => d.IdSpNavigation).WithMany(p => p.Chitietdonhangs)
                 .HasForeignKey(d => d.IdSp)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("chitietdonhang_ibfk_2");
+                .HasConstraintName("fk_chitietdonhang_sanpham");
         });
 
         modelBuilder.Entity<Chitietgiohang>(entity =>
@@ -94,9 +99,12 @@ public partial class DatabaseContext : DbContext
 
             entity.Property(e => e.IdGh).HasMaxLength(10);
             entity.Property(e => e.IdSp).HasMaxLength(10);
-            entity.Property(e => e.Soluong)
+            entity.Property(e => e.Soluongsanpham)
                 .HasColumnType("int(11)")
-                .HasColumnName("soluong");
+                .HasColumnName("soluongsanpham");
+            entity.Property(e => e.Thoigiancapnhat)
+                .HasColumnType("datetime")
+                .HasColumnName("thoigiancapnhat");
 
             entity.HasOne(d => d.IdGhNavigation).WithMany(p => p.Chitietgiohangs)
                 .HasForeignKey(d => d.IdGh)
@@ -117,9 +125,7 @@ public partial class DatabaseContext : DbContext
 
             entity.ToTable("danhgia");
 
-            entity.HasIndex(e => new { e.IdKh, e.IdSp }, "IdKh").IsUnique();
-
-            entity.HasIndex(e => e.IdSp, "IdSp");
+            entity.HasIndex(e => e.IdKh, "fk_danhgia_khachhang");
 
             entity.HasIndex(e => e.Ngaydanhgia, "idx_danhgia_ngaydanhgia");
 
@@ -127,7 +133,6 @@ public partial class DatabaseContext : DbContext
 
             entity.Property(e => e.IdDg).HasMaxLength(10);
             entity.Property(e => e.IdKh).HasMaxLength(10);
-            entity.Property(e => e.IdSp).HasMaxLength(10);
             entity.Property(e => e.Ngaydanhgia)
                 .HasDefaultValueSql("current_timestamp()")
                 .HasColumnType("datetime")
@@ -141,11 +146,7 @@ public partial class DatabaseContext : DbContext
 
             entity.HasOne(d => d.IdKhNavigation).WithMany(p => p.Danhgia)
                 .HasForeignKey(d => d.IdKh)
-                .HasConstraintName("danhgia_ibfk_1");
-
-            entity.HasOne(d => d.IdSpNavigation).WithMany(p => p.Danhgia)
-                .HasForeignKey(d => d.IdSp)
-                .HasConstraintName("danhgia_ibfk_2");
+                .HasConstraintName("fk_danhgia_khachhang");
         });
 
         modelBuilder.Entity<Donhang>(entity =>
@@ -185,8 +186,8 @@ public partial class DatabaseContext : DbContext
                 .HasPrecision(10, 2)
                 .HasColumnName("tongtien");
             entity.Property(e => e.Trangthai)
-                .HasDefaultValueSql("'dat_hang_thanh_cong'")
-                .HasColumnType("enum('dat_hang_thanh_cong','da_duyet_don','dang_giao','giao_thanh_cong','huy_don')")
+                .HasMaxLength(50)
+                .HasDefaultValueSql("'Đặt hàng thành công'")
                 .HasColumnName("trangthai");
 
             entity.HasOne(d => d.IdKhNavigation).WithMany(p => p.Donhangs)
@@ -196,11 +197,6 @@ public partial class DatabaseContext : DbContext
             entity.HasOne(d => d.IdMggNavigation).WithMany(p => p.Donhangs)
                 .HasForeignKey(d => d.IdMgg)
                 .HasConstraintName("donhang_ibfk_2");
-
-            entity.HasMany(d => d.Chitietdonhangs)
-                .WithOne(p => p.IdDhNavigation)
-                .HasForeignKey(d => d.IdDh)
-                .HasConstraintName("chitietdonhang_ibfk_1");
         });
 
         modelBuilder.Entity<Giohang>(entity =>
@@ -213,6 +209,9 @@ public partial class DatabaseContext : DbContext
 
             entity.Property(e => e.IdGh).HasMaxLength(10);
             entity.Property(e => e.IdKh).HasMaxLength(10);
+            entity.Property(e => e.Thoigiancapnhat)
+                .HasColumnType("datetime")
+                .HasColumnName("thoigiancapnhat");
 
             entity.HasOne(d => d.IdKhNavigation).WithMany(p => p.Giohangs)
                 .HasForeignKey(d => d.IdKh)
@@ -254,6 +253,10 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.IdXephangvip)
                 .HasMaxLength(10)
                 .HasColumnName("id_xephangvip");
+            entity.Property(e => e.Loaikhachhang)
+                .HasDefaultValueSql("b'0'")
+                .HasColumnType("bit(1)")
+                .HasColumnName("loaikhachhang");
             entity.Property(e => e.Ngaysinh).HasColumnName("ngaysinh");
             entity.Property(e => e.Sodienthoai)
                 .HasMaxLength(11)
@@ -288,9 +291,6 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Tilechietkhau)
                 .HasPrecision(5, 2)
                 .HasColumnName("tilechietkhau");
-            entity.Property(e => e.Trangthai)
-                .HasDefaultValueSql("'1'")
-                .HasColumnName("trangthai");
         });
 
         modelBuilder.Entity<Nhanvien>(entity =>

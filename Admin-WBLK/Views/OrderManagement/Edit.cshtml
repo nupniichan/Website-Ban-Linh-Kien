@@ -104,20 +104,20 @@
                                                     @item.IdSp
                                                     <input type="hidden" name="Chitietdonhangs[@item.IdSp].IdDh" value="@Model.IdDh" />
                                                     <input type="hidden" name="Chitietdonhangs[@item.IdSp].IdSp" value="@item.IdSp" />
-                                                    <input type="hidden" name="Chitietdonhangs[@item.IdSp].Soluong" value="@item.Soluong" />
+                                                    <input type="hidden" name="Chitietdonhangs[@item.IdSp].Soluongsanpham" value="@item.Soluongsanpham" />
                                                     <input type="hidden" name="Chitietdonhangs[@item.IdSp].Dongia" value="@item.Dongia" />
                                                 </td>
                                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                                     @item.IdSpNavigation?.Tensanpham
                                                 </td>
                                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                    @item.Soluong
+                                                    @item.Soluongsanpham
                                                 </td>
                                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                                     @item.Dongia.ToString("#,##0") VNĐ
                                                 </td>
                                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                    @((item.Soluong * item.Dongia).ToString("#,##0")) VNĐ
+                                                    @((item.Soluongsanpham * item.Dongia).ToString("#,##0")) VNĐ
                                                 </td>
                                             </tr>
                                         }

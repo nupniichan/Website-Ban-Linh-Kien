@@ -11,11 +11,11 @@ public partial class Khachhang
 
     public string Diachi { get; set; } = null!;
 
-    public string Email { get; set; } = null!;
+    public string? Email { get; set; }
 
-    public string Gioitinh { get; set; } = null!;
+    public string? Gioitinh { get; set; }
 
-    public DateOnly Ngaysinh { get; set; }
+    public DateOnly? Ngaysinh { get; set; }
 
     public string Sodienthoai { get; set; } = null!;
 
@@ -24,6 +24,8 @@ public partial class Khachhang
     public string IdTk { get; set; } = null!;
 
     public string? IdXephangvip { get; set; }
+
+    public ulong? Loaikhachhang { get; set; }
 
     public virtual ICollection<Chitietgiohang> Chitietgiohangs { get; set; } = new List<Chitietgiohang>();
 
