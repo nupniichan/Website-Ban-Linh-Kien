@@ -1,63 +1,182 @@
-<header class="bg-white border-bottom py-2 px-3">
-    <div class="container-fluid d-flex justify-content-between align-items-center">
-        <!-- Desktop Header -->
-        <h1 class="m-0 d-none d-md-block" style="font-size: 1.25rem;">
-            <span class="text-primary">Trang quản lý</span>
-            <span class="text-dark">BPT</span>
-        </h1>
-        <!-- Mobile Header -->
-        <h1 class="m-0 d-md-none" style="font-size: 1rem;">
-            <span class="text-primary">Trang quản lý</span>
-            <button class="btn btn-link text-dark p-0" id="toggleMobileMenu" style="font-size: 1rem; text-decoration: none;">
-                <i class="bi bi-list"></i> BPT
-            </button>
-        </h1>
-        <div class="user-info d-flex align-items-center">
-            <div class="rounded-full bg-black" style="width: 30px; height: 30px; margin-right: 10px;"></div>
-            <span style="font-size: 0.9rem;">Xin chào Admin</span>
-            <button class="btn btn-white" style="padding: 0; border: none;">
-                <i class="bi bi-chevron-down"></i>
-            </button>
+@using System.Security.Claims
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang Quản Lý BPT</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+            @{
+        // Default values
+        string greetingName = "Admin";
+        string roleText = "Quản trị viên";
+        
+        if (User.Identity.IsAuthenticated)
+        {
+            // Use the LinkedName claim if it exists; otherwise, fall back to the username.
+            var linkedNameClaim = User.Claims.FirstOrDefault(c => c.Type == "LinkedName");
+            greetingName = linkedNameClaim != null ? linkedNameClaim.Value : User.Identity.Name;
+
+            // Get the user's role from claims
+            var roleClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role);
+            if (roleClaim != null)
+            {
+                switch (roleClaim.Value.ToLower())
+                {
+                    case "quantrivien":
+                        roleText = "Quản trị viên";
+                        break;
+                    case "nhanvienkho":
+                        roleText = "Nhân viên kho";
+                        break;
+                    case "nhanvienkinhdoanh":
+                        roleText = "Nhân viên kinh doanh";
+                        break;
+                    case "nhanvienmarketing":
+                        roleText = "Nhân viên marketing";
+                        break;
+                    case "khachhang":
+                        roleText = "Khách hàng";
+                        break;
+                    default:
+                        roleText = roleClaim.Value;
+                        break;
+                }
+            }
+        }
+    }
+    <header class="bg-white border-bottom py-2 px-3">
+        <div class="container-fluid d-flex justify-content-between align-items-center">
+            <!-- Desktop Header -->
+            <h1 class="m-0 d-none d-md-block" style="font-size: 1.25rem;">
+                <span class="text-primary">Trang quản lý</span>
+                <span class="text-dark">BPT</span>
+            </h1>
+            <!-- Mobile Header -->
+            <h1 class="m-0 d-md-none" style="font-size: 1rem;">
+                <span class="text-primary">Trang quản lý</span>
+                <button class="btn btn-link text-dark p-0" id="toggleMobileMenu" style="font-size: 1rem; text-decoration: none;">
+                    <i class="bi bi-list"></i> BPT
+                </button>
+            </h1>
+            <div class="user-info d-flex align-items-center">
+                <div class="rounded-full bg-black" style="width: 30px; height: 30px; margin-right: 10px;"></div>
+                 <div class="flex flex-col">
+                    <span class="text-sm">Xin chào, @greetingName</span>
+                    <small class="text-xs text-gray-500">@roleText</small>
+                </div>
+                <!-- Logout Button -->
+                <button id="logoutButton" class="btn btn-danger ml-3 hidden md:block px-4 py-2 rounded bg-red-500 text-white hover:bg-red-600">
+                    <i class="bi bi-box-arrow-right"></i> Đăng xuất
+                </button>
+            </div>
         </div>
-    </div>
-</header>
-<!-- Mobile Sidebar -->
-<div id="overlay" class="d-none position-fixed top-0 start-0 w-100 h-100" style="background: rgba(0,0,0,0.5); z-index: 1049;"></div>
-<aside id="mobileSidebar" class="bg-white border-end position-fixed top-0 start-0 h-100 d-none d-md-none" style="width: 250px; z-index: 1050;">
-    <nav class="nav flex-column p-3" style="font-size: 1.1rem;">
-        <a class="nav-link text-dark d-flex align-items-center" href="/dashboard">
-            <i class="bi bi-grid-3x3-gap-fill me-2"></i> Dashboard
-        </a>
-        <a class="nav-link text-dark d-flex align-items-center" href="/productmanagement">
-            <i class="bi bi-calendar2-event-fill me-2"></i> Quản lý sản phẩm
-        </a>
-        <a class="nav-link text-dark d-flex align-items-center" href="/order-management">
-            <i class="bi bi-cart-fill me-2"></i> Quản lý đơn hàng
-        </a>
-        <a class="nav-link text-dark d-flex align-items-center" href="/account-management">
-            <i class="bi bi-person-fill me-2"></i> Quản lý tài khoản
-        </a>
-        <a class="nav-link text-dark d-flex align-items-center" href="/customer-management">
-            <i class="bi bi-people-fill me-2"></i> Quản lý khách hàng
-        </a>
-        <a class="nav-link text-dark d-flex align-items-center" href="/discount-management">
-            <i class="bi bi-percent me-2 text-white bg-black border rounded-circle" style="padding: 0.2rem;"></i> Quản lý mã giảm giá
-        </a>
-    </nav>
-</aside>
+    </header>
+    <!-- Mobile Sidebar -->
+    <div id="overlay" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50"></div>
+    <aside id="mobileSidebar" class="hidden bg-white fixed top-0 left-0 h-full w-64 z-50">
+        <nav class="flex flex-col p-4 space-y-4">
+            @if (User.IsInRole("quantrivien"))
+            {
+                <a href="/dashboard" class="flex items-center text-gray-700 hover:text-blue-500">
+                    <i class="bi bi-grid-3x3-gap-fill mr-2"></i> Dashboard
+                </a>
+                <a href="/productmanagement" class="flex items-center text-gray-700 hover:text-blue-500">
+                    <i class="bi bi-calendar2-event-fill mr-2"></i> Quản lý sản phẩm
+                </a>
+                <a href="/OrderManagement" class="flex items-center text-gray-700 hover:text-blue-500">
+                    <i class="bi bi-cart-fill mr-2"></i> Quản lý đơn hàng
+                </a>
+                <a href="/account-management" class="flex items-center text-gray-700 hover:text-blue-500">
+                    <i class="bi bi-person-fill mr-2"></i> Quản lý tài khoản
+                </a>
+                <a href="/EmployeeManagement" class="flex items-center text-gray-700 hover:text-blue-500">
+                    <i class="bi bi-person-badge mr-2"></i> Quản lý nhân viên
+                </a>
+                <a href="/CustomerManagement" class="flex items-center text-gray-700 hover:text-blue-500">
+                    <i class="bi bi-people-fill mr-2"></i> Quản lý khách hàng
+                </a>
+                <a href="/DiscountManagement" class="flex items-center text-gray-700 hover:text-blue-500">
+                    <i class="bi bi-percent mr-2"></i> Quản lý mã giảm giá
+                </a>
+            }
+            else if (User.IsInRole("nhanvienkho"))
+            {
+                <a href="/productmanagement" class="flex items-center text-gray-700 hover:text-blue-500">
+                    <i class="bi bi-calendar2-event-fill mr-2"></i> Quản lý sản phẩm
+                </a>
+            }
+            else if (User.IsInRole("nhanvienkinhdoanh"))
+            {
+                <a href="/OrderManagement" class="flex items-center text-gray-700 hover:text-blue-500">
+                    <i class="bi bi-cart-fill mr-2"></i> Quản lý đơn hàng
+                </a>
+            }
+            else if (User.IsInRole("nhanvienmarketing"))
+            {
+                <a href="/DiscountManagement" class="flex items-center text-gray-700 hover:text-blue-500">
+                    <i class="bi bi-percent mr-2"></i> Quản lý mã giảm giá
+                </a>
+            }
+            else if (User.IsInRole("khachhang"))
+            {
+                <!-- For customers, you might want to show limited options -->
+                <a href="/dashboard" class="flex items-center text-gray-700 hover:text-blue-500">
+                    <i class="bi bi-grid-3x3-gap-fill mr-2"></i> Dashboard
+                </a>
+            }
+            else
+            {
+                <p class="text-gray-500">Bạn không có quyền truy cập vào các chức năng.</p>
+            }
+            <!-- Logout Button in Sidebar -->
+            <button id="sidebarLogout" class="w-full bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                <i class="bi bi-box-arrow-right"></i> Đăng xuất
+            </button>
+        </nav>
+    </aside>
 
-<script>
-    const toggleMobileMenu = document.getElementById('toggleMobileMenu');
-    const mobileSidebar = document.getElementById('mobileSidebar');
-    const overlay = document.getElementById('overlay');
 
-    toggleMobileMenu.addEventListener('click', function () {
-        mobileSidebar.classList.toggle('d-none');
-        overlay.classList.toggle('d-none');
-    });
+    <script>
+        const toggleMobileMenu = document.getElementById('toggleMobileMenu');
+        const mobileSidebar = document.getElementById('mobileSidebar');
+        const overlay = document.getElementById('overlay');
+        const logoutButton = document.getElementById('logoutButton');
+        const sidebarLogout = document.getElementById('sidebarLogout');
 
-    overlay.addEventListener('click', function () {
-        mobileSidebar.classList.add('d-none');
-        overlay.classList.add('d-none');
-    });
-</script>
+        toggleMobileMenu.addEventListener('click', function () {
+            mobileSidebar.classList.toggle('hidden');
+            overlay.classList.toggle('hidden');
+        });
+
+        overlay.addEventListener('click', function () {
+            mobileSidebar.classList.add('hidden');
+            overlay.classList.add('hidden');
+        });
+
+        async function handleLogout() {
+            try {
+                const response = await fetch('/AccountManagement/Logout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (response.ok) {
+                    sessionStorage.removeItem('Quyentruycap'); // Clear session storage
+                    window.location.href = "/"; // Redirect to login page
+                } else {
+                    alert('Đăng xuất không thành công.');
+                }
+            } catch (error) {
+                console.error('Lỗi đăng xuất:', error);
+                alert('Lỗi trong quá trình đăng xuất.');
+            }
+        }
+
+        logoutButton.addEventListener('click', handleLogout);
+        sidebarLogout.addEventListener('click', handleLogout);
+    </script>
+</body>
+</html>

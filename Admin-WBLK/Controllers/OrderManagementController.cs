@@ -24,8 +24,8 @@ namespace Admin_WBLK.Controllers
             ViewData["CurrentNgayDat"] = ngayDat?.ToString("yyyy-MM-dd");
 
             var query = _context.Donhangs
-                .Include(d => d.IdKhNavigation)    
-                .Include(d => d.IdMggNavigation)   
+                .Include(d => d.IdKhNavigation)
+                .Include(d => d.IdMggNavigation)
                 .Select(d => new Donhang
                 {
                     IdDh = d.IdDh,
@@ -46,7 +46,7 @@ namespace Admin_WBLK.Controllers
             {
                 searchString = searchString.ToLower();
                 query = query.Where(d => d.IdDh.ToLower().Contains(searchString) ||
-                                       (d.IdKhNavigation != null && 
+                                       (d.IdKhNavigation != null &&
                                         d.IdKhNavigation.Hoten.ToLower().Contains(searchString)));
             }
 
@@ -62,22 +62,17 @@ namespace Admin_WBLK.Controllers
             }
 
             // Lấy danh sách trạng thái để làm dropdown filter
-            ViewBag.TrangThais = new List<string> 
-            { 
-                "Chờ xác nhận",
-                "Đã xác nhận",
-                "Chờ giao hàng",
-                "Đang giao hàng",
-                "Đã giao hàng",
-                "Đã huỷ",
-                "Yêu cầu huỷ",
-                "Đang yêu cầu đổi trả",
-                "Chờ nhận hàng trả",
-                "Đổi trả thành công",
-                "Đổi trả thất bại"
+            ViewBag.TrangThais = new List<string>
+            {
+                "Đặt hàng thành công",
+                "Đã duyệt đơn",
+                "Đang giao",
+                "Giao thành công",
+                "Không giao",
+                "Hủy đơn"
             };
 
-            try 
+            try
             {
                 var totalItems = await query.CountAsync();
                 var items = await query.Skip((pageNumber - 1) * pageSize)
@@ -98,7 +93,8 @@ namespace Admin_WBLK.Controllers
         [HttpGet]
         public async Task<IActionResult> SearchSuggestions(string term)
         {
-            if (string.IsNullOrEmpty(term)) return Json(new List<object>());
+            if (string.IsNullOrEmpty(term))
+                return Json(new List<object>());
 
             term = term.ToLower();
             var suggestions = await _context.Donhangs
@@ -144,13 +140,13 @@ namespace Admin_WBLK.Controllers
         // POST: OrderManagement/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("IdKh,Diachigiaohang,Phuongthucthanhtoan,IdMgg,Ghichu,LydoHuy,Tongtien,Trangthai")] Donhang donhang, 
+        public async Task<IActionResult> Create([Bind("IdKh,Diachigiaohang,Phuongthucthanhtoan,IdMgg,Ghichu,LydoHuy,Tongtien,Trangthai")] Donhang donhang,
             string chitietdonhangs, string? Mathanhtoan, string? NoiDungThanhToan)
         {
             try
             {
                 using var transaction = await _context.Database.BeginTransactionAsync();
-                
+
                 // Kiểm tra mã thanh toán nếu là thanh toán online
                 if (donhang.Phuongthucthanhtoan != "COD")
                 {
@@ -174,27 +170,26 @@ namespace Admin_WBLK.Controllers
                 // Thêm đơn hàng
                 _context.Donhangs.Add(donhang);
 
-                // Kiểm tra và cập nhật số lượng tồn kho
+                // Process order details
                 if (!string.IsNullOrEmpty(chitietdonhangs))
                 {
                     var chitietList = JsonSerializer.Deserialize<List<Chitietdonhang>>(chitietdonhangs);
                     foreach (var chitiet in chitietList)
                     {
+                        // Generate and assign a new primary key for each order detail
+                        chitiet.Idchitietdonhang = await GenerateOrderDetailId();
                         chitiet.IdDh = donhang.IdDh;
                         var product = await _context.Sanphams.FindAsync(chitiet.IdSp);
                         if (product == null)
                         {
                             throw new Exception($"Không tìm thấy sản phẩm {chitiet.IdSp}!");
                         }
-
-                        // Kiểm tra số lượng tồn
-                        if (product.Soluongton < chitiet.Soluong)
+                        if (product.Soluongton < chitiet.Soluongsanpham)
                         {
                             throw new Exception($"Sản phẩm {product.Tensanpham} chỉ còn {product.Soluongton} sản phẩm!");
                         }
 
-                        // Trừ số lượng tồn ngay khi tạo đơn hàng
-                        product.Soluongton -= chitiet.Soluong;
+                        product.Soluongton -= chitiet.Soluongsanpham;
                         _context.Update(product);
 
                         _context.Chitietdonhangs.Add(chitiet);
@@ -203,7 +198,7 @@ namespace Admin_WBLK.Controllers
 
                 await _context.SaveChangesAsync();
 
-                // Thêm thông tin thanh toán nếu là thanh toán online
+                // Add payment info if needed
                 if (!string.IsNullOrEmpty(Mathanhtoan) && donhang.Phuongthucthanhtoan != "COD")
                 {
                     var thanhtoan = new Thanhtoan
@@ -221,7 +216,7 @@ namespace Admin_WBLK.Controllers
                 }
 
                 await transaction.CommitAsync();
-                
+
                 TempData["Success"] = "Tạo đơn hàng thành công!";
                 return RedirectToAction(nameof(Index));
             }
@@ -278,24 +273,24 @@ namespace Admin_WBLK.Controllers
         [HttpGet]
         public async Task<IActionResult> GetProductInfo(string id)
         {
-            try 
+            try
             {
                 if (string.IsNullOrEmpty(id))
                 {
                     return Json(new { success = false, message = "Mã sản phẩm không được để trống" });
                 }
 
-                // Thêm log để debug
                 Console.WriteLine($"Searching for product with ID: {id}");
 
                 var product = await _context.Sanphams
-                    .Where(s => s.IdSp == id) // Bỏ Trim() và ToUpper() vì có thể gây lỗi
-                    .Select(s => new { 
-                        s.IdSp, 
-                        s.Tensanpham, 
-                        s.Gia, 
+                    .Where(s => s.IdSp == id)
+                    .Select(s => new
+                    {
+                        s.IdSp,
+                        s.Tensanpham,
+                        s.Gia,
                         s.Soluongton,
-                        success = true 
+                        success = true
                     })
                     .FirstOrDefaultAsync();
 
@@ -319,7 +314,7 @@ namespace Admin_WBLK.Controllers
         [HttpGet]
         public async Task<IActionResult> GetDiscountInfo(string id, bool isEdit = false)
         {
-            try 
+            try
             {
                 var discount = await _context.Magiamgia
                     .Where(m => m.IdMgg == id)
@@ -330,32 +325,33 @@ namespace Admin_WBLK.Controllers
                     return Json(new { success = false, message = "Mã giảm giá không tồn tại" });
                 }
 
-                // Nếu đang ở chế độ Edit, bỏ qua kiểm tra hạn sử dụng
                 if (isEdit)
                 {
-                    return Json(new { 
+                    return Json(new
+                    {
                         success = true,
                         tilechietkhau = discount.Tilechietkhau,
                         message = $"Áp dụng giảm giá {discount.Tilechietkhau}%"
                     });
                 }
 
-                // Kiểm tra các điều kiện cho trang Create
                 var today = DateOnly.FromDateTime(DateTime.Now);
 
                 if (today < discount.Ngaysudung)
                 {
-                    return Json(new { 
-                        success = false, 
-                        message = $"Mã giảm giá chưa đến ngày sử dụng (Bắt đầu từ: {discount.Ngaysudung:dd/MM/yyyy})" 
+                    return Json(new
+                    {
+                        success = false,
+                        message = $"Mã giảm giá chưa đến ngày sử dụng (Bắt đầu từ: {discount.Ngaysudung:dd/MM/yyyy})"
                     });
                 }
 
                 if (today > discount.Ngayhethan)
                 {
-                    return Json(new { 
-                        success = false, 
-                        message = $"Mã giảm giá đã hết hạn (Hết hạn ngày: {discount.Ngayhethan:dd/MM/yyyy})" 
+                    return Json(new
+                    {
+                        success = false,
+                        message = $"Mã giảm giá đã hết hạn (Hết hạn ngày: {discount.Ngayhethan:dd/MM/yyyy})"
                     });
                 }
 
@@ -364,7 +360,8 @@ namespace Admin_WBLK.Controllers
                     return Json(new { success = false, message = "Mã giảm giá đã hết lượt sử dụng" });
                 }
 
-                return Json(new { 
+                return Json(new
+                {
                     success = true,
                     tilechietkhau = discount.Tilechietkhau,
                     message = $"Áp dụng giảm giá {discount.Tilechietkhau}% (Có hiệu lực đến {discount.Ngayhethan:dd/MM/yyyy})"
@@ -420,7 +417,7 @@ namespace Admin_WBLK.Controllers
                 await _context.SaveChangesAsync();
                 TempData["Success"] = "Xóa đơn hàng thành công!";
             }
-            
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -483,18 +480,15 @@ namespace Admin_WBLK.Controllers
             {
                 using var transaction = await _context.Database.BeginTransactionAsync();
 
-                // Bỏ qua validation cho các trường sẽ được tự động set
+                // Bỏ qua validation cho các trường không cần thiết
                 ModelState.Remove("IdKhNavigation");
                 ModelState.Remove("IdMggNavigation");
-
-                if (!ModelState.IsValid)
-                {
-                    return View(donhang);
-                }
+                ModelState.Remove("Chitietdonhangs");
 
                 // Lấy đơn hàng hiện tại và chi tiết
                 var existingOrder = await _context.Donhangs
                     .Include(d => d.Chitietdonhangs)
+                    .AsNoTracking()
                     .FirstOrDefaultAsync(d => d.IdDh == id);
 
                 if (existingOrder == null)
@@ -502,11 +496,10 @@ namespace Admin_WBLK.Controllers
                     return NotFound();
                 }
 
-                // Giữ nguyên chi tiết đơn hàng cũ
-                donhang.Chitietdonhangs = existingOrder.Chitietdonhangs;
-
                 // Cập nhật thông tin đơn hàng
-                _context.Entry(existingOrder).CurrentValues.SetValues(donhang);
+                donhang.Chitietdonhangs = existingOrder.Chitietdonhangs;
+                _context.Entry(existingOrder).State = EntityState.Detached;
+                _context.Update(donhang);
 
                 // Xử lý thông tin thanh toán
                 if (donhang.Phuongthucthanhtoan != "COD" && !string.IsNullOrEmpty(Mathanhtoan))
@@ -563,13 +556,13 @@ namespace Admin_WBLK.Controllers
         public async Task<IActionResult> GetOrderDetails(string id)
         {
             var details = await _context.Chitietdonhangs
-                .Include(c => c.IdSp)
+                .Include(c => c.IdSpNavigation)
                 .Where(c => c.IdDh == id)
                 .Select(c => new
                 {
                     idSp = c.IdSp,
                     tenSp = c.IdSpNavigation.Tensanpham,
-                    soluong = c.Soluong,
+                    soluong = c.Soluongsanpham,
                     dongia = c.Dongia
                 })
                 .ToListAsync();
@@ -589,7 +582,7 @@ namespace Admin_WBLK.Controllers
             try
             {
                 using var transaction = await _context.Database.BeginTransactionAsync();
-                
+
                 var donhang = await _context.Donhangs
                     .Include(d => d.Chitietdonhangs)
                     .FirstOrDefaultAsync(d => d.IdDh == id);
@@ -599,62 +592,44 @@ namespace Admin_WBLK.Controllers
                     return NotFound();
                 }
 
-                // Cập nhật Dictionary các trạng thái hợp lệ
+                // Dictionary các trạng thái hợp lệ
                 var validTransitions = new Dictionary<string, string[]>
                 {
-                    { "Chờ xác nhận", new[] { "Đã xác nhận", "Yêu cầu huỷ" } },
-                    { "Đã xác nhận", new[] { "Chờ giao hàng", "Đã huỷ" } },
-                    { "Chờ giao hàng", new[] { "Đang giao hàng", "Đã huỷ" } },
-                    { "Đang giao hàng", new[] { "Đã giao hàng", "Đã huỷ" } },
-                    { "Đã giao hàng", new[] { "Đang yêu cầu đổi trả" } },
-                    { "Yêu cầu huỷ", new[] { "Đã huỷ", "Đã xác nhận" } },
-                    { "Đang yêu cầu đổi trả", new[] { "Chờ nhận hàng trả", "Đổi trả thất bại" } },
-                    { "Chờ nhận hàng trả", new[] { "Đổi trả thành công", "Đổi trả thất bại" } }
+                    { "Đặt hàng thành công", new[] { "Đã duyệt đơn", "Hủy đơn" } },
+                    { "Đã duyệt đơn", new[] { "Đang giao" } },
+                    { "Đang giao", new[] { "Giao thành công", "Không giao" } },
+                    { "Giao thành công", Array.Empty<string>() },
+                    { "Không giao", Array.Empty<string>() },
+                    { "Hủy đơn", Array.Empty<string>() }
                 };
 
-                if (!validTransitions.ContainsKey(donhang.Trangthai) || 
+                if (!validTransitions.ContainsKey(donhang.Trangthai) ||
                     !validTransitions[donhang.Trangthai].Contains(newStatus))
                 {
                     TempData["Error"] = $"Không thể chuyển trạng thái từ '{donhang.Trangthai}' sang '{newStatus}'!";
                     return RedirectToAction(nameof(Index));
                 }
 
-                // Xử lý các logic bổ sung theo trạng thái
+                // Xử lý logic bổ sung
                 switch (newStatus)
                 {
-                    case "Đã huỷ":
-                        // Hoàn trả số lượng tồn kho khi hủy đơn
+                    case "Hủy đơn":
+                    case "Không giao":
                         foreach (var chitiet in donhang.Chitietdonhangs)
                         {
                             var product = await _context.Sanphams.FindAsync(chitiet.IdSp);
                             if (product != null)
                             {
-                                product.Soluongton += chitiet.Soluong;
+                                product.Soluongton += chitiet.Soluongsanpham;
                                 _context.Update(product);
-                                await _context.SaveChangesAsync();
-                            }
-                        }
-                        break;
-
-                    case "Đổi trả thành công":
-                        // Hoàn trả số lượng tồn kho khi đổi trả thành công
-                        foreach (var chitiet in donhang.Chitietdonhangs)
-                        {
-                            var product = await _context.Sanphams.FindAsync(chitiet.IdSp);
-                            if (product != null)
-                            {
-                                product.Soluongton += chitiet.Soluong;
-                                _context.Update(product);
-                                await _context.SaveChangesAsync();
                             }
                         }
                         break;
                 }
 
-                // Cập nhật trạng thái đơn hàng
                 donhang.Trangthai = newStatus;
                 _context.Update(donhang);
-                
+
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
@@ -667,7 +642,21 @@ namespace Admin_WBLK.Controllers
                 return RedirectToAction(nameof(Index));
             }
         }
+        // Add this helper method to generate a new order detail ID.
+        private async Task<string> GenerateOrderDetailId()
+        {
+            // Assuming the prefix "CTDH" followed by 6 digits
+            var lastDetail = await _context.Chitietdonhangs
+                .OrderByDescending(c => Convert.ToInt32(c.Idchitietdonhang.Substring(4)))
+                .FirstOrDefaultAsync();
 
+            if (lastDetail == null)
+            {
+                return "CTDH000001";
+            }
+            int lastNumber = int.Parse(lastDetail.Idchitietdonhang.Substring(4));
+            return $"CTDH{(lastNumber + 1):D6}";
+        }
         [HttpGet]
         public async Task<IActionResult> GetDiscountSuggestions(string term)
         {
@@ -679,8 +668,7 @@ namespace Admin_WBLK.Controllers
                 .Where(m => (m.IdMgg.Contains(term) || m.Ten.Contains(term)) &&
                             m.Ngaysudung <= today &&
                             m.Ngayhethan >= today &&
-                            m.Soluong > 0 &&
-                            m.Trangthai == true)
+                            m.Soluong > 0)
                 .Take(5)
                 .Select(m => new
                 {

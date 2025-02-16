@@ -1,0 +1,10 @@
+@{
+    bool isAuthorized = User.Identity.IsAuthenticated && 
+                        (User.IsInRole("quantrivien") || User.IsInRole("nhanvienkho") || 
+                         User.IsInRole("nhanvienkinhdoanh") || User.IsInRole("nhanvienmarketing"));
+}
+
+@if (!isAuthorized)
+{
+    <script>window.location.href = '@Url.Action("Login", "AccountManagement")';</script>
+}

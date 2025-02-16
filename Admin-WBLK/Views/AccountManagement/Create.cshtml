@@ -14,42 +14,39 @@
 
         <!-- Card chứa form -->
         <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
-            <form asp-action="Create" method="post" class="w-full h-full">
+            <form asp-action="Create" method="post">
                 <div asp-validation-summary="ModelOnly" class="mb-4 p-4 rounded-lg bg-red-50 text-red-500"></div>
 
-                <!-- Grid layout cho các trường input -->
+                <!-- Account Fields -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- ID tài khoản (readonly) -->
                     <div>
                         <label asp-for="IdTk" class="block text-sm font-medium text-gray-700 mb-1">Mã tài khoản</label>
-                        <input asp-for="IdTk" readonly class="w-full px-4 py-2 border border-gray-300 bg-gray-100 rounded-lg focus:outline-none" />
+                        <input asp-for="IdTk" readonly class="w-full px-4 py-2 border border-gray-300 bg-gray-100 rounded-lg" />
                         <span asp-validation-for="IdTk" class="text-red-500 text-sm mt-1"></span>
                     </div>
-
-                    <!-- Tên tài khoản - full width -->
+                    <!-- Tên tài khoản -->
                     <div class="md:col-span-2">
                         <label asp-for="Tentaikhoan" class="block text-sm font-medium text-gray-700 mb-1">Tên tài khoản</label>
-                        <input asp-for="Tentaikhoan" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required />
+                        <input asp-for="Tentaikhoan" class="w-full px-4 py-2 border border-gray-300 rounded-lg" required />
                         <span asp-validation-for="Tentaikhoan" class="text-red-500 text-sm mt-1"></span>
                     </div>
-
                     <!-- Mật khẩu -->
                     <div>
                         <label asp-for="Matkhau" class="block text-sm font-medium text-gray-700 mb-1">Mật khẩu</label>
-                        <input asp-for="Matkhau" type="password" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required />
+                        <input asp-for="Matkhau" type="password" class="w-full px-4 py-2 border border-gray-300 rounded-lg" required />
                         <span asp-validation-for="Matkhau" class="text-red-500 text-sm mt-1"></span>
                     </div>
-
                     <!-- Quyền truy cập -->
                     <div>
                         <label asp-for="Quyentruycap" class="block text-sm font-medium text-gray-700 mb-1">Quyền truy cập</label>
-                        <select asp-for="Quyentruycap" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required>
+                        <select asp-for="Quyentruycap" id="Quyentruycap" class="w-full px-4 py-2 border border-gray-300 rounded-lg" required>
                             <option value="">Chọn quyền truy cập</option>
-                            <option value="Admin">Quản trị viên</option>
-                            <option value="NhanVienKho">Nhân viên kho</option>
-                            <option value="NhanVienKinhDoanh">Nhân viên kinh doanh</option>
-                            <option value="NhanVienMarketing">Nhân viên marketing</option>
-                            <option value="KhachHang">Khách hàng</option>
+                            <option value="quantrivien">Quản trị viên</option>
+                            <option value="nhanvienkho">Nhân viên kho</option>
+                            <option value="nhanvienkinhdoanh">Nhân viên kinh doanh</option>
+                            <option value="nhanvienmarketing">Nhân viên marketing</option>
+                            <option value="khachhang">Khách hàng</option>
                         </select>
                         <span asp-validation-for="Quyentruycap" class="text-red-500 text-sm mt-1"></span>
                     </div>
@@ -57,14 +54,54 @@
 
                 <!-- Buttons -->
                 <div class="mt-8 flex items-center justify-end gap-4">
-                    <a asp-action="Index" class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-800 transition-colors">
+                    <a asp-action="Index" class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-800">
                         Quay lại
                     </a>
-                    <button type="submit" class="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
-                        Thêm tài khoản
+                    <!-- Button to create only the account -->
+                    <button type="submit" name="actionType" value="AccountOnly" class="px-6 py-2 bg-blue-600 text-white rounded-lg">
+                        Tạo tài khoản
+                    </button>
+                    <!-- Button to create both account & employee (if role is employee) -->
+                    <button type="submit" id="btnAccountAndEmployee" name="actionType" value="AccountAndEmployee" class="px-6 py-2 bg-green-600 text-white rounded-lg" style="display:none;">
+                        Tạo tài khoản & nhân viên
+                    </button>
+                    <!-- Button to create both account & customer (if role is khachhang) -->
+                    <button type="submit" id="btnAccountAndCustomer" name="actionType" value="AccountAndCustomer" class="px-6 py-2 bg-green-600 text-white rounded-lg" style="display:none;">
+                        Tạo tài khoản & khách hàng
                     </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        function checkRole() {
+            var roleSelect = document.getElementById("Quyentruycap");
+            var selectedRole = roleSelect.value.toLowerCase();
+            var btnEmp = document.getElementById("btnAccountAndEmployee");
+            var btnCust = document.getElementById("btnAccountAndCustomer");
+
+            // If role is an employee role, show the employee button
+            var employeeRoles = ["nhanvienkho", "nhanvienkinhdoanh", "nhanvienmarketing"];
+            if (employeeRoles.indexOf(selectedRole) >= 0) {
+                btnEmp.style.display = "inline-block";
+                btnCust.style.display = "none";
+            }
+            // If role is khachhang, show the customer button
+            else if (selectedRole === "khachhang") {
+                btnCust.style.display = "inline-block";
+                btnEmp.style.display = "none";
+            }
+            else {
+                btnEmp.style.display = "none";
+                btnCust.style.display = "none";
+            }
+        }
+
+        document.getElementById("Quyentruycap").addEventListener("change", checkRole);
+        window.addEventListener("load", checkRole);
+    </script>
+}

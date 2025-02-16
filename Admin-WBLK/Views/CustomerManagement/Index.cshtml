@@ -109,7 +109,9 @@
                 {
                     <tr class="hover:bg-gray-50">
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@item.IdKh</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@item.Hoten</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            @(item.Hoten != null && item.Hoten.Length > 13 ? item.Hoten.Substring(0, 13) + "..." : item.Hoten)
+                        </td>
                         <td class="px-6 py-4 text-sm text-gray-900">
                             <span class="block max-w-xs truncate" title="@item.Diachi">
                                 @(item.Diachi?.Length > 10 ? item.Diachi.Substring(0, 10) + "..." : item.Diachi)
@@ -162,7 +164,8 @@
                 <a asp-action="Index" 
                    asp-route-pageNumber="@(Model.PageNumber - 1)"
                    asp-route-searchString="@ViewData["CurrentFilter"]"
-                   asp-route-sortOrder="@ViewData["CurrentSort"]"
+                   asp-route-loaiSp="@ViewData["CurrentLoaiSp"]"
+                   asp-route-thuongHieu="@ViewData["CurrentThuongHieu"]"
                    class="px-3 py-2 rounded-lg border hover:bg-gray-50">
                     <span class="sr-only">Previous</span>
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -171,15 +174,54 @@
                 </a>
             }
 
-            @for (int i = 1; i <= Model.TotalPages; i++)
+            @{
+                var startPage = Math.Max(1, Model.PageNumber - 2);
+                var endPage = Math.Min(Model.TotalPages, startPage + 4);
+                
+                if (endPage - startPage < 4)
+                {
+                    startPage = Math.Max(1, endPage - 4);
+                }
+            }
+
+            @if (startPage > 1)
+            {
+                <a asp-action="Index" 
+                   asp-route-pageNumber="1"
+                   asp-route-searchString="@ViewData["CurrentFilter"]"
+                   asp-route-loaiSp="@ViewData["CurrentLoaiSp"]"
+                   asp-route-thuongHieu="@ViewData["CurrentThuongHieu"]"
+                   class="px-3 py-2 rounded-lg border hover:bg-gray-50">1</a>
+                @if (startPage > 2)
+                {
+                    <span class="px-3 py-2">...</span>
+                }
+            }
+
+            @for (int i = startPage; i <= endPage; i++)
             {
                 <a asp-action="Index" 
                    asp-route-pageNumber="@i"
                    asp-route-searchString="@ViewData["CurrentFilter"]"
-                   asp-route-sortOrder="@ViewData["CurrentSort"]"
+                   asp-route-loaiSp="@ViewData["CurrentLoaiSp"]"
+                   asp-route-thuongHieu="@ViewData["CurrentThuongHieu"]"
                    class="px-3 py-2 rounded-lg border @(i == Model.PageNumber ? "bg-blue-50 text-blue-600 font-medium" : "hover:bg-gray-50")">
                     @i
                 </a>
+            }
+
+            @if (endPage < Model.TotalPages)
+            {
+                @if (endPage < Model.TotalPages - 1)
+                {
+                    <span class="px-3 py-2">...</span>
+                }
+                <a asp-action="Index" 
+                   asp-route-pageNumber="@Model.TotalPages"
+                   asp-route-searchString="@ViewData["CurrentFilter"]"
+                   asp-route-loaiSp="@ViewData["CurrentLoaiSp"]"
+                   asp-route-thuongHieu="@ViewData["CurrentThuongHieu"]"
+                   class="px-3 py-2 rounded-lg border hover:bg-gray-50">@Model.TotalPages</a>
             }
 
             @if (Model.HasNextPage)
@@ -187,7 +229,8 @@
                 <a asp-action="Index" 
                    asp-route-pageNumber="@(Model.PageNumber + 1)"
                    asp-route-searchString="@ViewData["CurrentFilter"]"
-                   asp-route-sortOrder="@ViewData["CurrentSort"]"
+                   asp-route-loaiSp="@ViewData["CurrentLoaiSp"]"
+                   asp-route-thuongHieu="@ViewData["CurrentThuongHieu"]"
                    class="px-3 py-2 rounded-lg border hover:bg-gray-50">
                     <span class="sr-only">Next</span>
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -195,6 +238,17 @@
                     </svg>
                 </a>
             }
+
+            <!-- Add direct page navigation input -->
+            <div class="flex items-center space-x-2 ml-4">
+                <span class="text-sm text-gray-500">Đến trang:</span>
+                <input type="number" 
+                       id="pageInput" 
+                       min="1" 
+                       max="@Model.TotalPages" 
+                       class="w-16 px-2 py-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                       onkeypress="handlePageInput(event)">
+            </div>
         </nav>
     </div>
 </div>
@@ -254,5 +308,20 @@
                 resultsDiv.classList.add('hidden');
             }
         });
+        function handlePageInput(event) {
+            if (event.key === 'Enter') {
+                const pageNumber = parseInt(event.target.value);
+                const maxPage = @Model.TotalPages;
+                
+                if (pageNumber >= 1 && pageNumber <= maxPage) {
+                    const currentUrl = new URL(window.location.href);
+                    currentUrl.searchParams.set('pageNumber', pageNumber);
+                    window.location.href = currentUrl.toString();
+                } else {
+                    alert(`Vui lòng nhập số trang từ 1 đến ${maxPage}`);
+                    event.target.value = '';
+                }
+            }
+        }
     </script>
 } 

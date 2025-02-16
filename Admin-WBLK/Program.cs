@@ -1,5 +1,6 @@
 using Admin_WBLK.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,7 +14,13 @@ builder.Services.AddDbContext<DatabaseContext>(options =>
         new MySqlServerVersion(new Version(8, 0, 31))
     )
 );
-
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/AccountManagement/Login"; // Đường dẫn đến trang đăng nhập
+        options.LogoutPath = "/AccountManagement/Logout"; // Đường dẫn để đăng xuất
+        options.ExpireTimeSpan = TimeSpan.FromHours(1); // Thời gian hết hạn cookie
+    });
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -23,7 +30,6 @@ if (!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
-
 app.UseHttpsRedirection();
 app.UseRouting();
 

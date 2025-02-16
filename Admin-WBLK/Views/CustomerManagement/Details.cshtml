@@ -7,43 +7,37 @@
 <div class="p-6 w-full h-full bg-gray-50">
     <div class="max-w-3xl mx-auto">
         <h1 class="text-3xl font-bold text-gray-900 mb-6">Chi tiết khách hàng</h1>
-
         <div class="bg-white rounded-lg shadow-sm p-6">
             <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-6">
                 <div>
                     <dt class="text-sm font-medium text-gray-500">Mã khách hàng</dt>
                     <dd class="mt-1 text-sm text-gray-900">@Model.IdKh</dd>
                 </div>
-
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Tài khoản liên kết</dt>
+                    <dd class="mt-1 text-sm text-gray-900">@Model.IdTk</dd>
+                </div>
                 <div>
                     <dt class="text-sm font-medium text-gray-500">Họ tên</dt>
                     <dd class="mt-1 text-sm text-gray-900">@Model.Hoten</dd>
                 </div>
-
                 <div>
                     <dt class="text-sm font-medium text-gray-500">Email</dt>
                     <dd class="mt-1 text-sm text-gray-900">@Model.Email</dd>
                 </div>
-
                 <div>
                     <dt class="text-sm font-medium text-gray-500">Số điện thoại</dt>
                     <dd class="mt-1 text-sm text-gray-900">@Model.Sodienthoai</dd>
                 </div>
-
                 <div class="md:col-span-2">
                     <dt class="text-sm font-medium text-gray-500">Địa chỉ</dt>
                     <dd class="mt-1 text-sm text-gray-900">@Model.Diachi</dd>
                 </div>
             </dl>
-
-            <div class="mt-6 flex items-center justify-end gap-4">
-                <a asp-action="Index" class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-800">
-                    Quay lại
-                </a>
-                <a asp-action="Edit" asp-route-id="@Model.IdKh" class="px-4 py-2 bg-yellow-100 text-yellow-700 text-sm font-medium rounded-lg hover:bg-yellow-200">
-                    Chỉnh sửa
-                </a>
+            <div class="mt-6 flex justify-end gap-4">
+                <a asp-action="Edit" asp-route-id="@Model.IdKh" class="px-4 py-2 bg-yellow-100 text-yellow-700 rounded-md">Chỉnh sửa</a>
+                <a asp-action="Index" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md">Quay lại</a>
             </div>
         </div>
     </div>
-</div> 
+</div>
