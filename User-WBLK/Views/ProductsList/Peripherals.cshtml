@@ -9,18 +9,22 @@
     <div class="bg-white rounded-lg p-4">
         <h2 class="font-semibold mb-2">Danh mục:</h2>
         <div class="flex flex-wrap gap-2">
-            <a href="@Url.Action("Peripherals", new { category = "keyboard" })" 
-               class="px-4 py-2 bg-gray-100 rounded-md hover:bg-gray-200 @(Model?.Category == "keyboard" ? "bg-blue-600 text-white" : "")">
-                Bàn phím
-            </a>
-            <a href="@Url.Action("Peripherals", new { category = "mouse" })"
-               class="px-4 py-2 bg-gray-100 rounded-md hover:bg-gray-200 @(Model?.Category == "mouse" ? "bg-blue-600 text-white" : "")">
-                Chuột
-            </a>
-            <a href="@Url.Action("Peripherals", new { category = "headphone" })"
-               class="px-4 py-2 bg-gray-100 rounded-md hover:bg-gray-200 @(Model?.Category == "headphone" ? "bg-blue-600 text-white" : "")">
-                Tai nghe
-            </a>
+            @{
+                var categories = new[] {
+                    ("keyboard", "Bàn phím"),
+                    ("mouse", "Chuột"),
+                    ("headphone", "Tai nghe"),
+                    ("webcam", "Webcam")
+                };
+            }
+            @foreach (var (value, text) in categories)
+            {
+                var isActive = Model?.Category == value;
+                <a href="@Url.Action("Peripherals", new { category = value })"
+                   class="px-4 py-2 bg-gray-100 rounded-md hover:bg-gray-200 @(isActive ? "bg-blue-600 text-white" : "")">
+                    @text
+                </a>
+            }
         </div>
     </div>
 
@@ -179,6 +183,27 @@
                             @foreach (var conn in headphoneConnections)
                             {
                                 <option value="@conn.Value" selected="@(Model?.AdditionalFilters?.ContainsKey("connection") == true && Model.AdditionalFilters["connection"] == conn.Value)">@conn.Text</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                break;
+
+            case "webcam":
+                <div class="space-y-4">
+                    <div class="flex flex-wrap gap-2">
+                        <select id="brand" class="px-4 py-2 border rounded-md">
+                            @{
+                                var webcamBrands = new[] {
+                                    new { Value = "", Text = "Tất cả thương hiệu" },
+                                    new { Value = "logitech", Text = "Logitech" },
+                                    new { Value = "microsoft", Text = "Microsoft" },
+                                    new { Value = "razer", Text = "Razer" }
+                                };
+                            }
+                            @foreach (var brand in webcamBrands)
+                            {
+                                <option value="@brand.Value" selected="@(Model?.Brand == brand.Value)">@brand.Text</option>
                             }
                         </select>
                     </div>

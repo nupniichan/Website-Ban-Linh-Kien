@@ -409,7 +409,7 @@
                                 <!-- Thiết bị âm thanh -->
                                 <div class="group/item px-4 py-2 hover:bg-blue-50">
                                     <div class="flex items-center justify-between pr-8">
-                                        <span>Loa, Micro, Webcam</span>
+                                        <span>Loa, Micro</span>
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
                                         </svg>
@@ -419,7 +419,7 @@
                                     <div class="hidden group-hover/item:block absolute left-full top-0 min-h-full w-[600px] bg-white rounded-lg shadow-lg -mt-2">
                                         <div class="absolute h-full w-12 bg-transparent -left-12"></div>
                                         <div class="p-4 pt-6">
-                                            <div class="grid grid-cols-3 gap-x-6 gap-y-8">
+                                            <div class="grid grid-cols-2 gap-x-6 gap-y-8">
                                                 <!-- Loa -->
                                                 <div class="space-y-2">
                                                     <h4 class="font-semibold text-blue-900 hover:text-red-500">Loa máy tính</h4>
@@ -449,28 +449,15 @@
                                                            class="block text-sm hover:text-blue-500">Micro karaoke</a>
                                                     </div>
                                                 </div>
-
-                                                <!-- Webcam -->
-                                                <div class="space-y-2">
-                                                    <h4 class="font-semibold text-blue-900 hover:text-red-500">Webcam</h4>
-                                                    <div class="space-y-1">
-                                                        <a href="@Url.Action("Audio", "ProductsList", new { category = "webcam", brand = "logitech" })" 
-                                                           class="block text-sm hover:text-blue-500">Webcam Logitech</a>
-                                                        <a href="@Url.Action("Audio", "ProductsList", new { category = "webcam", brand = "microsoft" })" 
-                                                           class="block text-sm hover:text-blue-500">Webcam Microsoft</a>
-                                                        <a href="@Url.Action("Audio", "ProductsList", new { category = "webcam", brand = "rapoo" })" 
-                                                           class="block text-sm hover:text-blue-500">Webcam Rapoo</a>
-                                                    </div>
-                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <!-- Bàn phím, Chuột, Tai nghe -->
+                                <!-- Bàn phím, Chuột, Tai nghe, Webcam -->
                                 <div class="group/item px-4 py-2 hover:bg-blue-50">
                                     <div class="flex items-center justify-between pr-8">
-                                        <span>Bàn phím, Chuột, Tai nghe</span>
+                                        <span>Bàn phím, Chuột, Tai nghe, Webcam</span>
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
                                         </svg>
@@ -480,7 +467,7 @@
                                     <div class="hidden group-hover/item:block absolute left-full top-0 min-h-full w-[600px] bg-white rounded-lg shadow-lg -mt-2">
                                         <div class="absolute h-full w-12 bg-transparent -left-12"></div>
                                         <div class="p-4 pt-6">
-                                            <div class="grid grid-cols-3 gap-x-6 gap-y-8">
+                                            <div class="grid grid-cols-4 gap-x-6 gap-y-8">
                                                 <div class="space-y-2">
                                                     <h4 class="font-semibold text-blue-900 hover:text-red-500">Bàn phím</h4>
                                                     <div class="space-y-1">
@@ -526,6 +513,17 @@
                                                            class="block text-sm hover:text-blue-500">Tai nghe Corsair</a>
                                                         <a href="@Url.Action("Peripherals", "ProductsList", new { usage = "headphone", brand = "steelseries" })" 
                                                            class="block text-sm hover:text-blue-500">Tai nghe Steelseries</a>
+                                                    </div>
+                                                </div>
+                                                <div class="space-y-2">
+                                                    <h4 class="font-semibold text-blue-900 hover:text-red-500">Webcam</h4>
+                                                    <div class="space-y-1">
+                                                        <a href="@Url.Action("Peripherals", "ProductsList", new { category = "webcam", brand = "logitech" })" 
+                                                           class="block text-sm hover:text-blue-500">Webcam Logitech</a>
+                                                        <a href="@Url.Action("Peripherals", "ProductsList", new { category = "webcam", brand = "microsoft" })" 
+                                                           class="block text-sm hover:text-blue-500">Webcam Microsoft</a>
+                                                        <a href="@Url.Action("Peripherals", "ProductsList", new { category = "webcam", brand = "rapoo" })" 
+                                                           class="block text-sm hover:text-blue-500">Webcam Rapoo</a>
                                                     </div>
                                                 </div>
                                             </div>

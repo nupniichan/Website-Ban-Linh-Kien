@@ -12,8 +12,7 @@
             @{
                 var categories = new[] {
                     ("speaker", "Loa"),
-                    ("microphone", "Micro"),
-                    ("webcam", "Webcam")
+                    ("microphone", "Micro")
                 };
             }
             @foreach (var (value, text) in categories)
@@ -156,39 +155,6 @@
                                 var url = Url.Action("Audio", "ProductsList", parameters);
                                 var isSelected = Model.AdditionalFilters?.GetValueOrDefault("type") == type.Value;
                                 <option value="@url" selected="@isSelected">@type.Text</option>
-                            }
-                        </select>
-                    </div>
-                </div>
-                break;
-
-            case "webcam":
-                <div class="space-y-4">
-                    <div class="flex flex-wrap gap-2">
-                        <select id="brand" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
-                            @{
-                                var webcamBrands = new[] {
-                                    new { Value = "", Text = "Tất cả thương hiệu" },
-                                    new { Value = "logitech", Text = "Logitech" },
-                                    new { Value = "microsoft", Text = "Microsoft" },
-                                    new { Value = "razer", Text = "Razer" }
-                                };
-                            }
-                            @foreach (var brand in webcamBrands)
-                            {
-                                var parameters = new Dictionary<string, string>
-                                {
-                                    { "category", Model.Category }
-                                };
-                                
-                                if (!string.IsNullOrEmpty(brand.Value))
-                                    parameters.Add("brand", brand.Value);
-                                if (!string.IsNullOrEmpty(Model.PriceRange))
-                                    parameters.Add("priceRange", Model.PriceRange);
-
-                                var url = Url.Action("Audio", "ProductsList", parameters);
-                                var isSelected = Model.Brand == brand.Value;
-                                <option value="@url" selected="@isSelected">@brand.Text</option>
                             }
                         </select>
                     </div>
