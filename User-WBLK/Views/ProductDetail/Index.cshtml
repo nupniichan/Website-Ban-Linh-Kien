@@ -261,35 +261,42 @@
 
                 <!-- Reviews List -->
                 <div class="flex-1 p-6">
-                    <div id="reviewsList">
-                        @foreach (var review in Model.Reviews.Take(4))
-                        {
-                            <div class="py-3 border-b last:border-0">
-                                <div class="flex items-center gap-2 mb-2">
-                                    <span class="font-medium">@review.UserName</span>
-                                    <span class="text-gray-400">•</span>
-                                    <div class="flex text-yellow-400">
-                                        @for (int i = 0; i < review.Rating; i++)
-                                        {
-                                            <span>⭐</span>
-                                        }
+                    @if (!Model.Reviews.Any())
+                    {
+                        <p class="text-gray-500 italic text-center">Chưa có đánh giá nào cho sản phẩm này</p>
+                    }
+                    else
+                    {
+                        <div id="reviewsList">
+                            @foreach (var review in Model.Reviews.Take(4))
+                            {
+                                <div class="py-3 border-b last:border-0">
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <span class="font-medium">@review.UserName</span>
+                                        <span class="text-gray-400">•</span>
+                                        <div class="flex text-yellow-400">
+                                            @for (int i = 0; i < review.Rating; i++)
+                                            {
+                                                <span>⭐</span>
+                                            }
+                                        </div>
+                                        <span class="text-gray-400">•</span>
+                                        <span class="text-sm text-gray-500">@String.Format("{0:dd/MM/yyyy}", review.Date)</span>
                                     </div>
-                                    <span class="text-gray-400">•</span>
-                                    <span class="text-sm text-gray-500">@String.Format("{0:dd/MM/yyyy}", review.Date)</span>
+                                    <p class="text-gray-600">@review.Comment</p>
                                 </div>
-                                <p class="text-gray-600">@review.Comment</p>
+                            }
+                        </div>
+                        @if (Model.Reviews.Count > 4)
+                        {
+                            <div class="text-center mt-4">
+                                <button id="showMoreBtn" 
+                                        class="bg-blue-500 text-white px-6 py-1.5 rounded-lg hover:bg-blue-600 transition-colors text-sm"
+                                        onclick="toggleReviews()">
+                                    Xem thêm
+                                </button>
                             </div>
                         }
-                    </div>
-                    @if (Model.Reviews.Count > 4)
-                    {
-                        <div class="text-center mt-4">
-                            <button id="showMoreBtn" 
-                                    class="bg-blue-500 text-white px-6 py-1.5 rounded-lg hover:bg-blue-600 transition-colors text-sm"
-                                    onclick="toggleReviews()">
-                                Xem thêm
-                            </button>
-                        </div>
                     }
                 </div>
             </div>
@@ -308,8 +315,8 @@
             </div>
 
             <!-- Product Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-                @foreach (var product in Model.RelatedProducts)
+            <div class="grid grid-cols-5 gap-6">
+                @foreach (var product in Model.RelatedProducts.Take(5))
                 {
                     <partial name="_ProductCard" model="product" />
                 }

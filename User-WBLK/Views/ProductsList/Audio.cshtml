@@ -237,38 +237,25 @@
     </div>
 
     <!-- Products Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mt-6">
         @if (Model.Products != null && Model.Products.Any())
         {
-            @foreach (var product in Model.Products)
+            var allProducts = Model.Products.ToList();
+            
+            for (int i = 0; i < allProducts.Count; i++)
             {
-                <div class="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300">
-                    <a href="/components/@product.IdSp" class="block">
-                        <div class="p-3">
-                            <img src="@product.Hinhanh" alt="@product.Tensanpham" 
-                                 class="w-full h-40 object-cover rounded-lg mb-3">
-                            <div class="relative group">
-                                <h3 class="text-base font-semibold mb-2 product-title overflow-hidden"
-                                    data-full-text="@product.Tensanpham">
-                                    @product.Tensanpham
-                                </h3>
-                                <div class="absolute left-0 -top-12 bg-black text-white text-xs rounded-lg px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 whitespace-nowrap product-tooltip">
-                                    @product.Tensanpham
-                                </div>
-                            </div>
-                            <p class="text-red-600 font-bold text-xl mb-4">@product.Gia.ToString("N0")đ</p>
-                            <button class="w-full hover:opacity-80 transition-opacity duration-300">
-                                <div class="flex items-center gap-2">
-                                    <div class="bg-[#0066CC] p-2 rounded-full">
-                                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                                        </svg>
-                                    </div>
-                                    <span class="text-gray-700">Thêm vào giỏ hàng</span>
-                                </div>
-                            </button>
-                        </div>
-                    </a>
+                var product = allProducts[i];
+                var isHidden = i >= 10;
+                
+                <div class="product-item @(isHidden ? "hidden" : "")" data-index="@i">
+                    <partial name="_ProductCard" model='new ProductCardViewModel 
+                    { 
+                        IdSp = product.IdSp,
+                        TenSp = product.Tensanpham,
+                        Gia = product.Gia,
+                        ImageUrl = product.Hinhanh,
+                        LoaiSp = Model.Category
+                    }' />
                 </div>
             }
         }
@@ -280,54 +267,102 @@
         }
     </div>
 
-    <!-- Pagination -->
-    @if (Model.TotalPages > 1)
+    @if (Model.Products != null && Model.Products.Count() > 10)
     {
-        <div class="mt-8 flex justify-center">
-            <div class="flex space-x-2">
-                @for (int i = 1; i <= Model.TotalPages; i++)
-                {
-                    var parameters = new Dictionary<string, string>
-                    {
-                        { "page", i.ToString() }
-                    };
-                    if (!string.IsNullOrEmpty(Model.Category))
-                        parameters.Add("category", Model.Category);
-                    if (!string.IsNullOrEmpty(Model.Brand))
-                        parameters.Add("brand", Model.Brand);
-                    if (!string.IsNullOrEmpty(Model.PriceRange))
-                        parameters.Add("priceRange", Model.PriceRange);
-                    if (Model.AdditionalFilters != null && Model.AdditionalFilters.ContainsKey("type"))
-                        parameters.Add("type", Model.AdditionalFilters["type"]);
-
-                    <a href="@Url.Action("Audio", "ProductsList", parameters)"
-                       class="px-4 py-2 rounded-md @(Model.CurrentPage == i ? "bg-blue-500 text-white" : "bg-gray-100 hover:bg-gray-200")">
-                        @i
-                    </a>
-                }
-            </div>
+        <div class="text-center mt-6">
+            <button id="loadMoreBtn" class="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 transition-colors duration-300">
+                Xem thêm
+            </button>
+            <button id="collapseBtn" class="hidden bg-gray-500 text-white px-6 py-2 rounded-md hover:bg-gray-600 transition-colors duration-300 ml-2">
+                Thu gọn
+            </button>
         </div>
     }
 </div>
 
 @section Scripts {
     <script>
+        function updateFilters() {
+            const params = new URLSearchParams(window.location.search);
+            
+            // Giữ lại category và priceRange hiện tại nếu có
+            const category = '@Model?.Category';
+            const priceRange = '@Model?.PriceRange';
+            
+            // Xóa tất cả params hiện tại
+            for (let param of params.keys()) {
+                params.delete(param);
+            }
+            
+            // Thêm lại category và priceRange nếu có
+            if (category) params.set('category', category);
+            if (priceRange) params.set('priceRange', priceRange);
+            
+            // Thêm các giá trị từ select filters
+            document.querySelectorAll('select').forEach(select => {
+                if (select.value) {
+                    params.set(select.id, select.value);
+                }
+            });
+            
+            // Cập nhật URL
+            window.location.href = `${window.location.pathname}?${params.toString()}`;
+        }
+
+        // Thêm sự kiện onchange cho tất cả select filters
+        document.querySelectorAll('select').forEach(select => {
+            select.addEventListener('change', updateFilters);
+        });
+
         document.addEventListener('DOMContentLoaded', function() {
-            function updateProductTitles() {
-                const titles = document.querySelectorAll('.product-title');            
-                titles.forEach((title, index) => {
-                    const fullText = title.getAttribute('data-full-text');
+            const loadMoreBtn = document.getElementById('loadMoreBtn');
+            const collapseBtn = document.getElementById('collapseBtn');
+            const products = document.querySelectorAll('.product-item');
+            const productsPerPage = 10;
+            let currentlyShown = productsPerPage;
+
+            if (loadMoreBtn) {
+                loadMoreBtn.addEventListener('click', function() {
+                    // Calculate next batch of products to show
+                    const nextBatch = Array.from(products)
+                        .slice(currentlyShown, currentlyShown + productsPerPage);
                     
-                    title.textContent = fullText;
-                    
-                    if (fullText && fullText.length > 70) {
-                        const truncatedText = fullText.substring(0, 70) + '...';
-                        title.textContent = truncatedText;
+                    // Show next batch of products
+                    nextBatch.forEach(product => {
+                        product.classList.remove('hidden');
+                    });
+
+                    // Update counter
+                    currentlyShown += productsPerPage;
+
+                    // Hide "Xem thêm" button and show "Thu gọn" button if we've shown all products
+                    if (currentlyShown >= products.length) {
+                        loadMoreBtn.classList.add('hidden');
+                        collapseBtn.classList.remove('hidden');
                     }
                 });
             }
-            
-            updateProductTitles();
+
+            if (collapseBtn) {
+                collapseBtn.addEventListener('click', function() {
+                    // Hide all products after the first 10
+                    Array.from(products).forEach((product, index) => {
+                        if (index >= productsPerPage) {
+                            product.classList.add('hidden');
+                        }
+                    });
+
+                    // Reset counter
+                    currentlyShown = productsPerPage;
+
+                    // Show "Xem thêm" button and hide "Thu gọn" button
+                    loadMoreBtn.classList.remove('hidden');
+                    collapseBtn.classList.add('hidden');
+
+                    // Scroll back to the top of the products section
+                    products[0].scrollIntoView({ behavior: 'smooth' });
+                });
+            }
         });
     </script>
 }

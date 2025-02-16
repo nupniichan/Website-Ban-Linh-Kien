@@ -21,49 +21,73 @@ namespace Website_Ban_Linh_Kien.Controllers
             string cpuType = null, string ram = null, string gpu = null, 
             string priceRange = null, int page = 1)
         {
-            var query = _context.Sanphams.Where(p => p.Loaisanpham.ToLower() == "pc");
-
-            // Lọc theo thương hiệu
-            if (!string.IsNullOrEmpty(brand))
-            {
-                query = query.Where(p => p.Thuonghieu.ToLower() == brand.ToLower());
-            }
+            var query = _context.Sanphams.Where(p => p.Loaisanpham == "PC");
 
             // Lọc theo nhu cầu sử dụng
             if (!string.IsNullOrEmpty(usage))
             {
-                query = query.Where(p => p.Thongsokythuat.Contains($"\"usage\":\"{usage}\""));
+                var usageValue = usage.Trim();
+                query = query.Where(p => p.Thongsokythuat.Contains(usageValue));
+                
+                // Debug log
+                Console.WriteLine($"Filtering for usage: {usageValue}");
+            }
+
+            // Lọc theo thương hiệu
+            if (!string.IsNullOrEmpty(brand))
+            {
+                query = query.Where(p => p.Thuonghieu.Contains(brand));
             }
 
             // Lọc theo CPU
             if (!string.IsNullOrEmpty(cpuType))
             {
-                query = query.Where(p => p.Thongsokythuat.Contains($"\"cpu\":\"{cpuType}\""));
+                query = query.Where(p => p.Thongsokythuat.Contains(cpuType));
             }
 
             // Lọc theo RAM
             if (!string.IsNullOrEmpty(ram))
             {
-                query = query.Where(p => p.Thongsokythuat.Contains($"\"ram\":\"{ram}\""));
+                query = query.Where(p => p.Thongsokythuat.Contains(ram));
             }
 
             // Lọc theo GPU
             if (!string.IsNullOrEmpty(gpu))
             {
-                query = query.Where(p => p.Thongsokythuat.Contains($"\"gpu\":\"{gpu}\""));
+                query = query.Where(p => p.Thongsokythuat.Contains(gpu));
             }
 
             // Lọc theo khoảng giá
             if (!string.IsNullOrEmpty(priceRange))
             {
-                var prices = priceRange.Split("-");
-                if (prices.Length == 2)
+                switch (priceRange.ToLower())
                 {
-                    decimal minPrice = decimal.Parse(prices[0]) * 1000000;
-                    decimal maxPrice = decimal.Parse(prices[1]) * 1000000;
-                    query = query.Where(p => p.Gia >= minPrice && p.Gia <= maxPrice);
+                    case "5-15-trieu":
+                        query = query.Where(p => p.Gia >= 5000000 && p.Gia <= 15000000);
+                        break;
+                    case "15-20-trieu":
+                        query = query.Where(p => p.Gia >= 15000000 && p.Gia <= 20000000);
+                        break;
+                    case "20-30-trieu":
+                        query = query.Where(p => p.Gia >= 20000000 && p.Gia <= 30000000);
+                        break;
+                    case "30-50-trieu":
+                        query = query.Where(p => p.Gia >= 30000000 && p.Gia <= 50000000);
+                        break;
+                    case "50-100-trieu":
+                        query = query.Where(p => p.Gia >= 50000000 && p.Gia <= 100000000);
+                        break;
+                    case "tren-100-trieu":
+                        query = query.Where(p => p.Gia > 100000000);
+                        break;
                 }
             }
+
+            // Debug: In ra thông tin query
+            Console.WriteLine($"Price Range: {priceRange}");
+            Console.WriteLine($"Usage: {usage}");
+            var totalCount = await query.CountAsync();
+            Console.WriteLine($"Total products found: {totalCount}");
 
             var products = await GetPagedProductsAsync(query, page);
             var totalPages = await GetTotalPagesAsync(query);

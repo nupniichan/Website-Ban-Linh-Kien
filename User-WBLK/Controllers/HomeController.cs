@@ -17,16 +17,22 @@ namespace Website_Ban_Linh_Kien.Controllers
 
         public IActionResult Index()
         {
-            // Debug để xem dữ liệu
-            var allComponents = _context.Sanphams
-                .Where(p => p.Loaisanpham == "Components")
+            // Lấy top sản phẩm có lượt xem cao nhất
+            var hotProducts = _context.Sanphams
+                .OrderByDescending(p => p.Soluotxem)  // Sắp xếp theo số lượt xem giảm dần
+                .Take(10)  // Lấy 10 sản phẩm
+                .Select(p => new ProductCardViewModel
+                {
+                    IdSp = p.IdSp,
+                    TenSp = p.Tensanpham,
+                    Gia = p.Gia,
+                    ImageUrl = p.Hinhanh,
+                    LoaiSp = p.Loaisanpham,
+                    SoLuongTon = p.Soluongton,
+                    SoLuotXem = p.Soluotxem,
+                    DaMuaHang = p.Damuahang
+                })
                 .ToList();
-
-            foreach (var comp in allComponents)
-            {
-                Console.WriteLine($"Component: {comp.Tensanpham}");
-                Console.WriteLine($"ThongSoKyThuat: {comp.Thongsokythuat}");
-            }
 
             // Lấy sản phẩm theo từng section
             var pcProducts = _context.Sanphams
@@ -63,7 +69,7 @@ namespace Website_Ban_Linh_Kien.Controllers
                     TenSp = p.Tensanpham,
                     Gia = p.Gia,
                     ImageUrl = p.Hinhanh,
-                    LoaiSp = p.Loaisanpham,
+                    LoaiSp = "Components",
                     DanhMuc = "CPU",
                     SoLuongTon = p.Soluongton
                 })
@@ -85,8 +91,9 @@ namespace Website_Ban_Linh_Kien.Controllers
                     TenSp = p.Tensanpham,
                     Gia = p.Gia,
                     ImageUrl = p.Hinhanh,
-                    LoaiSp = p.Loaisanpham,
-                    DanhMuc = "VGA"
+                    LoaiSp = "Components",
+                    DanhMuc = "VGA",
+                    SoLuongTon = p.Soluongton
                 })
                 .ToList();
 
@@ -99,7 +106,7 @@ namespace Website_Ban_Linh_Kien.Controllers
 
             var ramProducts = _context.Sanphams
                 .Where(p => p.Loaisanpham == "Components" && 
-                       p.Thongsokythuat.Contains("\"Danh mục\":\"RAM\""))
+                       p.Thongsokythuat.Contains("\"Danh mục\": \"RAM\""))
                 .Select(p => new ProductCardViewModel
                 {
                     IdSp = p.IdSp,
@@ -107,23 +114,39 @@ namespace Website_Ban_Linh_Kien.Controllers
                     Gia = p.Gia,
                     ImageUrl = p.Hinhanh,
                     LoaiSp = p.Loaisanpham,
-                    DanhMuc = "RAM"
+                    DanhMuc = "RAM",
+                    SoLuongTon = p.Soluongton
                 })
                 .ToList();
 
+            // Debug để kiểm tra RAM products
+            Console.WriteLine($"Found {ramProducts.Count} RAM products:");
+            foreach (var product in ramProducts)
+            {
+                Console.WriteLine($"RAM Product: {product.TenSp}");
+            }
+
             var mainboardProducts = _context.Sanphams
                 .Where(p => p.Loaisanpham == "Components" && 
-                       p.Thongsokythuat.Contains("\"Danh mục\":\"Mainboard\""))
+                       p.Thongsokythuat.Contains("\"Danh mục\": \"Mainboard\""))
                 .Select(p => new ProductCardViewModel
                 {
                     IdSp = p.IdSp,
                     TenSp = p.Tensanpham,
                     Gia = p.Gia,
                     ImageUrl = p.Hinhanh,
-                    LoaiSp = p.Loaisanpham,
-                    DanhMuc = "Mainboard"
+                    LoaiSp = "Components",
+                    DanhMuc = "Mainboard",
+                    SoLuongTon = p.Soluongton
                 })
                 .ToList();
+
+            // Debug để kiểm tra Mainboard products
+            Console.WriteLine($"Found {mainboardProducts.Count} Mainboard products:");
+            foreach (var product in mainboardProducts)
+            {
+                Console.WriteLine($"Mainboard Product: {product.TenSp}");
+            }
 
             var monitorProducts = _context.Sanphams
                 .Where(p => p.Loaisanpham.ToLower() == "monitor")
@@ -159,7 +182,8 @@ namespace Website_Ban_Linh_Kien.Controllers
             ViewBag.MonitorProducts = monitorProducts;
             ViewBag.StorageProducts = storageProducts;
 
-            return View();
+            // Truyền danh sách sản phẩm hot vào Model và return View ở cuối cùng
+            return View(hotProducts);
         }
 
         public IActionResult Privacy()
