@@ -124,7 +124,12 @@ namespace Admin_WBLK.Controllers
                     ModelState.AddModelError("Sodienthoai", "Số điện thoại không hợp lệ (phải bắt đầu bằng 0 và có 10 số)");
 
                 var today = DateOnly.FromDateTime(DateTime.Today);
-                var birthDate = khachhang.Ngaysinh;
+                if (!khachhang.Ngaysinh.HasValue)
+                {
+                    ModelState.AddModelError("Ngaysinh", "Ngày sinh không được để trống");
+                    return View(khachhang);
+                }
+                var birthDate = khachhang.Ngaysinh.Value;
                 if (birthDate >= today)
                 {
                     ModelState.AddModelError("Ngaysinh", "Ngày sinh không thể là ngày hiện tại hoặc trong tương lai");
@@ -222,7 +227,12 @@ namespace Admin_WBLK.Controllers
                     ModelState.AddModelError("Sodienthoai", "Số điện thoại không hợp lệ (phải bắt đầu bằng 0 và có 10 số)");
 
                 var today = DateOnly.FromDateTime(DateTime.Today);
-                var birthDate = khachhang.Ngaysinh;
+                if (!khachhang.Ngaysinh.HasValue)
+                {
+                    ModelState.AddModelError("Ngaysinh", "Ngày sinh không được để trống");
+                    return View(khachhang);
+                }
+                var birthDate = khachhang.Ngaysinh.Value;
                 if (birthDate >= today)
                 {
                     ModelState.AddModelError("Ngaysinh", "Ngày sinh không thể là ngày hiện tại hoặc trong tương lai");
