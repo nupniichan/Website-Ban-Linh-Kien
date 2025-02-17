@@ -43,8 +43,16 @@
                     <!-- Địa chỉ -->
                     <div class="md:col-span-2">
                         <label asp-for="Diachi" class="block text-sm font-medium text-gray-700 mb-2">Địa chỉ</label>
-                        <input asp-for="Diachi" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required />
-                        <span asp-validation-for="Diachi" class="text-sm text-red-500"></span>
+                        <input asp-for="Diachi" 
+                               id="Diachi"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                               required 
+                               pattern="^[^,]+,[^,]+,[^,]+,[^,]+$"
+                               title="Vui lòng nhập địa chỉ theo định dạng: Số nhà/Tên đường, Phường/Xã/Thị trấn, Quận/Huyện, Tỉnh/Thành phố" />
+                        <span id="diachiError" class="text-sm text-red-500 hidden">Vui lòng nhập đúng định dạng địa chỉ</span>
+                        <p class="mt-1 text-sm text-gray-500">
+                            Định dạng: Số nhà/Tên đường, Phường/Xã/Thị trấn, Quận/Huyện, Tỉnh/Thành phố<br/>
+                        </p>
                     </div>
 
                     <!-- Giới tính -->
@@ -86,5 +94,57 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-    <script src="~/js/CustomerManagement.js"></script>
+    <script>
+        // Thêm custom validation cho địa chỉ
+        $(document).ready(function() {
+            const diachiInput = $('#Diachi');
+            const diachiError = $('#diachiError');
+            
+            // Hàm kiểm tra định dạng địa chỉ
+            function validateDiachi() {
+                const value = diachiInput.val();
+                const parts = value.split(',');
+                
+                // Kiểm tra có đúng 4 phần
+                if (parts.length !== 4) {
+                    showError();
+                    return false;
+                }
+                
+                // Kiểm tra từng phần không được để trống
+                for (let part of parts) {
+                    if (part.trim() === '') {
+                        showError();
+                        return false;
+                    }
+                }
+                
+                hideError();
+                return true;
+            }
+            
+            // Hiển thị lỗi
+            function showError() {
+                diachiInput.addClass('border-red-500 focus:ring-red-500');
+                diachiError.removeClass('hidden');
+            }
+            
+            // Ẩn lỗi
+            function hideError() {
+                diachiInput.removeClass('border-red-500 focus:ring-red-500');
+                diachiError.addClass('hidden');
+            }
+            
+            // Kiểm tra khi người dùng nhập
+            diachiInput.on('input', validateDiachi);
+            
+            // Kiểm tra khi submit form
+            $('form').on('submit', function(e) {
+                if (!validateDiachi()) {
+                    e.preventDefault();
+                    diachiInput.focus();
+                }
+            });
+        });
+    </script>
 }

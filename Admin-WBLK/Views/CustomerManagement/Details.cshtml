@@ -29,6 +29,14 @@
                     <dt class="text-sm font-medium text-gray-500">Số điện thoại</dt>
                     <dd class="mt-1 text-sm text-gray-900">@Model.Sodienthoai</dd>
                 </div>
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Giới tính</dt>
+                    <dd class="mt-1 text-sm text-gray-900">@Model.Gioitinh</dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Ngày sinh</dt>
+                    <dd class="mt-1 text-sm text-gray-900">@(Model.Ngaysinh?.ToString("dd/MM/yyyy"))</dd>
+                </div>
                 <div class="md:col-span-2">
                     <dt class="text-sm font-medium text-gray-500">Địa chỉ</dt>
                     <dd class="mt-1 text-sm text-gray-900">@Model.Diachi</dd>
