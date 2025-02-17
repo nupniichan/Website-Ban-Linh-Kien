@@ -38,10 +38,29 @@ function validateCustomerForm(e) {
     }
 
     // Validate địa chỉ
-    if (diachi.length < 5 || diachi.length > 200) {
+    const diachiParts = diachi.split(',');
+    if (diachi.length > 100) {
         isValid = false;
-        errorMessages.push('Địa chỉ phải từ 5 đến 200 ký tự');
+        errorMessages.push('Địa chỉ không được vượt quá 100 ký tự');
         document.getElementById('Diachi').classList.add('border-red-500');
+        document.getElementById('diachiError').classList.remove('hidden');
+    }
+    else if (diachiParts.length !== 4) {
+        isValid = false;
+        errorMessages.push('Địa chỉ phải có đủ 4 phần: Số nhà/Tên đường, Phường/Xã/Thị trấn, Quận/Huyện, Tỉnh/Thành phố');
+        document.getElementById('Diachi').classList.add('border-red-500');
+        document.getElementById('diachiError').classList.remove('hidden');
+    } else {
+        // Kiểm tra từng phần không được để trống
+        for (let part of diachiParts) {
+            if (part.trim() === '') {
+                isValid = false;
+                errorMessages.push('Các thành phần của địa chỉ không được để trống');
+                document.getElementById('Diachi').classList.add('border-red-500');
+                document.getElementById('diachiError').classList.remove('hidden');
+                break;
+            }
+        }
     }
 
     // Validate giới tính (chỉ cho form Create)
@@ -107,6 +126,9 @@ function resetValidation() {
             this.classList.remove('border-red-500');
             if (this.id === 'Ngaysinh') {
                 document.getElementById('NgaysinhError').textContent = '';
+            }
+            if (this.id === 'Diachi') {
+                document.getElementById('diachiError').classList.add('hidden');
             }
             document.getElementById('validation-summary').innerHTML = '';
         });
