@@ -204,26 +204,25 @@ CREATE TABLE `khachhang` (
 --
 
 INSERT INTO `khachhang` (`IdKh`, `hoten`, `diachi`, `email`, `gioitinh`, `ngaysinh`, `sodienthoai`, `diemtichluy`, `IdTk`, `id_xephangvip`, `loaikhachhang`) VALUES
-('KH000001', 'Nguyễn Văn A', 'Hà Nội', 'a@gmail.com', 'Nam', '1990-01-01', '0987654321', 100, 'TK000002', 'THANTHIET', 1),
-('KH000002', 'Trần Thị B', 'Hồ Chí Minh', 'b@gmail.com', 'Nữ', '1995-02-15', '0912345678', 777, 'TK000003', 'BAC', 1),
-('KH000003', 'Phạm Văn C', 'Đà Nẵng', 'c@gmail.com', 'Nam', '1992-03-20', '0934567890', 1002, 'TK000004', 'VANG', 1),
-('KH000004', 'Kim Đăng D', 'Hải Phòng', 'd@gmail.com', 'Nữ', '1998-04-25', '0956789012', 10000, 'TK000005', 'KIMCUONG', 1),
-('KH000005', 'Nguyễn Văn E', 'Hà Nội', 'e@gmail.com', 'Nam', '1993-05-30', '0978901234', 300, 'TK000006', 'THANTHIET', 1),
-('KH000006', 'Phạm Hải A', 'Hồ Chí Minh', 'pha@gmail.com', 'Nữ', '2001-06-05', '0967890123', 600, 'TK000007', 'BAC', 1),
-('KH000007', 'Trần Minh B', 'Đà Nẵng', 'tmb@gmail.com', 'Nam', '2000-07-10', '0945678901', 3333, 'TK000008', 'VANG', 1),
-('KH000008', 'Nguyễn Hà C', 'Hải Phòng', 'nhc@gmail.com', 'Nữ', '2001-08-15', '0934567890', 30832, 'TK000009', 'KIMCUONG', 1),
-('KH000009', 'Lê Văn D', 'Đà Nẵng', 'lvd@gmail.com', 'Nam', '2000-09-20', '0923456789', 450, 'TK000010', 'THANTHIET', 1),
-('KH000010', 'Phạm Thị E', 'Hà Nội', 'pte@gmail.com', 'Nữ', '1996-10-25', '0912345678', 800, 'TK000011', 'BAC', 1),
-('KH000011', 'Hoàng Văn F', 'Hồ Chí Minh', 'hvf@gmail.com', 'Nam', '1990-11-30', '0934567890', 2500, 'TK000012', 'VANG', 1),
-('KH000012', 'Trần Thu G', 'Đà Nẵng', 'ttg@gmail.com', 'Nữ', '1994-12-05', '0945678901', 15000, 'TK000013', 'KIMCUONG', 1),
-('KH000013', 'Nguyễn Nam H', 'Hà Nội', 'nnh@gmail.com', 'Nam', '1997-01-10', '0956789012', 350, 'TK000014', 'THANTHIET', 1),
-('KH000014', 'Vũ Thị I', 'Hà Nội', 'vti@gmail.com', 'Nữ', '1992-02-15', '0967890123', 900, 'TK000015', 'BAC', 1),
-('KH000015', 'Đặng Văn K', 'Hồ Chí Minh', 'dvk@gmail.com', 'Nam', '1995-03-20', '0978901234', 4000, 'TK000016', 'VANG', 1),
-('KH000016', 'Mai Thị L', 'Đà Nẵng', 'mtl@gmail.com', 'Nữ', '1991-04-25', '0989012345', 20000, 'TK000017', 'KIMCUONG', 1),
-('KH000017', 'Phan Văn M', 'Hải Phòng', 'pvm@gmail.com', 'Nam', '1998-05-30', '0990123456', 250, 'TK000018', 'THANTHIET', 1),
-('KH000018', 'Trương Thị N', 'Hà Nội', 'ttn@gmail.com', 'Nữ', '2004-06-05', '0901234567', 1200, 'TK000019', 'BAC', 1),
-('KH000019', 'Bùi Văn O', 'Hồ Chí Minh', 'bvo@gmail.com', 'Nam', '2002-07-10', '0912345678', 5000, 'TK000020', 'VANG', 1);
-
+('KH000001', 'Nguyễn Văn A', '12 Nguyễn Thái Học, Phường Hàng Bột, Quận Hoàn Kiếm, Hà Nội', 'a@gmail.com', 'Nam', '1990-01-01', '0987654321', 100, 'TK000002', 'THANTHIET', 1),
+('KH000002', 'Trần Thị B', '45 Lê Lợi, Phường Bến Thành, Quận 1, Thành phố Hồ Chí Minh', 'b@gmail.com', 'Nữ', '1995-02-15', '0912345678', 777, 'TK000003', 'BAC', 1),
+('KH000003', 'Phạm Văn C', '78 Nguyễn Văn Linh, Phường Hải Châu 1, Quận Hải Châu, Đà Nẵng', 'c@gmail.com', 'Nam', '1992-03-20', '0934567890', 1002, 'TK000004', 'VANG', 1),
+('KH000004', 'Kim Đăng D', '90 Lạch Tray, Phường Hồng Bàng, Quận Ngô Quyền, Hải Phòng', 'd@gmail.com', 'Nữ', '1998-04-25', '0956789012', 10000, 'TK000005', 'KIMCUONG', 1),
+('KH000005', 'Nguyễn Văn E', '34 Trần Hưng Đạo, Phường Ô Chợ Dừa, Quận Đống Đa, Hà Nội', 'e@gmail.com', 'Nam', '1993-05-30', '0978901234', 300, 'TK000006', 'THANTHIET', 1),
+('KH000006', 'Phạm Hải A', '56 Phan Đình Phùng, Phường 14, Quận Phú Nhuận, Thành phố Hồ Chí Minh', 'pha@gmail.com', 'Nữ', '2001-06-05', '0967890123', 600, 'TK000007', 'BAC', 1),
+('KH000007', 'Trần Minh B', '101 Nguyễn Văn Quá, Phường Thạch Thang, Quận Thanh Khê, Đà Nẵng', 'tmb@gmail.com', 'Nam', '2000-07-10', '0945678901', 3333, 'TK000008', 'VANG', 1),
+('KH000008', 'Nguyễn Hà C', '202 Võ Nguyên Giáp, Phường Lãm Hà, Quận Ngô Quyền, Hải Phòng', 'nhc@gmail.com', 'Nữ', '2001-08-15', '0934567890', 30832, 'TK000009', 'KIMCUONG', 1),
+('KH000009', 'Lê Văn D', '88 Nguyễn Tri Phương, Phường An Hải, Quận Sơn Trà, Đà Nẵng', 'lvd@gmail.com', 'Nam', '2000-09-20', '0923456789', 450, 'TK000010', 'THANTHIET', 1),
+('KH000010', 'Phạm Thị E', '77 Kim Mã, Phường Liễu Giai, Quận Ba Đình, Hà Nội', 'pte@gmail.com', 'Nữ', '1996-10-25', '0912345678', 800, 'TK000011', 'BAC', 1),
+('KH000011', 'Hoàng Văn F', '66 Pasteur, Phường 7, Quận 3, Thành phố Hồ Chí Minh', 'hvf@gmail.com', 'Nam', '1990-11-30', '0934567890', 2500, 'TK000012', 'VANG', 1),
+('KH000012', 'Trần Thu G', '55 Trần Phú, Phường Bình Hiên, Quận Thanh Khê, Đà Nẵng', 'ttg@gmail.com', 'Nữ', '1994-12-05', '0945678901', 15000, 'TK000013', 'KIMCUONG', 1),
+('KH000013', 'Nguyễn Nam H', '123 Phố Huế, Phường Hàng Bột, Quận Hoàn Kiếm, Hà Nội', 'nnh@gmail.com', 'Nam', '1997-01-10', '0956789012', 350, 'TK000014', 'THANTHIET', 1),
+('KH000014', 'Vũ Thị I', '89 Cầu Giấy, Phường Dịch Vọng, Quận Cầu Giấy, Hà Nội', 'vti@gmail.com', 'Nữ', '1992-02-15', '0967890123', 900, 'TK000015', 'BAC', 1),
+('KH000015', 'Đặng Văn K', '35 Võ Văn Tần, Phường 2, Quận Tân Bình, Thành phố Hồ Chí Minh', 'dvk@gmail.com', 'Nam', '1995-03-20', '0978901234', 4000, 'TK000016', 'VANG', 1),
+('KH000016', 'Mai Thị L', '47 Lê Duẩn, Phường Mỹ An, Quận Ngũ Hành Sơn, Đà Nẵng', 'mtl@gmail.com', 'Nữ', '1991-04-25', '0989012345', 20000, 'TK000017', 'KIMCUONG', 1),
+('KH000017', 'Phan Văn M', '68 Hồng Bàng, Phường Hồng Bàng, Quận Lê Chân, Hải Phòng', 'pvm@gmail.com', 'Nam', '1998-05-30', '0990123456', 250, 'TK000018', 'THANTHIET', 1),
+('KH000018', 'Trương Thị N', '100 Phạm Hùng, Phường Thịnh Quang, Quận Thanh Xuân, Hà Nội', 'ttn@gmail.com', 'Nữ', '2004-06-05', '0901234567', 1200, 'TK000019', 'BAC', 1),
+('KH000019', 'Bùi Văn O', '150 Đinh Tiên Hoàng, Phường Đa Kao, Quận 1, Thành phố Hồ Chí Minh', 'bvo@gmail.com', 'Nam', '2002-07-10', '0912345678', 5000, 'TK000020', 'VANG', 1);
 -- --------------------------------------------------------
 
 --
