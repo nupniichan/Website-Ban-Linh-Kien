@@ -339,5 +339,43 @@
 
         // ... copy các hàm khác từ Create.cshtml ...
 
+        // Thêm các hàm xử lý định dạng
+        function formatText(command, value = null) {
+            const editor = document.getElementById('moTaEditor');
+            const moTaInput = document.querySelector('textarea[name="Mota"]');
+            
+            editor.focus();
+            
+            switch(command) {
+                case 'lineHeight':
+                    const currentValue = getComputedStyle(editor).lineHeight;
+                    const newValue = prompt('Nhập khoảng cách dòng (VD: 1.5):', currentValue === 'normal' ? '1' : currentValue);
+                    if (newValue && !isNaN(newValue)) {
+                        editor.style.lineHeight = newValue;
+                    }
+                    break;
+                    
+                case 'fontSize':
+                    const sizes = {
+                        '1': '12px',
+                        '3': '16px',
+                        '5': '20px',
+                        '7': '24px'
+                    };
+                    document.execCommand(command, false, value);
+                    break;
+                    
+                case 'fontName':
+                    document.execCommand(command, false, value);
+                    break;
+                    
+                default:
+                    document.execCommand(command, false, value);
+            }
+            
+            // Cập nhật nội dung vào textarea
+            moTaInput.value = editor.innerHTML;
+        }
+
     </script>
 }
