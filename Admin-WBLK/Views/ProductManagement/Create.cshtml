@@ -227,6 +227,7 @@
     <script>
         // Khai báo biến toàn cục
         const editor = document.getElementById('moTaEditor');
+        const hiddenTextarea = document.querySelector('[name="mota"]');
         let isResizing = false;
 
         // Thêm định nghĩa needOptions trước khi sử dụng
@@ -602,24 +603,112 @@
         // Xóa hoặc ẩn nút "Thêm thông số"
         document.querySelector('.p-4.bg-gray-50.border-t.border-gray-300').style.display = 'none';
 
+        // Đảm bảo nội dung editor được cập nhật vào textarea khi submit
+        editor.addEventListener('input', function() {
+            hiddenTextarea.value = editor.innerHTML;
+        });
+
+        // Cải thiện hàm formatText
         function formatText(command, value = null) {
-            if (command === 'lineHeight') {
-                const currentValue = getComputedStyle(document.getElementById('moTaEditor')).lineHeight;
-                const newValue = prompt('Nhập khoảng cách dòng (VD: 1.5):', currentValue === 'normal' ? '1' : currentValue);
-                if (newValue && !isNaN(newValue)) {
-                    document.getElementById('moTaEditor').style.lineHeight = newValue;
-                }
-            } else {
-                document.execCommand(command, false, value);
+            editor.focus(); // Focus vào editor trước khi thực hiện lệnh
+            
+            switch(command) {
+                case 'lineHeight':
+                    const currentValue = getComputedStyle(editor).lineHeight;
+                    const newValue = prompt('Nhập khoảng cách dòng (VD: 1.5):', currentValue === 'normal' ? '1' : currentValue);
+                    if (newValue && !isNaN(newValue)) {
+                        editor.style.lineHeight = newValue;
+                    }
+                    break;
+                    
+                case 'fontSize':
+                    // Chuyển đổi giá trị size thành px
+                    const sizes = {
+                        '1': '12px',
+                        '3': '16px',
+                        '5': '20px',
+                        '7': '24px'
+                    };
+                    document.execCommand(command, false, value);
+                    break;
+                    
+                case 'fontName':
+                    document.execCommand(command, false, value);
+                    break;
+                    
+                default:
+                    document.execCommand(command, false, value);
             }
-            document.getElementById('moTaEditor').focus();
+            
+            // Cập nhật nội dung vào textarea
+            hiddenTextarea.value = editor.innerHTML;
         }
 
+        // Cải thiện hàm insertLink
         function insertLink() {
+            const selection = window.getSelection();
             const url = prompt('Nhập URL:');
+            
             if (url) {
-                document.execCommand('createLink', false, url);
+                if (selection.toString().length === 0) {
+                    // Nếu không có text được chọn, tạo link với URL làm text
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.textContent = url;
+                    link.target = '_blank';
+                    
+                    const range = selection.getRangeAt(0);
+                    range.insertNode(link);
+                } else {
+                    // Nếu có text được chọn, tạo link với text đó
+                    document.execCommand('createLink', false, url);
+                    // Thêm target="_blank" cho link vừa tạo
+                    const links = editor.getElementsByTagName('a');
+                    const lastLink = links[links.length - 1];
+                    if (lastLink) {
+                        lastLink.target = '_blank';
+                    }
+                }
             }
+            
+            // Cập nhật nội dung vào textarea
+            hiddenTextarea.value = editor.innerHTML;
+        }
+
+        // Thêm hàm insertTable
+        function insertTable() {
+            const rows = prompt('Số hàng:', '3');
+            const cols = prompt('Số cột:', '3');
+            
+            if (rows && cols) {
+                let table = '<table style="border-collapse: collapse; width: 100%; margin: 10px 0;">';
+                
+                for (let i = 0; i < rows; i++) {
+                    table += '<tr>';
+                    for (let j = 0; j < cols; j++) {
+                        table += '<td style="border: 1px solid #ddd; padding: 8px;">Nội dung</td>';
+                    }
+                    table += '</tr>';
+                }
+                
+                table += '</table>';
+                document.execCommand('insertHTML', false, table);
+            }
+            
+            // Cập nhật nội dung vào textarea
+            hiddenTextarea.value = editor.innerHTML;
+        }
+
+        // Thêm hàm insertCode
+        function insertCode() {
+            const code = prompt('Nhập code:');
+            if (code) {
+                const formattedCode = `<pre style="background-color: #f5f5f5; padding: 10px; border-radius: 4px; font-family: monospace;">${code}</pre>`;
+                document.execCommand('insertHTML', false, formattedCode);
+            }
+            
+            // Cập nhật nội dung vào textarea
+            hiddenTextarea.value = editor.innerHTML;
         }
 
         // Thêm xử lý form submit

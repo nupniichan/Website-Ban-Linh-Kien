@@ -109,55 +109,55 @@
 
     <!-- Orders Table -->
     <div class="overflow-x-auto">
-        <table class="min-w-full bg-white border rounded-lg table-fixed">
+        <table class="min-w-full bg-white border rounded-lg">
             <thead class="bg-gray-50">
                 <tr>
-                    <th class="w-28 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mã ĐH</th>
-                    <th class="w-40 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Khách hàng</th>
-                    <th class="w-32 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày đặt</th>
-                    <th class="w-40 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Địa chỉ</th>
-                    <th class="w-32 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tổng tiền</th>
-                    <th class="w-32 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
-                    <th class="w-48 px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Thao tác</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mã ĐH</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Khách hàng</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày đặt</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Địa chỉ</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tổng tiền</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
+                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Thao tác</th>
                 </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
+            <tbody class="divide-y divide-gray-200">
                 @foreach (var item in Model.Items.OrderByDescending(x => x.Ngaydathang))
                 {
                     <tr class="hover:bg-gray-50">
-                        <td class="px-6 py-4">@item.IdDh</td>
-                        <td class="px-6 py-4">@item.IdKhNavigation.Hoten</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@item.IdDh</td>
+                        <td class="px-6 py-4 text-sm text-gray-900">@item.IdKhNavigation.Hoten</td>
                         <td class="px-6 py-4">
                             <div class="flex flex-col">
-                                <span class="font-medium">
+                                <span class="text-sm font-medium text-gray-900">
                                     @(item.Ngaydathang.HasValue ? item.Ngaydathang.Value.ToString("dd/MM/yyyy") : "N/A")
                                 </span>
                                 <span class="text-sm text-gray-500">
                                     @(item.Ngaydathang.HasValue ? item.Ngaydathang.Value.ToString("HH:mm:ss") : "N/A")
                                 </span>
-
                             </div>
                         </td>
                         <td class="px-6 py-4">
-                            <div class="flex flex-col">
-                                <div class="max-w-xs truncate" title="@item.Diachigiaohang">
-                                    @{
-                                        var diachiParts = item.Diachigiaohang.Split(new[] { ',' }, 2);
-                                        if (diachiParts.Length > 1)
-                                        {
-                                            <span class="block font-medium text-gray-900">@diachiParts[0].Trim()</span>
-                                            <span class="block text-sm text-gray-500">@diachiParts[1].Trim()</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="block font-medium text-gray-900">@item.Diachigiaohang</span>
-                                        }
-                                    }
-                                </div>
-                            </div>
+                            @if (!string.IsNullOrEmpty(item.Diachigiaohang))
+                            {
+                                var diachiParts = item.Diachigiaohang.Split(',');
+                                if (diachiParts.Length == 4)
+                                {
+                                    var firstLine = $"{diachiParts[0].Trim()}, {diachiParts[1].Trim()},";
+                                    var secondLine = $"{diachiParts[2].Trim()}, {diachiParts[3].Trim()}";
+                                    <div class="flex flex-col" title="@item.Diachigiaohang">
+                                        <span class="block font-medium text-gray-900 text-sm">@firstLine</span>
+                                        <span class="block text-sm text-gray-500">@secondLine</span>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span class="text-sm text-gray-900">@item.Diachigiaohang</span>
+                                }
+                            }
                         </td>
-                        <td class="px-6 py-4">@item.Tongtien.ToString("#,##0")</td>
-                        <td class="px-6 py-4">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@item.Tongtien.ToString("#,##0")</td>
+                        <td class="px-6 py-4 text-sm">
                             <div class="flex items-center justify-center gap-2">
                                 @switch (item.Trangthai)
                                 {
