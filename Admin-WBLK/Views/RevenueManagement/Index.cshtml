@@ -1,0 +1,145 @@
+﻿@{
+    ViewData["Title"] = "Quản lý doanh thu";
+}
+
+<div class="w-full h-full p-6">
+    <h1 class="text-2xl font-bold mb-6">Quản lý doanh thu</h1>
+    
+    <!-- Thống kê tổng -->
+    <div class="bg-white rounded-lg shadow p-6 mb-8">
+        <h2 class="text-xl font-semibold mb-4">Thống kê tổng doanh thu</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-blue-50 p-4 rounded-lg">
+                <p class="text-sm text-blue-600 mb-1">Tổng doanh thu</p>
+                <p class="text-2xl font-bold text-blue-700" id="totalRevenue">0 đ</p>
+            </div>
+            <div class="bg-green-50 p-4 rounded-lg">
+                <p class="text-sm text-green-600 mb-1">Tổng đơn hàng</p>
+                <p class="text-2xl font-bold text-green-700" id="totalOrders">0</p>
+            </div>
+            <div class="bg-purple-50 p-4 rounded-lg">
+                <p class="text-sm text-purple-600 mb-1">Đơn hàng thành công</p>
+                <p class="text-2xl font-bold text-purple-700" id="successOrders">0</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Thống kê chi tiết -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-xl font-semibold mb-4">Thống kê chi tiết theo bộ lọc</h2>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Từ ngày</label>
+                <input type="datetime-local" id="fromDate" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Đến ngày</label>
+                <input type="datetime-local" id="toDate" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Phương thức thanh toán</label>
+                <select id="paymentMethod" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <option value="">Tất cả</option>
+                    <option value="COD">COD</option>
+                    <option value="VNPAY">VNPAY</option>
+                    <option value="Paypal">Paypal</option>
+                </select>
+            </div>
+            <div class="flex items-end">
+                <button onclick="getRevenue()" class="w-full bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-200">
+                    <i class="fas fa-search mr-2"></i>Thống kê
+                </button>
+            </div>
+        </div>
+
+        <div id="revenueResults" class="mt-6">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Phương thức thanh toán
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Tổng doanh thu
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Số đơn hàng
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="revenueTableBody" class="bg-white divide-y divide-gray-200">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Hàm lấy thống kê tổng
+        function getTotalStats() {
+            fetch('/RevenueManagement/GetRevenue')
+                .then(response => response.json())
+                .then(data => {
+                    let totalRevenue = 0;
+                    let totalOrders = 0;
+                    
+                    data.forEach(item => {
+                        totalRevenue += item.totalAmount;
+                        totalOrders += item.orderCount;
+                    });
+
+                    document.getElementById('totalRevenue').textContent = totalRevenue.toLocaleString('vi-VN') + ' đ';
+                    document.getElementById('totalOrders').textContent = totalOrders;
+                    document.getElementById('successOrders').textContent = totalOrders;
+                });
+        }
+
+        // Hàm lấy thống kê theo bộ lọc
+        function getRevenue() {
+            const fromDate = document.getElementById('fromDate').value;
+            const toDate = document.getElementById('toDate').value;
+            const paymentMethod = document.getElementById('paymentMethod').value;
+
+            fetch(`/RevenueManagement/GetRevenue?fromDate=${fromDate}&toDate=${toDate}&paymentMethod=${paymentMethod}`)
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.getElementById('revenueTableBody');
+                    tableBody.innerHTML = '';
+                    
+                    let totalRevenue = 0;
+                    let totalOrders = 0;
+
+                    data.forEach(item => {
+                        totalRevenue += item.totalAmount;
+                        totalOrders += item.orderCount;
+
+                        const row = `
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap">${item.paymentMethod}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-red-600 font-medium">${item.totalAmount.toLocaleString('vi-VN')} đ</td>
+                                <td class="px-6 py-4 whitespace-nowrap">${item.orderCount}</td>
+                            </tr>
+                        `;
+                        tableBody.innerHTML += row;
+                    });
+
+                    const totalRow = `
+                        <tr class="bg-gray-50 font-bold">
+                            <td class="px-6 py-4 whitespace-nowrap">Tổng cộng</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-red-700">${totalRevenue.toLocaleString('vi-VN')} đ</td>
+                            <td class="px-6 py-4 whitespace-nowrap">${totalOrders}</td>
+                        </tr>
+                    `;
+                    tableBody.innerHTML += totalRow;
+                });
+        }
+
+        // Gọi hàm lấy thống kê tổng khi trang được tải
+        document.addEventListener('DOMContentLoaded', function() {
+            getTotalStats();
+        });
+    </script>
+}

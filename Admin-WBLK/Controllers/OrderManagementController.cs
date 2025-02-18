@@ -16,12 +16,13 @@ namespace Admin_WBLK.Controllers
 
         // GET: OrderManagement
         [HttpGet]
-        public async Task<IActionResult> Index(string searchString, string trangThai, DateOnly? ngayDat, int pageNumber = 1)
+        public async Task<IActionResult> Index(string searchString, string trangThai, DateTime? tuNgay, DateTime? denNgay, int pageNumber = 1)
         {
             int pageSize = 10;
             ViewData["CurrentFilter"] = searchString;
             ViewData["CurrentTrangThai"] = trangThai;
-            ViewData["CurrentNgayDat"] = ngayDat?.ToString("yyyy-MM-dd");
+            ViewData["CurrentTuNgay"] = tuNgay;
+            ViewData["CurrentDenNgay"] = denNgay;
 
             var query = _context.Donhangs
                 .Include(d => d.IdKhNavigation)
@@ -55,10 +56,15 @@ namespace Admin_WBLK.Controllers
                 query = query.Where(d => d.Trangthai == trangThai);
             }
 
-            if (ngayDat.HasValue)
+            if (tuNgay.HasValue)
             {
-                var ngayDatDateTime = ngayDat.Value.ToDateTime(TimeOnly.MinValue);
-                query = query.Where(d => d.Ngaydathang == ngayDatDateTime.Date);
+                query = query.Where(d => d.Ngaydathang >= tuNgay.Value);
+            }
+
+            if (denNgay.HasValue)
+            {
+                var endOfDay = denNgay.Value.Date.AddDays(1).AddTicks(-1);
+                query = query.Where(d => d.Ngaydathang <= endOfDay);
             }
 
             // Lấy danh sách trạng thái để làm dropdown filter
@@ -109,7 +115,7 @@ namespace Admin_WBLK.Controllers
         }
 
         // GET: OrderManagement/Details/5
-        public async Task<IActionResult> Details(string id)
+        public async Task<IActionResult> Details(string id, string returnUrl)
         {
             if (id == null)
             {
@@ -128,6 +134,7 @@ namespace Admin_WBLK.Controllers
                 return NotFound();
             }
 
+            ViewData["ReturnUrl"] = returnUrl;
             return View(donhang);
         }
 
@@ -408,7 +415,7 @@ namespace Admin_WBLK.Controllers
         // POST: OrderManagement/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(string id)
+        public async Task<IActionResult> DeleteConfirmed(string id, string returnUrl)
         {
             var donhang = await _context.Donhangs.FindAsync(id);
             if (donhang != null)
@@ -418,7 +425,9 @@ namespace Admin_WBLK.Controllers
                 TempData["Success"] = "Xóa đơn hàng thành công!";
             }
 
-            return RedirectToAction(nameof(Index));
+            if (string.IsNullOrEmpty(returnUrl))
+                return RedirectToAction(nameof(Index));
+            return Redirect(returnUrl);
         }
 
         private bool DonhangExists(string id)
@@ -469,7 +478,7 @@ namespace Admin_WBLK.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(string id, [Bind("IdDh,IdKh,Trangthai,Tongtien,Diachigiaohang,Ngaydathang,Phuongthucthanhtoan,IdMgg,Ghichu,LydoHuy")] Donhang donhang,
-            string? Mathanhtoan, string? TrangthaiThanhtoan, string? Noidungthanhtoan)
+            string? Mathanhtoan, string? TrangthaiThanhtoan, string? Noidungthanhtoan, string returnUrl)
         {
             if (id != donhang.IdDh)
             {
@@ -535,7 +544,9 @@ namespace Admin_WBLK.Controllers
                 await transaction.CommitAsync();
 
                 TempData["Success"] = "Cập nhật đơn hàng thành công!";
-                return RedirectToAction(nameof(Index));
+                if (string.IsNullOrEmpty(returnUrl))
+                    return RedirectToAction(nameof(Index));
+                return Redirect(returnUrl);
             }
             catch (Exception ex)
             {
