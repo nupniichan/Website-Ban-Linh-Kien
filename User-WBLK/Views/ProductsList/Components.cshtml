@@ -6,15 +6,15 @@
     // Định nghĩa các danh sách options
     var cpuSeries = new[] {
         new { Value = "", Text = "Dòng CPU" },
-        new { Value = "intel-core", Text = "Intel Core" },
-        new { Value = "amd-ryzen", Text = "AMD Ryzen" }
+        new { Value = "Intel core", Text = "Intel Core" },
+        new { Value = "Amd R4yzen", Text = "AMD Ryzen" }
     };
     
     var cores = new[] {
         new { Value = "", Text = "Số nhân" },
-        new { Value = "4-cores", Text = "4 nhân" },
-        new { Value = "6-cores", Text = "6 nhân" },
-        new { Value = "8-cores", Text = "8 nhân" }
+        new { Value = "4", Text = "4 nhân" },
+        new { Value = "6", Text = "6 nhân" },
+        new { Value = "8", Text = "8 nhân" }
     };
 }
 <div class="container mx-auto px-4">
@@ -192,40 +192,12 @@
                     </a>
                 }
             </div>
-        </div>
-
-        <!-- Debug Information & Clear Filters Button -->
-        <div class="mt-4 p-4 bg-gray-100 rounded-md border border-gray-300">
-            <h3 class="font-semibold text-lg mb-2">Bộ lọc hiện tại:</h3>
-            <ul class="list-disc pl-5">
-                @if (!string.IsNullOrEmpty(Model.Category))
-                {
-                    <li>Danh mục: <span class="font-medium">@Model.Category</span></li>
-                }
-                @if (!string.IsNullOrEmpty(Model.Brand))
-                {
-                    <li>Thương hiệu: <span class="font-medium">@Model.Brand</span></li>
-                }
-                @if (!string.IsNullOrEmpty(Model.PriceRange))
-                {
-                    <li>Khoảng giá: <span class="font-medium">@Model.PriceRange</span></li>
-                }
-                @if (Model.AdditionalFilters != null)
-                {
-                    foreach(var filter in Model.AdditionalFilters)
-                    {
-                        if (!string.IsNullOrEmpty(filter.Value))
-                        {
-                            <li>@filter.Key: <span class="font-medium">@filter.Value</span></li>
-                        }
-                    }
-                }
-            </ul>
-            @* The button below clears all filters (resetting to just the current category) *@
             <a href="@Url.Action("Components", "ProductsList", new { category = Model.Category })" class="inline-block mt-3 bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600">
                 Xóa bộ lọc
             </a>
         </div>
+            
+
     </div>
 
     <!-- Products Grid (remains unchanged) -->

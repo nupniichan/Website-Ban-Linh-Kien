@@ -185,14 +185,14 @@
                         }
                         <option value="@cpuDefaultUrl" selected="@(string.IsNullOrEmpty(Model.CpuType))">Loại CPU</option>
                         @foreach (var (value, text) in new[] {
-                            ("intel-i3", "Intel Core i3"),
-                            ("intel-i5", "Intel Core i5"),
-                            ("intel-i7", "Intel Core i7"),
-                            ("intel-i9", "Intel Core i9"),
-                            ("amd-r3", "AMD Ryzen 3"),
-                            ("amd-r5", "AMD Ryzen 5"),
-                            ("amd-r7", "AMD Ryzen 7"),
-                            ("amd-r9", "AMD Ryzen 9")
+                            ("intel core i3", "Intel Core i3"),
+                            ("intel core i5", "Intel Core i5"),
+                            ("intel core i7", "Intel Core i7"),
+                            ("intel core i9", "Intel Core i9"),
+                            ("amd ryzen 3", "AMD Ryzen 3"),
+                            ("amd ryzen 5", "AMD Ryzen 5"),
+                            ("amd ryzen 7", "AMD Ryzen 7"),
+                            ("amd ryzen 9", "AMD Ryzen 9")
                         })
                         {
                             var url = Url.Action("Laptop", "ProductsList", new { cpuType = value, usage = Model.Usage, brand = Model.Brand, ram = Model.Ram, gpu = Model.Gpu, priceRange = Model.PriceRange });
@@ -227,11 +227,16 @@
                         @{
                             var gpuDefaultUrl = Url.Action("Laptop", "ProductsList", new { usage = Model.Usage, brand = Model.Brand, cpuType = Model.CpuType, ram = Model.Ram, priceRange = Model.PriceRange });
                         }
-                        <option value="@gpuDefaultUrl" selected="@(string.IsNullOrEmpty(Model.Gpu))">Card màn hình</option>
+                        <option value="@gpuDefaultUrl" selected="@(string.IsNullOrEmpty(Model.Gpu))">VGA</option>
                         @foreach (var (value, text) in new[] {
-                            ("nvidia", "NVIDIA"),
-                            ("amd", "AMD"),
-                            ("intel", "Intel")
+                            ("rtx 3060", "RTX 3060"),
+                            ("gtx 1650", "GTX 1650"),
+                            ("rtx 3080", "RTX 3080"),
+                            ("rtx 3070", "RTX 3070"),
+                            ("intel iris xe", "Intel Iris Xe"),
+                            ("gtx 1660 ti", "GTX 1660 Ti"),
+                            ("rtx 3050", "RTX 3050"),
+                            ("nvidia mx250", "NVIDIA MX250")
                         })
                         {
                             var url = Url.Action("Laptop", "ProductsList", new { gpu = value, usage = Model.Usage, brand = Model.Brand, cpuType = Model.CpuType, ram = Model.Ram, priceRange = Model.PriceRange });
@@ -270,10 +275,14 @@
                         @range.Value
                     </a>
                 }
+                
             </div>
+            <a href="@Url.Action("Laptop", "ProductsList", new { category = Model.Category })" class="inline-block mt-3 bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600">
+                Xóa bộ lọc
+            </a>
         </div>
     </div>
-
+    
     <!-- Products Grid -->
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mt-6">
         @if (Model.Products != null && Model.Products.Any())

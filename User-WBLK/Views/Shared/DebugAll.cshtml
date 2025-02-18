@@ -1,0 +1,137 @@
+@model dynamic
+@{
+    ViewData["Title"] = "Products List Debug - PC & Laptop Filtering";
+    
+    // PC Debug Info from ViewBag
+    var pcCounts = ViewBag.PCCounts;
+    var pcFilters = ViewBag.PCFilters;
+    var pcTotalFound = ViewBag.PCTotalFound;
+    var pcDebug = ViewBag.PCDebug as IEnumerable<dynamic>;
+    
+    // Laptop Debug Info from ViewBag
+    var laptopCounts = ViewBag.LaptopCounts;
+    var laptopFilters = ViewBag.LaptopFilters;
+    var laptopTotalFound = ViewBag.LaptopTotalFound;
+    var laptopDebug = ViewBag.LaptopDebug as IEnumerable<dynamic>;
+}
+
+<h1>Products List Debug - PC & Laptop Filtering</h1>
+
+<hr />
+
+<h2>PC Filtering Debug</h2>
+<div class="debug-info" style="background-color:#f8f8f8; padding:10px; border:1px solid #ccc;">
+    <p><strong>Total PC Products:</strong> @pcCounts.Total</p>
+    <p><strong>After Usage filter ("@pcFilters.Usage"):</strong> @pcCounts.AfterUsage</p>
+    <p><strong>After CPU filter ("@pcFilters.Cpu"):</strong> @pcCounts.AfterCpu</p>
+    <p><strong>After RAM filter ("@pcFilters.Ram"):</strong> @pcCounts.AfterRam</p>
+    <p><strong>After GPU filter ("@pcFilters.Gpu"):</strong> @pcCounts.AfterGpu</p>
+    <p><strong>After Price filter ("@pcFilters.PriceRange"):</strong> @pcCounts.AfterPrice</p>
+    <p><strong>Total PC products found:</strong> @pcTotalFound</p>
+</div>
+
+@if(((IEnumerable<dynamic>)Model.PCProducts).Any())
+{
+    <h3>PC Products List</h3>
+    <table class="table table-striped" style="margin-top:20px;">
+        <thead>
+            <tr>
+                <th>IdSp</th>
+                <th>Tên sản phẩm</th>
+                <th>Thương hiệu</th>
+                <th>Thông số kỹ thuật (raw)</th>
+                <th>Thông số kỹ thuật (lower-case)</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var product in Model.PCProducts)
+            {
+                <tr>
+                    <td>@product.IdSp</td>
+                    <td>@product.Tensanpham</td>
+                    <td>@product.Thuonghieu</td>
+                    <td><pre>@Html.Raw(product.Thongsokythuat)</pre></td>
+                    <td><pre>@Html.Raw(product.Thongsokythuat?.ToLower())</pre></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No PC products found matching the debug filter.</p>
+}
+
+@if(pcDebug != null)
+{
+    <h4>PC Debug Product Details</h4>
+    <ul>
+        @foreach(var dp in pcDebug)
+        {
+            <li>
+                <strong>@dp.IdSp</strong>: @dp.Tensanpham<br />
+                <em>Lower-case Specs:</em> <pre>@dp.LowerSpecs</pre>
+            </li>
+        }
+    </ul>
+}
+
+<hr />
+
+<h2>Laptop Filtering Debug</h2>
+<div class="debug-info" style="background-color:#f8f8f8; padding:10px; border:1px solid #ccc;">
+    <p><strong>Total Laptop Products:</strong> @laptopCounts.Total</p>
+    <p><strong>After Usage filter ("@laptopFilters.Usage"):</strong> @laptopCounts.AfterUsage</p>
+    <p><strong>After Brand filter ("@laptopFilters.Brand"):</strong> @laptopCounts.AfterBrand</p>
+    <p><strong>After CPU filter ("@laptopFilters.Cpu"):</strong> @laptopCounts.AfterCpu</p>
+    <p><strong>After RAM filter ("@laptopFilters.Ram"):</strong> @laptopCounts.AfterRam</p>
+    <p><strong>After GPU filter ("@laptopFilters.Gpu"):</strong> @laptopCounts.AfterGpu</p>
+    <p><strong>After Price filter ("@laptopFilters.PriceRange"):</strong> @laptopCounts.AfterPrice</p>
+    <p><strong>Total Laptop products found:</strong> @laptopTotalFound</p>
+</div>
+
+@if(((IEnumerable<dynamic>)Model.LaptopProducts).Any())
+{
+    <h3>Laptop Products List</h3>
+    <table class="table table-striped" style="margin-top:20px;">
+        <thead>
+            <tr>
+                <th>IdSp</th>
+                <th>Tên sản phẩm</th>
+                <th>Thương hiệu</th>
+                <th>Thông số kỹ thuật (raw)</th>
+                <th>Thông số kỹ thuật (lower-case)</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var product in Model.LaptopProducts)
+            {
+                <tr>
+                    <td>@product.IdSp</td>
+                    <td>@product.Tensanpham</td>
+                    <td>@product.Thuonghieu</td>
+                    <td><pre>@Html.Raw(product.Thongsokythuat)</pre></td>
+                    <td><pre>@Html.Raw(product.Thongsokythuat?.ToLower())</pre></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No Laptop products found matching the debug filter.</p>
+}
+
+@if(laptopDebug != null)
+{
+    <h4>Laptop Debug Product Details</h4>
+    <ul>
+        @foreach(var dp in laptopDebug)
+        {
+            <li>
+                <strong>@dp.IdSp</strong>: @dp.Tensanpham<br />
+                <em>Lower-case Specs:</em> <pre>@dp.LowerSpecs</pre>
+            </li>
+        }
+    </ul>
+}
