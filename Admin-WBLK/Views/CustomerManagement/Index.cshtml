@@ -124,13 +124,20 @@
                         <td class="px-6 py-4 text-sm text-gray-900">
                             @if (!string.IsNullOrEmpty(item.Diachi))
                             {
-                                var words = item.Diachi.Split(' ');
-                                var firstLine = string.Join(" ", words.Take(words.Length / 2));
-                                var secondLine = string.Join(" ", words.Skip(words.Length / 2));
-                                <div class="flex flex-col" title="@item.Diachi">
-                                    <span>@firstLine</span>
-                                    <span>@secondLine</span>
-                                </div>
+                                var parts = item.Diachi.Split(',');
+                                if (parts.Length == 4)
+                                {
+                                    var firstLine = $"{parts[0].Trim()}, {parts[1].Trim()},";
+                                    var secondLine = $"{parts[2].Trim()}, {parts[3].Trim()}";
+                                    <div class="flex flex-col" title="@item.Diachi">
+                                        <span class="block font-medium text-gray-900">@firstLine</span>
+                                        <span class="block text-sm text-gray-500">@secondLine</span>
+                                    </div>
+                                }
+                                else
+                                {
+                                    @item.Diachi
+                                }
                             }
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@item.Sodienthoai</td>

@@ -136,7 +136,7 @@
                     <!-- Tổng tiền -->
                     <div class="text-lg space-y-1">
                         <div>Tạm tính: <span id="originalTotal" class="font-medium">0</span> VNĐ</div>
-                        <div><span id="discountAmount" class="text-green-600 font-medium hidden">0</span> VNĐ</div>
+                        <div id="discountRow" class="hidden">Giảm giá: <span id="discountAmount" class="text-green-600 font-medium">-0</span> VNĐ</div>
                         <div>Tổng tiền: <span id="displayTotal" class="font-bold text-red-600">0</span> VNĐ</div>
                     </div>
                 </div>
@@ -235,57 +235,49 @@
             const discountSuccessEl = document.getElementById('discountSuccess');
             const discountInfoEl = document.getElementById('discountInfo');
             const discountAmountEl = document.getElementById('discountAmount');
+            const discountRow = document.getElementById('discountRow');
 
-            // If no discount code is entered, clear any messages and return the original total.
+            // Reset all discount-related elements
+            discountErrorEl.classList.add('hidden');
+            discountSuccessEl.classList.add('hidden');
+            discountInfoEl.textContent = "";
+            discountRow.classList.add('hidden');
+            discountAmountEl.textContent = "-0";
+
+            // If no discount code is entered, return the original total
             if (discountCode === "") {
-                discountErrorEl.classList.add('hidden');
-                discountSuccessEl.classList.add('hidden');
-                discountInfoEl.textContent = "";
-                discountAmountEl.classList.add('hidden');
                 document.getElementById('displayTotal').textContent = formatCurrency(total);
                 return total;
             }
 
             try {
-                // Call the API endpoint to get discount info.
-                // We pass isEdit=true so that the API skips the validity date check if desired.
                 const response = await fetch('/OrderManagement/GetDiscountInfo?id=' + encodeURIComponent(discountCode) + '&isEdit=true');
                 const data = await response.json();
 
                 if (data.success) {
-                    // Parse the discount percentage from the response.
                     let discountPercentage = parseFloat(data.tilechietkhau);
                     let discountAmount = total * discountPercentage / 100;
                     let newTotal = total - discountAmount;
                     
                     // Update UI messages and amounts
-                    discountInfoEl.textContent = data.message; // e.g.: "Áp dụng giảm giá 18%"
-                    discountAmountEl.textContent = formatCurrency(discountAmount);
-                    discountAmountEl.classList.remove('hidden');
+                    discountInfoEl.textContent = data.message;
+                    discountAmountEl.textContent = "-" + formatCurrency(discountAmount);
+                    discountRow.classList.remove('hidden'); // Show the discount row
                     discountSuccessEl.textContent = "Mã giảm giá hợp lệ!";
                     discountSuccessEl.classList.remove('hidden');
-                    discountErrorEl.classList.add('hidden');
                     
                     document.getElementById('displayTotal').textContent = formatCurrency(newTotal);
                     return newTotal;
                 } else {
-                    // If the discount code is invalid, show the error message and use the original total.
                     discountErrorEl.textContent = data.message;
                     discountErrorEl.classList.remove('hidden');
-                    discountSuccessEl.classList.add('hidden');
-                    discountInfoEl.textContent = "";
-                    discountAmountEl.classList.add('hidden');
                     document.getElementById('displayTotal').textContent = formatCurrency(total);
                     return total;
                 }
             }
             catch (error) {
-                // In case of any error during the fetch, show a generic error message.
                 discountErrorEl.textContent = "Có lỗi khi kiểm tra mã giảm giá";
                 discountErrorEl.classList.remove('hidden');
-                discountSuccessEl.classList.add('hidden');
-                discountInfoEl.textContent = "";
-                discountAmountEl.classList.add('hidden');
                 document.getElementById('displayTotal').textContent = formatCurrency(total);
                 return total;
             }
