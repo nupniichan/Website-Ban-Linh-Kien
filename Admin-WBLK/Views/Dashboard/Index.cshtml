@@ -1,8 +1,233 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Dashboard";
 }
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="w-full h-full p-6">
+    <h1 class="text-2xl font-bold mb-6">Dashboard</h1>
+
+    <!-- Thống kê tổng quan -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-blue-50 p-6 rounded-lg shadow">
+            <div class="flex items-center">
+                <div class="p-3 bg-blue-500 rounded-full">
+                    <i class="fas fa-shopping-cart text-white text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm text-blue-600">Tổng đơn hàng</p>
+                    <p class="text-2xl font-bold text-blue-700">@ViewBag.TotalOrders</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-green-50 p-6 rounded-lg shadow">
+            <div class="flex items-center">
+                <div class="p-3 bg-green-500 rounded-full">
+                    <i class="fas fa-check-circle text-white text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm text-green-600">Đơn thành công</p>
+                    <p class="text-2xl font-bold text-green-700">@ViewBag.CompletedOrders</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-yellow-50 p-6 rounded-lg shadow">
+            <div class="flex items-center">
+                <div class="p-3 bg-yellow-500 rounded-full">
+                    <i class="fas fa-clock text-white text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm text-yellow-600">Đơn đang giao</p>
+                    <p class="text-2xl font-bold text-yellow-700">@ViewBag.PendingOrders</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-purple-50 p-6 rounded-lg shadow">
+            <div class="flex items-center">
+                <div class="p-3 bg-purple-500 rounded-full">
+                    <i class="fas fa-money-bill-wave text-white text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm text-purple-600">Tổng doanh thu</p>
+                    <p class="text-2xl font-bold text-purple-700">@ViewBag.TotalRevenue.ToString("N0") đ</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Thống kê thanh toán -->
+        <div class="bg-white p-6 rounded-lg shadow">
+            <h2 class="text-xl font-semibold mb-4">Thống kê thanh toán</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phương thức</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Số đơn</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Doanh thu</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        @foreach (var stat in ViewBag.PaymentStats)
+                        {
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">@stat.Method</td>
+                                <td class="px-6 py-4 whitespace-nowrap">@stat.Count</td>
+                                <td class="px-6 py-4 whitespace-nowrap">@stat.Amount.ToString("N0") đ</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Đơn hàng gần đây -->
+        <div class="bg-white p-6 rounded-lg shadow">
+            <h2 class="text-xl font-semibold mb-4">Đơn hàng gần đây</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mã ĐH</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ngày đặt</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tổng tiền</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        @foreach (var order in ViewBag.RecentOrders)
+                        {
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">@order.IdDh</td>
+                                <td class="px-6 py-4 whitespace-nowrap">@order.Ngaydathang?.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td class="px-6 py-4 whitespace-nowrap">@order.Tongtien.ToString("N0") đ</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                        @(order.Trangthai == "Giao thành công" ? "bg-green-100 text-green-800" : 
+                                          order.Trangthai == "Đang giao" ? "bg-yellow-100 text-yellow-800" : 
+                                          order.Trangthai == "Đã hủy" ? "bg-red-100 text-red-800" : 
+                                          "bg-gray-100 text-gray-800" )">
+                                        @order.Trangthai
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Biểu đồ -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+        <!-- Biểu đồ doanh thu -->
+        <div class="bg-white p-6 rounded-lg shadow" style="min-height: 400px;">
+            <h2 class="text-xl font-semibold mb-4">Biểu đồ doanh thu theo phương thức</h2>
+            <canvas id="revenueChart"></canvas>
+        </div>
+
+        <!-- Biểu đồ đơn hàng -->
+        <div class="bg-white p-6 rounded-lg shadow" style="min-height: 400px;">
+            <h2 class="text-xl font-semibold mb-4">Biểu đồ số lượng đơn hàng</h2>
+            <canvas id="orderChart"></canvas>
+        </div>
+    </div>
 </div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Thêm console.log để kiểm tra dữ liệu
+        console.log('Payment Stats:', @Html.Raw(Json.Serialize(ViewBag.PaymentStats)));
+        console.log('Total Orders:', @ViewBag.TotalOrders);
+        console.log('Completed Orders:', @ViewBag.CompletedOrders);
+        console.log('Pending Orders:', @ViewBag.PendingOrders);
+
+        // Dữ liệu cho biểu đồ
+        const paymentStats = @Html.Raw(Json.Serialize(ViewBag.PaymentStats));
+        
+        // Biểu đồ doanh thu
+        const revenueCtx = document.getElementById('revenueChart');
+        if (revenueCtx) {
+            new Chart(revenueCtx, {
+                type: 'pie',
+                data: {
+                    labels: paymentStats.map(stat => stat.Method),
+                    datasets: [{
+                        data: paymentStats.map(stat => stat.Amount),
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.8)',
+                            'rgba(75, 192, 192, 0.8)',
+                            'rgba(153, 102, 255, 0.8)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    const value = context.raw;
+                                    label += new Intl.NumberFormat('vi-VN', {
+                                        style: 'currency',
+                                        currency: 'VND'
+                                    }).format(value);
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Biểu đồ đơn hàng
+        const orderCtx = document.getElementById('orderChart');
+        if (orderCtx) {
+            new Chart(orderCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Tổng đơn hàng', 'Đơn thành công', 'Đơn đang giao'],
+                    datasets: [{
+                        label: 'Số lượng đơn hàng',
+                        data: [@ViewBag.TotalOrders, @ViewBag.CompletedOrders, @ViewBag.PendingOrders],
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.8)',
+                            'rgba(75, 192, 192, 0.8)',
+                            'rgba(255, 206, 86, 0.8)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+}
