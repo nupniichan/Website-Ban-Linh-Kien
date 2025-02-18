@@ -204,30 +204,37 @@ namespace Website_Ban_Linh_Kien.Controllers
             string category = null, 
             string brand = null,
             string priceRange = null,
-            Dictionary<string, string> additionalFilters = null)
+            string cpuSeries = null,
+            string cores = null)
         {
             var query = _context.Sanphams.Where(p => p.Loaisanpham == "Components");
 
-            // Lọc theo danh mục con (category)
+            // Filter by sub-category
             if (!string.IsNullOrEmpty(category))
             {
                 query = query.Where(p => p.Thongsokythuat.Contains($"\"{category}\""));
             }
 
-            // Lọc theo thương hiệu
+            // Filter by brand
             if (!string.IsNullOrEmpty(brand))
             {
                 query = query.Where(p => p.Thuonghieu.ToLower() == brand.ToLower());
             }
 
-            // Lọc theo các bộ lọc bổ sung
+            // Build the additionalFilters dictionary using separate parameters.
+            var additionalFilters = new Dictionary<string, string>();
+            if (!string.IsNullOrEmpty(cpuSeries))
+                additionalFilters.Add("cpuSeries", cpuSeries);
+            if (!string.IsNullOrEmpty(cores))
+                additionalFilters.Add("cores", cores);
+
+            // Filter using additional filters based on category.
             if (additionalFilters != null)
             {
                 foreach (var filter in additionalFilters)
                 {
                     if (!string.IsNullOrEmpty(filter.Value))
                     {
-                        // Xử lý các bộ lọc theo category
                         switch (category?.ToLower())
                         {
                             case "cpu":
@@ -237,42 +244,13 @@ namespace Website_Ban_Linh_Kien.Controllers
                                     query = query.Where(p => p.Thongsokythuat.Contains($"\"Cores\":\"{filter.Value}\""));
                                 break;
 
-                            case "vga":
-                                if (filter.Key == "memory")
-                                    query = query.Where(p => p.Thongsokythuat.Contains($"\"Memory\":\"{filter.Value}\""));
-                                break;
-
-                            case "mainboard":
-                                if (filter.Key == "socket")
-                                    query = query.Where(p => p.Thongsokythuat.Contains($"\"Socket\":\"{filter.Value}\""));
-                                else if (filter.Key == "formFactor")
-                                    query = query.Where(p => p.Thongsokythuat.Contains($"\"Form Factor\":\"{filter.Value}\""));
-                                break;
-
-                            case "ram":
-                                if (filter.Key == "capacity")
-                                    query = query.Where(p => p.Thongsokythuat.Contains($"\"Capacity\":\"{filter.Value}\""));
-                                else if (filter.Key == "ramType")
-                                    query = query.Where(p => p.Thongsokythuat.Contains($"\"RAM Type\":\"{filter.Value}\""));
-                                break;
-
-                            case "psu":
-                                if (filter.Key == "wattage")
-                                    query = query.Where(p => p.Thongsokythuat.Contains($"\"Wattage\":\"{filter.Value}\""));
-                                else if (filter.Key == "efficiency")
-                                    query = query.Where(p => p.Thongsokythuat.Contains($"\"Efficiency\":\"{filter.Value}\""));
-                                break;
-
-                            case "case":
-                                if (filter.Key == "caseSize")
-                                    query = query.Where(p => p.Thongsokythuat.Contains($"\"Case Size\":\"{filter.Value}\""));
-                                break;
+                            // You can add similar cases for other sub-categories if needed.
                         }
                     }
                 }
             }
 
-            // Lọc theo khoảng giá
+            // Filter by price range
             if (!string.IsNullOrEmpty(priceRange))
             {
                 switch (priceRange.ToLower())
@@ -306,11 +284,12 @@ namespace Website_Ban_Linh_Kien.Controllers
                 Category = category,
                 Brand = brand,
                 PriceRange = priceRange,
-                AdditionalFilters = additionalFilters ?? new Dictionary<string, string>()
+                AdditionalFilters = additionalFilters
             };
 
             return View(viewModel);
         }
+
 
         // Monitor Routes
         [Route("productslist/monitor")]
