@@ -110,10 +110,6 @@ public partial class DatabaseContext : DbContext
                 .HasForeignKey(d => d.IdGh)
                 .HasConstraintName("chitietgiohang_fk_1");
 
-            entity.HasOne(d => d.IdGh1).WithMany(p => p.Chitietgiohangs)
-                .HasForeignKey(d => d.IdGh)
-                .HasConstraintName("giohang_ibfk_1");
-
             entity.HasOne(d => d.IdSpNavigation).WithMany(p => p.Chitietgiohangs)
                 .HasForeignKey(d => d.IdSp)
                 .HasConstraintName("chitietgiohang_fk_2");
