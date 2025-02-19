@@ -28,10 +28,11 @@
                         </div>
 
                         <!-- Cart -->
-                        <a href="/cart" class="text-white">
+                        <a href="/cart" class="text-white relative">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
                             </svg>
+                            <span id="mobileCartCount" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"></span>
                         </a>
                     </div>
 
@@ -63,10 +64,11 @@
                             <span class="text-sm font-bold">Xây dựng cấu hình</span>
                         </a>
 
-                        <a href="/cart" class="text-white text-center">
+                        <a href="/cart" class="text-white text-center relative">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 mx-auto">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
                             </svg>
+                            <span id="desktopCartCount" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"></span>
                             <span class="text-sm font-bold">Giỏ hàng</span>
                         </a>
 
@@ -242,4 +244,51 @@
                 });
             }
         });
+    </script>
+
+    <!-- Add this script at the end of the file -->
+    <script>
+        function updateCartCount() {
+            const mobileCount = document.getElementById('mobileCartCount');
+            const desktopCount = document.getElementById('desktopCartCount');
+            
+            if (@User.Identity?.IsAuthenticated.ToString().ToLower()) {
+                // For logged in users, get count from server
+                fetch('/Cart/GetCartCount')
+                    .then(response => response.json())
+                    .then(count => {
+                        updateCountDisplay(count);
+                    });
+            } else {
+                // For guest users, get count from localStorage
+                const cart = JSON.parse(localStorage.getItem('guestCart')) || [];
+                const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+                updateCountDisplay(count);
+            }
+
+            function updateCountDisplay(count) {
+                if (count > 0) {
+                    mobileCount.textContent = count;
+                    desktopCount.textContent = count;
+                    mobileCount.classList.remove('hidden');
+                    desktopCount.classList.remove('hidden');
+                } else {
+                    mobileCount.classList.add('hidden');
+                    desktopCount.classList.add('hidden');
+                }
+            }
+        }
+
+        // Update count when page loads
+        document.addEventListener('DOMContentLoaded', updateCartCount);
+
+        // Update count when cart changes
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'guestCart') {
+                updateCartCount();
+            }
+        });
+
+        // Custom event for updating cart count after adding items
+        window.addEventListener('cartUpdated', updateCartCount);
     </script>
