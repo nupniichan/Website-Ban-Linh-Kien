@@ -553,7 +553,44 @@
                 alert('Số lượng sản phẩm không hợp lệ!');
                 return false;
             }
-            return true;
+
+            // Gửi request AJAX thay vì submit form
+            fetch('/Cart/AddToCart', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `productId=@Model.Id&quantity=${quantity}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Hiển thị thông báo thành công
+                    const successAlert = document.createElement('div');
+                    successAlert.id = 'successAlert';
+                    successAlert.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg';
+                    successAlert.textContent = data.message;
+                    document.body.appendChild(successAlert);
+
+                    // Xóa thông báo sau 3 giây
+                    setTimeout(() => {
+                        successAlert.style.opacity = '0';
+                        successAlert.style.transition = 'opacity 0.5s ease';
+                        setTimeout(() => successAlert.remove(), 500);
+                    }, 3000);
+
+                    // Trigger event để cập nhật số lượng giỏ hàng trên header (nếu có)
+                    window.dispatchEvent(new Event('cartUpdated'));
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi thêm vào giỏ hàng');
+            });
+
+            return false; // Ngăn form submit
         }
     </script>
 }

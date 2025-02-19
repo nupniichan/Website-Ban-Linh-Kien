@@ -86,35 +86,77 @@
 </div>
 
 <script>
-    document.getElementById('loginForm').addEventListener('submit', function (e) {
+    document.getElementById('loginForm').addEventListener('submit', async function (e) {
         e.preventDefault();
 
         const tentaikhoan = document.querySelector('[name="tentaikhoan"]').value;
         const password = document.querySelector('[name="password"]').value;
         const remember = document.querySelector('[name="remember"]').checked;
 
-        fetch('/Login/Login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            body: `tentaikhoan=${tentaikhoan}&password=${password}&remember=${remember}`
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Reload trang sau khi đăng nhập thành công
-                window.location.reload();
+        try {
+            const loginResponse = await fetch('/Login/Login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `tentaikhoan=${encodeURIComponent(tentaikhoan)}&password=${encodeURIComponent(password)}&remember=${remember}`
+            });
+
+            const loginData = await loginResponse.json();
+
+            if (loginData.success) {
+                const guestCartStr = localStorage.getItem('guestCart');
+                if (guestCartStr) {
+                    try {
+                        const guestCart = JSON.parse(guestCartStr);
+                        if (guestCart && guestCart.length > 0) {
+                            const mergeResponse = await fetch('/Cart/MergeGuestCart', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify(guestCart.map(item => ({
+                                    ProductId: item.id,
+                                    Quantity: parseInt(item.quantity)
+                                })))
+                            });
+
+                            const mergeData = await mergeResponse.json();
+                            
+                            if (mergeData.success) {
+                                console.log('Merge cart thành công');
+                                localStorage.removeItem('guestCart'); // Xóa cart cũ sau khi merge thành công
+                            } else {
+                                console.error('Lỗi merge cart:', mergeData.message);
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Lỗi xử lý guest cart:', error);
+                    }
+                }
+
+                // Đóng popup và reload trang sau khi hoàn tất tất cả các thao tác
+                document.getElementById('loginPopup').classList.add('hidden');
+                document.getElementById('loginPopup').classList.remove('flex');
+                
+                // Đợi một chút để đảm bảo các thao tác đã hoàn tất
+                setTimeout(() => {
+                    window.location.reload();
+                }, 500);
             } else {
                 const errorMessage = document.querySelector('.error-message');
-                errorMessage.textContent = data.message;
+                errorMessage.textContent = loginData.message;
                 errorMessage.classList.remove('hidden');
             }
-        })
-        .catch(error => console.error('Error:', error));
+        } catch (error) {
+            console.error('Error:', error);
+            const errorMessage = document.querySelector('.error-message');
+            errorMessage.textContent = 'Đã xảy ra lỗi khi đăng nhập';
+            errorMessage.classList.remove('hidden');
+        }
     });
 
-    // Thêm xử lý đóng popup khi click ra ngoài
+    // Xử lý đóng popup khi click ra ngoài
     document.getElementById('loginPopup').addEventListener('click', function(e) {
         if (e.target === this) {
             this.classList.add('hidden');
@@ -122,3 +164,4 @@
         }
     });
 </script>
+
