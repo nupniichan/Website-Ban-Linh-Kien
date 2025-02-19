@@ -216,7 +216,7 @@
             'Storage': ['SSD', 'HDD']
         };
 
-        // Định nghĩa mapping cho Components và thông số kỹ thuật tương ứng
+        // Copy toàn bộ componentSpecs từ Create.cshtml
         const componentSpecs = {
             'CPU': [
                 { key: 'Socket', value: '' },
@@ -229,26 +229,23 @@
                 { key: 'Bộ nhớ đệm', value: '' },
                 { key: 'Nhân đồ hoạ tích hợp', value: '' }
             ],
-            // ... copy toàn bộ componentSpecs từ Create.cshtml ...
+            // ... copy các components khác
         };
 
-        // Định nghĩa mapping cho các danh mục khác
+        // Copy toàn bộ categorySpecs từ Create.cshtml
         const categorySpecs = {
-            // ... copy toàn bộ categorySpecs từ Create.cshtml ...
+            // ... copy từ Create.cshtml
         };
 
-        // Cập nhật defaultSpecsMapping
+        // Copy toàn bộ defaultSpecsMapping từ Create.cshtml
         const defaultSpecsMapping = {
             'PC': [
                 { key: 'Nhu cầu', value: '', type: 'select', options: needOptions },
                 { key: 'Mainboard', value: '' },
-                // ... copy toàn bộ defaultSpecsMapping từ Create.cshtml ...
+                // ... copy các thông số khác
             ],
-            // ... các loại sản phẩm khác ...
+            // ... copy các loại sản phẩm khác
         };
-
-        // Thêm biến để kiểm tra loại sản phẩm có cho phép thêm thông số
-        const allowAddSpecs = ['Components', 'Audio', 'Network', 'Peripherals'];
 
         document.addEventListener('DOMContentLoaded', function() {
             const loaiSpSelect = document.querySelector('select[name="Loaisanpham"]');
@@ -269,34 +266,42 @@
                     const tbody = document.querySelector('#specTable tbody');
                     tbody.innerHTML = '';
 
+                    // Lấy loại sản phẩm hiện tại
+                    const currentProductType = document.querySelector('select[name="Loaisanpham"]').value;
+                    const defaultSpecs = defaultSpecsMapping[currentProductType] || [];
+                    const defaultSpecKeys = defaultSpecs.map(spec => spec.key);
+
                     // Thêm các thông số từ dữ liệu
                     Object.entries(specs).forEach(([key, value], index) => {
                         const row = document.createElement('tr');
                         row.className = 'border';
                         
                         const inputClass = "w-full px-2 py-1 border-0 focus:outline-none focus:ring-0";
-                        const isCategory = key === 'Danh mục';
+                        const isDefaultSpec = defaultSpecKeys.includes(key) || key === 'Danh mục';
+                        const isDanhMuc = key === 'Danh mục';
                         
                         row.innerHTML = `
                             <td class="px-4 py-2 border">
                                 <input type="text" 
                                        name="specs[${index}].key" 
                                        value="${key}"
-                                       class="${inputClass} ${isCategory ? 'bg-gray-100' : ''}"
+                                       class="${inputClass} ${isDefaultSpec ? 'bg-gray-100' : ''}"
                                        placeholder="Tên thông số"
-                                       ${isCategory ? 'readonly' : ''}>
+                                       ${isDefaultSpec ? 'readonly' : ''}>
                             </td>
                             <td class="px-4 py-2 border">
                                 <input type="text" 
                                        name="specs[${index}].value" 
                                        value="${value}"
-                                       class="${inputClass} ${isCategory ? 'bg-gray-100' : ''}"
+                                       class="${inputClass} ${isDanhMuc ? 'bg-gray-100' : ''}"
                                        placeholder="Giá trị"
-                                       ${isCategory ? 'readonly' : ''}>
+                                       ${isDanhMuc ? 'readonly' : ''}
+                                       required>
                             </td>
                             <td class="px-4 py-2 border text-center">
-                                ${!isCategory ? `
-                                    <button type="button" onclick="removeRow(this)" class="text-red-500 hover:text-red-700">
+                                ${!isDefaultSpec ? `
+                                    <button type="button" onclick="removeRow(this)" 
+                                            class="text-red-500 hover:text-red-700 transition-colors">
                                         <i class="fas fa-times"></i>
                                     </button>
                                 ` : ''}

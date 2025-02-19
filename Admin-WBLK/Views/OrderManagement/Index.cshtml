@@ -55,13 +55,15 @@
                 <select name="trangThai" 
                         onchange="this.form.submit()"
                         class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-                    <option value="">Tất cả trạng thái</option>
-                    @foreach(var trangThai in ViewBag.TrangThais)
-                    {
-                        <option value="@trangThai" selected="@(ViewData["CurrentTrangThai"]?.ToString() == trangThai)">
-                            @trangThai
-                        </option>
-                    }
+                    <option value="" selected="@(ViewData["CurrentTrangThai"]?.ToString() == "")">@GetProductTypeText("")</option>
+                    <option value="Components" selected="@(ViewData["CurrentTrangThai"]?.ToString() == "Components")">@GetProductTypeText("Components")</option>
+                    <option value="Laptop" selected="@(ViewData["CurrentTrangThai"]?.ToString() == "Laptop")">@GetProductTypeText("Laptop")</option>
+                    <option value="PC" selected="@(ViewData["CurrentTrangThai"]?.ToString() == "PC")">@GetProductTypeText("PC")</option>
+                    <option value="Monitor" selected="@(ViewData["CurrentTrangThai"]?.ToString() == "Monitor")">@GetProductTypeText("Monitor")</option>
+                    <option value="Storage" selected="@(ViewData["CurrentTrangThai"]?.ToString() == "Storage")">@GetProductTypeText("Storage")</option>
+                    <option value="Peripherals" selected="@(ViewData["CurrentTrangThai"]?.ToString() == "Peripherals")">@GetProductTypeText("Peripherals")</option>
+                    <option value="Network" selected="@(ViewData["CurrentTrangThai"]?.ToString() == "Network")">@GetProductTypeText("Network")</option>
+                    <option value="Audio" selected="@(ViewData["CurrentTrangThai"]?.ToString() == "Audio")">@GetProductTypeText("Audio")</option>
                 </select>
 
                 <div class="flex items-center gap-2">
@@ -376,6 +378,22 @@
             "Không giao" => "text-orange-600",
             "Hủy đơn" => "text-red-600",
             _ => "text-gray-600"
+        };
+    }
+
+    public string GetProductTypeText(string type)
+    {
+        return type switch
+        {
+            "Components" => "Linh kiện",
+            "Laptop" => "Laptop",
+            "PC" => "Máy tính",
+            "Monitor" => "Màn hình",
+            "Storage" => "Lưu trữ",
+            "Peripherals" => "Thiết bị ngoại vi",
+            "Network" => "Mạng",
+            "Audio" => "Âm thanh",
+            _ => "Tất cả loại sản phẩm"
         };
     }
 }
