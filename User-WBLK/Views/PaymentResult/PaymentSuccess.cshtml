@@ -2,6 +2,7 @@
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
 @{
+    ViewData["Title"] = "Đặt hàng thành công";
 }
 
 <div class="container mx-auto px-4 py-8 max-w-[700px]">
@@ -14,10 +15,11 @@
         </div>
 
         <!-- Title -->
-        <h1 class="text-3xl font-bold text-green-600">Thanh toán thành công!</h1>
+        <h1 class="text-3xl font-bold text-green-600">Đặt hàng thành công!</h1>
 
         <!-- Message -->
         <p class="text-gray-600">Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi.</p>
+        <p class="text-gray-600">Mã đơn hàng của bạn: <span class="font-bold">@TempData["OrderId"]</span></p>
 
         <!-- Buttons -->
         <div class="flex justify-center gap-4 pt-4">
@@ -30,12 +32,3 @@
         </div>
     </div>
 </div>
-
-@section Scripts {
-    <script>
-        // Tự động chuyển về trang chủ sau 5 giây
-        setTimeout(function() {
-            window.location.href = '/';
-        }, 5000);
-    </script>
-}

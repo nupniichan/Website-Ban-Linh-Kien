@@ -28,9 +28,6 @@ namespace Website_Ban_Linh_Kien.Controllers
             {
                 var usageValue = usage.Trim();
                 query = query.Where(p => p.Thongsokythuat.Contains(usageValue));
-                
-                // Debug log
-                Console.WriteLine($"Filtering for usage: {usageValue}");
             }
 
             // Lọc theo thương hiệu
@@ -82,12 +79,7 @@ namespace Website_Ban_Linh_Kien.Controllers
                         break;
                 }
             }
-
-            // Debug: In ra thông tin query
-            Console.WriteLine($"Price Range: {priceRange}");
-            Console.WriteLine($"Usage: {usage}");
             var totalCount = await query.CountAsync();
-            Console.WriteLine($"Total products found: {totalCount}");
 
             var products = await GetPagedProductsAsync(query, page);
             var totalPages = await GetTotalPagesAsync(query);
