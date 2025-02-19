@@ -6,12 +6,10 @@ namespace Website_Ban_Linh_Kien.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
         private readonly DatabaseContext _context;
 
-        public HomeController(ILogger<HomeController> logger, DatabaseContext context)
+        public HomeController(DatabaseContext context)
         {
-            _logger = logger;
             _context = context;
         }
 
@@ -75,13 +73,6 @@ namespace Website_Ban_Linh_Kien.Controllers
                 })
                 .ToList();
 
-            // Debug để kiểm tra CPU products
-            Console.WriteLine($"Found {cpuProducts.Count} CPU products:");
-            foreach (var product in cpuProducts)
-            {
-                Console.WriteLine($"CPU Product: {product.TenSp}");
-            }
-
             var vgaProducts = _context.Sanphams
                 .Where(p => p.Loaisanpham == "Components" && 
                        p.Thongsokythuat.Contains("\"Danh mục\": \"VGA\""))
@@ -96,13 +87,6 @@ namespace Website_Ban_Linh_Kien.Controllers
                     SoLuongTon = p.Soluongton
                 })
                 .ToList();
-
-            // Debug để kiểm tra VGA products
-            Console.WriteLine($"Found {vgaProducts.Count} VGA products:");
-            foreach (var product in vgaProducts)
-            {
-                Console.WriteLine($"VGA Product: {product.TenSp}");
-            }
 
             var ramProducts = _context.Sanphams
                 .Where(p => p.Loaisanpham == "Components" && 
@@ -119,12 +103,6 @@ namespace Website_Ban_Linh_Kien.Controllers
                 })
                 .ToList();
 
-            // Debug để kiểm tra RAM products
-            Console.WriteLine($"Found {ramProducts.Count} RAM products:");
-            foreach (var product in ramProducts)
-            {
-                Console.WriteLine($"RAM Product: {product.TenSp}");
-            }
 
             var mainboardProducts = _context.Sanphams
                 .Where(p => p.Loaisanpham == "Components" && 
@@ -141,12 +119,6 @@ namespace Website_Ban_Linh_Kien.Controllers
                 })
                 .ToList();
 
-            // Debug để kiểm tra Mainboard products
-            Console.WriteLine($"Found {mainboardProducts.Count} Mainboard products:");
-            foreach (var product in mainboardProducts)
-            {
-                Console.WriteLine($"Mainboard Product: {product.TenSp}");
-            }
 
             var monitorProducts = _context.Sanphams
                 .Where(p => p.Loaisanpham.ToLower() == "monitor")

@@ -21,7 +21,7 @@ public partial class Khachhang
 
     public int? Diemtichluy { get; set; }
 
-    public string IdTk { get; set; } = null!;
+    public string? IdTk { get; set; }
 
     public string? IdXephangvip { get; set; }
 
