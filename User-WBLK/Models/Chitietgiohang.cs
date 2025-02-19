@@ -13,8 +13,6 @@ public partial class Chitietgiohang
 
     public DateTime? Thoigiancapnhat { get; set; }
 
-    public virtual Khachhang IdGh1 { get; set; } = null!;
-
     public virtual Giohang IdGhNavigation { get; set; } = null!;
 
     public virtual Sanpham IdSpNavigation { get; set; } = null!;
