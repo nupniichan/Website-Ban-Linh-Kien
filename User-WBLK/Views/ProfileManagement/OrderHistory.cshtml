@@ -1,194 +1,167 @@
-﻿@{
+﻿@model PaginatedList<Website_Ban_Linh_Kien.Models.Donhang>
+
+@{
     ViewBag.Title = "OrderHistory";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="flex flex-col h-auto bg-white">
-    <!-- Add space below the navbar -->
+<div class="flex flex-col">
+    <!-- Space below navbar -->
     <div class="h-16"></div>
-
-    <div class="flex flex-1 max-w-screen-xl mx-auto">
+    <div class="flex gap-6">
         <!-- Sidebar -->
         <partial name="_AccountSidebar" />
 
-
-        <!-- Content -->
-        <div class="w-full bg-white shadow-lg rounded-lg p-6 ml-6">
-            <h1 class="text-2xl font-bold mb-6">Lịch sử giao dịch</h1>
-
-            <!-- Orders List -->
-            <div class="space-y-4">
-                <!-- Order 1: Chờ xác nhận -->
-                <div class="bg-gray-50 p-4 rounded-lg shadow-md">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h2 class="text-lg font-bold">Mã đơn hàng: OD0001</h2>
-                            <p class="text-sm text-gray-500">Ngày đặt: 15/01/2024 10:30:00 AM</p>
-                            <p class="text-sm text-red-600 font-bold">Tổng tiền: 5.678.000 VNĐ</p>
-                        </div>
-                        <div>
-                            <span class="bg-yellow-100 text-yellow-700 text-sm font-medium px-3 py-1 rounded-full">Chờ xác nhận</span>
-                        </div>
-                    </div>
-                    <div class="flex space-x-3 mt-3">
-                        <button class="bg-green-500 text-white px-4 py-2 rounded-md font-medium shadow hover:bg-green-600">Xem chi tiết</button>
-                        <button class="bg-red-500 text-white px-4 py-2 rounded-md font-medium shadow hover:bg-red-600">Hủy đơn hàng</button>
-                        <button class="bg-blue-500 text-white px-4 py-2 rounded-md font-medium shadow hover:bg-blue-600">Yêu cầu đổi trả</button>
-                    </div>
+        <!-- Main Content -->
+        <div class="flex-1 bg-white shadow-lg rounded-lg p-6">
+            @if(ViewBag.DetailOrder != null)
+            {
+                // Detail Mode: show full order details
+                var order = (Website_Ban_Linh_Kien.Models.Donhang)ViewBag.DetailOrder;
+                <h1 class="text-2xl font-bold mb-6">Chi tiết đơn hàng: @order.IdDh</h1>
+                <div class="mb-4">
+                    <p><strong>Ngày đặt:</strong> @order.Ngaydathang?.ToString("dd/MM/yyyy hh:mm tt")</p>
+                    <p><strong>Tổng tiền:</strong> @order.Tongtien.ToString("N0") VNĐ</p>
+                    <p><strong>Trạng thái:</strong> @order.Trangthai</p>
+                    <p><strong>Địa chỉ giao hàng:</strong> @order.Diachigiaohang</p>
+                    <p><strong>Phương thức thanh toán:</strong> @order.Phuongthucthanhtoan</p>
+                    @if(!string.IsNullOrEmpty(order.Ghichu))
+                    {
+                        <p><strong>Ghi chú:</strong> @order.Ghichu</p>
+                    }
                 </div>
-
-                <!-- Order 2: Đang giao hàng -->
-                <div class="bg-gray-50 p-4 rounded-lg shadow-md">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h2 class="text-lg font-bold">Mã đơn hàng: OD0001</h2>
-                            <p class="text-sm text-gray-500">Ngày đặt: 15/01/2024 10:30:00 AM</p>
-                            <p class="text-sm text-red-600 font-bold">Tổng tiền: 5.678.000 VNĐ</p>
-                        </div>
-                        <div>
-                            <span class="bg-green-100 text-green-700 text-sm font-medium px-3 py-1 rounded-full">Đang giao hàng</span>
-                        </div>
-                    </div>
-                    <div class="flex space-x-3 mt-3">
-                        <button class="bg-green-500 text-white px-4 py-2 rounded-md font-medium shadow hover:bg-green-600">Xem chi tiết</button>
-                    </div>
+                <div class="mb-4">
+                    <h2 class="text-xl font-bold mb-2">Chi tiết sản phẩm</h2>
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead>
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sản phẩm</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Đơn giá</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Số lượng</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thành tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @foreach(var item in order.Chitietdonhangs)
+                            {
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">@item.IdSpNavigation.Tensanpham</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">@item.Dongia.ToString("N0") VNĐ</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">@item.Soluongsanpham</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">@((item.Dongia * item.Soluongsanpham).ToString("N0")) VNĐ</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
                 </div>
-
-                <!-- Order 3: Đã giao hàng -->
-                <div class="bg-gray-50 p-4 rounded-lg shadow-md">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h2 class="text-lg font-bold">Mã đơn hàng: OD0001</h2>
-                            <p class="text-sm text-gray-500">Ngày đặt: 15/01/2024 10:30:00 AM</p>
-                            <p class="text-sm text-red-600 font-bold">Tổng tiền: 5.678.000 VNĐ</p>
-                        </div>
-                        <div>
-                            <span class="bg-blue-100 text-blue-700 text-sm font-medium px-3 py-1 rounded-full">Đã giao hàng</span>
-                        </div>
-                    </div>
-                    <div class="flex space-x-3 mt-3">
-                        <button class="bg-green-500 text-white px-4 py-2 rounded-md font-medium shadow hover:bg-green-600">Xem chi tiết</button>
-                        <button class="bg-orange-500 text-white px-4 py-2 rounded-md font-medium shadow hover:bg-orange-600">Đánh giá</button>
-                        <button class="bg-blue-500 text-white px-4 py-2 rounded-md font-medium shadow hover:bg-blue-600">Yêu cầu đổi trả</button>
-                    </div>
+                <div class="mt-6 text-right">
+                    <!-- "Đóng" returns to the order list -->
+                    <a asp-action="OrderHistory" class="bg-gray-500 text-white px-6 py-2 rounded-lg font-medium shadow hover:bg-gray-600">
+                        Đóng
+                    </a>
                 </div>
-
-                <!-- Order 4: Đã hoàn tiền -->
-                <div class="bg-gray-50 p-4 rounded-lg shadow-md">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h2 class="text-lg font-bold">Mã đơn hàng: OD0001</h2>
-                            <p class="text-sm text-gray-500">Ngày đặt: 15/01/2024 10:30:00 AM</p>
-                            <p class="text-sm text-red-600 font-bold">Tổng tiền: 5.678.000 VNĐ</p>
-                        </div>
-                        <div>
-                            <span class="bg-green-100 text-green-700 text-sm font-medium px-3 py-1 rounded-full">Đã hoàn tiền</span>
-                        </div>
-                    </div>
-                    <div class="flex space-x-3 mt-3">
-                        <button class="bg-green-500 text-white px-4 py-2 rounded-md font-medium shadow hover:bg-green-600">Xem chi tiết</button>
-                    </div>
+            }
+            else
+            {
+                // List Mode: show paginated order history list
+                <h1 class="text-2xl font-bold mb-6">Lịch sử giao dịch</h1>
+                <div class="space-y-4">
+                    @if(Model.Items == null || !Model.Items.Any())
+                    {
+                        <p class="text-gray-500">Không có đơn hàng nào.</p>
+                    }
+                    else
+                    {
+                        @foreach(var order in Model.Items)
+                        {
+                            <div class="bg-gray-50 p-4 rounded-lg shadow-md">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h2 class="text-lg font-bold">Mã đơn hàng: @order.IdDh</h2>
+                                        <p class="text-sm text-gray-500">
+                                            Ngày đặt: @order.Ngaydathang?.ToString("dd/MM/yyyy hh:mm tt")
+                                        </p>
+                                        <p class="text-sm text-red-600 font-bold">
+                                            Tổng tiền: @order.Tongtien.ToString("N0") VNĐ
+                                        </p>
+                                    </div>
+                                    <div>
+                                        @* Badge based on order status *@
+                                        @if(order.Trangthai.Contains("Chờ") || order.Trangthai.Contains("Đặt hàng"))
+                                        {
+                                            <span class="bg-yellow-100 text-yellow-700 text-sm font-medium px-3 py-1 rounded-full">Chờ xác nhận</span>
+                                        }
+                                        else if(order.Trangthai.Contains("Đang giao"))
+                                        {
+                                            <span class="bg-green-100 text-green-700 text-sm font-medium px-3 py-1 rounded-full">Đang giao hàng</span>
+                                        }
+                                        else if(order.Trangthai.Contains("Đã giao"))
+                                        {
+                                            <span class="bg-blue-100 text-blue-700 text-sm font-medium px-3 py-1 rounded-full">Đã giao hàng</span>
+                                        }
+                                        else if(order.Trangthai.Contains("Hủy"))
+                                        {
+                                            <span class="bg-gray-100 text-gray-700 text-sm font-medium px-3 py-1 rounded-full">Đã hủy</span>
+                                        }
+                                        else if(order.Trangthai.Contains("Hoàn tiền"))
+                                        {
+                                            <span class="bg-green-100 text-green-700 text-sm font-medium px-3 py-1 rounded-full">Đã hoàn tiền</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="bg-blue-500 text-white text-sm font-medium px-3 py-1 rounded-full">Hoàn tất</span>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="flex space-x-3 mt-3">
+                                    <!-- "Xem chi tiết" passes the order Id -->
+                                    <a asp-action="OrderHistory" asp-route-orderId="@order.IdDh" class="bg-green-500 text-white px-4 py-2 rounded-md font-medium shadow hover:bg-green-600">
+                                        Xem chi tiết
+                                    </a>
+                                </div>
+                            </div>
+                        }
+                    }
                 </div>
-
-                <!-- Order 5: Đã hủy -->
-                <div class="bg-gray-50 p-4 rounded-lg shadow-md">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h2 class="text-lg font-bold">Mã đơn hàng: OD0001</h2>
-                            <p class="text-sm text-gray-500">Ngày đặt: 15/01/2024 10:30:00 AM</p>
-                            <p class="text-sm text-red-600 font-bold">Tổng tiền: 5.678.000 VNĐ</p>
-                        </div>
-                        <div>
-                            <span class="bg-gray-100 text-gray-700 text-sm font-medium px-3 py-1 rounded-full">Đã hủy</span>
-                        </div>
+                <!-- Dynamic Pagination -->
+                <div class="flex justify-between items-center mt-6">
+                    @if(Model.HasPreviousPage)
+                    {
+                        <a asp-action="OrderHistory" asp-route-pageNumber="@(Model.PageNumber - 1)" class="bg-gray-200 text-gray-600 px-4 py-2 rounded-md shadow hover:bg-gray-300">
+                            ← Trước
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="bg-gray-200 text-gray-600 px-4 py-2 rounded-md shadow">← Trước</span>
+                    }
+                    <div class="space-x-2">
+                        @for (int i = 1; i <= Model.TotalPages; i++)
+                        {
+                            if (i == Model.PageNumber)
+                            {
+                                <span class="bg-blue-500 text-white px-4 py-2 rounded-md shadow">@i</span>
+                            }
+                            else
+                            {
+                                <a asp-action="OrderHistory" asp-route-pageNumber="@i" class="bg-gray-200 text-gray-600 px-4 py-2 rounded-md shadow hover:bg-gray-300">
+                                    @i
+                                </a>
+                            }
+                        }
                     </div>
-                    <div class="flex space-x-3 mt-3">
-                        <button class="bg-green-500 text-white px-4 py-2 rounded-md font-medium shadow hover:bg-green-600">Xem chi tiết</button>
-                    </div>
+                    @if(Model.HasNextPage)
+                    {
+                        <a asp-action="OrderHistory" asp-route-pageNumber="@(Model.PageNumber + 1)" class="bg-gray-200 text-gray-600 px-4 py-2 rounded-md shadow hover:bg-gray-300">
+                            Tiếp →
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="bg-gray-200 text-gray-600 px-4 py-2 rounded-md shadow">Tiếp →</span>
+                    }
                 </div>
-
-                <!-- Order 6: Hoàn tất đổi trả -->
-                <div class="bg-gray-50 p-4 rounded-lg shadow-md">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h2 class="text-lg font-bold">Mã đơn hàng: OD0001</h2>
-                            <p class="text-sm text-gray-500">Ngày đặt: 15/01/2024 10:30:00 AM</p>
-                            <p class="text-sm text-red-600 font-bold">Tổng tiền: 5.678.000 VNĐ</p>
-                        </div>
-                        <div>
-                            <span class="bg-blue-100 text-blue-700 text-sm font-medium px-3 py-1 rounded-full">Hoàn tất đổi trả</span>
-                        </div>
-                    </div>
-                    <div class="flex space-x-3 mt-3">
-                        <button class="bg-green-500 text-white px-4 py-2 rounded-md font-medium shadow hover:bg-green-600">Xem chi tiết</button>
-                    </div>
-                </div>
-
-                <!-- Order 7: Đang xem xét -->
-                <div class="bg-gray-50 p-4 rounded-lg shadow-md">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h2 class="text-lg font-bold">Mã đơn hàng: OD0001</h2>
-                            <p class="text-sm text-gray-500">Ngày đặt: 15/01/2024 10:30:00 AM</p>
-                            <p class="text-sm text-red-600 font-bold">Tổng tiền: 5.678.000 VNĐ</p>
-                        </div>
-                        <div>
-                            <span class="bg-yellow-100 text-yellow-700 text-sm font-medium px-3 py-1 rounded-full">Đang xem xét</span>
-                        </div>
-                    </div>
-                    <div class="flex space-x-3 mt-3">
-                        <button class="bg-green-500 text-white px-4 py-2 rounded-md font-medium shadow hover:bg-green-600">Xem chi tiết</button>
-                        <button class="bg-red-500 text-white px-4 py-2 rounded-md font-medium shadow hover:bg-red-600">Hủy yêu cầu</button>
-                    </div>
-                </div>
-
-                <!-- Order 8: Chờ nhận hàng trả -->
-                <div class="bg-gray-50 p-4 rounded-lg shadow-md">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h2 class="text-lg font-bold">Mã đơn hàng: OD0001</h2>
-                            <p class="text-sm text-gray-500">Ngày đặt: 15/01/2024 10:30:00 AM</p>
-                            <p class="text-sm text-red-600 font-bold">Tổng tiền: 5.678.000 VNĐ</p>
-                        </div>
-                        <div>
-                            <span class="bg-yellow-100 text-yellow-700 text-sm font-medium px-3 py-1 rounded-full">Chờ nhận hàng trả</span>
-                        </div>
-                    </div>
-                    <div class="flex space-x-3 mt-3">
-                        <button class="bg-green-500 text-white px-4 py-2 rounded-md font-medium shadow hover:bg-green-600">Xem chi tiết</button>
-                        <p class="text-sm text-blue-600 font-medium">Vui lòng gửi hoặc mang sản phẩm đến cửa hàng để đổi trả</p>
-                    </div>
-                </div>
-
-                <!-- Order 9: Hoàn tất tất cả -->
-                <div class="bg-gray-50 p-4 rounded-lg shadow-md">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h2 class="text-lg font-bold">Mã đơn hàng: OD0001</h2>
-                            <p class="text-sm text-gray-500">Ngày đặt: 15/01/2024 10:30:00 AM</p>
-                            <p class="text-sm text-red-600 font-bold">Tổng tiền: 5.678.000 VNĐ</p>
-                        </div>
-                        <div>
-                            <span class="bg-blue-500 text-white text-sm font-medium px-3 py-1 rounded-full">Hoàn tất tất cả</span>
-                        </div>
-                    </div>
-                    <div class="flex space-x-3 mt-3">
-                        <button class="bg-green-500 text-white px-4 py-2 rounded-md font-medium shadow hover:bg-green-600">Xem chi tiết</button>
-                    </div>
-                </div>
-            </div>
-
-
-            <!-- Pagination -->
-            <div class="flex justify-between items-center mt-6">
-                <button class="bg-gray-200 text-gray-600 px-4 py-2 rounded-md shadow hover:bg-gray-300">← Trước</button>
-                <div class="space-x-2">
-                    <button class="bg-blue-500 text-white px-4 py-2 rounded-md shadow">1</button>
-                    <button class="bg-gray-200 text-gray-600 px-4 py-2 rounded-md shadow hover:bg-gray-300">2</button>
-                    <button class="bg-gray-200 text-gray-600 px-4 py-2 rounded-md shadow hover:bg-gray-300">3</button>
-                </div>
-                <button class="bg-gray-200 text-gray-600 px-4 py-2 rounded-md shadow hover:bg-gray-300">Tiếp →</button>
-            </div>
+            }
         </div>
     </div>
 </div>

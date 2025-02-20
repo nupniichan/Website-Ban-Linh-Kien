@@ -1,6 +1,10 @@
-﻿@{
+﻿@model Website_Ban_Linh_Kien.Models.Khachhang
+
+@{
     ViewBag.Title = "Profile";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    // Determine whether we are in edit mode (set via ViewBag.EditMode by the controller)
+    bool isEditing = ViewBag.EditMode != null && (bool)ViewBag.EditMode;
 }
 
 <div class="flex flex-col">
@@ -11,36 +15,111 @@
         <!-- Sidebar -->
         <partial name="_AccountSidebar" />
 
-
         <!-- Content -->
         <div class="flex-1 bg-white shadow-lg rounded-lg p-6">
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="bg-green-200 text-green-800 p-2 rounded mb-4">
+                    @TempData["SuccessMessage"]
+                </div>
+            }
             <h1 class="text-2xl font-bold mb-6">Thông tin tài khoản</h1>
-            <div class="grid grid-cols-1 gap-4">
-                <div class="bg-gray-50 p-3 rounded-lg shadow-md h-13 flex items-center ">
-                    <span class="font-medium">Tên:</span> <span class="ml-auto">Nguyễn Phi Quốc Bảo</span>
+
+            @if (isEditing)
+            {
+                <!-- Edit Mode: display a form -->
+                <form asp-action="Profile" method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="grid grid-cols-1 gap-4">
+                        <div class="mb-4">
+                            <label for="Hoten" class="block font-medium">Tên:</label>
+                            <input type="text" id="Hoten" name="Hoten" value="@Model.Hoten" 
+                                   class="block w-full h-10 px-3 border border-gray-300 rounded-md focus:border-blue-500 focus:ring focus:ring-blue-200" />
+                            <span class="text-red-500" asp-validation-for="Hoten"></span>
+                        </div>
+                        <div class="mb-4">
+                            <label for="Diachi" class="block font-medium">Địa chỉ:</label>
+                            <input type="text" id="Diachi" name="Diachi" value="@Model.Diachi" 
+                                   class="block w-full h-10 px-3 border border-gray-300 rounded-md focus:border-blue-500 focus:ring focus:ring-blue-200" />
+                            <span class="text-red-500" asp-validation-for="Diachi"></span>
+                        </div>
+                        <!-- Non-editable fields: we show them as disabled inputs -->
+                        <div class="mb-4">
+                            <label class="block font-medium">Email:</label>
+                            <input type="text" value="@Model.Email" class="form-input mt-1 block w-full" disabled />
+                        </div>
+                        <div class="mb-4">
+                            <label class="block font-medium">Số điện thoại:</label>
+                            <input type="text" value="@Model.Sodienthoai" class="form-input mt-1 block w-full" disabled />
+                        </div>
+                        <div class="mb-4">
+                            <label class="block font-medium">Ngày sinh:</label>
+                            <input type="text" value="@Model.Ngaysinh?.ToString("yyyy-MM-dd")" class="form-input mt-1 block w-full" disabled />
+                        </div>
+                        <div class="mb-4">
+                            <label class="block font-medium">Giới tính:</label>
+                            <input type="text" value="@Model.Gioitinh" class="form-input mt-1 block w-full" disabled />
+                        </div>
+                        <div class="mb-4">
+                            <label class="block font-medium">Tên tài khoản:</label>
+                            <input type="text" value="@Model.IdTkNavigation?.Tentaikhoan" class="form-input mt-1 block w-full" disabled />
+                        </div>
+                    </div>
+                    <div class="mt-6 flex justify-between">
+                        <!-- Cancel button reloads the page in display mode -->
+                        <a asp-action="Profile" class="bg-gray-500 text-white px-6 py-2 rounded-lg font-medium shadow hover:bg-gray-600">
+                            Hủy
+                        </a>
+                        <button type="submit" class="bg-yellow-500 text-white px-6 py-2 rounded-lg font-medium shadow hover:bg-yellow-600">
+                            Lưu thay đổi
+                        </button>
+                    </div>
+                </form>
+            }
+            else
+            {
+                <!-- Display Mode: show read-only info -->
+                <div class="grid grid-cols-1 gap-4">
+                    <div class="bg-gray-50 p-3 rounded-lg shadow-md flex items-center">
+                        <span class="font-medium">Tên:</span>
+                        <span class="ml-auto">@Model.Hoten</span>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg shadow-md flex items-center">
+                        <span class="font-medium">Email:</span>
+                        <span class="ml-auto">@Model.Email</span>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg shadow-md flex items-center">
+                        <span class="font-medium">Số điện thoại:</span>
+                        <span class="ml-auto">@Model.Sodienthoai</span>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg shadow-md flex items-center">
+                        <span class="font-medium">Ngày sinh:</span>
+                        <span class="ml-auto">@Model.Ngaysinh?.ToString("yyyy-MM-dd")</span>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg shadow-md flex items-center">
+                        <span class="font-medium">Giới tính:</span>
+                        <span class="ml-auto">@Model.Gioitinh</span>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg shadow-md flex items-center">
+                        <span class="font-medium whitespace-nowrap">Địa chỉ:</span>
+                        <span class="whitespace-nowrap ml-auto pl-3">@Model.Diachi</span>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg shadow-md flex items-center">
+                        <span class="font-medium">Tên tài khoản:</span>
+                        <span class="ml-auto">@Model.IdTkNavigation?.Tentaikhoan</span>
+                    </div>
                 </div>
-                <div class="bg-gray-50 p-3 rounded-lg shadow-md h-13 flex items-center ">
-                    <span class="font-medium">Email:</span> <span class="ml-auto">nup@gmail.com</span>
+                <div class="mt-6 text-right">
+                    <!-- Link that reloads the page with edit=true to enable edit mode -->
+                    <a asp-action="Profile" asp-route-edit="true" class="bg-yellow-500 text-white px-6 py-2 rounded-lg font-medium shadow hover:bg-yellow-600">
+                        Sửa thông tin tài khoản
+                    </a>
                 </div>
-                <div class="bg-gray-50 p-3 rounded-lg shadow-md h-13 flex items-center ">
-                    <span class="font-medium">Số điện thoại:</span> <span class="ml-auto">0949752097</span>
-                </div>
-                <div class="bg-gray-50 p-3 rounded-lg shadow-md h-13 flex items-center ">
-                    <span class="font-medium">Ngày sinh:</span> <span class="ml-auto">2004-08-11</span>
-                </div>
-                <div class="bg-gray-50 p-3 rounded-lg shadow-md h-13 flex items-center ">
-                    <span class="font-medium">Giới tính:</span> <span class="ml-auto">Nam</span>
-                </div>
-                <div class="bg-gray-50 p-3 rounded-lg shadow-md h-13 flex items-center ">
-                    <span class="font-medium whitespace-nowrap">Địa chỉ:</span> <span class="whitespace-nowrap ml-auto pl-3">249Đ, Nguyễn Văn Lượng, Phường 11, Quận 6, Thành phố Hồ Chí Minh</span>
-                </div>
-                <div class="bg-gray-50 p-3 rounded-lg shadow-md h-13 flex items-center ">
-                    <span class="font-medium">Tên tài khoản:</span> <span class="ml-auto">nupniichan</span>
-                </div>
-            </div>
-            <div class="mt-6 text-right">
-                <button class="bg-yellow-500 text-white px-6 py-2 rounded-lg font-medium shadow hover:bg-yellow-600">Sửa thông tin tài khoản</button>
-            </div>
+            }
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

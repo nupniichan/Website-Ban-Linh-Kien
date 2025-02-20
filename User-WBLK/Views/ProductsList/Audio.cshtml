@@ -7,7 +7,7 @@
 <div class="container mx-auto px-4">
     <!-- Categories -->
     <div class="bg-white rounded-lg p-4">
-        <h2 class="font-semibold">Danh mục:</h2>
+        <h2 class="font-semibold mb-2">Danh mục:</h2>
         <div class="flex flex-wrap gap-2">
             @{
                 var categories = new[] {
@@ -17,7 +17,7 @@
             }
             @foreach (var (value, text) in categories)
             {
-                var isActive = Model.Category == value;
+                var isActive = Model?.Category?.ToLower() == value;
                 <a href="@Url.Action("Audio", "ProductsList", new { category = value })"
                    class="px-4 py-2 rounded-md @(isActive ? "bg-blue-500 text-white" : "bg-gray-100 hover:bg-gray-200")">
                     @text
@@ -28,145 +28,157 @@
 
     <!-- Filters -->
     <div class="bg-white rounded-lg p-4 mt-4">
-        @switch (Model.Category?.ToLower())
+        <h2 class="font-semibold mb-2">Bộ lọc:</h2>
+        @switch (Model?.Category?.ToLower())
         {
             case "speaker":
-                <div class="space-y-4">
-                    <div class="flex flex-wrap gap-2">
-                        <select id="brand" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
-                            @{
-                                var speakerBrands = new[] {
-                                    new { Value = "", Text = "Tất cả thương hiệu" },
-                                    new { Value = "logitech", Text = "Logitech" },
-                                    new { Value = "jbl", Text = "JBL" },
-                                    new { Value = "sony", Text = "Sony" },
-                                    new { Value = "bose", Text = "Bose" }
-                                };
-                            }
-                            @foreach (var brand in speakerBrands)
-                            {
-                                var parameters = new Dictionary<string, string>
+                {
+                    <div class="space-y-4">
+                        <div class="flex flex-wrap gap-2">
+                            <!-- Brand Filter for speakers -->
+                            <select id="brand" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
+                                @{
+                                    var speakerBrands = new[] {
+                                        new { Value = "", Text = "Tất cả thương hiệu" },
+                                        new { Value = "logitech", Text = "Logitech" },
+                                        new { Value = "jbl", Text = "JBL" },
+                                        new { Value = "sony", Text = "Sony" },
+                                        new { Value = "bose", Text = "Bose" }
+                                    };
+                                }
+                                @foreach (var brand in speakerBrands)
                                 {
-                                    { "category", Model.Category }
-                                };
-                                
-                                if (!string.IsNullOrEmpty(brand.Value))
-                                    parameters.Add("brand", brand.Value);
-                                if (!string.IsNullOrEmpty(Model.PriceRange))
-                                    parameters.Add("priceRange", Model.PriceRange);
-                                if (Model.AdditionalFilters != null && Model.AdditionalFilters.ContainsKey("type"))
-                                    parameters.Add("type", Model.AdditionalFilters["type"]);
+                                    var parameters = new Dictionary<string, string>
+                                    {
+                                        { "category", Model.Category }
+                                    };
+                                    if (!string.IsNullOrEmpty(brand.Value))
+                                        parameters.Add("brand", brand.Value);
+                                    if (!string.IsNullOrEmpty(Model.PriceRange))
+                                        parameters.Add("priceRange", Model.PriceRange);
+                                    if (Model.AdditionalFilters != null && Model.AdditionalFilters.ContainsKey("type"))
+                                        parameters.Add("type", Model.AdditionalFilters["type"]);
 
-                                var url = Url.Action("Audio", "ProductsList", parameters);
-                                var isSelected = Model.Brand == brand.Value;
-                                <option value="@url" selected="@isSelected">@brand.Text</option>
-                            }
-                        </select>
+                                    var url = Url.Action("Audio", "ProductsList", parameters);
+                                    var isSelected = Model?.Brand?.ToLower() == brand.Value;
+                                    <option value="@url" selected="@isSelected">@brand.Text</option>
+                                }
+                            </select>
 
-                        <select id="type" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
-                            @{
-                                var speakerTypes = new[] {
-                                    new { Value = "", Text = "Loại loa" },
-                                    new { Value = "bluetooth", Text = "Loa Bluetooth" },
-                                    new { Value = "wired", Text = "Loa có dây" },
-                                    new { Value = "gaming", Text = "Loa Gaming" }
-                                };
-                            }
-                            @foreach (var type in speakerTypes)
-                            {
-                                var parameters = new Dictionary<string, string>
+                            <!-- Speaker Type Filter -->
+                            <select id="type" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
+                                @{
+                                    var speakerTypes = new[] {
+                                        new { Value = "", Text = "Loại loa" },
+                                        new { Value = "bluetooth", Text = "Loa Bluetooth" },
+                                        new { Value = "subwoofer", Text = "Subwoofer" },
+                                        new { Value = "active", Text = "Active" },
+                                        new { Value = "stereo", Text = "Stereo" },
+                                        new { Value = "studio monitor", Text = "Studio Monitor" },
+                                        new { Value = "multimedia", Text = "Multimedia" },
+                                        new { Value = "bookshelf", Text = "Bookshelf" },
+                                        new { Value = "desktop", Text = "Desktop" },
+                                        new { Value = "soundbar", Text = "Soundbar" },
+                                        new { Value = "surround", Text = "Surround" }
+                                    };
+                                }
+                                @foreach (var type in speakerTypes)
                                 {
-                                    { "category", Model.Category }
-                                };
-                                
-                                if (!string.IsNullOrEmpty(Model.Brand))
-                                    parameters.Add("brand", Model.Brand);
-                                if (!string.IsNullOrEmpty(type.Value))
-                                    parameters.Add("type", type.Value);
-                                if (!string.IsNullOrEmpty(Model.PriceRange))
-                                    parameters.Add("priceRange", Model.PriceRange);
+                                    var parameters = new Dictionary<string, string>
+                                    {
+                                        { "category", Model.Category }
+                                    };
+                                    if (!string.IsNullOrEmpty(Model.Brand))
+                                        parameters.Add("brand", Model.Brand);
+                                    if (!string.IsNullOrEmpty(type.Value))
+                                        parameters.Add("type", type.Value);
+                                    if (!string.IsNullOrEmpty(Model.PriceRange))
+                                        parameters.Add("priceRange", Model.PriceRange);
 
-                                var url = Url.Action("Audio", "ProductsList", parameters);
-                                var isSelected = Model.AdditionalFilters?.GetValueOrDefault("type") == type.Value;
-                                <option value="@url" selected="@isSelected">@type.Text</option>
-                            }
-                        </select>
+                                    var url = Url.Action("Audio", "ProductsList", parameters);
+                                    var isSelected = Model.AdditionalFilters != null &&
+                                                     Model.AdditionalFilters.GetValueOrDefault("type")?.ToLower() == type.Value;
+                                    <option value="@url" selected="@isSelected">@type.Text</option>
+                                }
+                            </select>
+                        </div>
                     </div>
-                </div>
-                break;
-
+                    break;
+                }
             case "microphone":
-                <div class="space-y-4">
-                    <div class="flex flex-wrap gap-2">
-                        <select id="brand" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
-                            @{
-                                var micBrands = new[] {
-                                    new { Value = "", Text = "Tất cả thương hiệu" },
-                                    new { Value = "shure", Text = "Shure" },
-                                    new { Value = "rode", Text = "RODE" },
-                                    new { Value = "blue", Text = "Blue Microphones" },
-                                    new { Value = "hyperx", Text = "HyperX" }
-                                };
-                            }
-                            @foreach (var brand in micBrands)
-                            {
-                                var parameters = new Dictionary<string, string>
+                {
+                    <div class="space-y-4">
+                        <div class="flex flex-wrap gap-2">
+                            <!-- Brand Filter for microphones -->
+                            <select id="brand" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
+                                @{
+                                    var micBrands = new[] {
+                                        new { Value = "", Text = "Tất cả thương hiệu" },
+                                        new { Value = "shure", Text = "Shure" },
+                                        new { Value = "rode", Text = "RODE" },
+                                        new { Value = "blue", Text = "Blue Microphones" },
+                                        new { Value = "hyperx", Text = "HyperX" }
+                                    };
+                                }
+                                @foreach (var brand in micBrands)
                                 {
-                                    { "category", Model.Category }
-                                };
-                                
-                                if (!string.IsNullOrEmpty(brand.Value))
-                                    parameters.Add("brand", brand.Value);
-                                if (!string.IsNullOrEmpty(Model.PriceRange))
-                                    parameters.Add("priceRange", Model.PriceRange);
-                                if (Model.AdditionalFilters != null && Model.AdditionalFilters.ContainsKey("type"))
-                                    parameters.Add("type", Model.AdditionalFilters["type"]);
+                                    var parameters = new Dictionary<string, string>
+                                    {
+                                        { "category", Model.Category }
+                                    };
+                                    if (!string.IsNullOrEmpty(brand.Value))
+                                        parameters.Add("brand", brand.Value);
+                                    if (!string.IsNullOrEmpty(Model.PriceRange))
+                                        parameters.Add("priceRange", Model.PriceRange);
+                                    if (Model.AdditionalFilters != null && Model.AdditionalFilters.ContainsKey("sampleBitrate"))
+                                        parameters.Add("sampleBitrate", Model.AdditionalFilters["sampleBitrate"]);
 
-                                var url = Url.Action("Audio", "ProductsList", parameters);
-                                var isSelected = Model.Brand == brand.Value;
-                                <option value="@url" selected="@isSelected">@brand.Text</option>
-                            }
-                        </select>
+                                    var url = Url.Action("Audio", "ProductsList", parameters);
+                                    var isSelected = Model?.Brand?.ToLower() == brand.Value;
+                                    <option value="@url" selected="@isSelected">@brand.Text</option>
+                                }
+                            </select>
 
-                        <select id="type" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
-                            @{
-                                var micTypes = new[] {
-                                    new { Value = "", Text = "Loại micro" },
-                                    new { Value = "thu-am", Text = "Micro thu âm" },
-                                    new { Value = "khong-day", Text = "Micro không dây" },
-                                    new { Value = "co-day", Text = "Micro có dây" },
-                                    new { Value = "karaoke", Text = "Micro karaoke" }
-                                };
-                            }
-                            @foreach (var type in micTypes)
-                            {
-                                var parameters = new Dictionary<string, string>
+                            <!-- Sample / Bit rate Filter -->
+                            <select id="sampleBitrate" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
+                                @{
+                                    var sampleRates = new[] {
+                                        new { Value = "", Text = "Sample/Bit rate" },
+                                        new { Value = "24-bit/96kHz", Text = "24-bit/96kHz" },
+                                        new { Value = "16-bit/48kHz", Text = "16-bit/48kHz" }
+                                    };
+                                }
+                                @foreach (var rate in sampleRates)
                                 {
-                                    { "category", Model.Category }
-                                };
-                                
-                                if (!string.IsNullOrEmpty(Model.Brand))
-                                    parameters.Add("brand", Model.Brand);
-                                if (!string.IsNullOrEmpty(type.Value))
-                                    parameters.Add("type", type.Value);
-                                if (!string.IsNullOrEmpty(Model.PriceRange))
-                                    parameters.Add("priceRange", Model.PriceRange);
+                                    var parameters = new Dictionary<string, string>
+                                    {
+                                        { "category", Model.Category }
+                                    };
+                                    if (!string.IsNullOrEmpty(Model.Brand))
+                                        parameters.Add("brand", Model.Brand);
+                                    if (!string.IsNullOrEmpty(rate.Value))
+                                        parameters.Add("sampleBitrate", rate.Value);
+                                    if (!string.IsNullOrEmpty(Model.PriceRange))
+                                        parameters.Add("priceRange", Model.PriceRange);
 
-                                var url = Url.Action("Audio", "ProductsList", parameters);
-                                var isSelected = Model.AdditionalFilters?.GetValueOrDefault("type") == type.Value;
-                                <option value="@url" selected="@isSelected">@type.Text</option>
-                            }
-                        </select>
+                                    var url = Url.Action("Audio", "ProductsList", parameters);
+                                    var isSelected = Model.AdditionalFilters != null &&
+                                                     Model.AdditionalFilters.GetValueOrDefault("sampleBitrate")?.ToLower() == rate.Value.ToLower();
+                                    <option value="@url" selected="@isSelected">@rate.Text</option>
+                                }
+                            </select>
+                        </div>
                     </div>
-                </div>
-                break;
-
+                    break;
+                }
             default:
-                <div class="text-gray-500">Vui lòng chọn danh mục để xem các bộ lọc chi tiết</div>
-                break;
+                {
+                    <div class="text-gray-500">Vui lòng chọn danh mục để xem các bộ lọc chi tiết</div>
+                    break;
+                }
         }
 
-        <!-- Price Range -->
+        <!-- Price Range Filter -->
         <div class="mt-4">
             <h2 class="font-semibold mb-2">Khoảng giá:</h2>
             <div class="flex flex-wrap gap-2">
@@ -189,16 +201,24 @@
                         parameters.Add("brand", Model.Brand);
                     if (!string.IsNullOrEmpty(range.Value))
                         parameters.Add("priceRange", range.Value);
-                    if (Model.AdditionalFilters != null && Model.AdditionalFilters.ContainsKey("type"))
-                        parameters.Add("type", Model.AdditionalFilters["type"]);
-
-                    var isActive = Model.PriceRange == range.Value;
-                    <a href="@Url.Action("Audio", "ProductsList", parameters)"
-                       class="px-4 py-2 rounded-md @(isActive ? "bg-blue-500 text-white" : "bg-gray-100 hover:bg-gray-200")">
+                    if (Model.AdditionalFilters != null)
+                    {
+                        if (Model.AdditionalFilters.ContainsKey("type"))
+                            parameters.Add("type", Model.AdditionalFilters["type"]);
+                        if (Model.AdditionalFilters.ContainsKey("sampleBitrate"))
+                            parameters.Add("sampleBitrate", Model.AdditionalFilters["sampleBitrate"]);
+                    }
+                    
+                    var url = Url.Action("Audio", "ProductsList", parameters);
+                    var isActive = Model?.PriceRange == range.Value;
+                    <a href="@url" class="px-4 py-2 rounded-md @(isActive ? "bg-blue-500 text-white" : "bg-gray-100 hover:bg-gray-200")">
                         @range.Text
                     </a>
                 }
             </div>
+            <a href="@Url.Action("Audio", "ProductsList", new { category = Model.Category })" class="inline-block mt-3 bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600">
+                Xóa bộ lọc
+            </a>
         </div>
     </div>
 
@@ -207,21 +227,18 @@
         @if (Model.Products != null && Model.Products.Any())
         {
             var allProducts = Model.Products.ToList();
-            
             for (int i = 0; i < allProducts.Count; i++)
             {
                 var product = allProducts[i];
                 var isHidden = i >= 10;
-                
                 <div class="product-item @(isHidden ? "hidden" : "")" data-index="@i">
-                    <partial name="_ProductCard" model='new ProductCardViewModel 
-                    { 
+                    <partial name="_ProductCard" model="@(new ProductCardViewModel {
                         IdSp = product.IdSp,
                         TenSp = product.Tensanpham,
                         Gia = product.Gia,
                         ImageUrl = product.Hinhanh,
-                        LoaiSp = Model.Category
-                    }' />
+                        LoaiSp = "audio"
+                    })" />
                 </div>
             }
         }
@@ -248,38 +265,6 @@
 
 @section Scripts {
     <script>
-        function updateFilters() {
-            const params = new URLSearchParams(window.location.search);
-            
-            // Giữ lại category và priceRange hiện tại nếu có
-            const category = '@Model?.Category';
-            const priceRange = '@Model?.PriceRange';
-            
-            // Xóa tất cả params hiện tại
-            for (let param of params.keys()) {
-                params.delete(param);
-            }
-            
-            // Thêm lại category và priceRange nếu có
-            if (category) params.set('category', category);
-            if (priceRange) params.set('priceRange', priceRange);
-            
-            // Thêm các giá trị từ select filters
-            document.querySelectorAll('select').forEach(select => {
-                if (select.value) {
-                    params.set(select.id, select.value);
-                }
-            });
-            
-            // Cập nhật URL
-            window.location.href = `${window.location.pathname}?${params.toString()}`;
-        }
-
-        // Thêm sự kiện onchange cho tất cả select filters
-        document.querySelectorAll('select').forEach(select => {
-            select.addEventListener('change', updateFilters);
-        });
-
         document.addEventListener('DOMContentLoaded', function() {
             const loadMoreBtn = document.getElementById('loadMoreBtn');
             const collapseBtn = document.getElementById('collapseBtn');
@@ -289,19 +274,11 @@
 
             if (loadMoreBtn) {
                 loadMoreBtn.addEventListener('click', function() {
-                    // Calculate next batch of products to show
-                    const nextBatch = Array.from(products)
-                        .slice(currentlyShown, currentlyShown + productsPerPage);
-                    
-                    // Show next batch of products
+                    const nextBatch = Array.from(products).slice(currentlyShown, currentlyShown + productsPerPage);
                     nextBatch.forEach(product => {
                         product.classList.remove('hidden');
                     });
-
-                    // Update counter
                     currentlyShown += productsPerPage;
-
-                    // Hide "Xem thêm" button and show "Thu gọn" button if we've shown all products
                     if (currentlyShown >= products.length) {
                         loadMoreBtn.classList.add('hidden');
                         collapseBtn.classList.remove('hidden');
@@ -311,26 +288,17 @@
 
             if (collapseBtn) {
                 collapseBtn.addEventListener('click', function() {
-                    // Hide all products after the first 10
                     Array.from(products).forEach((product, index) => {
                         if (index >= productsPerPage) {
                             product.classList.add('hidden');
                         }
                     });
-
-                    // Reset counter
                     currentlyShown = productsPerPage;
-
-                    // Show "Xem thêm" button and hide "Thu gọn" button
                     loadMoreBtn.classList.remove('hidden');
                     collapseBtn.classList.add('hidden');
-
-                    // Scroll back to the top of the products section
                     products[0].scrollIntoView({ behavior: 'smooth' });
                 });
             }
         });
     </script>
 }
-
-

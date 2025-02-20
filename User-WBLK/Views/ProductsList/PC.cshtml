@@ -42,14 +42,14 @@
                         }
                         <option value="@cpuDefaultUrl" selected="@isCpuDefaultSelected">Loại CPU</option>
                         @foreach (var (value, text) in new[] {
-                            ("intel-i3", "Intel Core i3"),
-                            ("intel-i5", "Intel Core i5"),
-                            ("intel-i7", "Intel Core i7"),
-                            ("intel-i9", "Intel Core i9"),
-                            ("amd-r3", "AMD Ryzen 3"),
-                            ("amd-r5", "AMD Ryzen 5"),
-                            ("amd-r7", "AMD Ryzen 7"),
-                            ("amd-r9", "AMD Ryzen 9")
+                            ("intel core i3", "Intel Core i3"),
+                            ("intel core i5", "Intel Core i5"),
+                            ("intel core i7", "Intel Core i7"),
+                            ("intel core i9", "Intel Core i9"),
+                            ("amd ryzen 3", "AMD Ryzen 3"),
+                            ("amd ryzen 5", "AMD Ryzen 5"),
+                            ("amd ryzen 7", "AMD Ryzen 7"),
+                            ("amd ryzen 9", "AMD Ryzen 9")
                         })
                         {
                             var url = Url.Action("PC", "ProductsList", new { cpuType = value, usage = Model.Usage, ram = Model.Ram, gpu = Model.Gpu, priceRange = Model.PriceRange });
@@ -89,11 +89,12 @@
                             var gpuDefaultUrl = Url.Action("PC", "ProductsList", new { usage = Model.Usage, cpuType = Model.CpuType, ram = Model.Ram, priceRange = Model.PriceRange });
                             var isGpuDefaultSelected = string.IsNullOrEmpty(Model.Gpu);
                         }
-                        <option value="@gpuDefaultUrl" selected="@isGpuDefaultSelected">Card màn hình</option>
+                        <option value="@gpuDefaultUrl" selected="@isGpuDefaultSelected">VGA</option>
                         @foreach (var (value, text) in new[] {
-                            ("nvidia", "NVIDIA"),
-                            ("amd", "AMD"),
-                            ("intel", "Intel")
+                            ("rtx 3060", "RTX 3060 12GB"),
+                            ("rtx 3070", "RTX 3070 8GB"),
+                            ("irtx 3080", "IRTX 3080 10GB"),
+                            ("gtx 1660", "GTX 1660 Super")
                         })
                         {
                             var url = Url.Action("PC", "ProductsList", new { gpu = value, usage = Model.Usage, cpuType = Model.CpuType, ram = Model.Ram, priceRange = Model.PriceRange });
@@ -127,6 +128,9 @@
                     </a>
                 }
             </div>
+            <a href="@Url.Action("PC", "ProductsList", new { category = Model.Category })" class="inline-block mt-3 bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600">
+                Xóa bộ lọc
+            </a>
         </div>
     </div>
 
