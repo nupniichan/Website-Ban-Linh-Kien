@@ -1,5 +1,207 @@
 ﻿@*
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
+@model Giohang
 @{
+    ViewData["Title"] = "Giỏ hàng";
+}
+
+<div class="container mx-auto px-4">
+    <div class="flex items-center gap-2 text-sm text-gray-600 mb-4">
+        <a href="/" class="hover:text-blue-600">Trang chủ</a>
+        <span>/</span>
+        <span>Thông tin giỏ hàng</span>
+    </div>
+
+    <h1 class="text-2xl font-bold mb-6">Giỏ hàng của bạn</h1>
+
+    <div id="cartContent">
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            @if (Model?.Chitietgiohangs != null && Model.Chitietgiohangs.Any())
+            {
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    @foreach (var item in Model.Chitietgiohangs)
+                    {
+                        <div class="flex items-center gap-4 py-4 border-b last:border-b-0">
+                            <div class="flex-shrink-0">
+                                <img src="@item.IdSpNavigation.Hinhanh" 
+                                     alt="@item.IdSpNavigation.Tensanpham"
+                                     class="w-24 h-24 object-contain rounded-lg border p-2">
+                            </div>
+                            <div class="flex-grow">
+                                <h3 class="font-medium">@item.IdSpNavigation.Tensanpham</h3>
+                                <div class="text-red-600 font-medium mt-1">
+                                    Giá: @item.IdSpNavigation.Gia.ToString("N0")đ
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <form asp-action="UpdateQuantity" method="post" class="flex items-center border rounded">
+                                    <input type="hidden" name="productId" value="@item.IdSp" />
+                                    <button type="button" onclick="this.parentNode.querySelector('input[type=number]').stepDown()" 
+                                            class="px-3 py-1 border-r hover:bg-gray-100">-</button>
+                                    <input type="number" name="quantity" value="@item.Soluongsanpham" 
+                                           min="1" class="w-16 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+                                    <button type="button" onclick="this.parentNode.querySelector('input[type=number]').stepUp()" 
+                                            class="px-3 py-1 border-l hover:bg-gray-100">+</button>
+                                </form>
+                                <form asp-action="RemoveItem" method="post" class="ml-4">
+                                    <input type="hidden" name="productId" value="@item.IdSp" />
+                                    <button type="submit" class="text-blue-600 hover:text-blue-800">Xóa</button>
+                                </form>
+                            </div>
+                        </div>
+                    }
+
+                    <div class="mt-6 flex justify-between items-center">
+                        <a href="/" class="text-blue-600 hover:text-blue-800 flex items-center gap-2">
+                            <i class="fas fa-arrow-left"></i>
+                            Tiếp tục mua sắm
+                        </a>
+                        <div class="text-right">
+                            <div class="text-lg">
+                                Tạm tính: <span class="text-red-600 font-bold">
+                                    @Model.Chitietgiohangs.Sum(c => c.IdSpNavigation.Gia * c.Soluongsanpham).ToString("N0")đ
+                                </span>
+                            </div>
+                            <a href="@Url.Action("Index", "Checkout")" class="mt-4 bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 inline-block">
+                                Tiến hành đặt hàng
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-12">
+                    <i class="fas fa-shopping-cart text-gray-400 text-6xl mb-4"></i>
+                    <h3 class="text-xl font-medium mb-2">Giỏ hàng của bạn đang trống</h3>
+                    <p class="text-gray-600 mb-6">Hãy thêm sản phẩm vào giỏ hàng của bạn</p>
+                    <a href="/" class="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
+                        <i class="fas fa-shopping-bag"></i> Mua sắm ngay
+                    </a>
+                </div>
+            }
+        }
+        else
+        {
+            <div id="guestCartContent">
+                <!-- Guest cart will be loaded here via JavaScript -->
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function loadGuestCart() {
+            const guestCartContent = document.getElementById('guestCartContent');
+            const cart = JSON.parse(localStorage.getItem('guestCart')) || [];
+
+            if (cart.length === 0) {
+                guestCartContent.innerHTML = `
+                    <div class="text-center py-12">
+                        <i class="fas fa-shopping-cart text-gray-400 text-6xl mb-4"></i>
+                        <h3 class="text-xl font-medium mb-2">Giỏ hàng của bạn đang trống</h3>
+                        <p class="text-gray-600 mb-6">Hãy thêm sản phẩm vào giỏ hàng của bạn</p>
+                        <a href="/" class="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
+                            <i class="fas fa-shopping-bag"></i> Mua sắm ngay
+                        </a>
+                    </div>
+                `;
+                return;
+            }
+
+            let cartHTML = `<div class="bg-white rounded-lg shadow-sm p-6">`;
+
+            let total = 0;
+            cart.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+                cartHTML += `
+                    <div class="flex items-center gap-4 py-4 border-b last:border-b-0">
+                        <div class="flex-shrink-0">
+                            <img src="${item.image}" 
+                                 alt="${item.name}"
+                                 class="w-24 h-24 object-contain rounded-lg border p-2">
+                        </div>
+                        <div class="flex-grow">
+                            <h3 class="font-medium">${item.name}</h3>
+                            <div class="text-red-600 font-medium mt-1">
+                                Giá: ${item.price.toLocaleString('vi-VN')}đ
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="flex items-center border rounded">
+                                <button onclick="updateGuestCartQuantity('${item.id}', ${item.quantity - 1})" 
+                                        class="px-3 py-1 border-r hover:bg-gray-100">-</button>
+                                <input type="number" value="${item.quantity}" 
+                                       min="1" class="w-16 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                       onchange="updateGuestCartQuantity('${item.id}', this.value)" />
+                                <button onclick="updateGuestCartQuantity('${item.id}', ${item.quantity + 1})" 
+                                        class="px-3 py-1 border-l hover:bg-gray-100">+</button>
+                            </div>
+                            <button onclick="removeGuestCartItem('${item.id}')" 
+                                    class="ml-4 text-blue-600 hover:text-blue-800">
+                                Xóa
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            cartHTML += `
+                <div class="mt-6 flex justify-between items-center">
+                    <a href="/" class="text-blue-600 hover:text-blue-800 flex items-center gap-2">
+                        <i class="fas fa-arrow-left"></i>
+                        Tiếp tục mua sắm
+                    </a>
+                    <div class="text-right">
+                        <div class="text-lg">
+                            Tạm tính: <span class="text-red-600 font-bold">${total.toLocaleString('vi-VN')}đ</span>
+                        </div>
+                        <a href="/Checkout" class="inline-block mt-4 bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700">
+                            Tiến hành đặt hàng
+                        </a>
+                    </div>
+                </div>
+            </div>`;
+
+            guestCartContent.innerHTML = cartHTML;
+        }
+
+        function updateGuestCartQuantity(productId, quantity) {
+            let cart = JSON.parse(localStorage.getItem('guestCart')) || [];
+            const index = cart.findIndex(item => item.id === productId);
+            
+            if (index !== -1) {
+                cart[index].quantity = parseInt(quantity);
+                localStorage.setItem('guestCart', JSON.stringify(cart));
+                loadGuestCart();
+            }
+        }
+
+        function removeGuestCartItem(productId) {
+            let cart = JSON.parse(localStorage.getItem('guestCart')) || [];
+            cart = cart.filter(item => item.id !== productId);
+            localStorage.setItem('guestCart', JSON.stringify(cart));
+            loadGuestCart();
+        }
+
+        // Load guest cart when page loads
+        if (!@Json.Serialize(User.Identity?.IsAuthenticated == true)) {
+            loadGuestCart();
+        }
+    </script>
+}
+
+@section Styles {
+    <style>
+        .table img {
+            border-radius: 4px;
+        }
+        .btn-outline-primary:hover {
+            color: #fff;
+        }
+    </style>
 }

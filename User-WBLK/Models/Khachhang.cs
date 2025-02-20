@@ -21,13 +21,11 @@ public partial class Khachhang
 
     public int? Diemtichluy { get; set; }
 
-    public string IdTk { get; set; } = null!;
+    public string? IdTk { get; set; }
 
     public string? IdXephangvip { get; set; }
 
     public ulong? Loaikhachhang { get; set; }
-
-    public virtual ICollection<Chitietgiohang> Chitietgiohangs { get; set; } = new List<Chitietgiohang>();
 
     public virtual ICollection<Danhgia> Danhgia { get; set; } = new List<Danhgia>();
 

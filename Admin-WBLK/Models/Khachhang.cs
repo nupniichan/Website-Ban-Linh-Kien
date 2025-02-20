@@ -27,8 +27,6 @@ public partial class Khachhang
 
     public ulong? Loaikhachhang { get; set; }
 
-    public virtual ICollection<Chitietgiohang> Chitietgiohangs { get; set; } = new List<Chitietgiohang>();
-
     public virtual ICollection<Danhgia> Danhgia { get; set; } = new List<Danhgia>();
 
     public virtual ICollection<Donhang> Donhangs { get; set; } = new List<Donhang>();

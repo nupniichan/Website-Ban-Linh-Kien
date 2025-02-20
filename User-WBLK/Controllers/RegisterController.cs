@@ -136,7 +136,8 @@ namespace Website_Ban_Linh_Kien.Controllers
                     Gioitinh = model.Gender,
                     Ngaysinh = DateOnly.FromDateTime(model.BirthDate),
                     Sodienthoai = model.Phone,
-                    IdTk = newAccount.IdTk
+                    IdTk = newAccount.IdTk,
+                    Loaikhachhang = 1
                 };
 
                 _dbContext.Taikhoans.Add(newAccount);
