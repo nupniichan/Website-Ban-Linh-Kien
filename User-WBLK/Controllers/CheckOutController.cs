@@ -226,47 +226,85 @@ namespace Website_Ban_Linh_Kien.Controllers
                     Tongtien = model.Items.Sum(i => i.Price * i.Quantity)
                 };
 
-                _context.Donhangs.Add(order);
-
-                // Tạo chi tiết đơn hàng
-                var nextDetailId = await _context.Chitietdonhangs
-                    .OrderByDescending(c => c.Idchitietdonhang)
-                    .Select(c => c.Idchitietdonhang)
-                    .FirstOrDefaultAsync();
-
-                int detailStartId = 1;
-                if (nextDetailId != null)
+                using (var transaction = await _context.Database.BeginTransactionAsync())
                 {
-                    detailStartId = int.Parse(nextDetailId.Substring(4)) + 1;
-                }
-
-                foreach (var item in model.Items)
-                {
-                    if (string.IsNullOrEmpty(item.ProductId))
+                    try
                     {
-                        continue;
+                        // Thêm đơn hàng trước
+                        _context.Donhangs.Add(order);
+                        await _context.SaveChangesAsync();
+
+                        // Tạo chi tiết đơn hàng
+                        var lastDetailId = await _context.Chitietdonhangs
+                            .OrderByDescending(c => c.Idchitietdonhang)
+                            .Select(c => c.Idchitietdonhang)
+                            .FirstOrDefaultAsync() ?? "CTDH00000";
+
+                        int detailStartId = int.Parse(lastDetailId.Substring(4)) + 1;
+
+                        foreach (var item in model.Items)
+                        {
+                            if (string.IsNullOrEmpty(item.ProductId))
+                            {
+                                continue;
+                            }
+
+                            var orderDetail = new Chitietdonhang
+                            {
+                                Idchitietdonhang = $"CTDH{detailStartId:D5}",
+                                IdDh = orderId,
+                                IdSp = item.ProductId,
+                                Soluongsanpham = item.Quantity,
+                                Dongia = item.Price
+                            };
+
+                            _context.Chitietdonhangs.Add(orderDetail);
+                            detailStartId++;
+                            
+                            Console.WriteLine($"Adding order detail - ID: {orderDetail.Idchitietdonhang}, " +
+                                             $"Order ID: {orderDetail.IdDh}, " +
+                                             $"Product ID: {orderDetail.IdSp}, " +
+                                             $"Quantity: {orderDetail.Soluongsanpham}, " +
+                                             $"Price: {orderDetail.Dongia}");
+                        }
+
+                        // Lưu chi tiết đơn hàng
+                        await _context.SaveChangesAsync();
+                        
+                        // Kiểm tra xác nhận sau khi lưu
+                        var savedDetails = await _context.Chitietdonhangs
+                            .Where(c => c.IdDh == orderId)
+                            .Select(c => new { // Chỉ select các trường cần thiết
+                                c.Idchitietdonhang,
+                                c.IdDh,
+                                c.IdSp,
+                                c.Soluongsanpham,
+                                c.Dongia
+                            })
+                            .ToListAsync();
+
+                        Console.WriteLine($"Saved order details count: {savedDetails.Count}");
+                        foreach (var detail in savedDetails)
+                        {
+                            Console.WriteLine($"Saved detail - ID: {detail.Idchitietdonhang}, " +
+                                             $"Order ID: {detail.IdDh}, " +
+                                             $"Product ID: {detail.IdSp}, " +
+                                             $"Quantity: {detail.Soluongsanpham}, " +
+                                             $"Price: {detail.Dongia}");
+                        }
+
+                        // Commit transaction
+                        await transaction.CommitAsync();
+                        Console.WriteLine($"Transaction committed successfully for order {orderId}");
                     }
-
-                    string detailId = $"CTDH{detailStartId:D5}";
-                    detailStartId++; // Tăng ID cho chi tiết đơn hàng tiếp theo
-
-                    var orderDetail = new Chitietdonhang
+                    catch (Exception ex)
                     {
-                        Idchitietdonhang = detailId,
-                        IdDh = orderId,
-                        IdSp = item.ProductId,
-                        Soluongsanpham = item.Quantity,
-                        Dongia = item.Price,
-                        IdDg = null // Đảm bảo IdDg là null cho đơn hàng mới
-                    };
-
-                    _context.Chitietdonhangs.Add(orderDetail);
-                    Console.WriteLine($"Added order detail: {detailId} for product {item.ProductId}");
+                        await transaction.RollbackAsync();
+                        Console.WriteLine($"Error in transaction: {ex.Message}");
+                        Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                        throw;
+                    }
                 }
-
-                // Lưu tất cả thay đổi vào database
-                await _context.SaveChangesAsync();
-                Console.WriteLine($"Order {orderId} saved successfully");
 
                 // Lưu mã đơn hàng vào TempData
                 TempData["OrderId"] = orderId;
@@ -408,45 +446,85 @@ namespace Website_Ban_Linh_Kien.Controllers
                     Tongtien = model.Items.Sum(i => i.Price * i.Quantity)
                 };
 
-                _context.Donhangs.Add(order);
-
-                // Tạo chi tiết đơn hàng
-                var nextDetailId = await _context.Chitietdonhangs
-                    .OrderByDescending(c => c.Idchitietdonhang)
-                    .Select(c => c.Idchitietdonhang)
-                    .FirstOrDefaultAsync();
-
-                int detailStartId = 1;
-                if (nextDetailId != null)
+                using (var transaction = await _context.Database.BeginTransactionAsync())
                 {
-                    detailStartId = int.Parse(nextDetailId.Substring(4)) + 1;
-                }
-
-                foreach (var item in model.Items)
-                {
-                    if (string.IsNullOrEmpty(item.ProductId))
+                    try
                     {
-                        continue;
+                        // Thêm đơn hàng trước
+                        _context.Donhangs.Add(order);
+                        await _context.SaveChangesAsync();
+
+                        // Tạo chi tiết đơn hàng
+                        var lastDetailId = await _context.Chitietdonhangs
+                            .OrderByDescending(c => c.Idchitietdonhang)
+                            .Select(c => c.Idchitietdonhang)
+                            .FirstOrDefaultAsync() ?? "CTDH0000000";
+
+                        int detailStartId = int.Parse(lastDetailId.Substring(6)) + 1;
+
+                        foreach (var item in model.Items)
+                        {
+                            if (string.IsNullOrEmpty(item.ProductId))
+                            {
+                                continue;
+                            }
+
+                            var orderDetail = new Chitietdonhang
+                            {
+                                Idchitietdonhang = $"CTDH{detailStartId:D5}",
+                                IdDh = orderId,
+                                IdSp = item.ProductId,
+                                Soluongsanpham = item.Quantity,
+                                Dongia = item.Price
+                            };
+
+                            _context.Chitietdonhangs.Add(orderDetail);
+                            detailStartId++;
+                            
+                            Console.WriteLine($"Adding order detail - ID: {orderDetail.Idchitietdonhang}, " +
+                                             $"Order ID: {orderDetail.IdDh}, " +
+                                             $"Product ID: {orderDetail.IdSp}, " +
+                                             $"Quantity: {orderDetail.Soluongsanpham}, " +
+                                             $"Price: {orderDetail.Dongia}");
+                        }
+
+                        // Lưu chi tiết đơn hàng
+                        await _context.SaveChangesAsync();
+                        
+                        // Kiểm tra xác nhận sau khi lưu
+                        var savedDetails = await _context.Chitietdonhangs
+                            .Where(c => c.IdDh == orderId)
+                            .Select(c => new { // Chỉ select các trường cần thiết
+                                c.Idchitietdonhang,
+                                c.IdDh,
+                                c.IdSp,
+                                c.Soluongsanpham,
+                                c.Dongia
+                            })
+                            .ToListAsync();
+
+                        Console.WriteLine($"Saved order details count: {savedDetails.Count}");
+                        foreach (var detail in savedDetails)
+                        {
+                            Console.WriteLine($"Saved detail - ID: {detail.Idchitietdonhang}, " +
+                                             $"Order ID: {detail.IdDh}, " +
+                                             $"Product ID: {detail.IdSp}, " +
+                                             $"Quantity: {detail.Soluongsanpham}, " +
+                                             $"Price: {detail.Dongia}");
+                        }
+
+                        // Commit transaction
+                        await transaction.CommitAsync();
+                        Console.WriteLine($"Transaction committed successfully for order {orderId}");
                     }
-
-                    string detailId = $"CTDH{detailStartId:D5}";
-                    detailStartId++; // Tăng ID cho chi tiết đơn hàng tiếp theo
-
-                    var orderDetail = new Chitietdonhang
+                    catch (Exception ex)
                     {
-                        Idchitietdonhang = detailId,
-                        IdDh = orderId,
-                        IdSp = item.ProductId,
-                        Soluongsanpham = item.Quantity,
-                        Dongia = item.Price,
-                        IdDg = null // Đảm bảo IdDg là null cho đơn hàng mới
-                    };
-
-                    _context.Chitietdonhangs.Add(orderDetail);
+                        await transaction.RollbackAsync();
+                        Console.WriteLine($"Error in transaction: {ex.Message}");
+                        Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                        throw;
+                    }
                 }
-
-                // Lưu tất cả thay đổi vào database
-                await _context.SaveChangesAsync();
 
                 return RedirectToAction("PaymentSuccess", "PaymentResult");
             }
