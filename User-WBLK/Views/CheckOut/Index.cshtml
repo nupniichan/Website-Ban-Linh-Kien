@@ -64,7 +64,7 @@
                 <div class="bg-gray-100 p-4 rounded-lg mb-6">
                     <div class="flex justify-between">
                         <label class="flex items-center cursor-pointer">
-                            <input type="radio" name="deliveryType" value="store" id="store-pickup"
+                            <input type="radio" name="DeliveryMethod" value="0" id="store-pickup"
                                    class="hidden peer">
                             <span class="w-4 h-4 border border-gray-300 rounded-full inline-block mr-2 relative
                                        peer-checked:border-blue-500 peer-checked:before:content-[''] 
@@ -76,7 +76,7 @@
                             <span class="text-gray-700">Nhận tại cửa hàng</span>
                         </label>
                         <label class="flex items-center cursor-pointer">
-                            <input type="radio" name="deliveryType" value="delivery" id="home-delivery" checked
+                            <input type="radio" name="DeliveryMethod" value="1" id="home-delivery" checked
                                    class="hidden peer">
                             <span class="w-4 h-4 border border-gray-300 rounded-full inline-block mr-2 relative
                                        peer-checked:border-blue-500 peer-checked:before:content-[''] 
@@ -163,27 +163,62 @@
                 </div>
             </div>
 
-            <!-- Modal xác nhận đặt hàng -->
-            <div id="orderConfirmModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
-                <div class="bg-white p-6 rounded-lg max-w-md w-full mx-4">
-                    <h3 class="text-lg font-bold mb-4">Xác nhận đặt hàng</h3>
-                    <p class="mb-4">Bạn có muốn đặt hàng với tư cách khách vãng lai?</p>
-                    <p class="text-sm text-gray-600 mb-4">
-                        Nếu đăng nhập, bạn sẽ được tích điểm khi mua hàng thành công:
-                        <br>- Bạc (500-999 điểm): Giảm 3%
-                        <br>- Vàng (1000-4999 điểm): Giảm 7%
-                        <br>- Kim cương (5000+ điểm): Giảm 10%
-                    </p>
-                    <div class="flex justify-end gap-4">
-                        <a href="/Account/Login" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                            Đăng nhập
-                        </a>
-                        <button type="button" onclick="submitOrder()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
-                            Tiếp tục
-                        </button>
+            <!-- Modal xác nhận đặt hàng cho khách đã đăng nhập -->
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <div id="loggedInOrderConfirmModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
+                    <div class="bg-white p-6 rounded-lg max-w-md w-full mx-4">
+                        <h3 class="text-lg font-bold mb-4">Xác nhận đơn hàng</h3>
+                        <div class="mb-4">
+                            <p class="font-medium">Thông tin giao hàng:</p>
+                            <div class="mt-2 text-gray-600">
+                                <p>Người nhận: <span id="confirmName"></span></p>
+                                <p>Số điện thoại: <span id="confirmPhone"></span></p>
+                                <p>Địa chỉ: <span id="confirmAddress"></span></p>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <p class="font-medium">Tổng giá trị đơn hàng:</p>
+                            <p class="text-red-500 text-lg font-medium" id="confirmTotal"></p>
+                        </div>
+                        <div class="flex justify-end gap-4">
+                            <button type="button" onclick="closeOrderConfirm()" 
+                                    class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+                                Hủy
+                            </button>
+                            <button type="button" onclick="submitOrder()" 
+                                    class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                                Xác nhận đặt hàng
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
+            }
+
+            <!-- Modal xác nhận đặt hàng (chỉ hiển thị cho khách vãng lai) -->
+            @if (!User.Identity?.IsAuthenticated == true)
+            {
+                <div id="orderConfirmModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
+                    <div class="bg-white p-6 rounded-lg max-w-md w-full mx-4">
+                        <h3 class="text-lg font-bold mb-4">Xác nhận đặt hàng</h3>
+                        <p class="mb-4">Bạn có muốn đặt hàng với tư cách khách vãng lai?</p>
+                        <p class="text-sm text-gray-600 mb-4">
+                            Nếu đăng nhập, bạn sẽ được tích điểm khi mua hàng thành công:
+                            <br>- Bạc (500-999 điểm): Giảm 3%
+                            <br>- Vàng (1000-4999 điểm): Giảm 7%
+                            <br>- Kim cương (5000+ điểm): Giảm 10%
+                        </p>
+                        <div class="flex justify-end gap-4">
+                            <a href="/Account/Login" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                                Đăng nhập
+                            </a>
+                            <button type="button" onclick="submitOrder()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+                                Tiếp tục
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
 
             <!-- Button Đặt hàng -->
             <button type="button" onclick="showOrderConfirmation()" 
@@ -248,8 +283,60 @@
         }
 
         function showOrderConfirmation() {
-            document.getElementById('orderConfirmModal').classList.remove('hidden');
-            document.getElementById('orderConfirmModal').classList.add('flex');
+            const isAuthenticated = @Json.Serialize(User.Identity?.IsAuthenticated == true);
+            
+            if (isAuthenticated) {
+                // Lấy thông tin từ form
+                const form = document.getElementById('checkoutForm');
+                const name = form.querySelector('[name="ReceiverName"]').value;
+                const phone = form.querySelector('[name="ReceiverPhone"]').value;
+                const deliveryMethod = form.querySelector('input[name="DeliveryMethod"]:checked').value;
+                
+                let address = '';
+                if (deliveryMethod === '0') { // Store pickup
+                    address = '@Model.StoreAddress';
+                } else {
+                    const street = form.querySelector('[name="StreetAddress"]').value;
+                    const ward = form.querySelector('[name="Ward"]').value;
+                    const district = form.querySelector('[name="District"]').value;
+                    const city = form.querySelector('[name="City"]').value;
+                    address = `${street}, ${ward}, ${district}, ${city}`;
+                }
+
+                // Tính tổng tiền
+                const total = Array.from(document.querySelectorAll('.cart-item'))
+                    .reduce((sum, item) => {
+                        const price = parseFloat(item.dataset.price);
+                        const quantity = parseInt(item.dataset.quantity);
+                        return sum + (price * quantity);
+                    }, 0);
+
+                // Hiển thị thông tin trong modal
+                document.getElementById('confirmName').textContent = name;
+                document.getElementById('confirmPhone').textContent = phone;
+                document.getElementById('confirmAddress').textContent = address;
+                document.getElementById('confirmTotal').textContent = total.toLocaleString('vi-VN') + 'đ';
+
+                // Hiện modal xác nhận
+                document.getElementById('loggedInOrderConfirmModal').classList.remove('hidden');
+                document.getElementById('loggedInOrderConfirmModal').classList.add('flex');
+            } else {
+                // Hiện modal cho khách vãng lai
+                document.getElementById('orderConfirmModal').classList.remove('hidden');
+                document.getElementById('orderConfirmModal').classList.add('flex');
+            }
+        }
+
+        function closeOrderConfirm() {
+            const isAuthenticated = @Json.Serialize(User.Identity?.IsAuthenticated == true);
+            
+            if (isAuthenticated) {
+                document.getElementById('loggedInOrderConfirmModal').classList.add('hidden');
+                document.getElementById('loggedInOrderConfirmModal').classList.remove('flex');
+            } else {
+                document.getElementById('orderConfirmModal').classList.add('hidden');
+                document.getElementById('orderConfirmModal').classList.remove('flex');
+            }
         }
 
         function submitOrder() {
@@ -260,26 +347,36 @@
             }
 
             try {
-                // Lấy giỏ hàng từ localStorage
-                const guestCart = localStorage.getItem('guestCart');
-                if (!guestCart) {
-                    alert('Giỏ hàng trống');
-                    return;
+                let cartItems;
+                
+                // Kiểm tra xem người dùng đã đăng nhập chưa
+                const isAuthenticated = @Json.Serialize(User.Identity?.IsAuthenticated == true);
+                
+                if (!isAuthenticated) {
+                    // Xử lý giỏ hàng cho khách vãng lai
+                    const guestCart = localStorage.getItem('guestCart');
+                    if (!guestCart) {
+                        alert('Giỏ hàng trống');
+                        return;
+                    }
+                    cartItems = JSON.parse(guestCart).map(item => ({
+                        ProductId: item.id,
+                        ProductName: item.name,
+                        Quantity: parseInt(item.quantity),
+                        Price: parseFloat(item.price)
+                    }));
+                } else {
+                    // Với khách hàng đã đăng nhập, items sẽ được lấy từ server
+                    cartItems = Array.from(document.querySelectorAll('.cart-item')).map(item => ({
+                        ProductId: item.dataset.productId,
+                        ProductName: item.dataset.productName,
+                        Quantity: parseInt(item.dataset.quantity),
+                        Price: parseFloat(item.dataset.price)
+                    }));
                 }
 
-                // Parse giỏ hàng và format lại dữ liệu
-                const cartItems = JSON.parse(guestCart).map(item => ({
-                    ProductId: item.id,
-                    ProductName: item.name,
-                    Quantity: parseInt(item.quantity),
-                    Price: parseFloat(item.price)
-                }));
+                const deliveryMethod = parseInt(form.querySelector('input[name="DeliveryMethod"]:checked').value);
 
-                // Lấy phương thức giao hàng
-                const deliveryType = form.querySelector('[name="deliveryType"]').value;
-                const deliveryMethod = deliveryType === 'store' ? 0 : 1; // 0: StorePickup, 1: HomeDelivery
-
-                // Tạo object chứa toàn bộ dữ liệu form
                 const formData = {
                     ReceiverName: form.querySelector('[name="ReceiverName"]').value,
                     Email: form.querySelector('[name="Email"]').value,
@@ -292,9 +389,7 @@
                     Items: cartItems
                 };
 
-                console.log('Form data to be sent:', formData);
-
-                // Gửi request với JSON
+                // Gửi request
                 fetch(form.action, {
                     method: 'POST',
                     headers: {
@@ -304,9 +399,10 @@
                 })
                 .then(response => response.json())
                 .then(data => {
-                    console.log('Response:', data);
                     if (data.success) {
-                        localStorage.removeItem('guestCart');
+                        if (!isAuthenticated) {
+                            localStorage.removeItem('guestCart');
+                        }
                         window.location.href = data.redirectUrl;
                     } else {
                         alert(data.message || 'Có lỗi xảy ra khi đặt hàng');
