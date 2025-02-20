@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 18, 2025 at 12:23 PM
+-- Generation Time: Feb 20, 2025 at 06:05 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -65,9 +65,13 @@ INSERT INTO `chitietdonhang` (`Idchitietdonhang`, `IdDh`, `IdSp`, `IdDg`, `soluo
 ('CTDH000022', 'DH000015', 'SP000018', NULL, 1, 2990000.00),
 ('CTDH000023', 'DH000016', 'SP000025', NULL, 1, 12990000.00),
 ('CTDH000024', 'DH000016', 'SP000028', NULL, 1, 6990000.00),
-('CTDH000025', 'DH000017', 'SP000003', NULL, 2, 7990000.00),
 ('CTDH000026', 'DH000019', 'SP000028', NULL, 1, 6990000.00),
-('CTDH000027', 'DH000020', 'SP000018', NULL, 2, 2990000.00);
+('CTDH00027', 'DH000021', 'SP000021', NULL, 1, 34930000.00),
+('CTDH00028', 'DH000022', 'SP000021', NULL, 1, 34930000.00),
+('CTDH00029', 'DH000023', 'SP000021', NULL, 2, 34930000.00),
+('CTDH00030', 'DH000024', 'SP000001', NULL, 1, 15990000.00),
+('CTDH00031', 'DH000025', 'SP000002', NULL, 1, 13990000.00),
+('CTDH00032', 'DH000026', 'SP000002', NULL, 1, 13990000.00);
 
 -- --------------------------------------------------------
 
@@ -139,7 +143,13 @@ INSERT INTO `donhang` (`IdDh`, `trangthai`, `tongtien`, `diachigiaohang`, `ngayd
 ('DH000017', 'Giao thành công', 14990000.00, '55 Nguyễn Công Trứ, Phường Phúc Lợi, Quận Ba Đình, Hà Nội', '2025-02-17 10:20:00', 'COD', NULL, NULL, 'KH000017', NULL),
 ('DH000018', 'Đặt hàng thành công', 12990000.00, '40 Lê Lợi, Phường Tân Định, Quận 1, Thành phố Hồ Chí Minh', '2025-02-18 11:45:00', 'Paypal', NULL, NULL, 'KH000018', 'MG000010'),
 ('DH000019', 'Đang giao', 6990000.00, '65 Võ Văn Kiệt, Phường Hòa Hiệp, Quận Cẩm Lệ, Đà Nẵng', '2025-02-19 12:20:00', 'VNPAY', NULL, NULL, 'KH000019', NULL),
-('DH000020', 'Giao thành công', 4990000.00, '22 Cầu Đất, Phường Hồng Bàng, Quận Ngô Quyền, Hải Phòng', '2025-02-20 13:30:00', 'COD', NULL, NULL, 'KH000001', NULL);
+('DH000020', 'Giao thành công', 4990000.00, '22 Cầu Đất, Phường Hồng Bàng, Quận Ngô Quyền, Hải Phòng', '2025-02-20 13:30:00', 'COD', NULL, NULL, 'KH000001', NULL),
+('DH000021', 'Chờ xác nhận', 34930000.00, '249Đ Nguyễn Văn Luông, Phường 11, Quận 6, Hồ Chí Minh', '2025-02-20 10:54:59', 'COD', '', NULL, 'KH000021', NULL),
+('DH000022', 'Chờ xác nhận', 34930000.00, '249Đ, Nguyễn Văn Luông, Phường 11, Quận 6, Thành phố Hồ Chí Minh, a, a, Tp.Hồ Chí Minh', '2025-02-20 10:55:58', 'COD', '', NULL, 'KH000022', NULL),
+('DH000023', 'Chờ xác nhận', 69860000.00, 'a, a, aa, a', '2025-02-20 11:24:06', 'COD', '', NULL, 'KH00020', NULL),
+('DH000024', 'Chờ xác nhận', 15990000.00, 'a, a, a, a', '2025-02-20 11:42:49', 'COD', '', NULL, 'KH00020', NULL),
+('DH000025', 'Chờ xác nhận', 13990000.00, 'c, c, c, c', '2025-02-20 11:45:30', 'COD', '', NULL, 'KH00020', NULL),
+('DH000026', 'Chờ xác nhận', 13990000.00, 'a, a, a, a', '2025-02-20 12:00:58', 'COD', '', NULL, 'KH000023', NULL);
 
 -- --------------------------------------------------------
 
@@ -194,7 +204,7 @@ CREATE TABLE `khachhang` (
   `ngaysinh` date DEFAULT NULL,
   `sodienthoai` varchar(11) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   `diemtichluy` int(11) DEFAULT 0,
-  `IdTk` varchar(10) NOT NULL,
+  `IdTk` varchar(10) DEFAULT NULL,
   `id_xephangvip` varchar(10) DEFAULT NULL,
   `loaikhachhang` bit(1) DEFAULT b'0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -204,7 +214,7 @@ CREATE TABLE `khachhang` (
 --
 
 INSERT INTO `khachhang` (`IdKh`, `hoten`, `diachi`, `email`, `gioitinh`, `ngaysinh`, `sodienthoai`, `diemtichluy`, `IdTk`, `id_xephangvip`, `loaikhachhang`) VALUES
-('KH000001', 'Nguyễn Văn A', '12 Nguyễn Thái Học, Phường Hàng Bột, Quận Hoàn Kiếm, Hà Nội', 'a@gmail.com', 'Nam', '1990-01-01', '0987654321', 100, 'TK000002', 'THANTHIET', b'1'),
+('KH000001', 'a', '123 Nguyễn Văn A, Quận 1, TP.HCM', 'a@gmail.com', 'Nam', '1990-01-01', '0946575839', 100, 'TK000002', 'THANTHIET', b'1'),
 ('KH000002', 'Trần Thị B', '45 Lê Lợi, Phường Bến Thành, Quận 1, Thành phố Hồ Chí Minh', 'b@gmail.com', 'Nữ', '1995-02-15', '0912345678', 777, 'TK000003', 'BAC', b'1'),
 ('KH000003', 'Phạm Văn C', '78 Nguyễn Văn Linh, Phường Hải Châu 1, Quận Hải Châu, Đà Nẵng', 'c@gmail.com', 'Nam', '1992-03-20', '0934567890', 1002, 'TK000004', 'VANG', b'1'),
 ('KH000004', 'Kim Đăng D', '90 Lạch Tray, Phường Hồng Bàng, Quận Ngô Quyền, Hải Phòng', 'd@gmail.com', 'Nữ', '1998-04-25', '0956789012', 10000, 'TK000005', 'KIMCUONG', b'1'),
@@ -222,7 +232,11 @@ INSERT INTO `khachhang` (`IdKh`, `hoten`, `diachi`, `email`, `gioitinh`, `ngaysi
 ('KH000016', 'Mai Thị L', '47 Lê Duẩn, Phường Mỹ An, Quận Ngũ Hành Sơn, Đà Nẵng', 'mtl@gmail.com', 'Nữ', '1991-04-25', '0989012345', 20000, 'TK000017', 'KIMCUONG', b'1'),
 ('KH000017', 'Phan Văn M', '68 Hồng Bàng, Phường Hồng Bàng, Quận Lê Chân, Hải Phòng', 'pvm@gmail.com', 'Nam', '1998-05-30', '0990123456', 250, 'TK000018', 'THANTHIET', b'1'),
 ('KH000018', 'Trương Thị N', '100 Phạm Hùng, Phường Thịnh Quang, Quận Thanh Xuân, Hà Nội', 'ttn@gmail.com', 'Nữ', '2004-06-05', '0901234567', 1200, 'TK000019', 'BAC', b'1'),
-('KH000019', 'Bùi Văn O', '150 Đinh Tiên Hoàng, Phường Đa Kao, Quận 1, Thành phố Hồ Chí Minh', 'bvo@gmail.com', 'Nam', '2002-07-10', '0912345678', 5000, 'TK000020', 'VANG', b'1');
+('KH000019', 'Bùi Văn O', '150 Đinh Tiên Hoàng, Phường Đa Kao, Quận 1, Thành phố Hồ Chí Minh', 'bvo@gmail.com', 'Nam', '2002-07-10', '0912345678', 5000, 'TK000020', 'VANG', b'1'),
+('KH000021', 'asd', '249Đ Nguyễn Văn Luông, Phường 11, Quận 6, Hồ Chí Minh', 'asd@gmail.com', NULL, NULL, '0949752094', 0, NULL, 'THANTHIET', b'0'),
+('KH000022', 'gas', '249Đ, Nguyễn Văn Luông, Phường 11, Quận 6, Thành phố Hồ Chí Minh, a, a, Tp.Hồ Chí Minh', 'gas@gmail.com', NULL, NULL, '0949752092', 0, NULL, 'THANTHIET', b'0'),
+('KH000023', 'sadsa', '', 'kjgs@gmail.com', NULL, NULL, '095353163', 0, NULL, 'THANTHIET', b'0'),
+('KH00020', 'Nguyễn Phi Quốc Bảo', 'a, a, a, a', 'nuponiibaka.com@gmail.com', 'Nam', '2004-08-02', '0949752097', 0, 'TK00021', NULL, b'0');
 
 -- --------------------------------------------------------
 
@@ -335,10 +349,10 @@ CREATE TABLE `sanpham` (
 --
 
 INSERT INTO `sanpham` (`IdSp`, `tensanpham`, `gia`, `soluongton`, `thuonghieu`, `mota`, `thongsokythuat`, `loaisanpham`, `hinhanh`, `soluotxem`, `damuahang`) VALUES
-('SP000001', 'CPU Intel Core i9-13900K', 15990000.00, 50, 'Intel', 'CPU Intel Core i9-13900K mạnh mẽ, lý tưởng cho gaming và công việc sáng tạo.', '{\"Danh mục\": \"CPU\", \"Socket\": \"LGA1700\", \"Dòng CPU\": \"Intel Core i9\", \"Số nhân\": \"24\", \"Số luồng\": \"32\", \"Xung nhịp\": \"3.0GHz\", \"Xung nhịp cơ bản\": \"2.8GHz\", \"Điện năng tiêu thụ\": \"125W\", \"Bộ nhớ đệm\": \"36MB\", \"Nhân đồ họa tích hợp\": \"Intel UHD Graphics 770\"}', 'Components', 'cpu_i9_13900k.jpg', 0, 0),
-('SP000002', 'CPU Intel Core i7-13700K', 13990000.00, 45, 'Intel', 'CPU Intel Core i7-13700K hiệu năng cao, lý tưởng cho gaming.', '{\"Danh mục\": \"CPU\", \"Socket\": \"LGA1700\", \"Dòng CPU\": \"Intel Core i7\", \"Số nhân\": \"16\", \"Số luồng\": \"24\", \"Xung nhịp\": \"3.2GHz\", \"Xung nhịp cơ bản\": \"3.0GHz\", \"Điện năng tiêu thụ\": \"125W\", \"Bộ nhớ đệm\": \"30MB\", \"Nhân đồ họa tích hợp\": \"Intel UHD Graphics 770\"}', 'Components', 'cpu_i7_13700k.jpg', 0, 0),
-('SP000003', 'CPU Intel Core i5-13600K', 11990000.00, 40, 'Intel', 'CPU Intel Core i5-13600K cân bằng giữa hiệu năng và giá cả.', '{\"Danh mục\": \"CPU\", \"Socket\": \"LGA1700\", \"Dòng CPU\": \"Intel Core i5\", \"Số nhân\": \"10\", \"Số luồng\": \"16\", \"Xung nhịp\": \"3.5GHz\", \"Xung nhịp cơ bản\": \"3.0GHz\", \"Điện năng tiêu thụ\": \"125W\", \"Bộ nhớ đệm\": \"20MB\", \"Nhân đồ họa tích hợp\": \"Intel UHD Graphics 770\"}', 'Components', 'cpu_i5_13600k.jpg', 0, 0),
-('SP000004', 'CPU AMD Ryzen 9 7950X', 17990000.00, 35, 'AMD', 'CPU AMD Ryzen 9 7950X hiệu năng mạnh mẽ cho các tác vụ nặng.', '{\"Danh mục\": \"CPU\", \"Socket\": \"AM5\", \"Dòng CPU\": \"AMD Ryzen 9\", \"Số nhân\": \"16\", \"Số luồng\": \"32\", \"Xung nhịp\": \"4.5GHz\", \"Xung nhịp cơ bản\": \"3.4GHz\", \"Điện năng tiêu thụ\": \"170W\", \"Bộ nhớ đệm\": \"64MB\", \"Nhân đồ họa tích hợp\": \"Không\"}', 'Components', 'cpu_ryzen9_7950x.jpg', 0, 0),
+('SP000001', 'CPU Intel Core i9-13900K', 15990000.00, 49, 'Intel', 'CPU Intel Core i9-13900K mạnh mẽ, lý tưởng cho gaming và công việc sáng tạo.', '{\"Danh mục\": \"CPU\", \"Socket\": \"LGA1700\", \"Dòng CPU\": \"Intel Core i9\", \"Số nhân\": \"24\", \"Số luồng\": \"32\", \"Xung nhịp\": \"3.0GHz\", \"Xung nhịp cơ bản\": \"2.8GHz\", \"Điện năng tiêu thụ\": \"125W\", \"Bộ nhớ đệm\": \"36MB\", \"Nhân đồ họa tích hợp\": \"Intel UHD Graphics 770\"}', 'Components', 'cpu_i9_13900k.jpg', 13, 1),
+('SP000002', 'CPU Intel Core i7-13700K', 13990000.00, 43, 'Intel', 'CPU Intel Core i7-13700K hiệu năng cao, lý tưởng cho gaming.', '{\"Danh mục\": \"CPU\", \"Socket\": \"LGA1700\", \"Dòng CPU\": \"Intel Core i7\", \"Số nhân\": \"16\", \"Số luồng\": \"24\", \"Xung nhịp\": \"3.2GHz\", \"Xung nhịp cơ bản\": \"3.0GHz\", \"Điện năng tiêu thụ\": \"125W\", \"Bộ nhớ đệm\": \"30MB\", \"Nhân đồ họa tích hợp\": \"Intel UHD Graphics 770\"}', 'Components', 'cpu_i7_13700k.jpg', 8, 2),
+('SP000003', 'CPU Intel Core i5-13600K', 11990000.00, 40, 'Intel', 'CPU Intel Core i5-13600K cân bằng giữa hiệu năng và giá cả.', '{\"Danh mục\": \"CPU\", \"Socket\": \"LGA1700\", \"Dòng CPU\": \"Intel Core i5\", \"Số nhân\": \"10\", \"Số luồng\": \"16\", \"Xung nhịp\": \"3.5GHz\", \"Xung nhịp cơ bản\": \"3.0GHz\", \"Điện năng tiêu thụ\": \"125W\", \"Bộ nhớ đệm\": \"20MB\", \"Nhân đồ họa tích hợp\": \"Intel UHD Graphics 770\"}', 'Components', 'cpu_i5_13600k.jpg', 6, 0),
+('SP000004', 'CPU AMD Ryzen 9 7950X', 17990000.00, 35, 'AMD', 'CPU AMD Ryzen 9 7950X hiệu năng mạnh mẽ cho các tác vụ nặng.', '{\"Danh mục\": \"CPU\", \"Socket\": \"AM5\", \"Dòng CPU\": \"AMD Ryzen 9\", \"Số nhân\": \"16\", \"Số luồng\": \"32\", \"Xung nhịp\": \"4.5GHz\", \"Xung nhịp cơ bản\": \"3.4GHz\", \"Điện năng tiêu thụ\": \"170W\", \"Bộ nhớ đệm\": \"64MB\", \"Nhân đồ họa tích hợp\": \"Không\"}', 'Components', 'cpu_ryzen9_7950x.jpg', 2, 0),
 ('SP000005', 'CPU AMD Ryzen 7 7700X', 12990000.00, 30, 'AMD', 'CPU AMD Ryzen 7 7700X mang lại hiệu năng gaming ấn tượng.', '{\"Danh mục\": \"CPU\", \"Socket\": \"AM5\", \"Dòng CPU\": \"AMD Ryzen 7\", \"Số nhân\": \"8\", \"Số luồng\": \"16\", \"Xung nhịp\": \"4.5GHz\", \"Xung nhịp cơ bản\": \"3.8GHz\", \"Điện năng tiêu thụ\": \"105W\", \"Bộ nhớ đệm\": \"32MB\", \"Nhân đồ họa tích hợp\": \"Không\"}', 'Components', 'cpu_ryzen7_7700x.jpg', 0, 0),
 ('SP000006', 'CPU Intel Core i3-12100F', 5490000.00, 60, 'Intel', 'CPU Intel Core i3-12100F lý tưởng cho công việc văn phòng.', '{\"Danh mục\": \"CPU\", \"Socket\": \"LGA1700\", \"Dòng CPU\": \"Intel Core i3\", \"Số nhân\": \"4\", \"Số luồng\": \"8\", \"Xung nhịp\": \"4.3GHz\", \"Xung nhịp cơ bản\": \"3.3GHz\", \"Điện năng tiêu thụ\": \"58W\", \"Bộ nhớ đệm\": \"12MB\", \"Nhân đồ họa tích hợp\": \"Không\"}', 'Components', 'cpu_i3_12100f.jpg', 0, 0),
 ('SP000007', 'CPU AMD Ryzen 5 7600X', 7490000.00, 55, 'AMD', 'CPU AMD Ryzen 5 7600X phù hợp cho game thủ phổ thông.', '{\"Danh mục\": \"CPU\", \"Socket\": \"AM5\", \"Dòng CPU\": \"AMD Ryzen 5\", \"Số nhân\": \"6\", \"Số luồng\": \"12\", \"Xung nhịp\": \"4.7GHz\", \"Xung nhịp cơ bản\": \"4.2GHz\", \"Điện năng tiêu thụ\": \"105W\", \"Bộ nhớ đệm\": \"32MB\", \"Nhân đồ họa tích hợp\": \"Không\"}', 'Components', 'cpu_ryzen5_7600x.jpg', 0, 0),
@@ -355,8 +369,8 @@ INSERT INTO `sanpham` (`IdSp`, `tensanpham`, `gia`, `soluongton`, `thuonghieu`, 
 ('SP000018', 'CPU Intel Core i7-10700K', 8990000.00, 50, 'Intel', 'CPU Intel Core i7-10700K cho gaming hiệu năng cao.', '{\"Danh mục\": \"CPU\", \"Socket\": \"LGA1200\", \"Dòng CPU\": \"Intel Core i7\", \"Số nhân\": \"8\", \"Số luồng\": \"16\", \"Xung nhịp\": \"3.8GHz\", \"Xung nhịp cơ bản\": \"3.7GHz\", \"Điện năng tiêu thụ\": \"125W\", \"Bộ nhớ đệm\": \"16MB\", \"Nhân đồ họa tích hợp\": \"Intel UHD Graphics 630\"}', 'Components', 'cpu_i7_10700k.jpg', 0, 0),
 ('SP000019', 'CPU AMD Ryzen 5 3600', 5490000.00, 60, 'AMD', 'CPU AMD Ryzen 5 3600 cho gaming và làm việc đa nhiệm.', '{\"Danh mục\": \"CPU\", \"Socket\": \"AM4\", \"Dòng CPU\": \"AMD Ryzen 5\", \"Số nhân\": \"6\", \"Số luồng\": \"12\", \"Xung nhịp\": \"3.6GHz\", \"Xung nhịp cơ bản\": \"3.4GHz\", \"Điện năng tiêu thụ\": \"65W\", \"Bộ nhớ đệm\": \"32MB\", \"Nhân đồ họa tích hợp\": \"Không\"}', 'Components', 'cpu_ryzen5_3600.jpg', 0, 0),
 ('SP000020', 'CPU Intel Core i5-10600K', 6290000.00, 65, 'Intel', 'CPU Intel Core i5-10600K cho hiệu năng gaming ổn định.', '{\"Danh mục\": \"CPU\", \"Socket\": \"LGA1200\", \"Dòng CPU\": \"Intel Core i5\", \"Số nhân\": \"6\", \"Số luồng\": \"12\", \"Xung nhịp\": \"4.1GHz\", \"Xung nhịp cơ bản\": \"4.0GHz\", \"Điện năng tiêu thụ\": \"125W\", \"Bộ nhớ đệm\": \"12MB\", \"Nhân đồ họa tích hợp\": \"Intel UHD Graphics 630\"}', 'Components', 'cpu_i5_10600k.jpg', 0, 0),
-('SP000021', 'PC Build Thunder X', 34930000.00, 16, 'BPT', 'PC build hiệu năng cao với Intel Core i9-14900K, 32GB DDR5, RTX 3060 12GB, Model Thunder X.', '{\r\n      \"Nhu cầu\": \"Gaming\",\r\n      \"Mainboard\": \"ASUS ROG STRIX Z790\",\r\n      \"CPU\": \"Intel Core i9-14900K\",\r\n      \"RAM\": \"32GB DDR5\",\r\n      \"VGA\": \"RTX 3060 12GB\",\r\n      \"HDD\": \"1TB\",\r\n      \"SSD\": \"512GB NVMe\",\r\n      \"PSU\": \"850W Gold\",\r\n      \"Case\": \"NZXT H710\",\r\n      \"Tản nhiệt\": \"Corsair Hydro H100i\",\r\n      \"Quạt\": \"6 x 120mm\"\r\n  }', 'PC', 'pc_thunder_x.jpg', 0, 0),
-('SP000022', 'PC Build Thunder X Pro', 35930000.00, 16, 'BPT', 'PC build mạnh mẽ với Intel Core i9-14900K, 32GB DDR5, RTX 3070 8GB, Model Thunder X Pro.', '{\r\n      \"Nhu cầu\": \"Graphics\",\r\n      \"Mainboard\": \"MSI MEG X670E\",\r\n      \"CPU\": \"Intel Core i9-14900K\",\r\n      \"RAM\": \"32GB DDR5\",\r\n      \"VGA\": \"RTX 3070 8GB\",\r\n      \"HDD\": \"1TB\",\r\n      \"SSD\": \"1TB NVMe\",\r\n      \"PSU\": \"850W Gold\",\r\n      \"Case\": \"Cooler Master MasterBox\",\r\n      \"Tản nhiệt\": \"NZXT Kraken X63\",\r\n      \"Quạt\": \"5 x 140mm\"\r\n  }', 'PC', 'pc_thunder_x_pro.jpg', 0, 0),
+('SP000021', 'PC Build Thunder X', 34930000.00, 12, 'BPT', 'PC build hiệu năng cao với Intel Core i9-14900K, 32GB DDR5, RTX 3060 12GB, Model Thunder X.', '{\r\n      \"Nhu cầu\": \"Gaming\",\r\n      \"Mainboard\": \"ASUS ROG STRIX Z790\",\r\n      \"CPU\": \"Intel Core i9-14900K\",\r\n      \"RAM\": \"32GB DDR5\",\r\n      \"VGA\": \"RTX 3060 12GB\",\r\n      \"HDD\": \"1TB\",\r\n      \"SSD\": \"512GB NVMe\",\r\n      \"PSU\": \"850W Gold\",\r\n      \"Case\": \"NZXT H710\",\r\n      \"Tản nhiệt\": \"Corsair Hydro H100i\",\r\n      \"Quạt\": \"6 x 120mm\"\r\n  }', 'PC', 'pc_thunder_x.jpg', 11, 4),
+('SP000022', 'PC Build Thunder X Pro', 35930000.00, 16, 'BPT', 'PC build mạnh mẽ với Intel Core i9-14900K, 32GB DDR5, RTX 3070 8GB, Model Thunder X Pro.', '{\r\n      \"Nhu cầu\": \"Graphics\",\r\n      \"Mainboard\": \"MSI MEG X670E\",\r\n      \"CPU\": \"Intel Core i9-14900K\",\r\n      \"RAM\": \"32GB DDR5\",\r\n      \"VGA\": \"RTX 3070 8GB\",\r\n      \"HDD\": \"1TB\",\r\n      \"SSD\": \"1TB NVMe\",\r\n      \"PSU\": \"850W Gold\",\r\n      \"Case\": \"Cooler Master MasterBox\",\r\n      \"Tản nhiệt\": \"NZXT Kraken X63\",\r\n      \"Quạt\": \"5 x 140mm\"\r\n  }', 'PC', 'pc_thunder_x_pro.jpg', 1, 0),
 ('SP000023', 'PC Build Lightning A', 36930000.00, 16, 'BPT', 'PC build cao cấp cho sáng tạo nội dung và gaming, Model Lightning A.', '{\r\n      \"Nhu cầu\": \"Workstation\",\r\n      \"Mainboard\": \"Gigabyte Z790 AORUS\",\r\n      \"CPU\": \"Intel Core i9-14900K\",\r\n      \"RAM\": \"32GB DDR5\",\r\n      \"VGA\": \"RTX 3060 12GB\",\r\n      \"HDD\": \"2TB\",\r\n      \"SSD\": \"1TB NVMe\",\r\n      \"PSU\": \"1000W Platinum\",\r\n      \"Case\": \"Lian Li PC-O11 Dynamic\",\r\n      \"Tản nhiệt\": \"Noctua NH-D15\",\r\n      \"Quạt\": \"4 x 120mm\"\r\n  }', 'PC', 'pc_lightning_a.jpg', 0, 0),
 ('SP000024', 'PC Build Lightning B', 37930000.00, 16, 'BPT', 'PC build với bộ nhớ khủng 64GB DDR5, Model Lightning B.', '{\r\n      \"Nhu cầu\": \"Graphics\",\r\n      \"Mainboard\": \"ASUS PRIME Z690\",\r\n      \"CPU\": \"Intel Core i9-14900K\",\r\n      \"RAM\": \"64GB DDR5\",\r\n      \"VGA\": \"RTX 3060 12GB\",\r\n      \"HDD\": \"1TB\",\r\n      \"SSD\": \"1TB NVMe\",\r\n      \"PSU\": \"850W Gold\",\r\n      \"Case\": \"Fractal Design Define 7\",\r\n      \"Tản nhiệt\": \"Corsair Hydro H115\",\r\n      \"Quạt\": \"5 x 140mm\"\r\n  }', 'PC', 'pc_lightning_b.jpg', 0, 0),
 ('SP000025', 'PC Build Storm Alpha', 35530000.00, 16, 'BPT', 'PC build hiệu năng mạnh mẽ, lý tưởng cho game và đồ họa, Model Storm Alpha.', '{\r\n      \"Nhu cầu\": \"Gaming\",\r\n      \"Mainboard\": \"MSI MAG Z690\",\r\n      \"CPU\": \"Intel Core i9-14900K\",\r\n      \"RAM\": \"32GB DDR5\",\r\n      \"VGA\": \"RTX 3060 12GB\",\r\n      \"HDD\": \"1TB\",\r\n      \"SSD\": \"512GB NVMe\",\r\n      \"PSU\": \"750W Bronze\",\r\n      \"Case\": \"Cooler Master MasterBox TD500 Mesh\",\r\n      \"Tản nhiệt\": \"Cooler Master Hyper 212\",\r\n      \"Quạt\": \"3 x 120mm\"\r\n  }', 'PC', 'pc_storm_alpha.jpg', 0, 0),
@@ -747,7 +761,8 @@ INSERT INTO `taikhoan` (`IdTk`, `matkhau`, `tentaikhoan`, `ngaytaotk`, `ngaysuad
 ('TK000017', 'user16', 'user16', '2025-02-26', NULL, 'khachhang'),
 ('TK000018', 'user17', 'user17', '2025-02-27', NULL, 'khachhang'),
 ('TK000019', 'user18', 'user18', '2025-02-28', NULL, 'khachhang'),
-('TK000020', 'user19', 'user19', '2025-01-30', NULL, 'khachhang');
+('TK000020', 'user19', 'user19', '2025-01-30', NULL, 'khachhang'),
+('TK00021', 'nupniichan089@', 'nupniichan', '2025-02-19', NULL, 'KHACHHANG');
 
 -- --------------------------------------------------------
 
@@ -934,10 +949,10 @@ ALTER TABLE `chitietdonhang`
 -- Constraints for table `chitietgiohang`
 --
 ALTER TABLE `chitietgiohang`
+  ADD CONSTRAINT `FK_ChiTietGioHang_GioHang` FOREIGN KEY (`IdGh`) REFERENCES `giohang` (`IdGh`) ON DELETE CASCADE,
   ADD CONSTRAINT `chitietgiohang_fk_1` FOREIGN KEY (`IdGh`) REFERENCES `giohang` (`IdGh`) ON DELETE CASCADE,
   ADD CONSTRAINT `chitietgiohang_fk_2` FOREIGN KEY (`IdSp`) REFERENCES `sanpham` (`IdSp`) ON DELETE CASCADE,
-  ADD CONSTRAINT `chitietgiohang_ibfk_2` FOREIGN KEY (`IdSp`) REFERENCES `sanpham` (`IdSp`) ON DELETE CASCADE,
-  ADD CONSTRAINT `giohang_ibfk_1` FOREIGN KEY (`IdGh`) REFERENCES `khachhang` (`IdKh`) ON DELETE CASCADE;
+  ADD CONSTRAINT `chitietgiohang_ibfk_2` FOREIGN KEY (`IdSp`) REFERENCES `sanpham` (`IdSp`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `danhgia`
