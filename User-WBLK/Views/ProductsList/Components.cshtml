@@ -200,26 +200,23 @@
 
     </div>
 
-    <!-- Products Grid (remains unchanged) -->
+    <!-- Products Grid -->
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mt-6">
         @if (Model.Products != null && Model.Products.Any())
         {
             var allProducts = Model.Products.ToList();
-            
             for (int i = 0; i < allProducts.Count; i++)
             {
                 var product = allProducts[i];
                 var isHidden = i >= 10;
-                
                 <div class="product-item @(isHidden ? "hidden" : "")" data-index="@i">
-                    <partial name="_ProductCard" model='new ProductCardViewModel 
-                    { 
+                    <partial name="_ProductCard" model="@(new ProductCardViewModel {
                         IdSp = product.IdSp,
                         TenSp = product.Tensanpham,
                         Gia = product.Gia,
                         ImageUrl = product.Hinhanh,
-                        LoaiSp = Model.Category
-                    }' />
+                        LoaiSp = "components"
+                    })" />
                 </div>
             }
         }

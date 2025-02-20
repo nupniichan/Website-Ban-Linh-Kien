@@ -16,11 +16,12 @@
             "components" => $"/components/{Model?.IdSp ?? defaultId}",
             "storage" => $"/storage/{Model?.IdSp ?? defaultId}",
             "monitor" => $"/monitor/{Model?.IdSp ?? defaultId}",
-            "speaker" or "microphone" or "webcam" => 
+            "speaker" or "microphone" or "webcam" or "audio" => 
                 $"/audio/{Model.LoaiSp}/{Model?.IdSp ?? defaultId}",
-            "keyboard" or "mouse" or "headphone" => 
+            "keyboard" or "mouse" or "headphone" or "peripherals" => 
                 $"/peripherals/{Model.LoaiSp}/{Model?.IdSp ?? defaultId}",
             "network" => $"/network/{Model?.IdSp ?? defaultId}",
+            
             _ => "#"
         };
     }

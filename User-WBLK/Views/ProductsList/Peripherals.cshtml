@@ -36,7 +36,8 @@
             case "keyboard":
                 <div class="space-y-4">
                     <div class="flex flex-wrap gap-2">
-                        <select id="brand" class="px-4 py-2 border rounded-md">
+                        <!-- Keyboard Brand Filter -->
+                        <select id="brand" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
                             @{
                                 var keyboardBrands = new[] {
                                     new { Value = "", Text = "Tất cả thương hiệu" },
@@ -48,37 +49,111 @@
                             }
                             @foreach (var brand in keyboardBrands)
                             {
-                                <option value="@brand.Value" selected="@(Model?.Brand == brand.Value)">@brand.Text</option>
+                                var parameters = new Dictionary<string, string>
+                                {
+                                    { "category", Model.Category }
+                                };
+                                if (!string.IsNullOrEmpty(brand.Value))
+                                    parameters.Add("brand", brand.Value);
+                                if (!string.IsNullOrEmpty(Model.PriceRange))
+                                    parameters.Add("priceRange", Model.PriceRange);
+                                if (Model.AdditionalFilters != null && Model.AdditionalFilters.ContainsKey("switches"))
+                                    parameters.Add("switches", Model.AdditionalFilters["switches"]);
+                                if (Model.AdditionalFilters != null && Model.AdditionalFilters.ContainsKey("connection"))
+                                    parameters.Add("connection", Model.AdditionalFilters["connection"]);
+
+                                var url = Url.Action("Peripherals", "ProductsList", parameters);
+                                bool isSelected = (Model?.Brand ?? "").ToLower() == brand.Value;
+                                if (isSelected)
+                                {
+                                    <option value="@url" selected>@brand.Text</option>
+                                }
+                                else
+                                {
+                                    <option value="@url">@brand.Text</option>
+                                }
                             }
                         </select>
 
-                        <select id="type" class="px-4 py-2 border rounded-md">
+                        <!-- Keyboard Switches Filter -->
+                        <select id="switches" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
                             @{
-                                var keyboardTypes = new[] {
+                                var keyboardSwitches = new[] {
                                     new { Value = "", Text = "Tất cả loại" },
-                                    new { Value = "mechanical", Text = "Cơ học" },
-                                    new { Value = "membrane", Text = "Membrane" },
-                                    new { Value = "optical", Text = "Optical" }
+                                    new { Value = "cherry mx red", Text = "Cherry MX Red" },
+                                    new { Value = "cherry mx blue", Text = "Cherry MX Blue" },
+                                    new { Value = "romer-g", Text = "Romer-G" },
+                                    new { Value = "razer green", Text = "Razer Green" },
+                                    new { Value = "custom", Text = "Custom" },
+                                    new { Value = "outemu", Text = "Outemu" },
+                                    new { Value = "opto-mechanical", Text = "Opto-mechanical" },
+                                    new { Value = "hot-swappable", Text = "Hot-swappable" }
                                 };
                             }
-                            @foreach (var type in keyboardTypes)
+                            @foreach (var sw in keyboardSwitches)
                             {
-                                <option value="@type.Value" selected="@(Model?.AdditionalFilters?.ContainsKey("type") == true && Model.AdditionalFilters["type"] == type.Value)">@type.Text</option>
+                                var parameters = new Dictionary<string, string>
+                                {
+                                    { "category", Model.Category }
+                                };
+                                if (!string.IsNullOrEmpty(Model.Brand))
+                                    parameters.Add("brand", Model.Brand);
+                                if (!string.IsNullOrEmpty(sw.Value))
+                                    parameters.Add("switches", sw.Value);
+                                if (!string.IsNullOrEmpty(Model.PriceRange))
+                                    parameters.Add("priceRange", Model.PriceRange);
+                                if (Model.AdditionalFilters != null && Model.AdditionalFilters.ContainsKey("connection"))
+                                    parameters.Add("connection", Model.AdditionalFilters["connection"]);
+
+                                var url = Url.Action("Peripherals", "ProductsList", parameters);
+                                bool isSelected = Model?.AdditionalFilters != null &&
+                                                  Model.AdditionalFilters.GetValueOrDefault("switches") == sw.Value;
+                                if (isSelected)
+                                {
+                                    <option value="@url" selected>@sw.Text</option>
+                                }
+                                else
+                                {
+                                    <option value="@url">@sw.Text</option>
+                                }
                             }
                         </select>
 
-                        <select id="connection" class="px-4 py-2 border rounded-md">
+                        <!-- Keyboard Connection Filter -->
+                        <select id="connection" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
                             @{
-                                var connections = new[] {
+                                var keyboardConnections = new[] {
                                     new { Value = "", Text = "Tất cả kết nối" },
                                     new { Value = "wired", Text = "Có dây" },
-                                    new { Value = "wireless", Text = "Không dây" },
-                                    new { Value = "bluetooth", Text = "Bluetooth" }
+                                    new { Value = "wireless", Text = "Không dây" }
                                 };
                             }
-                            @foreach (var conn in connections)
+                            @foreach (var conn in keyboardConnections)
                             {
-                                <option value="@conn.Value" selected="@(Model?.AdditionalFilters?.ContainsKey("connection") == true && Model.AdditionalFilters["connection"] == conn.Value)">@conn.Text</option>
+                                var parameters = new Dictionary<string, string>
+                                {
+                                    { "category", Model.Category }
+                                };
+                                if (!string.IsNullOrEmpty(Model.Brand))
+                                    parameters.Add("brand", Model.Brand);
+                                if (!string.IsNullOrEmpty(Model.PriceRange))
+                                    parameters.Add("priceRange", Model.PriceRange);
+                                if (!string.IsNullOrEmpty(conn.Value))
+                                    parameters.Add("connection", conn.Value);
+                                if (Model.AdditionalFilters != null && Model.AdditionalFilters.ContainsKey("switches"))
+                                    parameters.Add("switches", Model.AdditionalFilters["switches"]);
+
+                                var url = Url.Action("Peripherals", "ProductsList", parameters);
+                                bool isSelected = Model?.AdditionalFilters != null &&
+                                                  Model.AdditionalFilters.GetValueOrDefault("connection") == conn.Value;
+                                if (isSelected)
+                                {
+                                    <option value="@url" selected>@conn.Text</option>
+                                }
+                                else
+                                {
+                                    <option value="@url">@conn.Text</option>
+                                }
                             }
                         </select>
                     </div>
@@ -88,7 +163,8 @@
             case "mouse":
                 <div class="space-y-4">
                     <div class="flex flex-wrap gap-2">
-                        <select id="brand" class="px-4 py-2 border rounded-md">
+                        <!-- Mouse Brand Filter -->
+                        <select id="brand" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
                             @{
                                 var mouseBrands = new[] {
                                     new { Value = "", Text = "Tất cả thương hiệu" },
@@ -100,37 +176,109 @@
                             }
                             @foreach (var brand in mouseBrands)
                             {
-                                <option value="@brand.Value" selected="@(Model?.Brand == brand.Value)">@brand.Text</option>
+                                var parameters = new Dictionary<string, string>
+                                {
+                                    { "category", Model.Category }
+                                };
+                                if (!string.IsNullOrEmpty(brand.Value))
+                                    parameters.Add("brand", brand.Value);
+                                if (!string.IsNullOrEmpty(Model.PriceRange))
+                                    parameters.Add("priceRange", Model.PriceRange);
+                                if (Model.AdditionalFilters != null && Model.AdditionalFilters.ContainsKey("dpi"))
+                                    parameters.Add("dpi", Model.AdditionalFilters["dpi"]);
+                                if (Model.AdditionalFilters != null && Model.AdditionalFilters.ContainsKey("connection"))
+                                    parameters.Add("connection", Model.AdditionalFilters["connection"]);
+
+                                var url = Url.Action("Peripherals", "ProductsList", parameters);
+                                bool isSelected = (Model?.Brand ?? "").ToLower() == brand.Value;
+                                if (isSelected)
+                                {
+                                    <option value="@url" selected>@brand.Text</option>
+                                }
+                                else
+                                {
+                                    <option value="@url">@brand.Text</option>
+                                }
                             }
                         </select>
 
-                        <select id="type" class="px-4 py-2 border rounded-md">
+                        <!-- Mouse DPI Filter -->
+                        <select id="dpi" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
                             @{
-                                var mouseTypes = new[] {
-                                    new { Value = "", Text = "Tất cả loại" },
-                                    new { Value = "gaming", Text = "Gaming" },
-                                    new { Value = "office", Text = "Văn phòng" },
-                                    new { Value = "ergonomic", Text = "Công thái học" }
+                                var mouseDPIs = new[] {
+                                    new { Value = "", Text = "Tất cả DPI" },
+                                    new { Value = "16000", Text = "16,000" },
+                                    new { Value = "20000", Text = "20,000" },
+                                    new { Value = "25000", Text = "25,000" },
+                                    new { Value = "8500", Text = "8,500" },
+                                    new { Value = "19000", Text = "19,000" },
+                                    new { Value = "12000", Text = "12,000" }
                                 };
                             }
-                            @foreach (var type in mouseTypes)
+                            @foreach (var dpi in mouseDPIs)
                             {
-                                <option value="@type.Value" selected="@(Model?.AdditionalFilters?.ContainsKey("type") == true && Model.AdditionalFilters["type"] == type.Value)">@type.Text</option>
+                                var parameters = new Dictionary<string, string>
+                                {
+                                    { "category", Model.Category }
+                                };
+                                if (!string.IsNullOrEmpty(Model.Brand))
+                                    parameters.Add("brand", Model.Brand);
+                                if (!string.IsNullOrEmpty(dpi.Value))
+                                    parameters.Add("dpi", dpi.Value);
+                                if (!string.IsNullOrEmpty(Model.PriceRange))
+                                    parameters.Add("priceRange", Model.PriceRange);
+                                if (Model.AdditionalFilters != null && Model.AdditionalFilters.ContainsKey("connection"))
+                                    parameters.Add("connection", Model.AdditionalFilters["connection"]);
+
+                                var url = Url.Action("Peripherals", "ProductsList", parameters);
+                                bool isSelected = Model?.AdditionalFilters != null &&
+                                                  Model.AdditionalFilters.GetValueOrDefault("dpi") == dpi.Value;
+                                if (isSelected)
+                                {
+                                    <option value="@url" selected>@dpi.Text</option>
+                                }
+                                else
+                                {
+                                    <option value="@url">@dpi.Text</option>
+                                }
                             }
                         </select>
 
-                        <select id="connection" class="px-4 py-2 border rounded-md">
+                        <!-- Mouse Connection Filter -->
+                        <select id="connection" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
                             @{
                                 var mouseConnections = new[] {
                                     new { Value = "", Text = "Tất cả kết nối" },
-                                    new { Value = "wired", Text = "Có dây" },
-                                    new { Value = "wireless", Text = "Không dây" },
-                                    new { Value = "bluetooth", Text = "Bluetooth" }
+                                    new { Value = "no", Text = "Có dây" },
+                                    new { Value = "yes", Text = "Không dây" }
                                 };
                             }
                             @foreach (var conn in mouseConnections)
                             {
-                                <option value="@conn.Value" selected="@(Model?.AdditionalFilters?.ContainsKey("connection") == true && Model.AdditionalFilters["connection"] == conn.Value)">@conn.Text</option>
+                                var parameters = new Dictionary<string, string>
+                                {
+                                    { "category", Model.Category }
+                                };
+                                if (!string.IsNullOrEmpty(Model.Brand))
+                                    parameters.Add("brand", Model.Brand);
+                                if (!string.IsNullOrEmpty(Model.PriceRange))
+                                    parameters.Add("priceRange", Model.PriceRange);
+                                if (!string.IsNullOrEmpty(conn.Value))
+                                    parameters.Add("connection", conn.Value);
+                                if (Model.AdditionalFilters != null && Model.AdditionalFilters.ContainsKey("dpi"))
+                                    parameters.Add("dpi", Model.AdditionalFilters["dpi"]);
+
+                                var url = Url.Action("Peripherals", "ProductsList", parameters);
+                                bool isSelected = Model?.AdditionalFilters != null &&
+                                                  Model.AdditionalFilters.GetValueOrDefault("connection") == conn.Value;
+                                if (isSelected)
+                                {
+                                    <option value="@url" selected>@conn.Text</option>
+                                }
+                                else
+                                {
+                                    <option value="@url">@conn.Text</option>
+                                }
                             }
                         </select>
                     </div>
@@ -140,7 +288,8 @@
             case "headphone":
                 <div class="space-y-4">
                     <div class="flex flex-wrap gap-2">
-                        <select id="brand" class="px-4 py-2 border rounded-md">
+                        <!-- Headphone Brand Filter -->
+                        <select id="brand" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
                             @{
                                 var headphoneBrands = new[] {
                                     new { Value = "", Text = "Tất cả thương hiệu" },
@@ -152,37 +301,106 @@
                             }
                             @foreach (var brand in headphoneBrands)
                             {
-                                <option value="@brand.Value" selected="@(Model?.Brand == brand.Value)">@brand.Text</option>
+                                var parameters = new Dictionary<string, string>
+                                {
+                                    { "category", Model.Category }
+                                };
+                                if (!string.IsNullOrEmpty(brand.Value))
+                                    parameters.Add("brand", brand.Value);
+                                if (!string.IsNullOrEmpty(Model.PriceRange))
+                                    parameters.Add("priceRange", Model.PriceRange);
+                                if (Model.AdditionalFilters != null && Model.AdditionalFilters.ContainsKey("driver"))
+                                    parameters.Add("driver", Model.AdditionalFilters["driver"]);
+                                if (Model.AdditionalFilters != null && Model.AdditionalFilters.ContainsKey("connection"))
+                                    parameters.Add("connection", Model.AdditionalFilters["connection"]);
+
+                                var url = Url.Action("Peripherals", "ProductsList", parameters);
+                                bool isSelected = (Model?.Brand ?? "").ToLower() == brand.Value;
+                                if (isSelected)
+                                {
+                                    <option value="@url" selected>@brand.Text</option>
+                                }
+                                else
+                                {
+                                    <option value="@url">@brand.Text</option>
+                                }
                             }
                         </select>
 
-                        <select id="type" class="px-4 py-2 border rounded-md">
+                        <!-- Headphone Driver Filter -->
+                        <select id="driver" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
                             @{
-                                var headphoneTypes = new[] {
-                                    new { Value = "", Text = "Tất cả loại" },
-                                    new { Value = "over-ear", Text = "Over-ear" },
-                                    new { Value = "in-ear", Text = "In-ear" },
-                                    new { Value = "on-ear", Text = "On-ear" }
+                                var headphoneDrivers = new[] {
+                                    new { Value = "", Text = "Tất cả" },
+                                    new { Value = "40mm", Text = "40mm" },
+                                    new { Value = "45mm", Text = "45mm" },
+                                    new { Value = "50mm", Text = "50mm" }
                                 };
                             }
-                            @foreach (var type in headphoneTypes)
+                            @foreach (var drv in headphoneDrivers)
                             {
-                                <option value="@type.Value" selected="@(Model?.AdditionalFilters?.ContainsKey("type") == true && Model.AdditionalFilters["type"] == type.Value)">@type.Text</option>
+                                var parameters = new Dictionary<string, string>
+                                {
+                                    { "category", Model.Category }
+                                };
+                                if (!string.IsNullOrEmpty(Model.Brand))
+                                    parameters.Add("brand", Model.Brand);
+                                if (!string.IsNullOrEmpty(drv.Value))
+                                    parameters.Add("driver", drv.Value);
+                                if (!string.IsNullOrEmpty(Model.PriceRange))
+                                    parameters.Add("priceRange", Model.PriceRange);
+                                if (Model.AdditionalFilters != null && Model.AdditionalFilters.ContainsKey("connection"))
+                                    parameters.Add("connection", Model.AdditionalFilters["connection"]);
+
+                                var url = Url.Action("Peripherals", "ProductsList", parameters);
+                                bool isSelected = Model?.AdditionalFilters != null &&
+                                                  Model.AdditionalFilters.GetValueOrDefault("driver") == drv.Value;
+                                if (isSelected)
+                                {
+                                    <option value="@url" selected>@drv.Text</option>
+                                }
+                                else
+                                {
+                                    <option value="@url">@drv.Text</option>
+                                }
                             }
                         </select>
 
-                        <select id="connection" class="px-4 py-2 border rounded-md">
+                        <!-- Headphone Connection Filter -->
+                        <select id="connection" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
                             @{
                                 var headphoneConnections = new[] {
                                     new { Value = "", Text = "Tất cả kết nối" },
                                     new { Value = "wired", Text = "Có dây" },
-                                    new { Value = "wireless", Text = "Không dây" },
-                                    new { Value = "bluetooth", Text = "Bluetooth" }
+                                    new { Value = "wireless", Text = "Không dây" }
                                 };
                             }
                             @foreach (var conn in headphoneConnections)
                             {
-                                <option value="@conn.Value" selected="@(Model?.AdditionalFilters?.ContainsKey("connection") == true && Model.AdditionalFilters["connection"] == conn.Value)">@conn.Text</option>
+                                var parameters = new Dictionary<string, string>
+                                {
+                                    { "category", Model.Category }
+                                };
+                                if (!string.IsNullOrEmpty(Model.Brand))
+                                    parameters.Add("brand", Model.Brand);
+                                if (!string.IsNullOrEmpty(Model.PriceRange))
+                                    parameters.Add("priceRange", Model.PriceRange);
+                                if (!string.IsNullOrEmpty(conn.Value))
+                                    parameters.Add("connection", conn.Value);
+                                if (Model.AdditionalFilters != null && Model.AdditionalFilters.ContainsKey("driver"))
+                                    parameters.Add("driver", Model.AdditionalFilters["driver"]);
+
+                                var url = Url.Action("Peripherals", "ProductsList", parameters);
+                                bool isSelected = Model?.AdditionalFilters != null &&
+                                                  Model.AdditionalFilters.GetValueOrDefault("connection") == conn.Value;
+                                if (isSelected)
+                                {
+                                    <option value="@url" selected>@conn.Text</option>
+                                }
+                                else
+                                {
+                                    <option value="@url">@conn.Text</option>
+                                }
                             }
                         </select>
                     </div>
@@ -192,7 +410,8 @@
             case "webcam":
                 <div class="space-y-4">
                     <div class="flex flex-wrap gap-2">
-                        <select id="brand" class="px-4 py-2 border rounded-md">
+                        <!-- Webcam Brand Filter -->
+                        <select id="brand" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
                             @{
                                 var webcamBrands = new[] {
                                     new { Value = "", Text = "Tất cả thương hiệu" },
@@ -203,7 +422,24 @@
                             }
                             @foreach (var brand in webcamBrands)
                             {
-                                <option value="@brand.Value" selected="@(Model?.Brand == brand.Value)">@brand.Text</option>
+                                var parameters = new Dictionary<string, string>
+                                {
+                                    { "category", Model.Category }
+                                };
+                                if (!string.IsNullOrEmpty(brand.Value))
+                                    parameters.Add("brand", brand.Value);
+                                if (!string.IsNullOrEmpty(Model.PriceRange))
+                                    parameters.Add("priceRange", Model.PriceRange);
+                                var url = Url.Action("Peripherals", "ProductsList", parameters);
+                                bool isSelected = (Model?.Brand ?? "").ToLower() == brand.Value;
+                                if (isSelected)
+                                {
+                                    <option value="@url" selected>@brand.Text</option>
+                                }
+                                else
+                                {
+                                    <option value="@url">@brand.Text</option>
+                                }
                             }
                         </select>
                     </div>
@@ -220,27 +456,45 @@
     <div class="bg-white rounded-lg p-4 mb-6">
         <h2 class="font-semibold mb-2">Khoảng giá:</h2>
         <div class="flex flex-wrap gap-2">
-            <a href="@Url.Action("Peripherals", new { category = Model?.Category, priceRange = "duoi-500-nghin" })"
-               class="px-4 py-2 bg-gray-100 rounded-md hover:bg-gray-200 @(Model?.PriceRange == "duoi-500-nghin" ? "bg-blue-600 text-white" : "")">
-                Dưới 500 nghìn
-            </a>
-            <a href="@Url.Action("Peripherals", new { category = Model?.Category, priceRange = "500-1-trieu" })"
-               class="px-4 py-2 bg-gray-100 rounded-md hover:bg-gray-200 @(Model?.PriceRange == "500-1-trieu" ? "bg-blue-600 text-white" : "")">
-                500 nghìn - 1 triệu
-            </a>
-            <a href="@Url.Action("Peripherals", new { category = Model?.Category, priceRange = "1-2-trieu" })"
-               class="px-4 py-2 bg-gray-100 rounded-md hover:bg-gray-200 @(Model?.PriceRange == "1-2-trieu" ? "bg-blue-600 text-white" : "")">
-                1 - 2 triệu
-            </a>
-            <a href="@Url.Action("Peripherals", new { category = Model?.Category, priceRange = "2-5-trieu" })"
-               class="px-4 py-2 bg-gray-100 rounded-md hover:bg-gray-200 @(Model?.PriceRange == "2-5-trieu" ? "bg-blue-600 text-white" : "")">
-                2 - 5 triệu
-            </a>
-            <a href="@Url.Action("Peripherals", new { category = Model?.Category, priceRange = "tren-5-trieu" })"
-               class="px-4 py-2 bg-gray-100 rounded-md hover:bg-gray-200 @(Model?.PriceRange == "tren-5-trieu" ? "bg-blue-600 text-white" : "")">
-                Trên 5 triệu
-            </a>
+            @{
+                var priceRanges = new[] {
+                    new { Value = "", Text = "Tất cả" },
+                    new { Value = "duoi-500-nghin", Text = "Dưới 500 nghìn" },
+                    new { Value = "500-1-trieu", Text = "500 nghìn - 1 triệu" },
+                    new { Value = "1-2-trieu", Text = "1 - 2 triệu" },
+                    new { Value = "2-5-trieu", Text = "2 - 5 triệu" },
+                    new { Value = "tren-5-trieu", Text = "Trên 5 triệu" }
+                };
+            }
+            @foreach (var range in priceRanges)
+            {
+                var parameters = new Dictionary<string, string>();
+                if (!string.IsNullOrEmpty(Model.Category))
+                    parameters.Add("category", Model.Category);
+                if (!string.IsNullOrEmpty(Model.Brand))
+                    parameters.Add("brand", Model.Brand);
+                if (!string.IsNullOrEmpty(range.Value))
+                    parameters.Add("priceRange", range.Value);
+                // Include additional filters if present:
+                if (Model.AdditionalFilters != null && Model.AdditionalFilters.ContainsKey("driver"))
+                    parameters.Add("driver", Model.AdditionalFilters["driver"]);
+                if (Model.AdditionalFilters != null && Model.AdditionalFilters.ContainsKey("switches"))
+                    parameters.Add("switches", Model.AdditionalFilters["switches"]);
+                if (Model.AdditionalFilters != null && Model.AdditionalFilters.ContainsKey("dpi"))
+                    parameters.Add("dpi", Model.AdditionalFilters["dpi"]);
+                if (Model.AdditionalFilters != null && Model.AdditionalFilters.ContainsKey("connection"))
+                    parameters.Add("connection", Model.AdditionalFilters["connection"]);
+
+                var url = Url.Action("Peripherals", "ProductsList", parameters);
+                bool isActive = Model.PriceRange == range.Value;
+                <a href="@url" class="px-4 py-2 rounded-md @(isActive ? "bg-blue-500 text-white" : "bg-gray-100 hover:bg-gray-200")">
+                    @range.Text
+                </a>
+            }
         </div>
+        <a href="@Url.Action("Peripherals", "ProductsList", new { category = Model.Category })" class="inline-block mt-3 bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600">
+            Xóa bộ lọc
+        </a>
     </div>
 
     <!-- Products Grid -->
@@ -248,21 +502,18 @@
         @if (Model.Products != null && Model.Products.Any())
         {
             var allProducts = Model.Products.ToList();
-            
             for (int i = 0; i < allProducts.Count; i++)
             {
                 var product = allProducts[i];
                 var isHidden = i >= 10;
-                
                 <div class="product-item @(isHidden ? "hidden" : "")" data-index="@i">
-                    <partial name="_ProductCard" model='new ProductCardViewModel 
-                    { 
+                    <partial name="_ProductCard" model="@(new ProductCardViewModel {
                         IdSp = product.IdSp,
                         TenSp = product.Tensanpham,
                         Gia = product.Gia,
                         ImageUrl = product.Hinhanh,
-                        LoaiSp = Model.Category
-                    }' />
+                        LoaiSp = "peripherals"
+                    })" />
                 </div>
             }
         }
@@ -298,19 +549,11 @@
 
             if (loadMoreBtn) {
                 loadMoreBtn.addEventListener('click', function() {
-                    // Calculate next batch of products to show
-                    const nextBatch = Array.from(products)
-                        .slice(currentlyShown, currentlyShown + productsPerPage);
-                    
-                    // Show next batch of products
+                    const nextBatch = Array.from(products).slice(currentlyShown, currentlyShown + productsPerPage);
                     nextBatch.forEach(product => {
                         product.classList.remove('hidden');
                     });
-
-                    // Update counter
                     currentlyShown += productsPerPage;
-
-                    // Hide "Xem thêm" button and show "Thu gọn" button if we've shown all products
                     if (currentlyShown >= products.length) {
                         loadMoreBtn.classList.add('hidden');
                         collapseBtn.classList.remove('hidden');
@@ -320,25 +563,17 @@
 
             if (collapseBtn) {
                 collapseBtn.addEventListener('click', function() {
-                    // Hide all products after the first 10
                     Array.from(products).forEach((product, index) => {
                         if (index >= productsPerPage) {
                             product.classList.add('hidden');
                         }
                     });
-
-                    // Reset counter
                     currentlyShown = productsPerPage;
-
-                    // Show "Xem thêm" button and hide "Thu gọn" button
                     loadMoreBtn.classList.remove('hidden');
                     collapseBtn.classList.add('hidden');
-
-                    // Scroll back to the top of the products section
                     products[0].scrollIntoView({ behavior: 'smooth' });
                 });
             }
         });
     </script>
 }
-

@@ -9,195 +9,311 @@
     <div class="bg-white rounded-lg p-4">
         <h2 class="font-semibold mb-2">Danh mục:</h2>
         <div class="flex flex-wrap gap-2">
-            <a href="@Url.Action("Storage", new { category = "hdd" })" 
-               class="px-4 py-2 bg-gray-100 rounded-md hover:bg-gray-200 @(Model?.Category == "hdd" ? "bg-blue-600 text-white" : "")">
-                HDD
-            </a>
-            <a href="@Url.Action("Storage", new { category = "ssd" })"
-               class="px-4 py-2 bg-gray-100 rounded-md hover:bg-gray-200 @(Model?.Category == "ssd" ? "bg-blue-600 text-white" : "")">
-                SSD
-            </a>
-            <a href="@Url.Action("Storage", new { category = "usb" })"
-               class="px-4 py-2 bg-gray-100 rounded-md hover:bg-gray-200 @(Model?.Category == "usb" ? "bg-blue-600 text-white" : "")">
-                USB
-            </a>
-            <a href="@Url.Action("Storage", new { category = "estorage" })"
-               class="px-4 py-2 bg-gray-100 rounded-md hover:bg-gray-200 @(Model?.Category == "estorage" ? "bg-blue-600 text-white" : "")">
-                Ổ cứng di động
-            </a>
+            @{
+                var categories = new[]
+                {
+                    ("hdd", "HDD"),
+                    ("ssd", "SSD")
+                };
+            }
+            @foreach (var (value, text) in categories)
+            {
+                var parameters = new Dictionary<string, string>
+                {
+                    { "category", value }
+                };
+                var url = Url.Action("Storage", parameters);
+                var isSelected = Model.Category?.ToLower() == value;
+                <a href="@url" class="px-4 py-2 bg-gray-100 rounded-md hover:bg-gray-200 @(isSelected ? "bg-blue-600 text-white" : "")">
+                    @text
+                </a>
+            }
         </div>
     </div>
 
     <!-- Dynamic Filters based on category -->
-    <div class="bg-white rounded-lg p-4">
-    <h2 class="font-semibold mb-2">Bộ lọc:</h2>
+    <div class="bg-white rounded-lg p-4 mt-4">
+        <h2 class="font-semibold mb-4">Bộ lọc:</h2>
         @switch (Model?.Category?.ToLower())
         {
             case "hdd":
-                <div class="space-y-4">
-                    <div class="flex flex-wrap gap-2">
-                        <select id="brand" class="px-4 py-2 border rounded-md">
-                            @{
-                                var hddBrands = new[] {
-                                    new { Value = "", Text = "Tất cả thương hiệu" },
-                                    new { Value = "seagate", Text = "Seagate" },
-                                    new { Value = "western-digital", Text = "Western Digital" },
-                                    new { Value = "toshiba", Text = "Toshiba" }
-                                };
-                            }
-                            @foreach (var brand in hddBrands)
-                            {
-                                <option value="@brand.Value" selected="@(Model?.Brand == brand.Value)">@brand.Text</option>
-                            }
-                        </select>
+                {
+                    <div class="space-y-4">
+                        <div class="flex flex-wrap gap-2">
+                            <!-- Brand Filter -->
+                            <select id="brand" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
+                                @{
+                                    var hddBrands = new[]
+                                    {
+                                        new { Value = "", Text = "Tất cả thương hiệu" },
+                                        new { Value = "seagate", Text = "Seagate" },
+                                        new { Value = "western-digital", Text = "Western Digital" },
+                                        new { Value = "toshiba", Text = "Toshiba" }
+                                    };
+                                }
+                                @foreach (var brand in hddBrands)
+                                {
+                                    var parameters = new Dictionary<string, string>();
+                                    parameters.Add("category", Model.Category);
+                                    if (!string.IsNullOrEmpty(brand.Value))
+                                    {
+                                        parameters.Add("brand", brand.Value);
+                                    }
+                                    if (!string.IsNullOrEmpty(Model.PriceRange))
+                                    {
+                                        parameters.Add("priceRange", Model.PriceRange);
+                                    }
+                                    if (Model.AdditionalFilters != null && Model.AdditionalFilters.ContainsKey("capacity"))
+                                    {
+                                        parameters.Add("capacity", Model.AdditionalFilters["capacity"]);
+                                    }
+                                    var url = Url.Action("Storage", parameters);
+                                    if (Model.Brand == brand.Value)
+                                    {
+                                        <option value="@url" selected>@brand.Text</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@url">@brand.Text</option>
+                                    }
+                                }
+                            </select>
 
-                        <select id="capacity" class="px-4 py-2 border rounded-md">
-                            @{
-                                var hddCapacities = new[] {
-                                    new { Value = "", Text = "Tất cả dung lượng" },
-                                    new { Value = "1tb", Text = "1TB" },
-                                    new { Value = "2tb", Text = "2TB" },
-                                    new { Value = "4tb", Text = "4TB" },
-                                    new { Value = "6tb", Text = "6TB" },
-                                    new { Value = "8tb", Text = "8TB" }
-                                };
-                            }
-                            @foreach (var capacity in hddCapacities)
-                            {
-                                <option value="@capacity.Value" selected="@(Model?.Capacity == capacity.Value)">@capacity.Text</option>
-                            }
-                        </select>
+                            <!-- Capacity Filter -->
+                            <select id="capacity" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
+                                @{
+                                    var hddCapacities = new[]
+                                    {
+                                        new { Value = "", Text = "Tất cả dung lượng" },
+                                        new { Value = "1tb", Text = "1TB" },
+                                        new { Value = "2tb", Text = "2TB" },
+                                        new { Value = "4tb", Text = "4TB" },
+                                        new { Value = "6tb", Text = "6TB" },
+                                        new { Value = "8tb", Text = "8TB" }
+                                    };
+                                }
+                                @foreach (var capacity in hddCapacities)
+                                {
+                                    var parameters = new Dictionary<string, string>();
+                                    parameters.Add("category", Model.Category);
+                                    if (!string.IsNullOrEmpty(Model.Brand))
+                                    {
+                                        parameters.Add("brand", Model.Brand);
+                                    }
+                                    if (!string.IsNullOrEmpty(capacity.Value))
+                                    {
+                                        parameters.Add("capacity", capacity.Value);
+                                    }
+                                    if (!string.IsNullOrEmpty(Model.PriceRange))
+                                    {
+                                        parameters.Add("priceRange", Model.PriceRange);
+                                    }
+                                    var url = Url.Action("Storage", parameters);
+                                    if (Model.AdditionalFilters != null && Model.AdditionalFilters.GetValueOrDefault("capacity") == capacity.Value)
+                                    {
+                                        <option value="@url" selected>@capacity.Text</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@url">@capacity.Text</option>
+                                    }
+                                }
+                            </select>
+                        </div>
                     </div>
-                </div>
-                break;
-
+                    break;
+                }
             case "ssd":
-                <div class="space-y-4">
-                    <div class="flex flex-wrap gap-2">
-                        <select id="brand" class="px-4 py-2 border rounded-md">
-                            @{
-                                var ssdBrands = new[] {
-                                    new { Value = "", Text = "Tất cả thương hiệu" },
-                                    new { Value = "samsung", Text = "Samsung" },
-                                    new { Value = "crucial", Text = "Crucial" },
-                                    new { Value = "kingston", Text = "Kingston" },
-                                    new { Value = "wd-black", Text = "WD Black" }
-                                };
-                            }
-                            @foreach (var brand in ssdBrands)
-                            {
-                                <option value="@brand.Value" selected="@(Model?.Brand == brand.Value)">@brand.Text</option>
-                            }
-                        </select>
+                {
+                    <div class="space-y-4">
+                        <div class="flex flex-wrap gap-2">
+                            <!-- Brand Filter -->
+                            <select id="brand" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
+                                @{
+                                    var ssdBrands = new[]
+                                    {
+                                        new { Value = "", Text = "Tất cả thương hiệu" },
+                                        new { Value = "samsung", Text = "Samsung" },
+                                        new { Value = "crucial", Text = "Crucial" },
+                                        new { Value = "kingston", Text = "Kingston" },
+                                        new { Value = "wd-black", Text = "WD Black" }
+                                    };
+                                }
+                                @foreach (var brand in ssdBrands)
+                                {
+                                    var parameters = new Dictionary<string, string>();
+                                    parameters.Add("category", Model.Category);
+                                    if (!string.IsNullOrEmpty(brand.Value))
+                                    {
+                                        parameters.Add("brand", brand.Value);
+                                    }
+                                    if (!string.IsNullOrEmpty(Model.PriceRange))
+                                    {
+                                        parameters.Add("priceRange", Model.PriceRange);
+                                    }
+                                    if (Model.AdditionalFilters != null && Model.AdditionalFilters.ContainsKey("capacity"))
+                                    {
+                                        parameters.Add("capacity", Model.AdditionalFilters["capacity"]);
+                                    }
+                                    if (Model.AdditionalFilters != null && Model.AdditionalFilters.ContainsKey("type"))
+                                    {
+                                        parameters.Add("type", Model.AdditionalFilters["type"]);
+                                    }
+                                    var url = Url.Action("Storage", parameters);
+                                    if (Model.Brand == brand.Value)
+                                    {
+                                        <option value="@url" selected>@brand.Text</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@url">@brand.Text</option>
+                                    }
+                                }
+                            </select>
 
-                        <select id="capacity" class="px-4 py-2 border rounded-md">
-                            @{
-                                var ssdCapacities = new[] {
-                                    new { Value = "", Text = "Tất cả dung lượng" },
-                                    new { Value = "250gb", Text = "250GB" },
-                                    new { Value = "500gb", Text = "500GB" },
-                                    new { Value = "1tb", Text = "1TB" },
-                                    new { Value = "2tb", Text = "2TB" }
-                                };
-                            }
-                            @foreach (var capacity in ssdCapacities)
-                            {
-                                <option value="@capacity.Value" selected="@(Model?.Capacity == capacity.Value)">@capacity.Text</option>
-                            }
-                        </select>
+                            <!-- Capacity Filter -->
+                            <select id="capacity" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
+                                @{
+                                    var ssdCapacities = new[]
+                                    {
+                                        new { Value = "", Text = "Tất cả dung lượng" },
+                                        new { Value = "250gb", Text = "250GB" },
+                                        new { Value = "500gb", Text = "500GB" },
+                                        new { Value = "1tb", Text = "1TB" },
+                                        new { Value = "2tb", Text = "2TB" }
+                                    };
+                                }
+                                @foreach (var capacity in ssdCapacities)
+                                {
+                                    var parameters = new Dictionary<string, string>();
+                                    parameters.Add("category", Model.Category);
+                                    if (!string.IsNullOrEmpty(Model.Brand))
+                                    {
+                                        parameters.Add("brand", Model.Brand);
+                                    }
+                                    if (!string.IsNullOrEmpty(capacity.Value))
+                                    {
+                                        parameters.Add("capacity", capacity.Value);
+                                    }
+                                    if (!string.IsNullOrEmpty(Model.PriceRange))
+                                    {
+                                        parameters.Add("priceRange", Model.PriceRange);
+                                    }
+                                    if (Model.AdditionalFilters != null && Model.AdditionalFilters.ContainsKey("type"))
+                                    {
+                                        parameters.Add("type", Model.AdditionalFilters["type"]);
+                                    }
+                                    var url = Url.Action("Storage", parameters);
+                                    if (Model.Capacity == capacity.Value)
+                                    {
+                                        <option value="@url" selected>@capacity.Text</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@url">@capacity.Text</option>
+                                    }
+                                }
+                            </select>
 
-                        <select id="type" class="px-4 py-2 border rounded-md">
-                            @{
-                                var ssdTypes = new[] {
-                                    new { Value = "", Text = "Tất cả loại" },
-                                    new { Value = "sata", Text = "SATA" },
-                                    new { Value = "nvme", Text = "NVMe" }
-                                };
-                            }
-                            @foreach (var type in ssdTypes)
-                            {
-                                <option value="@type.Value" selected="@(Model?.Type == type.Value)">@type.Text</option>
-                            }
-                        </select>
+                            <!-- Type Filter -->
+                            <select id="type" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
+                                @{
+                                    var ssdTypes = new[]
+                                    {
+                                        new { Value = "", Text = "Tất cả loại" },
+                                        new { Value = "sata", Text = "SATA" },
+                                        new { Value = "nvme", Text = "NVMe" }
+                                    };
+                                }
+                                @foreach (var type in ssdTypes)
+                                {
+                                    var parameters = new Dictionary<string, string>();
+                                    parameters.Add("category", Model.Category);
+                                    if (!string.IsNullOrEmpty(Model.Brand))
+                                    {
+                                        parameters.Add("brand", Model.Brand);
+                                    }
+                                    if (Model.AdditionalFilters != null && Model.AdditionalFilters.ContainsKey("capacity"))
+                                    {
+                                        parameters.Add("capacity", Model.AdditionalFilters["capacity"]);
+                                    }
+                                    if (!string.IsNullOrEmpty(type.Value))
+                                    {
+                                        parameters.Add("type", type.Value);
+                                    }
+                                    if (!string.IsNullOrEmpty(Model.PriceRange))
+                                    {
+                                        parameters.Add("priceRange", Model.PriceRange);
+                                    }
+                                    var url = Url.Action("Storage", parameters);
+                                    if (Model.AdditionalFilters != null && Model.AdditionalFilters.GetValueOrDefault("type") == type.Value)
+                                    {
+                                        <option value="@url" selected>@type.Text</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@url">@type.Text</option>
+                                    }
+                                }
+                            </select>
+                        </div>
                     </div>
-                </div>
-                break;
-
-            case "usb":
-            case "estorage":
-                <div class="space-y-4">
-                    <div class="flex flex-wrap gap-2">
-                        <select id="brand" class="px-4 py-2 border rounded-md">
-                            @{
-                                var usbBrands = Model?.Category == "usb" ? new[] {
-                                    new { Value = "", Text = "Tất cả thương hiệu" },
-                                    new { Value = "kingston", Text = "Kingston" },
-                                    new { Value = "sandisk", Text = "SanDisk" },
-                                    new { Value = "samsung", Text = "Samsung" }
-                                } : new[] {
-                                    new { Value = "", Text = "Tất cả thương hiệu" },
-                                    new { Value = "seagate", Text = "Seagate" },
-                                    new { Value = "western-digital", Text = "Western Digital" },
-                                    new { Value = "toshiba", Text = "Toshiba" }
-                                };
-                            }
-                            @foreach (var brand in usbBrands)
-                            {
-                                <option value="@brand.Value" selected="@(Model?.Brand == brand.Value)">@brand.Text</option>
-                            }
-                        </select>
-
-                        <select id="capacity" class="px-4 py-2 border rounded-md">
-                            @{
-                                var portableCapacities = Model?.Category == "usb" ? new[] {
-                                    new { Value = "", Text = "Tất cả dung lượng" },
-                                    new { Value = "32gb", Text = "32GB" },
-                                    new { Value = "64gb", Text = "64GB" },
-                                    new { Value = "128gb", Text = "128GB" },
-                                    new { Value = "256gb", Text = "256GB" }
-                                } : new[] {
-                                    new { Value = "", Text = "Tất cả dung lượng" },
-                                    new { Value = "1tb", Text = "1TB" },
-                                    new { Value = "2tb", Text = "2TB" },
-                                    new { Value = "4tb", Text = "4TB" },
-                                    new { Value = "5tb", Text = "5TB" }
-                                };
-                            }
-                            @foreach (var capacity in portableCapacities)
-                            {
-                                <option value="@capacity.Value" selected="@(Model?.Capacity == capacity.Value)">@capacity.Text</option>
-                            }
-                        </select>
-                    </div>
-                </div>
-                break;
+                    break;
+                }
+            default:
+                {
+                    <div class="text-gray-500">Vui lòng chọn danh mục để xem các bộ lọc chi tiết</div>
+                    break;
+                }
         }
 
-        <!-- Price Range -->
+        <!-- Price Range Filter -->
         <div class="mt-4">
             <h2 class="font-semibold mb-2">Khoảng giá:</h2>
             <div class="flex flex-wrap gap-2">
-                <a href="#" data-price-range="duoi-1-trieu" 
-                   class="px-4 py-2 bg-gray-100 rounded-md hover:bg-gray-200 @(Model?.PriceRange == "duoi-1-trieu" ? "bg-blue-600 text-white" : "")">
-                    Dưới 1 triệu
-                </a>
-                <a href="#" data-price-range="1-2-trieu" 
-                   class="px-4 py-2 bg-gray-100 rounded-md hover:bg-gray-200 @(Model?.PriceRange == "1-2-trieu" ? "bg-blue-600 text-white" : "")">
-                    1 - 2 triệu
-                </a>
-                <a href="#" data-price-range="2-5-trieu" 
-                   class="px-4 py-2 bg-gray-100 rounded-md hover:bg-gray-200 @(Model?.PriceRange == "2-5-trieu" ? "bg-blue-600 text-white" : "")">
-                    2 - 5 triệu
-                </a>
-                <a href="#" data-price-range="5-10-trieu" 
-                   class="px-4 py-2 bg-gray-100 rounded-md hover:bg-gray-200 @(Model?.PriceRange == "5-10-trieu" ? "bg-blue-600 text-white" : "")">
-                    5 - 10 triệu
-                </a>
-                <a href="#" data-price-range="tren-10-trieu" 
-                   class="px-4 py-2 bg-gray-100 rounded-md hover:bg-gray-200 @(Model?.PriceRange == "tren-10-trieu" ? "bg-blue-600 text-white" : "")">
-                    Trên 10 triệu
-                </a>
+                @{
+                    var priceRanges = new Dictionary<string, string>
+                    {
+                        { "duoi-1-trieu", "Dưới 1 triệu" },
+                        { "1-2-trieu", "1 - 2 triệu" },
+                        { "2-5-trieu", "2 - 5 triệu" },
+                        { "5-10-trieu", "5 - 10 triệu" },
+                        { "tren-10-trieu", "Trên 10 triệu" }
+                    };
+                }
+                @foreach (var range in priceRanges)
+                {
+                    var parameters = new Dictionary<string, string>();
+                    if (!string.IsNullOrEmpty(Model.Category))
+                        parameters.Add("category", Model.Category);
+                    if (!string.IsNullOrEmpty(Model.Brand))
+                        parameters.Add("brand", Model.Brand);
+                    if (Model.AdditionalFilters != null)
+                    {
+                        if (Model.AdditionalFilters.ContainsKey("capacity"))
+                            parameters.Add("capacity", Model.AdditionalFilters["capacity"]);
+                        if (Model.AdditionalFilters.ContainsKey("type"))
+                            parameters.Add("type", Model.AdditionalFilters["type"]);
+                    }
+                    parameters.Add("priceRange", range.Key);
+                    var url = Url.Action("Storage", parameters);
+                    if (Model.PriceRange == range.Key)
+                    {
+                        <a href="@url" class="px-4 py-2 bg-gray-100 rounded-md hover:bg-gray-200 bg-blue-600 text-white">
+                            @range.Value
+                        </a>
+                    }
+                    else
+                    {
+                        <a href="@url" class="px-4 py-2 bg-gray-100 rounded-md hover:bg-gray-200">
+                            @range.Value
+                        </a>
+                    }
+                }
             </div>
+            <a href="@Url.Action("Storage", new { category = Model.Category })" class="inline-block mt-3 bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600">
+                Xóa bộ lọc
+            </a>
         </div>
     </div>
 
@@ -206,21 +322,18 @@
         @if (Model.Products != null && Model.Products.Any())
         {
             var allProducts = Model.Products.ToList();
-            
             for (int i = 0; i < allProducts.Count; i++)
             {
                 var product = allProducts[i];
                 var isHidden = i >= 10;
-                
                 <div class="product-item @(isHidden ? "hidden" : "")" data-index="@i">
-                    <partial name="_ProductCard" model='new ProductCardViewModel 
-                    { 
+                    <partial name="_ProductCard" model="@(new ProductCardViewModel {
                         IdSp = product.IdSp,
                         TenSp = product.Tensanpham,
                         Gia = product.Gia,
                         ImageUrl = product.Hinhanh,
                         LoaiSp = "storage"
-                    }' />
+                    })" />
                 </div>
             }
         }
@@ -247,66 +360,6 @@
 
 @section Scripts {
     <script>
-        document.querySelectorAll('[data-price-range]').forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                const priceRange = this.getAttribute('data-price-range');
-                const currentPriceRange = '@Model?.AdditionalFilters?.GetValueOrDefault("priceRange")';
-                
-                if (priceRange === currentPriceRange) {
-                    const params = new URLSearchParams(window.location.search);
-                    params.delete('priceRange');
-                    
-                    document.querySelectorAll('select').forEach(select => {
-                        if (select.value) {
-                            params.set(select.id, select.value);
-                        }
-                    });
-                    
-                    window.location.href = `${window.location.pathname}?${params.toString()}`;
-                } else {
-                    const params = new URLSearchParams(window.location.search);
-                    params.set('priceRange', priceRange);
-                    
-                    document.querySelectorAll('select').forEach(select => {
-                        if (select.value) {
-                            params.set(select.id, select.value);
-                        }
-                    });
-                    
-                    window.location.href = `${window.location.pathname}?${params.toString()}`;
-                }
-            });
-        });
-
-        document.querySelectorAll('select').forEach(select => {
-            select.addEventListener('change', function() {
-                const params = new URLSearchParams(window.location.search);
-                const currentCategory = '@Model?.Category';
-                
-                params.delete('brand');
-                params.delete('capacity');
-                params.delete('type');
-                
-                if (currentCategory) {
-                    params.set('category', currentCategory);
-                }
-                
-                document.querySelectorAll('select').forEach(s => {
-                    if (s.value) {
-                        params.set(s.id, s.value);
-                    }
-                });
-                
-                const currentPriceRange = '@Model?.AdditionalFilters?.GetValueOrDefault("priceRange")';
-                if (currentPriceRange) {
-                    params.set('priceRange', currentPriceRange);
-                }
-                
-                window.location.href = `${window.location.pathname}?${params.toString()}`;
-            });
-        });
-
         document.addEventListener('DOMContentLoaded', function() {
             const loadMoreBtn = document.getElementById('loadMoreBtn');
             const collapseBtn = document.getElementById('collapseBtn');
@@ -316,19 +369,9 @@
 
             if (loadMoreBtn) {
                 loadMoreBtn.addEventListener('click', function() {
-                    // Calculate next batch of products to show
-                    const nextBatch = Array.from(products)
-                        .slice(currentlyShown, currentlyShown + productsPerPage);
-                    
-                    // Show next batch of products
-                    nextBatch.forEach(product => {
-                        product.classList.remove('hidden');
-                    });
-
-                    // Update counter
+                    const nextBatch = Array.from(products).slice(currentlyShown, currentlyShown + productsPerPage);
+                    nextBatch.forEach(product => product.classList.remove('hidden'));
                     currentlyShown += productsPerPage;
-
-                    // Hide "Xem thêm" button and show "Thu gọn" button if we've shown all products
                     if (currentlyShown >= products.length) {
                         loadMoreBtn.classList.add('hidden');
                         collapseBtn.classList.remove('hidden');
@@ -338,25 +381,17 @@
 
             if (collapseBtn) {
                 collapseBtn.addEventListener('click', function() {
-                    // Hide all products after the first 10
                     Array.from(products).forEach((product, index) => {
                         if (index >= productsPerPage) {
                             product.classList.add('hidden');
                         }
                     });
-
-                    // Reset counter
                     currentlyShown = productsPerPage;
-
-                    // Show "Xem thêm" button and hide "Thu gọn" button
                     loadMoreBtn.classList.remove('hidden');
                     collapseBtn.classList.add('hidden');
-
-                    // Scroll back to the top of the products section
                     products[0].scrollIntoView({ behavior: 'smooth' });
                 });
             }
         });
     </script>
 }
-
