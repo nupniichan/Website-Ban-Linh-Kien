@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 20, 2025 at 06:05 AM
+-- Generation Time: Feb 21, 2025 at 05:17 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -71,7 +71,8 @@ INSERT INTO `chitietdonhang` (`Idchitietdonhang`, `IdDh`, `IdSp`, `IdDg`, `soluo
 ('CTDH00029', 'DH000023', 'SP000021', NULL, 2, 34930000.00),
 ('CTDH00030', 'DH000024', 'SP000001', NULL, 1, 15990000.00),
 ('CTDH00031', 'DH000025', 'SP000002', NULL, 1, 13990000.00),
-('CTDH00032', 'DH000026', 'SP000002', NULL, 1, 13990000.00);
+('CTDH00032', 'DH000026', 'SP000002', NULL, 1, 13990000.00),
+('CTDH00033', 'DH000027', 'SP000001', NULL, 1, 15990000.00);
 
 -- --------------------------------------------------------
 
@@ -149,7 +150,8 @@ INSERT INTO `donhang` (`IdDh`, `trangthai`, `tongtien`, `diachigiaohang`, `ngayd
 ('DH000023', 'Chờ xác nhận', 69860000.00, 'a, a, aa, a', '2025-02-20 11:24:06', 'COD', '', NULL, 'KH00020', NULL),
 ('DH000024', 'Chờ xác nhận', 15990000.00, 'a, a, a, a', '2025-02-20 11:42:49', 'COD', '', NULL, 'KH00020', NULL),
 ('DH000025', 'Chờ xác nhận', 13990000.00, 'c, c, c, c', '2025-02-20 11:45:30', 'COD', '', NULL, 'KH00020', NULL),
-('DH000026', 'Chờ xác nhận', 13990000.00, 'a, a, a, a', '2025-02-20 12:00:58', 'COD', '', NULL, 'KH000023', NULL);
+('DH000026', 'Chờ xác nhận', 13990000.00, 'a, a, a, a', '2025-02-20 12:00:58', 'COD', '', NULL, 'KH000023', NULL),
+('DH000027', 'Chờ xác nhận', 15990000.00, 'C17 Khu nhà ở U&I An Phú, Phường An Phú, Thuận An, Bình Dương, , , Bình Dương', '2025-02-21 11:07:27', 'COD', '', NULL, 'KH230104', NULL);
 
 -- --------------------------------------------------------
 
@@ -236,7 +238,8 @@ INSERT INTO `khachhang` (`IdKh`, `hoten`, `diachi`, `email`, `gioitinh`, `ngaysi
 ('KH000021', 'asd', '249Đ Nguyễn Văn Luông, Phường 11, Quận 6, Hồ Chí Minh', 'asd@gmail.com', NULL, NULL, '0949752094', 0, NULL, 'THANTHIET', b'0'),
 ('KH000022', 'gas', '249Đ, Nguyễn Văn Luông, Phường 11, Quận 6, Thành phố Hồ Chí Minh, a, a, Tp.Hồ Chí Minh', 'gas@gmail.com', NULL, NULL, '0949752092', 0, NULL, 'THANTHIET', b'0'),
 ('KH000023', 'sadsa', '', 'kjgs@gmail.com', NULL, NULL, '095353163', 0, NULL, 'THANTHIET', b'0'),
-('KH00020', 'Nguyễn Phi Quốc Bảo', 'a, a, a, a', 'nuponiibaka.com@gmail.com', 'Nam', '2004-08-02', '0949752097', 0, 'TK00021', NULL, b'0');
+('KH00020', 'Nguyễn Phi Quốc Bảo', 'a, a, a, a', 'nuponiibaka.com@gmail.com', 'Nam', '2004-08-02', '0949752097', 0, 'TK00021', NULL, b'0'),
+('KH230104', 'Trần Hồng Phát', 'C17 Khu nhà ở U&I, Phường An Phú, Thành Phố Thuận An, Bình Dương\r\n', 'asdsaphat.com@gmail.com', 'Nam', '2004-01-23', '0948048197', 0, 'TK230104', NULL, b'0');
 
 -- --------------------------------------------------------
 
@@ -349,7 +352,7 @@ CREATE TABLE `sanpham` (
 --
 
 INSERT INTO `sanpham` (`IdSp`, `tensanpham`, `gia`, `soluongton`, `thuonghieu`, `mota`, `thongsokythuat`, `loaisanpham`, `hinhanh`, `soluotxem`, `damuahang`) VALUES
-('SP000001', 'CPU Intel Core i9-13900K', 15990000.00, 49, 'Intel', 'CPU Intel Core i9-13900K mạnh mẽ, lý tưởng cho gaming và công việc sáng tạo.', '{\"Danh mục\": \"CPU\", \"Socket\": \"LGA1700\", \"Dòng CPU\": \"Intel Core i9\", \"Số nhân\": \"24\", \"Số luồng\": \"32\", \"Xung nhịp\": \"3.0GHz\", \"Xung nhịp cơ bản\": \"2.8GHz\", \"Điện năng tiêu thụ\": \"125W\", \"Bộ nhớ đệm\": \"36MB\", \"Nhân đồ họa tích hợp\": \"Intel UHD Graphics 770\"}', 'Components', 'cpu_i9_13900k.jpg', 13, 1),
+('SP000001', 'CPU Intel Core i9-13900K', 15990000.00, 48, 'Intel', 'CPU Intel Core i9-13900K mạnh mẽ, lý tưởng cho gaming và công việc sáng tạo.', '{\"Danh mục\": \"CPU\", \"Socket\": \"LGA1700\", \"Dòng CPU\": \"Intel Core i9\", \"Số nhân\": \"24\", \"Số luồng\": \"32\", \"Xung nhịp\": \"3.0GHz\", \"Xung nhịp cơ bản\": \"2.8GHz\", \"Điện năng tiêu thụ\": \"125W\", \"Bộ nhớ đệm\": \"36MB\", \"Nhân đồ họa tích hợp\": \"Intel UHD Graphics 770\"}', 'Components', 'cpu_i9_13900k.jpg', 14, 2),
 ('SP000002', 'CPU Intel Core i7-13700K', 13990000.00, 43, 'Intel', 'CPU Intel Core i7-13700K hiệu năng cao, lý tưởng cho gaming.', '{\"Danh mục\": \"CPU\", \"Socket\": \"LGA1700\", \"Dòng CPU\": \"Intel Core i7\", \"Số nhân\": \"16\", \"Số luồng\": \"24\", \"Xung nhịp\": \"3.2GHz\", \"Xung nhịp cơ bản\": \"3.0GHz\", \"Điện năng tiêu thụ\": \"125W\", \"Bộ nhớ đệm\": \"30MB\", \"Nhân đồ họa tích hợp\": \"Intel UHD Graphics 770\"}', 'Components', 'cpu_i7_13700k.jpg', 8, 2),
 ('SP000003', 'CPU Intel Core i5-13600K', 11990000.00, 40, 'Intel', 'CPU Intel Core i5-13600K cân bằng giữa hiệu năng và giá cả.', '{\"Danh mục\": \"CPU\", \"Socket\": \"LGA1700\", \"Dòng CPU\": \"Intel Core i5\", \"Số nhân\": \"10\", \"Số luồng\": \"16\", \"Xung nhịp\": \"3.5GHz\", \"Xung nhịp cơ bản\": \"3.0GHz\", \"Điện năng tiêu thụ\": \"125W\", \"Bộ nhớ đệm\": \"20MB\", \"Nhân đồ họa tích hợp\": \"Intel UHD Graphics 770\"}', 'Components', 'cpu_i5_13600k.jpg', 6, 0),
 ('SP000004', 'CPU AMD Ryzen 9 7950X', 17990000.00, 35, 'AMD', 'CPU AMD Ryzen 9 7950X hiệu năng mạnh mẽ cho các tác vụ nặng.', '{\"Danh mục\": \"CPU\", \"Socket\": \"AM5\", \"Dòng CPU\": \"AMD Ryzen 9\", \"Số nhân\": \"16\", \"Số luồng\": \"32\", \"Xung nhịp\": \"4.5GHz\", \"Xung nhịp cơ bản\": \"3.4GHz\", \"Điện năng tiêu thụ\": \"170W\", \"Bộ nhớ đệm\": \"64MB\", \"Nhân đồ họa tích hợp\": \"Không\"}', 'Components', 'cpu_ryzen9_7950x.jpg', 2, 0),
@@ -762,7 +765,8 @@ INSERT INTO `taikhoan` (`IdTk`, `matkhau`, `tentaikhoan`, `ngaytaotk`, `ngaysuad
 ('TK000018', 'user17', 'user17', '2025-02-27', NULL, 'khachhang'),
 ('TK000019', 'user18', 'user18', '2025-02-28', NULL, 'khachhang'),
 ('TK000020', 'user19', 'user19', '2025-01-30', NULL, 'khachhang'),
-('TK00021', 'nupniichan089@', 'nupniichan', '2025-02-19', NULL, 'KHACHHANG');
+('TK00021', 'nupniichan089@', 'nupniichan', '2025-02-19', NULL, 'khachhang'),
+('TK230104', '230104', 'thepinkcat', '2025-02-21', NULL, 'khachhang');
 
 -- --------------------------------------------------------
 
