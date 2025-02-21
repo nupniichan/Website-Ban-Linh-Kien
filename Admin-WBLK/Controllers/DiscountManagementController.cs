@@ -19,30 +19,58 @@ namespace Admin_WBLK.Controllers
         }
 
         // GET: DiscountManagement
-        [HttpGet]
         public async Task<IActionResult> Index(string searchString, int pageNumber = 1)
+        {
+            int pageSize = 10;
+            
+            ViewData["CurrentFilter"] = searchString;
+            
+            var query = _context.Magiamgia.AsQueryable();
+
+            // Apply search filter
+            if (!string.IsNullOrEmpty(searchString))
             {
-                int pageSize = 10;
-                ViewData["CurrentFilter"] = searchString;
-
-                var query = _context.Magiamgia.AsQueryable();
-
-                if (!string.IsNullOrEmpty(searchString))
-                {
-                    searchString = searchString.ToLower();
-                    query = query.Where(m => m.IdMgg.ToLower().Contains(searchString) ||
-                                            m.Ten.ToLower().Contains(searchString));
-                }
-
-                var totalItems = await query.CountAsync();
-                var items = await query.Skip((pageNumber - 1) * pageSize)
-                                    .Take(pageSize)
-                                    .ToListAsync();
-
-                var model = new PaginatedList<Magiamgia>(items, totalItems, pageNumber, pageSize);
-                return View(model);
+                searchString = searchString.ToLower();
+                query = query.Where(m => m.IdMgg.ToLower().Contains(searchString) ||
+                                       m.Ten.ToLower().Contains(searchString));
             }
 
+            // Default sorting by IdMgg
+            query = query.OrderByDescending(m => m.IdMgg);
+
+            var totalItems = await query.CountAsync();
+            var items = await query.Skip((pageNumber - 1) * pageSize)
+                                 .Take(pageSize)
+                                 .ToListAsync();
+
+            var model = new PaginatedList<Magiamgia>(items, totalItems, pageNumber, pageSize);
+            return View(model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> SearchSuggestions(string term)
+        {
+            if (string.IsNullOrEmpty(term))
+            {
+                return Json(new List<object>());
+            }
+
+            term = term.ToLower();
+            var suggestions = await _context.Magiamgia
+                .Where(m => m.IdMgg.ToLower().Contains(term) ||
+                           m.Ten.ToLower().Contains(term))
+                .OrderByDescending(m => m.IdMgg)
+                .Take(5)
+                .Select(m => new
+                {
+                    idMgg = m.IdMgg,
+                    ten = m.Ten,
+                    tilechietkhau = m.Tilechietkhau
+                })
+                .ToListAsync();
+
+            return Json(suggestions);
+        }
 
         // GET: DiscountManagement/Create
         public async Task<IActionResult> Create()
@@ -53,13 +81,10 @@ namespace Admin_WBLK.Controllers
                 Ngayhethan = DateOnly.FromDateTime(DateTime.Today.AddDays(1))
             };
 
-            // Also generate Id if needed
             discount.IdMgg = await GenerateNextDiscountId();
             
             return View(discount);
         }
-
-
 
         // POST: DiscountManagement/Create
         [HttpPost]
@@ -81,7 +106,6 @@ namespace Admin_WBLK.Controllers
                 return View(discount);
             }
 
-            // Auto-generate the discount ID if it's empty:
             if (string.IsNullOrEmpty(discount.IdMgg))
             {
                 discount.IdMgg = await GenerateNextDiscountId();
@@ -95,7 +119,6 @@ namespace Admin_WBLK.Controllers
 
         private async Task<string> GenerateNextDiscountId()
         {
-            // Order discounts by descending ID and extract the numeric part.
             var lastDiscount = await _context.Magiamgia
                 .OrderByDescending(d => d.IdMgg)
                 .FirstOrDefaultAsync();
@@ -105,7 +128,7 @@ namespace Admin_WBLK.Controllers
                 return "MG000001";
             }
 
-            string lastIdNumberPart = lastDiscount.IdMgg.Substring(2); // Remove "MG" prefix
+            string lastIdNumberPart = lastDiscount.IdMgg.Substring(2);
             if (int.TryParse(lastIdNumberPart, out int number))
             {
                 number++;
@@ -116,7 +139,6 @@ namespace Admin_WBLK.Controllers
                 return "MG000001";
             }
         }
-
 
         // GET: DiscountManagement/Details/5
         public async Task<IActionResult> Details(string id)
@@ -163,9 +185,6 @@ namespace Admin_WBLK.Controllers
                 return NotFound();
             }
 
-            // 1️⃣ Remove validation for Ngaysudung being in the past
-
-            // 2️⃣ Ensure Ngayhethan is after Ngaysudung
             if (discount.Ngayhethan <= discount.Ngaysudung)
             {
                 ModelState.AddModelError("Ngayhethan", "Ngày hết hạn phải sau ngày bắt đầu sử dụng.");
@@ -196,8 +215,6 @@ namespace Admin_WBLK.Controllers
 
             return RedirectToAction(nameof(Index));
         }
-
-
 
         // GET: DiscountManagement/Delete/5
         public async Task<IActionResult> Delete(string id)

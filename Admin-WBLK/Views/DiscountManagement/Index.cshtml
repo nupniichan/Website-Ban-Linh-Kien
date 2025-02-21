@@ -18,11 +18,12 @@
     <!-- Search Bar and Date Range Filters -->
     <div class="mb-6 space-y-4">
         <form asp-action="Index" method="get" class="flex flex-wrap gap-4" id="searchForm">
+            <!-- Search Bar -->
             <div class="w-80">
                 <div class="relative">
                     <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                         <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                                   d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                     </div>
@@ -33,16 +34,35 @@
                         value="@ViewData["CurrentFilter"]"
                         class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 text-sm"
                         placeholder="Tìm kiếm mã giảm giá..."
+                        oninput="handleSearch(this.value)"
                         autocomplete="off" />
+                    @if (!string.IsNullOrEmpty(ViewData["CurrentFilter"]?.ToString()))
+                    {
+                        <button type="button" 
+                                class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none"
+                                onclick="clearSearch()">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    }
+                </div>
+                <!-- Search Results Dropdown -->
+                <div id="searchResults" class="absolute mt-1 w-80 bg-white border border-gray-200 rounded-lg shadow-lg hidden max-h-60 overflow-y-auto z-10">
                 </div>
             </div>
 
-            <div class="flex flex-wrap gap-4 items-center">
-                <a asp-action="Index"
-                   class="px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500">
+            <!-- Clear Filters -->
+            @if (!string.IsNullOrEmpty(ViewData["CurrentFilter"]?.ToString()))
+            {
+                <a asp-action="Index" 
+                   class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
                     Xóa bộ lọc
                 </a>
-            </div>
+            }
         </form>
     </div>
     
@@ -215,41 +235,74 @@
 
 @section Scripts {
     <script>
-        // Debounce function to limit how often a function is executed
-        function debounce(func, delay) {
-            let timeout;
-            return function () {
-                const context = this;
-                const args = arguments;
-                clearTimeout(timeout);
-                timeout = setTimeout(() => {
-                    func.apply(context, args);
-                }, delay);
-            };
+        let searchTimeout;
+
+        function handleSearch(value) {
+            clearTimeout(searchTimeout);
+            const resultsDiv = document.getElementById('searchResults');
+
+            if (value.length < 1) {
+                resultsDiv.classList.add('hidden');
+                return;
+            }
+
+            searchTimeout = setTimeout(() => {
+                fetch(`/DiscountManagement/SearchSuggestions?term=${encodeURIComponent(value)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        resultsDiv.innerHTML = '';
+                        if (data.length > 0) {
+                            data.forEach(item => {
+                                const div = document.createElement('div');
+                                div.className = 'px-4 py-2 hover:bg-gray-100 cursor-pointer';
+                                div.innerHTML = `
+                                    <div class="font-medium">${item.ten}</div>
+                                    <div class="text-sm text-gray-500">Mã: ${item.idMgg}</div>
+                                    <div class="text-sm text-gray-500">Chiết khấu: ${item.tilechietkhau}%</div>
+                                `;
+                                div.onclick = () => {
+                                    document.getElementById('searchInput').value = item.ten;
+                                    resultsDiv.classList.add('hidden');
+                                    document.querySelector('form').submit();
+                                };
+                                resultsDiv.appendChild(div);
+                            });
+                            resultsDiv.classList.remove('hidden');
+                        } else {
+                            resultsDiv.classList.add('hidden');
+                        }
+                    });
+            }, 300);
         }
 
-        // Automatically submit the search form when inputs change
-        const searchInput = document.getElementById('searchInput');
-        const fromExpiryDate = document.getElementById('fromExpiryDate');
-        const toExpiryDate = document.getElementById('toExpiryDate');
-        const searchForm = document.getElementById('searchForm');
-
-        if (searchInput) {
-            searchInput.addEventListener('input', debounce(function () {
-                searchForm.submit();
-            }, 300));
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            document.querySelector('form').submit();
         }
 
-        if (fromExpiryDate) {
-            fromExpiryDate.addEventListener('change', debounce(function () {
-                searchForm.submit();
-            }, 300));
-        }
+        // Đóng dropdown khi click ra ngoài
+        document.addEventListener('click', function(event) {
+            const resultsDiv = document.getElementById('searchResults');
+            const searchInput = document.getElementById('searchInput');
+            if (!searchInput.contains(event.target) && !resultsDiv.contains(event.target)) {
+                resultsDiv.classList.add('hidden');
+            }
+        });
 
-        if (toExpiryDate) {
-            toExpiryDate.addEventListener('change', debounce(function () {
-                searchForm.submit();
-            }, 300));
+        function handlePageInput(event) {
+            if (event.key === 'Enter') {
+                const pageNumber = parseInt(event.target.value);
+                const maxPage = @Model.TotalPages;
+                
+                if (pageNumber >= 1 && pageNumber <= maxPage) {
+                    const currentUrl = new URL(window.location.href);
+                    currentUrl.searchParams.set('pageNumber', pageNumber);
+                    window.location.href = currentUrl.toString();
+                } else {
+                    alert(`Vui lòng nhập số trang từ 1 đến ${maxPage}`);
+                    event.target.value = '';
+                }
+            }
         }
     </script>
 }
