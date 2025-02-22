@@ -223,18 +223,26 @@ namespace Admin_WBLK.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(string id, [Bind("IdSp,Tensanpham,Gia,Soluongton,Loaisanpham,Thuonghieu,Hinhanh,Mota,Thongsokythuat")] Sanpham sanpham, 
-            IFormFile? imageFile, string returnUrl)
+            IFormFile? imageFile, string? returnUrl)
         {
-            if (id != sanpham.IdSp)
+            try 
             {
-                return NotFound();
-            }
+                Console.WriteLine($"ImageFile is null: {imageFile == null}");
+                if (imageFile != null) 
+                {
+                    Console.WriteLine($"ImageFile length: {imageFile.Length}");
+                    Console.WriteLine($"ImageFile name: {imageFile.FileName}");
+                }
+                
+                if (id != sanpham.IdSp)
+                {
+                    return NotFound();
+                }
 
-            try
-            {
                 // Bỏ qua validation cho các trường sẽ được tự động set
                 ModelState.Remove("IdNvNavigation");
                 ModelState.Remove("IdNv");
+                ModelState.Remove("returnUrl");
                 
                 if (!ModelState.IsValid)
                 {
@@ -266,7 +274,7 @@ namespace Admin_WBLK.Controllers
                         var oldImagePath = Path.Combine(
                             Directory.GetCurrentDirectory(),
                             "wwwroot",
-                            existingProduct.Hinhanh.TrimStart('/')
+                            existingProduct.Hinhanh.TrimStart('/').Replace("/", "\\")
                         );
                         if (System.IO.File.Exists(oldImagePath))
                         {
@@ -274,22 +282,22 @@ namespace Admin_WBLK.Controllers
                         }
                     }
 
-                    // Lưu file ảnh mới
-                    var fileName = Path.GetRandomFileName() + Path.GetExtension(imageFile.FileName);
+                    // Tạo thư mục nếu chưa tồn tại
                     var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Images", "ProductImage");
-                    
-                    if (!Directory.Exists(uploadPath))
-                    {
-                        Directory.CreateDirectory(uploadPath);
-                    }
+                    Directory.CreateDirectory(uploadPath); // Sẽ tạo thư mục nếu chưa tồn tại
 
+                    // Tạo tên file ngẫu nhiên với đuôi file gốc
+                    var fileName = $"{Guid.NewGuid()}{Path.GetExtension(imageFile.FileName)}";
                     var filePath = Path.Combine(uploadPath, fileName);
+
+                    // Lưu file
                     using (var stream = new FileStream(filePath, FileMode.Create))
                     {
                         await imageFile.CopyToAsync(stream);
                     }
 
-                    sanpham.Hinhanh = "/Images/ProductImage/" + fileName;
+                    // Cập nhật đường dẫn trong database (sử dụng dấu / cho URL)
+                    sanpham.Hinhanh = $"/Images/ProductImage/{fileName}";
                 }
                 else
                 {
@@ -335,21 +343,10 @@ namespace Admin_WBLK.Controllers
                     return Redirect(returnUrl);
                 return RedirectToAction(nameof(Index));
             }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!SanphamExists(sanpham.IdSp))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
             catch (Exception ex)
             {
-                Console.WriteLine("Lỗi: " + ex.Message);
-                Console.WriteLine("Stack trace: " + ex.StackTrace);
+                Console.WriteLine($"Error in Edit action: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
                 ModelState.AddModelError("", $"Có lỗi xảy ra: {ex.Message}");
                 return View(sanpham);
             }
