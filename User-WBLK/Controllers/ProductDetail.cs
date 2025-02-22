@@ -146,11 +146,10 @@ namespace Website_Ban_Linh_Kien.Controllers
                     Comment = r.Noidung,
                     Date = r.Ngaydanhgia
                 }).ToList(),
-                // Các thuộc tính khác có thể thêm theo nhu cầu
                 ViewCount = sp.Soluotxem,
                 PurchaseCount = sp.Damuahang,
                 Rating = averageRating,
-                Warranty = 24, // Có thể thêm trường này vào database nếu cần
+                Warranty = 24,
                 SoLuongTon = sp.Soluongton,
                 RelatedProducts = relatedProducts
             };
@@ -165,10 +164,11 @@ namespace Website_Ban_Linh_Kien.Controllers
                     .ThenInclude(ct => ct.IdDgNavigation)
                         .ThenInclude(d => d.IdKhNavigation)
                 .FirstOrDefault(s => s.IdSp == id && s.Loaisanpham.ToLower() == "pc");
+            
             if (product == null)
                 return NotFound();
 
-            // Tăng số lượt xem
+            // Tăng số lượt xem và lưu ngay lập tức
             product.Soluotxem += 1;
             _context.SaveChanges();
 
@@ -189,8 +189,13 @@ namespace Website_Ban_Linh_Kien.Controllers
                     .ThenInclude(ct => ct.IdDgNavigation)
                         .ThenInclude(d => d.IdKhNavigation)
                 .FirstOrDefault(s => s.IdSp == id && s.Loaisanpham.ToLower() == "laptop");
+            
             if (product == null)
                 return NotFound();
+
+            // Tăng số lượt xem và lưu ngay lập tức
+            product.Soluotxem += 1;
+            _context.SaveChanges();
 
             var viewModel = MapSanphamToViewModel(product);
             SetBreadcrumb(
@@ -213,7 +218,7 @@ namespace Website_Ban_Linh_Kien.Controllers
             if (product == null)
                 return NotFound();
 
-            // Tăng số lượt xem
+            // Tăng số lượt xem và lưu ngay lập tức
             product.Soluotxem += 1;
             _context.SaveChanges();
 
@@ -239,7 +244,7 @@ namespace Website_Ban_Linh_Kien.Controllers
             if (product == null)
                 return NotFound();
 
-            // Tăng số lượt xem
+            // Tăng số lượt xem và lưu vào database
             product.Soluotxem += 1;
             _context.SaveChanges();
 
@@ -262,8 +267,13 @@ namespace Website_Ban_Linh_Kien.Controllers
                     .ThenInclude(ct => ct.IdDgNavigation)
                         .ThenInclude(d => d.IdKhNavigation)
                 .FirstOrDefault(s => s.IdSp == id && s.Loaisanpham.ToLower() == "storage");
+            
             if (product == null)
                 return NotFound();
+
+            // Tăng số lượt xem và lưu ngay lập tức
+            product.Soluotxem += 1;
+            _context.SaveChanges();
 
             var viewModel = MapSanphamToViewModel(product);
             SetBreadcrumb(
@@ -282,8 +292,13 @@ namespace Website_Ban_Linh_Kien.Controllers
                     .ThenInclude(ct => ct.IdDgNavigation)
                         .ThenInclude(d => d.IdKhNavigation)
                 .FirstOrDefault(s => s.IdSp == id && s.Loaisanpham.ToLower() == "monitor");
+            
             if (product == null)
                 return NotFound();
+
+            // Tăng số lượt xem và lưu ngay lập tức
+            product.Soluotxem += 1;
+            _context.SaveChanges();
 
             var viewModel = MapSanphamToViewModel(product);
             SetBreadcrumb(

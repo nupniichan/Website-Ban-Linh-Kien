@@ -213,6 +213,16 @@ namespace Admin_WBLK.Controllers
                 return NotFound();
             }
 
+            // Lưu các tham số hiện tại vào TempData
+            if (string.IsNullOrEmpty(returnUrl))
+            {
+                TempData["CurrentPage"] = Request.Query["pageNumber"].ToString();
+                TempData["CurrentFilter"] = Request.Query["searchString"].ToString();
+                TempData["CurrentLoaiSp"] = Request.Query["loaiSp"].ToString();
+                TempData["CurrentThuongHieu"] = Request.Query["thuongHieu"].ToString();
+                TempData["CurrentSort"] = Request.Query["sortOrder"].ToString();
+            }
+
             ViewData["ReturnUrl"] = returnUrl;
             return View(sanpham);
         }
@@ -339,9 +349,21 @@ namespace Admin_WBLK.Controllers
 
                 TempData["Success"] = "Cập nhật sản phẩm thành công!";
                 
+                // Nếu có returnUrl, giải mã và chuyển hướng về đó
                 if (!string.IsNullOrEmpty(returnUrl))
-                    return Redirect(returnUrl);
-                return RedirectToAction(nameof(Index));
+                {
+                    return Redirect(Uri.UnescapeDataString(returnUrl));
+                }
+
+                // Nếu không có returnUrl, chuyển về Index với các tham số hiện tại
+                return RedirectToAction(nameof(Index), new
+                {
+                    pageNumber = TempData["CurrentPage"],
+                    searchString = TempData["CurrentFilter"],
+                    loaiSp = TempData["CurrentLoaiSp"],
+                    thuongHieu = TempData["CurrentThuongHieu"],
+                    sortOrder = TempData["CurrentSort"]
+                });
             }
             catch (Exception ex)
             {

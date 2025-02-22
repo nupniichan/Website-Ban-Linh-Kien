@@ -163,6 +163,74 @@ namespace Website_Ban_Linh_Kien.Controllers
             return View();
         }
 
+        public IActionResult TraCuuDonHang()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult TraCuuDonHang(string searchTerm, string searchType, int page = 1)
+        {
+            var query = _context.Khachhangs.AsQueryable();
+            const int pageSize = 5;
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                switch (searchType)
+                {
+                    case "phone":
+                        query = query.Where(k => k.Sodienthoai.Contains(searchTerm));
+                        break;
+                    case "email":
+                        query = query.Where(k => k.Email.Contains(searchTerm));
+                        break;
+                    case "name":
+                        query = query.Where(k => k.Hoten.Contains(searchTerm));
+                        break;
+                }
+            }
+
+            var khachHang = query.FirstOrDefault();
+            
+            if (khachHang != null)
+            {
+                // Lấy tổng số đơn hàng
+                var totalOrders = _context.Donhangs
+                    .Count(d => d.IdKh == khachHang.IdKh);
+
+                // Lấy danh sách đơn hàng có phân trang
+                var donHangs = _context.Donhangs
+                    .Where(d => d.IdKh == khachHang.IdKh)
+                    .OrderByDescending(d => d.Ngaydathang)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(d => new
+                    {
+                        DonHang = d,
+                        ChiTiet = _context.Chitietdonhangs
+                            .Where(c => c.IdDh == d.IdDh)
+                            .ToList()
+                    })
+                    .ToList();
+
+                var result = new
+                {
+                    KhachHang = khachHang,
+                    DonHang = donHangs,
+                    TotalOrders = totalOrders
+                };
+
+                ViewBag.CurrentPage = page;
+                ViewBag.TotalPages = (int)Math.Ceiling(totalOrders / (double)pageSize);
+                ViewBag.SearchTerm = searchTerm;
+                ViewBag.SearchType = searchType;
+
+                return View(result);
+            }
+
+            return View(null);
+        }
+
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {

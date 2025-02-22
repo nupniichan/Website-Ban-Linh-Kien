@@ -335,7 +335,7 @@ namespace Website_Ban_Linh_Kien.Controllers
 
                             // Cập nhật số lượng tồn và số lượng đã mua
                             product.Soluongton -= item.Quantity;
-                            product.Damuahang = (product.Damuahang ?? 0) + item.Quantity;
+                            product.Damuahang = product.Damuahang + item.Quantity;
 
                             var orderDetail = new Chitietdonhang
                             {
@@ -563,7 +563,7 @@ namespace Website_Ban_Linh_Kien.Controllers
 
                             // Cập nhật số lượng tồn và số lượng đã mua
                             product.Soluongton -= item.Quantity;
-                            product.Damuahang = (product.Damuahang ?? 0) + item.Quantity;
+                            product.Damuahang = product.Damuahang + item.Quantity;
 
                             var orderDetail = new Chitietdonhang
                             {
