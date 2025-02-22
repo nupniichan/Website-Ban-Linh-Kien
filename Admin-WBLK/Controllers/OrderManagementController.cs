@@ -70,6 +70,7 @@ namespace Admin_WBLK.Controllers
             // Lấy danh sách trạng thái để làm dropdown filter
             ViewBag.TrangThais = new List<string>
             {
+                "Chờ xác nhận",
                 "Đặt hàng thành công",
                 "Đã duyệt đơn",
                 "Đang giao",
@@ -608,6 +609,7 @@ namespace Admin_WBLK.Controllers
                 // Dictionary các trạng thái hợp lệ
                 var validTransitions = new Dictionary<string, string[]>
                 {
+                    { "Chờ xác nhận", new[] { "Đặt hàng thành công", "Hủy đơn" } },
                     { "Đặt hàng thành công", new[] { "Đã duyệt đơn", "Hủy đơn" } },
                     { "Đã duyệt đơn", new[] { "Đang giao" } },
                     { "Đang giao", new[] { "Giao thành công", "Không giao" } },

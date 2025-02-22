@@ -163,6 +163,31 @@
                             <div class="flex items-center justify-center gap-2">
                                 @switch (item.Trangthai)
                                 {
+                                    case "Chờ xác nhận":
+                                        <div class="flex gap-2">
+                                            <a asp-action="UpdateStatus" 
+                                               asp-route-id="@item.IdDh" 
+                                               asp-route-newStatus="Đặt hàng thành công"
+                                               asp-route-returnUrl="@Context.Request.Path@Context.Request.QueryString"
+                                               class="inline-flex items-center px-3 py-1 text-yellow-600 hover:text-yellow-800"
+                                               title="Xác nhận đơn hàng">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                            </a>
+                                            <a asp-action="UpdateStatus" 
+                                               asp-route-id="@item.IdDh" 
+                                               asp-route-newStatus="Hủy đơn"
+                                               asp-route-returnUrl="@Context.Request.Path@Context.Request.QueryString"
+                                               class="inline-flex items-center px-3 py-1 text-red-600 hover:text-red-800"
+                                               title="Hủy đơn">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                            </a>
+                                        </div>
+                                        break;
+
                                     case "Đặt hàng thành công":
                                         <div class="flex gap-2">
                                             <a asp-action="UpdateStatus" 
@@ -457,6 +482,7 @@
     {
         return status switch
         {
+            "Chờ xác nhận" => "text-gray-600",
             "Đặt hàng thành công" => "text-yellow-600",
             "Đã duyệt đơn" => "text-blue-600",
             "Đang giao" => "text-indigo-600",
