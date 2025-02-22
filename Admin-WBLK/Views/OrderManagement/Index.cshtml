@@ -165,14 +165,20 @@
                                 {
                                     case "Đặt hàng thành công":
                                         <div class="flex gap-2">
-                                            <a asp-action="UpdateStatus" asp-route-id="@item.IdDh" asp-route-newStatus="Đã duyệt đơn"
+                                            <a asp-action="UpdateStatus" 
+                                               asp-route-id="@item.IdDh" 
+                                               asp-route-newStatus="Đã duyệt đơn"
+                                               asp-route-returnUrl="@Context.Request.Path@Context.Request.QueryString"
                                                class="inline-flex items-center px-3 py-1 text-blue-600 hover:text-blue-800"
                                                title="Duyệt đơn">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                                                 </svg>
                                             </a>
-                                            <a asp-action="UpdateStatus" asp-route-id="@item.IdDh" asp-route-newStatus="Hủy đơn"
+                                            <a asp-action="UpdateStatus" 
+                                               asp-route-id="@item.IdDh" 
+                                               asp-route-newStatus="Hủy đơn"
+                                               asp-route-returnUrl="@Context.Request.Path@Context.Request.QueryString"
                                                class="inline-flex items-center px-3 py-1 text-red-600 hover:text-red-800"
                                                title="Hủy đơn">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -183,7 +189,10 @@
                                         break;
 
                                     case "Đã duyệt đơn":
-                                        <a asp-action="UpdateStatus" asp-route-id="@item.IdDh" asp-route-newStatus="Đang giao"
+                                        <a asp-action="UpdateStatus" 
+                                           asp-route-id="@item.IdDh" 
+                                           asp-route-newStatus="Đang giao"
+                                           asp-route-returnUrl="@Context.Request.Path@Context.Request.QueryString"
                                            class="inline-flex items-center px-3 py-1 text-indigo-600 hover:text-indigo-800"
                                            title="Chuyển sang đang giao">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -194,14 +203,20 @@
 
                                     case "Đang giao":
                                         <div class="flex gap-2">
-                                            <a asp-action="UpdateStatus" asp-route-id="@item.IdDh" asp-route-newStatus="Giao thành công"
+                                            <a asp-action="UpdateStatus" 
+                                               asp-route-id="@item.IdDh" 
+                                               asp-route-newStatus="Giao thành công"
+                                               asp-route-returnUrl="@Context.Request.Path@Context.Request.QueryString"
                                                class="inline-flex items-center px-3 py-1 text-green-600 hover:text-green-800"
                                                title="Xác nhận giao thành công">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                                                 </svg>
                                             </a>
-                                            <a asp-action="UpdateStatus" asp-route-id="@item.IdDh" asp-route-newStatus="Không giao"
+                                            <a asp-action="UpdateStatus" 
+                                               asp-route-id="@item.IdDh" 
+                                               asp-route-newStatus="Không giao"
+                                               asp-route-returnUrl="@Context.Request.Path@Context.Request.QueryString"
                                                class="inline-flex items-center px-3 py-1 text-orange-600 hover:text-orange-800"
                                                title="Báo không giao được">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

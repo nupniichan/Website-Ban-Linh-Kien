@@ -74,14 +74,21 @@ namespace Admin_WBLK.Controllers
         }
 
         // GET: CustomerManagement/Details/5
-        public async Task<IActionResult> Details(string id)
+        public async Task<IActionResult> Details(string id, string returnUrl)
         {
-            if (id == null) return NotFound();
+            if (id == null)
+            {
+                return NotFound();
+            }
 
             var khachhang = await _context.Khachhangs
-                .Include(k => k.IdTkNavigation)
                 .FirstOrDefaultAsync(m => m.IdKh == id);
-            if (khachhang == null) return NotFound();
+            if (khachhang == null)
+            {
+                return NotFound();
+            }
+
+            ViewData["ReturnUrl"] = returnUrl;
             return View(khachhang);
         }
 
@@ -186,23 +193,34 @@ namespace Admin_WBLK.Controllers
         }
 
         // GET: CustomerManagement/Edit/5
-        public async Task<IActionResult> Edit(string id)
+        public async Task<IActionResult> Edit(string id, string returnUrl)
         {
-            if (id == null) return NotFound();
-            var khachhang = await _context.Khachhangs
-                .Include(k => k.IdTkNavigation)
-                .FirstOrDefaultAsync(m => m.IdKh == id);
-            if (khachhang == null) return NotFound();
-            ViewBag.Accounts = new SelectList(_context.Taikhoans, "IdTk", "Tentaikhoan", khachhang.IdTk);
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var khachhang = await _context.Khachhangs.FindAsync(id);
+            if (khachhang == null)
+            {
+                return NotFound();
+            }
+
+            ViewData["ReturnUrl"] = returnUrl;
+            ViewBag.Accounts = new SelectList(_context.Taikhoans.Where(t => t.Quyentruycap == "khachhang"), "IdTk", "Tentaikhoan", khachhang.IdTk);
             return View(khachhang);
         }
 
         // POST: CustomerManagement/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(string id, [Bind("IdKh,Hoten,Email,Diachi,Sodienthoai,Gioitinh,Ngaysinh,IdTk")] Khachhang khachhang)
+        public async Task<IActionResult> Edit(string id, [Bind("IdKh,Hoten,Email,Sodienthoai,Diachi,Gioitinh,Ngaysinh,IdTk")] Khachhang khachhang, string returnUrl)
         {
-            if (id != khachhang.IdKh) return NotFound();
+            if (id != khachhang.IdKh)
+            {
+                return NotFound();
+            }
+
             try
             {
                 ModelState.Remove("IdTkNavigation");
@@ -257,6 +275,9 @@ namespace Admin_WBLK.Controllers
                 await _context.SaveChangesAsync();
 
                 TempData["Success"] = "Cập nhật thông tin khách hàng thành công!";
+                
+                if (!string.IsNullOrEmpty(returnUrl))
+                    return Redirect(returnUrl);
                 return RedirectToAction(nameof(Index));
             }
             catch (DbUpdateConcurrencyException)

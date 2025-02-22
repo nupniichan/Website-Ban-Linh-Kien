@@ -15,6 +15,7 @@
             <form asp-action="Edit" method="post" class="w-full h-full" id="editDiscountForm">
                 <div asp-validation-summary="ModelOnly" class="mb-4 p-4 rounded-lg bg-red-50 text-red-500"></div>
                 <input type="hidden" asp-for="IdMgg" />
+                <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
@@ -52,9 +53,20 @@
                 </div>
 
                 <div class="mt-4 flex justify-end gap-4">
-                    <a asp-action="Index" class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-800 transition-colors">
-                        Quay lại
-                    </a>
+                    @if (!string.IsNullOrEmpty(ViewData["ReturnUrl"]?.ToString()))
+                    {
+                        <a href="@ViewData["ReturnUrl"]" 
+                           class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-800 transition-colors">
+                            Quay lại
+                        </a>
+                    }
+                    else
+                    {
+                        <a asp-action="Index" 
+                           class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-800 transition-colors">
+                            Quay lại
+                        </a>
+                    }
                     <button type="submit" class="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700">
                         Lưu thay đổi
                     </button>

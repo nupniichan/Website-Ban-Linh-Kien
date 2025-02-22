@@ -82,7 +82,7 @@ namespace Admin_WBLK.Controllers
         }
 
         // GET: ProductManagement/Details/5
-        public async Task<IActionResult> Details(string id)
+        public async Task<IActionResult> Details(string id, string returnUrl)
         {
             if (id == null)
             {
@@ -96,6 +96,7 @@ namespace Admin_WBLK.Controllers
                 return NotFound();
             }
 
+            ViewData["ReturnUrl"] = returnUrl;
             return View(sanpham);
         }
 
@@ -199,7 +200,7 @@ namespace Admin_WBLK.Controllers
         }
 
         // GET: ProductManagement/Edit/5
-        public async Task<IActionResult> Edit(string id)
+        public async Task<IActionResult> Edit(string id, string returnUrl)
         {
             if (id == null)
             {
@@ -211,7 +212,8 @@ namespace Admin_WBLK.Controllers
             {
                 return NotFound();
             }
-            
+
+            ViewData["ReturnUrl"] = returnUrl;
             return View(sanpham);
         }
 
@@ -220,7 +222,8 @@ namespace Admin_WBLK.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(string id, [Bind("IdSp,Tensanpham,Gia,Soluongton,Thuonghieu,Mota,Thongsokythuat,Loaisanpham,Hinhanh")] Sanpham sanpham, IFormFile? imageFile)
+        public async Task<IActionResult> Edit(string id, [Bind("IdSp,Tensanpham,Gia,Soluongton,Loaisanpham,Thuonghieu,Hinhanh,Mota,Thongsokythuat")] Sanpham sanpham, 
+            IFormFile? imageFile, string returnUrl)
         {
             if (id != sanpham.IdSp)
             {
@@ -327,6 +330,9 @@ namespace Admin_WBLK.Controllers
                 await _context.SaveChangesAsync();
 
                 TempData["Success"] = "Cập nhật sản phẩm thành công!";
+                
+                if (!string.IsNullOrEmpty(returnUrl))
+                    return Redirect(returnUrl);
                 return RedirectToAction(nameof(Index));
             }
             catch (DbUpdateConcurrencyException)
