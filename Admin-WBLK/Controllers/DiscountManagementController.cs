@@ -141,69 +141,75 @@ namespace Admin_WBLK.Controllers
         }
 
         // GET: DiscountManagement/Details/5
-        public async Task<IActionResult> Details(string id)
+        public async Task<IActionResult> Details(string id, string returnUrl)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var discount = await _context.Magiamgia
+            var magiamgia = await _context.Magiamgia
                 .FirstOrDefaultAsync(m => m.IdMgg == id);
-
-            if (discount == null)
+            if (magiamgia == null)
             {
                 return NotFound();
             }
 
-            return View(discount);
+            ViewData["ReturnUrl"] = returnUrl;
+            return View(magiamgia);
         }
 
         // GET: DiscountManagement/Edit/5
-        public async Task<IActionResult> Edit(string id)
+        public async Task<IActionResult> Edit(string id, string returnUrl)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var discount = await _context.Magiamgia.FindAsync(id);
-            if (discount == null)
+            var magiamgia = await _context.Magiamgia.FindAsync(id);
+            if (magiamgia == null)
             {
                 return NotFound();
             }
-            return View(discount);
+
+            ViewData["ReturnUrl"] = returnUrl;
+            return View(magiamgia);
         }
 
         // POST: DiscountManagement/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(string id, [Bind("IdMgg,Ten,Ngaysudung,Ngayhethan,Tilechietkhau,Soluong")] Magiamgia discount)
+        public async Task<IActionResult> Edit(string id, [Bind("IdMgg,Ten,Tilechietkhau,Ngaysudung,Ngayhethan,Soluong")] Magiamgia magiamgia, string returnUrl)
         {
-            if (id != discount.IdMgg)
+            if (id != magiamgia.IdMgg)
             {
                 return NotFound();
             }
 
-            if (discount.Ngayhethan <= discount.Ngaysudung)
+            if (magiamgia.Ngayhethan <= magiamgia.Ngaysudung)
             {
                 ModelState.AddModelError("Ngayhethan", "Ngày hết hạn phải sau ngày bắt đầu sử dụng.");
             }
 
             if (!ModelState.IsValid)
             {
-                return View(discount);
+                return View(magiamgia);
             }
 
             try
             {
-                _context.Update(discount);
+                _context.Update(magiamgia);
                 await _context.SaveChangesAsync();
                 TempData["Success"] = "Cập nhật mã giảm giá thành công!";
+                
+                if (!string.IsNullOrEmpty(returnUrl))
+                    return Redirect(returnUrl);
+                return RedirectToAction(nameof(Index));
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!DiscountExists(discount.IdMgg))
+                if (!MagiamgiaExists(magiamgia.IdMgg))
                 {
                     return NotFound();
                 }
@@ -212,8 +218,6 @@ namespace Admin_WBLK.Controllers
                     throw;
                 }
             }
-
-            return RedirectToAction(nameof(Index));
         }
 
         // GET: DiscountManagement/Delete/5
@@ -250,7 +254,7 @@ namespace Admin_WBLK.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        private bool DiscountExists(string id)
+        private bool MagiamgiaExists(string id)
         {
             return _context.Magiamgia.Any(e => e.IdMgg == id);
         }

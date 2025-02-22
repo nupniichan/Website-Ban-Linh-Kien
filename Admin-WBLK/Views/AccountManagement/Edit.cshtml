@@ -16,6 +16,7 @@
         <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
             <form asp-action="Edit" method="post" class="w-full h-full">
                 <input type="hidden" asp-for="IdTk" />
+                <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
                 <div asp-validation-summary="ModelOnly" class="mb-4 p-4 rounded-lg bg-red-50 text-red-500"></div>
 
                 <!-- Grid layout cho các trường input -->
@@ -57,9 +58,20 @@
 
                 <!-- Buttons -->
                 <div class="mt-8 flex items-center justify-end gap-4">
-                    <a asp-action="Index" class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-800 transition-colors">
-                        Quay lại
-                    </a>
+                    @if (!string.IsNullOrEmpty(ViewData["ReturnUrl"]?.ToString()))
+                    {
+                        <a href="@ViewData["ReturnUrl"]" 
+                           class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-800 transition-colors">
+                            Quay lại
+                        </a>
+                    }
+                    else
+                    {
+                        <a asp-action="Index" 
+                           class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-800 transition-colors">
+                            Quay lại
+                        </a>
+                    }
                     <button type="submit" class="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
                         Lưu thay đổi
                     </button>

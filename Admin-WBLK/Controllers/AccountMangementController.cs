@@ -80,7 +80,7 @@ namespace Admin_WBLK.Controllers
         }
 
         // GET: AccountManagement/Details/5
-        public async Task<IActionResult> Details(string id)
+        public async Task<IActionResult> Details(string id, string returnUrl)
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -117,6 +117,7 @@ namespace Admin_WBLK.Controllers
                 }
             }
 
+            ViewData["ReturnUrl"] = returnUrl;
             return View(taikhoan);
         }
 
@@ -275,7 +276,7 @@ namespace Admin_WBLK.Controllers
 
 
         // GET: AccountManagement/Edit/5
-        public async Task<IActionResult> Edit(string id)
+        public async Task<IActionResult> Edit(string id, string returnUrl)
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -288,13 +289,14 @@ namespace Admin_WBLK.Controllers
                 return NotFound();
             }
 
+            ViewData["ReturnUrl"] = returnUrl;
             return View(taikhoan);
         }
 
         // POST: AccountManagement/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(string id, [Bind("IdTk, Tentaikhoan, Matkhau, Quyentruycap")] Taikhoan taikhoan)
+        public async Task<IActionResult> Edit(string id, [Bind("IdTk,Tentaikhoan,Matkhau,Quyentruycap")] Taikhoan taikhoan, string returnUrl)
         {
             if (id != taikhoan.IdTk)
             {
@@ -358,6 +360,12 @@ namespace Admin_WBLK.Controllers
                 taikhoan.Ngaysuadoi = DateOnly.FromDateTime(DateTime.Now);
                 _context.Taikhoans.Update(taikhoan);
                 await _context.SaveChangesAsync();
+
+                TempData["Success"] = "Cập nhật tài khoản thành công!";
+                
+                if (!string.IsNullOrEmpty(returnUrl))
+                    return Redirect(returnUrl);
+                return RedirectToAction(nameof(Index));
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -370,7 +378,6 @@ namespace Admin_WBLK.Controllers
                     throw;
                 }
             }
-            return RedirectToAction(nameof(Index));
         }
 
 

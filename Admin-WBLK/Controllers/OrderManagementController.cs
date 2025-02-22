@@ -436,7 +436,7 @@ namespace Admin_WBLK.Controllers
         }
 
         // GET: OrderManagement/Edit/5
-        public async Task<IActionResult> Edit(string id)
+        public async Task<IActionResult> Edit(string id, string returnUrl)
         {
             if (id == null)
             {
@@ -471,6 +471,7 @@ namespace Admin_WBLK.Controllers
                 }
             }
 
+            ViewData["ReturnUrl"] = returnUrl;
             return View(donhang);
         }
 
@@ -544,9 +545,10 @@ namespace Admin_WBLK.Controllers
                 await transaction.CommitAsync();
 
                 TempData["Success"] = "Cập nhật đơn hàng thành công!";
-                if (string.IsNullOrEmpty(returnUrl))
-                    return RedirectToAction(nameof(Index));
-                return Redirect(returnUrl);
+                
+                if (!string.IsNullOrEmpty(returnUrl))
+                    return Redirect(returnUrl);
+                return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
@@ -583,7 +585,7 @@ namespace Admin_WBLK.Controllers
 
         // GET: OrderManagement/UpdateStatus/5
         [HttpGet]
-        public async Task<IActionResult> UpdateStatus(string id, string newStatus)
+        public async Task<IActionResult> UpdateStatus(string id, string newStatus, string returnUrl)
         {
             if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(newStatus))
             {
@@ -618,6 +620,8 @@ namespace Admin_WBLK.Controllers
                     !validTransitions[donhang.Trangthai].Contains(newStatus))
                 {
                     TempData["Error"] = $"Không thể chuyển trạng thái từ '{donhang.Trangthai}' sang '{newStatus}'!";
+                    if (!string.IsNullOrEmpty(returnUrl))
+                        return Redirect(returnUrl);
                     return RedirectToAction(nameof(Index));
                 }
 
@@ -645,14 +649,20 @@ namespace Admin_WBLK.Controllers
                 await transaction.CommitAsync();
 
                 TempData["Success"] = $"Đã cập nhật trạng thái đơn hàng thành '{newStatus}'!";
+                
+                if (!string.IsNullOrEmpty(returnUrl))
+                    return Redirect(returnUrl);
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
                 TempData["Error"] = $"Lỗi: {ex.Message}";
+                if (!string.IsNullOrEmpty(returnUrl))
+                    return Redirect(returnUrl);
                 return RedirectToAction(nameof(Index));
             }
         }
+
         // Add this helper method to generate a new order detail ID.
         private async Task<string> GenerateOrderDetailId()
         {
@@ -668,6 +678,7 @@ namespace Admin_WBLK.Controllers
             int lastNumber = int.Parse(lastDetail.Idchitietdonhang.Substring(4));
             return $"CTDH{(lastNumber + 1):D6}";
         }
+
         [HttpGet]
         public async Task<IActionResult> GetDiscountSuggestions(string term)
         {
