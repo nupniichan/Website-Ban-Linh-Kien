@@ -293,7 +293,7 @@ namespace Website_Ban_Linh_Kien.Controllers
                         : $"{model.StreetAddress}, {model.Ward}, {model.District}, {model.City}",
                     Phuongthucthanhtoan = "COD",
                     Trangthai = "Chờ xác nhận",
-                    Ghichu = model.Note ?? "",
+                    Ghichu = string.IsNullOrWhiteSpace(model.Note) ? null : model.Note,
                     Tongtien = model.Items.Sum(i => i.Price * i.Quantity)
                 };
 
@@ -521,7 +521,7 @@ namespace Website_Ban_Linh_Kien.Controllers
                         : $"{model.StreetAddress}, {model.Ward}, {model.District}, {model.City}",
                     Phuongthucthanhtoan = "COD",
                     Trangthai = "Chờ xác nhận",
-                    Ghichu = model.Note ?? "",
+                    Ghichu = string.IsNullOrWhiteSpace(model.Note) ? null : model.Note,
                     Tongtien = model.Items.Sum(i => i.Price * i.Quantity)
                 };
 
