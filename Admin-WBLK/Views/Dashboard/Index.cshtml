@@ -125,9 +125,9 @@
     <!-- Biểu đồ -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
         <!-- Biểu đồ doanh thu -->
-        <div class="bg-white p-6 rounded-lg shadow" style="min-height: 400px;">
-            <h2 class="text-xl font-semibold mb-4">Biểu đồ doanh thu theo phương thức</h2>
-            <canvas id="revenueChart"></canvas>
+        <div class="bg-white p-4 rounded-lg shadow">
+            <h2 class="text-xl font-semibold mb-4">Doanh thu theo phương thức thanh toán</h2>
+            <canvas id="paymentChart"></canvas>
         </div>
 
         <!-- Biểu đồ đơn hàng -->
@@ -230,5 +230,43 @@
                 }
             });
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var paymentStats = @Json.Serialize(ViewBag.PaymentStats);
+            if (paymentStats && paymentStats.length > 0) {
+                var ctx = document.getElementById('paymentChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: paymentStats.map(x => x.method),
+                        datasets: [{
+                            label: 'Doanh thu (VNĐ)',
+                            data: paymentStats.map(x => x.amount),
+                            backgroundColor: [
+                                'rgba(54, 162, 235, 0.5)',
+                                'rgba(255, 99, 132, 0.5)',
+                                'rgba(75, 192, 192, 0.5)'
+                            ],
+                            borderColor: [
+                                'rgba(54, 162, 235, 1)',
+                                'rgba(255, 99, 132, 1)',
+                                'rgba(75, 192, 192, 1)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            } else {
+                console.log('Không có dữ liệu thống kê thanh toán');
+            }
+        });
     </script>
 }

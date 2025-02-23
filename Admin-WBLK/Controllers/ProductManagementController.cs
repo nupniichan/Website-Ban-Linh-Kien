@@ -38,8 +38,10 @@ namespace Admin_WBLK.Controllers
             ViewData["CurrentThuongHieu"] = thuongHieu;
             ViewData["CurrentSort"] = sortOrder;
 
+            // Lấy toàn bộ dữ liệu về trước
             var query = _context.Sanphams.AsQueryable();
 
+            // Áp dụng các điều kiện lọc cơ bản
             if (!string.IsNullOrEmpty(searchString))
             {
                 searchString = searchString.ToLower();
@@ -47,17 +49,12 @@ namespace Admin_WBLK.Controllers
                                         s.Tensanpham.ToLower().Contains(searchString));
             }
 
-            if (!string.IsNullOrEmpty(loaiSp))
-            {
-                query = query.Where(s => s.Loaisanpham == loaiSp);
-            }
-
             if (!string.IsNullOrEmpty(thuongHieu))
             {
                 query = query.Where(s => s.Thuonghieu == thuongHieu);
             }
 
-            // Sắp xếp theo tùy chọn người dùng
+            // Thực hiện sắp xếp
             switch (sortOrder)
             {
                 case "oldest":
@@ -69,15 +66,58 @@ namespace Admin_WBLK.Controllers
                     break;
             }
 
-            ViewBag.LoaiSps = await _context.Sanphams.Select(s => s.Loaisanpham).Distinct().ToListAsync();
+            // Lấy dữ liệu về và thực hiện lọc theo Danh mục
+            var items = await query.ToListAsync();
+            
+            if (!string.IsNullOrEmpty(loaiSp))
+            {
+                if (loaiSp == "PC" || loaiSp == "Laptop" || loaiSp == "Monitor")
+                {
+                    items = items.Where(s => s.Loaisanpham == loaiSp).ToList();
+                }
+                else
+                {
+                    items = items.Where(s => {
+                        var specs = JsonSerializer.Deserialize<Dictionary<string, string>>(s.Thongsokythuat, _jsonOptions);
+                        return specs != null && 
+                            (
+                                (specs.ContainsKey("Danh mục") && specs["Danh mục"] == loaiSp) ||
+                                (specs.ContainsKey("Loại ổ cứng") && specs["Loại ổ cứng"] == loaiSp)
+                            );
+                    }).ToList();
+                }
+            }
+
+            // Lấy danh sách các danh mục từ thongsokythuat và loaisanpham
+            var allProducts = await _context.Sanphams.ToListAsync();
+            var danhMucs = allProducts
+                .Select(s => {
+                    if (s.Loaisanpham == "PC" || s.Loaisanpham == "Laptop" || s.Loaisanpham == "Monitor")
+                        return s.Loaisanpham;
+
+                    var specs = JsonSerializer.Deserialize<Dictionary<string, string>>(s.Thongsokythuat, _jsonOptions);
+                    if (specs != null)
+                    {
+                        if (specs.ContainsKey("Danh mục")) return specs["Danh mục"];
+                        if (specs.ContainsKey("Loại ổ cứng")) return specs["Loại ổ cứng"];
+                    }
+                    return null;
+                })
+                .Where(dm => dm != null)
+                .Distinct()
+                .ToList();
+
+            ViewBag.LoaiSps = danhMucs;
             ViewBag.ThuongHieus = await _context.Sanphams.Select(s => s.Thuonghieu).Distinct().ToListAsync();
 
-            var totalItems = await query.CountAsync();
-            var items = await query.Skip((pageNumber - 1) * pageSize)
-                                  .Take(pageSize)
-                                  .ToListAsync();
+            // Thực hiện phân trang
+            var totalItems = items.Count;
+            var pagedItems = items
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
 
-            var model = new PaginatedList<Sanpham>(items, totalItems, pageNumber, pageSize);
+            var model = new PaginatedList<Sanpham>(pagedItems, totalItems, pageNumber, pageSize);
             return View(model);
         }
 

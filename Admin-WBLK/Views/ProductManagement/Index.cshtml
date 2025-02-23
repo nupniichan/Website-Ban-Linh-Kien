@@ -59,13 +59,40 @@
                 <select name="loaiSp" 
                         onchange="this.form.submit()"
                         class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-                    <option value="">Tất cả loại SP</option>
-                    @foreach(var loai in ViewBag.LoaiSps)
-                    {
-                        <option value="@loai" selected="@(ViewData["CurrentLoaiSp"]?.ToString() == loai)">
-                            @loai
-                        </option>
-                    }
+                    <option value="">Tất cả danh mục</option>
+                    <optgroup label="Linh kiện (Components)">
+                        <option value="CPU" selected="@(ViewData["CurrentLoaiSp"]?.ToString() == "CPU")">CPU</option>
+                        <option value="VGA" selected="@(ViewData["CurrentLoaiSp"]?.ToString() == "VGA")">Card đồ họa (VGA)</option>
+                        <option value="RAM" selected="@(ViewData["CurrentLoaiSp"]?.ToString() == "RAM")">RAM</option>
+                        <option value="Mainboard" selected="@(ViewData["CurrentLoaiSp"]?.ToString() == "Mainboard")">Bo mạch chủ</option>
+                        <option value="PSU" selected="@(ViewData["CurrentLoaiSp"]?.ToString() == "PSU")">Nguồn máy tính</option>
+                        <option value="Case" selected="@(ViewData["CurrentLoaiSp"]?.ToString() == "Case")">Vỏ case</option>
+                    </optgroup>
+                    <optgroup label="Thiết bị lưu trữ (Storage)">
+                        <option value="SSD" selected="@(ViewData["CurrentLoaiSp"]?.ToString() == "SSD")">Ổ cứng SSD</option>
+                        <option value="HDD" selected="@(ViewData["CurrentLoaiSp"]?.ToString() == "HDD")">Ổ cứng HDD</option>
+                    </optgroup>
+                    <optgroup label="Màn hình">
+                        <option value="Monitor" selected="@(ViewData["CurrentLoaiSp"]?.ToString() == "Monitor")">Màn hình</option>
+                    </optgroup>
+                    <optgroup label="Thiết bị ngoại vi (Peripherals)">
+                        <option value="Keyboard" selected="@(ViewData["CurrentLoaiSp"]?.ToString() == "Keyboard")">Bàn phím</option>
+                        <option value="Mouse" selected="@(ViewData["CurrentLoaiSp"]?.ToString() == "Mouse")">Chuột</option>
+                        <option value="Headphone" selected="@(ViewData["CurrentLoaiSp"]?.ToString() == "Headphone")">Tai nghe</option>
+                        <option value="Webcam" selected="@(ViewData["CurrentLoaiSp"]?.ToString() == "Webcam")">Webcam</option>
+                    </optgroup>
+                    <optgroup label="Thiết bị mạng (Network)">
+                        <option value="Router" selected="@(ViewData["CurrentLoaiSp"]?.ToString() == "Router")">Router</option>
+                        <option value="NetworkCard" selected="@(ViewData["CurrentLoaiSp"]?.ToString() == "NetworkCard")">Card mạng & Wifi</option>
+                    </optgroup>
+                    <optgroup label="Thiết bị âm thanh (Audio)">
+                        <option value="Speaker" selected="@(ViewData["CurrentLoaiSp"]?.ToString() == "Speaker")">Loa</option>
+                        <option value="Microphone" selected="@(ViewData["CurrentLoaiSp"]?.ToString() == "Microphone")">Microphone</option>
+                    </optgroup>
+                    <optgroup label="Máy tính">
+                        <option value="PC" selected="@(ViewData["CurrentLoaiSp"]?.ToString() == "PC")">PC Gaming</option>
+                        <option value="Laptop" selected="@(ViewData["CurrentLoaiSp"]?.ToString() == "Laptop")">Laptop</option>
+                    </optgroup>
                 </select>
 
                 <select name="thuongHieu" 

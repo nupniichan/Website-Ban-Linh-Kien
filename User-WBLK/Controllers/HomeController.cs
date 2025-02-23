@@ -204,19 +204,19 @@ namespace Website_Ban_Linh_Kien.Controllers
                     .OrderByDescending(d => d.Ngaydathang)
                     .Skip((page - 1) * pageSize)
                     .Take(pageSize)
-                    .Select(d => new
-                    {
-                        DonHang = d,
-                        ChiTiet = _context.Chitietdonhangs
-                            .Where(c => c.IdDh == d.IdDh)
-                            .ToList()
-                    })
                     .ToList();
 
                 var result = new
                 {
                     KhachHang = khachHang,
-                    DonHang = donHangs,
+                    DonHang = donHangs.Select(d => new
+                    {
+                        DonHang = d,
+                        ChiTiet = _context.Chitietdonhangs
+                            .Where(c => c.IdDh == d.IdDh)
+                            .ToList()
+                    }).ToList(),
+                    HasOrders = totalOrders > 0,
                     TotalOrders = totalOrders
                 };
 
@@ -228,6 +228,7 @@ namespace Website_Ban_Linh_Kien.Controllers
                 return View(result);
             }
 
+            ViewBag.SearchTerm = searchTerm;
             return View(null);
         }
 

@@ -23,9 +23,18 @@
 
         <!-- Buttons -->
         <div class="flex justify-center gap-4 pt-4">
-            <a href="/orderHistory" class="px-6 py-2.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                Xem lịch sử mua hàng
-            </a>
+            @if (User.Identity.IsAuthenticated)
+            {
+                <a href="/orderHistory" class="px-6 py-2.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                    Xem lịch sử mua hàng
+                </a>
+            }
+            else
+            {
+                <a href="/Home/TraCuuDonHang" class="px-6 py-2.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                    Tra cứu đơn hàng
+                </a>
+            }
             <a href="/" class="px-6 py-2.5 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">
                 Quay về trang chủ
             </a>
