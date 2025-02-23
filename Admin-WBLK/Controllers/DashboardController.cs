@@ -19,57 +19,74 @@ namespace Admin_WBLK.Controllers
 
         public async Task<IActionResult> Index()
         {
-            // Thống kê đơn hàng
-            var totalOrders = await _context.Donhangs.CountAsync();
-            var completedOrders = await _context.Donhangs
-                .Where(d => d.Trangthai == "Giao thành công")
-                .CountAsync();
-            var pendingOrders = await _context.Donhangs
-                .Where(d => d.Trangthai == "Đang giao")
-                .CountAsync();
+            try
+            {
+                // Thống kê đơn hàng
+                var totalOrders = await _context.Donhangs.CountAsync();
+                var completedOrders = await _context.Donhangs
+                    .Where(d => d.Trangthai == "Giao thành công")
+                    .CountAsync();
+                var pendingOrders = await _context.Donhangs
+                    .Where(d => d.Trangthai == "Đang giao")
+                    .CountAsync();
 
-            // Doanh thu
-            var totalRevenue = await _context.Donhangs
-                .Where(d => d.Trangthai == "Giao thành công")
-                .SumAsync(d => d.Tongtien);
+                // Doanh thu - bỏ điều kiện HasValue vì Tongtien là decimal không phải decimal?
+                var totalRevenue = await _context.Donhangs
+                    .Where(d => d.Trangthai == "Giao thành công")
+                    .SumAsync(d => d.Tongtien);
 
-            // Thống kê theo phương thức thanh toán
-            var paymentStats = await _context.Donhangs
-                .Where(d => d.Trangthai == "Giao thành công")
-                .GroupBy(d => d.Phuongthucthanhtoan)
-                .Select(g => new
+                // Thống kê theo phương thức thanh toán - thêm logging để debug
+                var paymentStats = await _context.Donhangs
+                    .Where(d => d.Trangthai == "Giao thành công")  // Bỏ điều kiện check null của phương thức
+                    .GroupBy(d => d.Phuongthucthanhtoan ?? "Không xác định")  // Xử lý null ngay tại đây
+                    .Select(g => new
+                    {
+                        Method = g.Key,
+                        Count = g.Count(),
+                        Amount = g.Sum(d => d.Tongtien)
+                    })
+                    .ToListAsync();
+
+                // Thêm logging chi tiết
+                foreach (var stat in paymentStats)
                 {
-                    Method = g.Key,
-                    Count = g.Count(),
-                    Amount = g.Sum(d => d.Tongtien)
-                })
-                .ToListAsync();
+                    _logger.LogInformation($"Payment Method: {stat.Method}, Count: {stat.Count}, Amount: {stat.Amount}");
+                }
 
-            // Thêm log để kiểm tra
-            _logger.LogInformation($"Payment Stats: {JsonSerializer.Serialize(paymentStats)}");
+                // Đơn hàng gần đây
+                var recentOrders = await _context.Donhangs
+                    .Where(d => !string.IsNullOrEmpty(d.Trangthai))
+                    .OrderByDescending(d => d.Ngaydathang ?? DateTime.MinValue)
+                    .Take(5)
+                    .Select(d => new
+                    {
+                        IdDh = d.IdDh,
+                        Ngaydathang = d.Ngaydathang,
+                        Tongtien = d.Tongtien,  // Bỏ ?? 0 vì Tongtien là decimal
+                        Trangthai = d.Trangthai ?? "Không xác định",
+                        Phuongthucthanhtoan = d.Phuongthucthanhtoan ?? "Không xác định"
+                    })
+                    .ToListAsync();
 
-            // Đơn hàng gần đây
-            var recentOrders = await _context.Donhangs
-                .OrderByDescending(d => d.Ngaydathang)
-                .Take(5)
-                .Select(d => new
-                {
-                    d.IdDh,
-                    d.Ngaydathang,
-                    d.Tongtien,
-                    d.Trangthai,
-                    d.Phuongthucthanhtoan
-                })
-                .ToListAsync();
+                // Log để debug
+                _logger.LogInformation($"Total Orders: {totalOrders}");
+                _logger.LogInformation($"Completed Orders: {completedOrders}");
+                _logger.LogInformation($"Payment Stats: {JsonSerializer.Serialize(paymentStats)}");
 
-            ViewBag.TotalOrders = totalOrders;
-            ViewBag.CompletedOrders = completedOrders;
-            ViewBag.PendingOrders = pendingOrders;
-            ViewBag.TotalRevenue = totalRevenue;
-            ViewBag.PaymentStats = paymentStats;
-            ViewBag.RecentOrders = recentOrders;
+                ViewBag.TotalOrders = totalOrders;
+                ViewBag.CompletedOrders = completedOrders;
+                ViewBag.PendingOrders = pendingOrders;
+                ViewBag.TotalRevenue = totalRevenue;
+                ViewBag.PaymentStats = paymentStats;
+                ViewBag.RecentOrders = recentOrders;
 
-            return View();
+                return View();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error in Dashboard Index: {ex.Message}");
+                throw;
+            }
         }
 
         public IActionResult Privacy()

@@ -197,107 +197,128 @@ document.getElementById('IdMgg')?.addEventListener('input', async function() {
 });
 
 // Thêm sản phẩm mới
-function addProductRow() {
-    const tbody = document.querySelector('#productTable tbody');
-    const newRow = document.createElement('tr');
-    newRow.innerHTML = `
-        <td class="px-4 py-3 border-b">
-            <input type="text" name="IdSp" class="product-id w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
-                   required pattern="^SP[0-9]{5}$" title="Mã sản phẩm phải bắt đầu bằng 'SP' và theo sau là 5 số" />
+function addProductRow(product, quantity = 1) {
+    // Kiểm tra xem bảng đã tồn tại chưa
+    const table = document.querySelector('#productTable tbody');
+    if (!table) {
+        console.error('Không tìm thấy bảng sản phẩm');
+        return;
+    }
+
+    // Kiểm tra sản phẩm đã tồn tại
+    const existingRow = document.querySelector(`tr[data-product-id="${product.idSp}"]`);
+    if (existingRow) {
+        // Nếu sản phẩm đã tồn tại, cập nhật số lượng
+        const quantityInput = existingRow.querySelector('input[type="number"]');
+        quantityInput.value = parseInt(quantityInput.value) + quantity;
+        updateRowTotal(existingRow);
+        return;
+    }
+
+    // Tạo dòng mới
+    const row = document.createElement('tr');
+    row.setAttribute('data-product-id', product.idSp);
+
+    // Format giá tiền
+    const formattedPrice = new Intl.NumberFormat('vi-VN', {
+        style: 'currency',
+        currency: 'VND'
+    }).format(product.gia);
+
+    // Nội dung HTML của dòng
+    row.innerHTML = `
+        <td>${product.idSp}</td>
+        <td>${product.tensanpham}</td>
+        <td>
+            <input type="number" 
+                   class="form-control quantity-input" 
+                   value="${quantity}"
+                   min="1" 
+                   max="${product.soluongton}"
+                   onchange="updateRowTotal(this.parentElement.parentElement)">
         </td>
-        <td class="px-4 py-3 border-b">
-            <input type="text" class="product-name w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg" readonly />
-        </td>
-        <td class="px-4 py-3 border-b">
-            <input type="number" name="Soluong" class="product-quantity w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
-                   required min="1" value="1" />
-        </td>
-        <td class="px-4 py-3 border-b">
-            <input type="number" name="Dongia" class="product-price w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg" readonly />
-        </td>
-        <td class="px-4 py-3 border-b text-center">
-            <button type="button" onclick="removeProductRow(this)" class="text-red-600 hover:text-red-800">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
+        <td class="product-price" data-price="${product.gia}">${formattedPrice}</td>
+        <td class="row-total"></td>
+        <td>
+            <button type="button" 
+                    class="btn btn-danger btn-sm"
+                    onclick="removeProductRow(this.parentElement.parentElement)">
+                Xóa
             </button>
         </td>
     `;
-    tbody.appendChild(newRow);
 
-    // Thêm event listener cho mã sản phẩm mới
-    const productInput = newRow.querySelector('.product-id');
-    productInput.addEventListener('input', async function() {
-        const productId = this.value;
-        const row = this.closest('tr');
-        if (!productId) {
-            row.querySelector('.product-name').value = '';
-            row.querySelector('.product-price').value = '';
-            return;
-        }
+    // Thêm dòng vào bảng
+    table.appendChild(row);
 
-        try {
-            const response = await fetch(`/OrderManagement/GetProductInfo?id=${encodeURIComponent(productId)}`);
-            const data = await response.json();
-            console.log(data);
-            if (data && data.tensanpham) {
-                row.querySelector('.product-name').value = data.tensanpham;
-                row.querySelector('.product-price').value = data.gia;
-                updateTotal();
-            } else {
-                row.querySelector('.product-name').value = 'Không tìm thấy sản phẩm';
-                row.querySelector('.product-price').value = '';
-            }
-        } catch (error) {
-            row.querySelector('.product-name').value = 'Lỗi khi tìm sản phẩm';
-            row.querySelector('.product-price').value = '';
-        }
-    });
-
-    // Thêm event listener cho số lượng
-    const quantityInput = newRow.querySelector('.product-quantity');
-    quantityInput.addEventListener('input', updateTotal);
+    // Cập nhật tổng tiền của dòng
+    updateRowTotal(row);
 }
 
-// Xóa sản phẩm
-function removeProductRow(button) {
-    button.closest('tr').remove();
-    updateTotal();
+// Hàm cập nhật tổng tiền của một dòng
+function updateRowTotal(row) {
+    const quantity = parseInt(row.querySelector('.quantity-input').value);
+    const price = parseFloat(row.querySelector('.product-price').dataset.price);
+    const total = quantity * price;
+
+    // Format và hiển thị tổng tiền
+    const formattedTotal = new Intl.NumberFormat('vi-VN', {
+        style: 'currency',
+        currency: 'VND'
+    }).format(total);
+
+    row.querySelector('.row-total').textContent = formattedTotal;
+
+    // Cập nhật tổng tiền đơn hàng
+    updateOrderTotal();
 }
 
-// Cập nhật tổng tiền
-function updateTotal() {
-    let total = 0;
+// Hàm xóa một dòng sản phẩm
+function removeProductRow(row) {
+    row.remove();
+    updateOrderTotal();
+}
+
+// Hàm cập nhật tổng tiền đơn hàng
+function updateOrderTotal() {
+    let subtotal = 0;
     const rows = document.querySelectorAll('#productTable tbody tr');
     
     rows.forEach(row => {
-        const quantity = parseFloat(row.querySelector('.product-quantity').value) || 0;
-        const price = parseFloat(row.querySelector('.product-price').value) || 0;
-        total += quantity * price;
+        const quantity = parseInt(row.querySelector('.quantity-input').value);
+        const price = parseFloat(row.querySelector('.product-price').dataset.price);
+        subtotal += quantity * price;
     });
 
-    // Hiển thị số tiền trước khi giảm giá
-    document.getElementById('originalTotal').textContent = total.toLocaleString('vi-VN');
+    // Lấy tỉ lệ giảm giá (nếu có)
+    const discountRate = parseFloat(document.getElementById('discountRate')?.value || 0) / 100;
+    const discount = subtotal * discountRate;
+    const total = subtotal - discount;
 
-    // Áp dụng giảm giá nếu có
-    if (currentDiscount > 0) {
-        const discountAmount = total * (currentDiscount / 100);
-        document.getElementById('discountAmount').textContent = 
-            `Giảm: -${discountAmount.toLocaleString('vi-VN')} VNĐ`;
-        document.getElementById('discountAmount').classList.remove('hidden');
-        total -= discountAmount;
-    } else {
-        document.getElementById('discountAmount').classList.add('hidden');
-    }
-
+    // Cập nhật hiển thị
+    document.getElementById('subtotal').textContent = formatCurrency(subtotal);
+    document.getElementById('discount').textContent = formatCurrency(discount);
+    document.getElementById('total').textContent = formatCurrency(total);
+    
+    // Cập nhật input hidden để submit form
     document.getElementById('Tongtien').value = total;
-    document.getElementById('displayTotal').textContent = total.toLocaleString('vi-VN');
 }
 
-// Initialize
+// Hàm format tiền tệ
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('vi-VN', {
+        style: 'currency',
+        currency: 'VND'
+    }).format(amount);
+}
+
+// Khởi tạo khi trang load
 document.addEventListener('DOMContentLoaded', function() {
-    // Thêm một hàng sản phẩm mặc định
-    addProductRow();
+    // Nếu đang ở trang chỉnh sửa, load sản phẩm hiện có
+    const existingProducts = document.querySelectorAll('#productTable tbody tr');
+    existingProducts.forEach(row => {
+        updateRowTotal(row);
+    });
 });
 
 // Validate form trước khi submit
@@ -334,8 +355,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const chitietdonhangs = [];
             for (const row of productRows) {
                 const idSp = row.querySelector('[name="IdSp"]').value;
-                const soluong = parseInt(row.querySelector('.product-quantity').value);
-                const dongia = parseFloat(row.querySelector('.product-price').value);
+                const soluong = parseInt(row.querySelector('.quantity-input').value);
+                const dongia = parseFloat(row.querySelector('.product-price').dataset.price);
 
                 if (!idSp || isNaN(soluong) || isNaN(dongia)) {
                     alert('Vui lòng kiểm tra lại thông tin sản phẩm');

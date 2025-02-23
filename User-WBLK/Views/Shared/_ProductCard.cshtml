@@ -27,7 +27,7 @@
     }
     <a href="@productUrl" class="block h-full">
         <div class="p-3 flex flex-col h-full">
-            <img src="@(Model?.ImageUrl ?? defaultImage)" alt="Product Image" class="w-full h-40 object-cover rounded-lg" loading="lazy" onerror="this.onerror=null; this.src='/imgs/default-product.jpg';">
+            <img src="http://localhost:5177/@Model.ImageUrl" alt="Product Image" class="w-full h-40 object-contain rounded-lg" loading="lazy" onerror="this.onerror=null; this.src='/imgs/default-product.jpg';">
             <div class="relative group flex-grow">
                 <h3 class="text-base font-semibold mt-3 product-title overflow-hidden h-12 line-clamp-2"
                     data-full-text="@(Model?.TenSp ?? defaultName)">

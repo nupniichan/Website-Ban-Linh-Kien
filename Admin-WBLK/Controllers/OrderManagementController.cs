@@ -16,7 +16,7 @@ namespace Admin_WBLK.Controllers
 
         // GET: OrderManagement
         [HttpGet]
-        public async Task<IActionResult> Index(string searchString, string trangThai, DateTime? tuNgay, DateTime? denNgay, int pageNumber = 1)
+        public async Task<IActionResult> Index(string searchString, string trangThai, DateTime? tuNgay, DateTime? denNgay, int? pageNumber)
         {
             int pageSize = 10;
             ViewData["CurrentFilter"] = searchString;
@@ -24,31 +24,41 @@ namespace Admin_WBLK.Controllers
             ViewData["CurrentTuNgay"] = tuNgay;
             ViewData["CurrentDenNgay"] = denNgay;
 
+            // Sử dụng select để chỉ lấy các trường cần thiết và xử lý NULL
             var query = _context.Donhangs
                 .Include(d => d.IdKhNavigation)
-                .Include(d => d.IdMggNavigation)
+                .Include(d => d.Chitietdonhangs)
                 .Select(d => new Donhang
                 {
-                    IdDh = d.IdDh,
-                    Trangthai = d.Trangthai,
-                    Tongtien = d.Tongtien,
-                    Diachigiaohang = d.Diachigiaohang,
-                    Ngaydathang = d.Ngaydathang,
-                    Phuongthucthanhtoan = d.Phuongthucthanhtoan,
+                    IdDh = d.IdDh ?? "",
                     IdKh = d.IdKh,
+                    Trangthai = d.Trangthai ?? "",
+                    Tongtien = d.Tongtien != 0 ? d.Tongtien : d.Chitietdonhangs.Sum(c => c.Soluongsanpham * c.Dongia),
+                    Diachigiaohang = d.Diachigiaohang ?? "",
+                    Ngaydathang = d.Ngaydathang,
+                    Phuongthucthanhtoan = d.Phuongthucthanhtoan ?? "",
                     IdMgg = d.IdMgg,
-                    Ghichu = d.Ghichu,
-                    LydoHuy = d.LydoHuy,
-                    IdKhNavigation = d.IdKhNavigation,
-                    IdMggNavigation = d.IdMggNavigation
-                });
+                    Ghichu = d.Ghichu ?? "",
+                    LydoHuy = d.LydoHuy ?? "",
+                    IdKhNavigation = d.IdKhNavigation == null ? null : new Khachhang
+                    {
+                        IdKh = d.IdKhNavigation.IdKh,
+                        Hoten = d.IdKhNavigation.Hoten ?? ""
+                    },
+                    Chitietdonhangs = d.Chitietdonhangs
+                })
+                .AsQueryable();
+
+            // Thêm điều kiện sắp xếp mặc định theo ngày đặt hàng mới nhất
+            query = query.OrderByDescending(x => x.Ngaydathang);
 
             if (!string.IsNullOrEmpty(searchString))
             {
                 searchString = searchString.ToLower();
-                query = query.Where(d => d.IdDh.ToLower().Contains(searchString) ||
-                                       (d.IdKhNavigation != null &&
-                                        d.IdKhNavigation.Hoten.ToLower().Contains(searchString)));
+                query = query.Where(d => 
+                    d.IdDh.ToLower().Contains(searchString) ||
+                    (d.IdKhNavigation != null && 
+                     d.IdKhNavigation.Hoten.ToLower().Contains(searchString)));
             }
 
             if (!string.IsNullOrEmpty(trangThai))
@@ -82,11 +92,12 @@ namespace Admin_WBLK.Controllers
             try
             {
                 var totalItems = await query.CountAsync();
-                var items = await query.Skip((pageNumber - 1) * pageSize)
-                                     .Take(pageSize)
-                                     .ToListAsync();
+                var items = await query
+                    .Skip(((pageNumber ?? 1) - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
 
-                var model = new PaginatedList<Donhang>(items, totalItems, pageNumber, pageSize);
+                var model = new PaginatedList<Donhang>(items, totalItems, pageNumber ?? 1, pageSize);
                 return View(model);
             }
             catch (Exception ex)
@@ -128,6 +139,37 @@ namespace Admin_WBLK.Controllers
                 .Include(d => d.IdMggNavigation)
                 .Include(d => d.Chitietdonhangs)
                     .ThenInclude(c => c.IdSpNavigation)
+                .Select(d => new Donhang
+                {
+                    IdDh = d.IdDh ?? "",
+                    IdKh = d.IdKh ?? "",
+                    Trangthai = d.Trangthai ?? "",
+                    Tongtien = d.Tongtien,
+                    Diachigiaohang = d.Diachigiaohang ?? "",
+                    Ngaydathang = d.Ngaydathang,
+                    Phuongthucthanhtoan = d.Phuongthucthanhtoan ?? "",
+                    IdMgg = d.IdMgg,
+                    Ghichu = d.Ghichu ?? "",
+                    LydoHuy = d.LydoHuy ?? "",
+                    IdKhNavigation = d.IdKhNavigation == null ? null : new Khachhang
+                    {
+                        IdKh = d.IdKhNavigation.IdKh ?? "",
+                        Hoten = d.IdKhNavigation.Hoten ?? ""
+                    },
+                    IdMggNavigation = d.IdMggNavigation,
+                    Chitietdonhangs = d.Chitietdonhangs.Select(c => new Chitietdonhang
+                    {
+                        IdDh = c.IdDh ?? "",
+                        IdSp = c.IdSp ?? "",
+                        Soluongsanpham = c.Soluongsanpham,
+                        Dongia = c.Dongia,
+                        IdSpNavigation = c.IdSpNavigation == null ? null : new Sanpham
+                        {
+                            IdSp = c.IdSpNavigation.IdSp ?? "",
+                            Tensanpham = c.IdSpNavigation.Tensanpham ?? ""
+                        }
+                    }).ToList()
+                })
                 .FirstOrDefaultAsync(m => m.IdDh == id);
 
             if (donhang == null)
@@ -449,6 +491,37 @@ namespace Admin_WBLK.Controllers
                 .Include(d => d.IdMggNavigation)
                 .Include(d => d.Chitietdonhangs)
                     .ThenInclude(c => c.IdSpNavigation)
+                .Select(d => new Donhang
+                {
+                    IdDh = d.IdDh ?? "",
+                    IdKh = d.IdKh ?? "",
+                    Trangthai = d.Trangthai ?? "",
+                    Tongtien = d.Tongtien,
+                    Diachigiaohang = d.Diachigiaohang ?? "",
+                    Ngaydathang = d.Ngaydathang,
+                    Phuongthucthanhtoan = d.Phuongthucthanhtoan ?? "",
+                    IdMgg = d.IdMgg,
+                    Ghichu = d.Ghichu ?? "",
+                    LydoHuy = d.LydoHuy ?? "",
+                    IdKhNavigation = d.IdKhNavigation == null ? null : new Khachhang
+                    {
+                        IdKh = d.IdKhNavigation.IdKh ?? "",
+                        Hoten = d.IdKhNavigation.Hoten ?? ""
+                    },
+                    IdMggNavigation = d.IdMggNavigation,
+                    Chitietdonhangs = d.Chitietdonhangs.Select(c => new Chitietdonhang
+                    {
+                        IdDh = c.IdDh ?? "",
+                        IdSp = c.IdSp ?? "",
+                        Soluongsanpham = c.Soluongsanpham,
+                        Dongia = c.Dongia,
+                        IdSpNavigation = c.IdSpNavigation == null ? null : new Sanpham
+                        {
+                            IdSp = c.IdSpNavigation.IdSp ?? "",
+                            Tensanpham = c.IdSpNavigation.Tensanpham ?? ""
+                        }
+                    }).ToList()
+                })
                 .FirstOrDefaultAsync(m => m.IdDh == id);
 
             if (donhang == null)

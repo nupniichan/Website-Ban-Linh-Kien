@@ -23,9 +23,9 @@ public partial class Sanpham
 
     public string? Hinhanh { get; set; }
 
-    public int? Soluotxem { get; set; }
+    public int Soluotxem { get; set; }
 
-    public int? Damuahang { get; set; }
+    public int Damuahang { get; set; }
 
     public virtual ICollection<Chitietdonhang> Chitietdonhangs { get; set; } = new List<Chitietdonhang>();
 

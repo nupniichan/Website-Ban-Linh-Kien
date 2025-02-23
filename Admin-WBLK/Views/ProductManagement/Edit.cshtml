@@ -343,6 +343,56 @@
                     // ... copy toàn bộ xử lý sự kiện từ Create.cshtml ...
                 });
             }
+
+            // Thêm xử lý submit form
+            const form = document.getElementById('productForm');
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                try {
+                    // Cập nhật nội dung mô tả từ editor
+                    const moTaEditor = document.getElementById('moTaEditor');
+                    const moTaInput = document.querySelector('textarea[name="Mota"]');
+                    if (moTaEditor && moTaInput) {
+                        moTaInput.value = moTaEditor.innerHTML;
+                    }
+                    
+                    // Cập nhật thông số kỹ thuật
+                    const specs = {};
+                    const rows = document.querySelectorAll('#specTable tbody tr');
+                    rows.forEach(row => {
+                        const keyInput = row.querySelector('input[name$="].key"]');
+                        const valueInput = row.querySelector('input[name$="].value"]');
+                        if (keyInput && valueInput) {
+                            specs[keyInput.value] = valueInput.value;
+                        }
+                    });
+                    
+                    // Cập nhật input hidden thongsokythuat
+                    const thongSoInput = document.querySelector('input[name="thongsokythuat"]');
+                    if (thongSoInput) {
+                        thongSoInput.value = JSON.stringify(specs);
+                    }
+
+                    // Submit form bằng AJAX để xử lý file upload
+                    const formData = new FormData(form);
+                    const response = await fetch(form.action, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (response.ok) {
+                        // Chuyển hướng về trang Index hoặc returnUrl
+                        const returnUrl = document.querySelector('input[name="returnUrl"]').value;
+                        window.location.href = returnUrl || '/ProductManagement';
+                    } else {
+                        throw new Error('Có lỗi xảy ra khi lưu sản phẩm');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert(error.message);
+                }
+            });
         });
 
         // Copy toàn bộ các hàm xử lý từ Create.cshtml
@@ -394,5 +444,97 @@
             moTaInput.value = editor.innerHTML;
         }
 
+        // Thêm các hàm xử lý thông số kỹ thuật
+        function addRow() {
+            const tbody = document.querySelector('#specTable tbody');
+            const rowCount = tbody.children.length;
+            const row = document.createElement('tr');
+            row.className = 'border';
+            
+            const inputClass = "w-full px-2 py-1 border-0 focus:outline-none focus:ring-0";
+            
+            row.innerHTML = `
+                <td class="px-4 py-2 border">
+                    <input type="text" 
+                           name="specs[${rowCount}].key" 
+                           class="${inputClass}"
+                           placeholder="Tên thông số"
+                           required>
+                </td>
+                <td class="px-4 py-2 border">
+                    <input type="text" 
+                           name="specs[${rowCount}].value" 
+                           class="${inputClass}"
+                           placeholder="Giá trị"
+                           required>
+                </td>
+                <td class="px-4 py-2 border text-center">
+                    <button type="button" onclick="removeRow(this)" 
+                            class="text-red-500 hover:text-red-700 transition-colors">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        }
+
+        function removeRow(button) {
+            const row = button.closest('tr');
+            row.remove();
+        }
+
+        // Thêm các hàm xử lý hình ảnh
+        function previewImage(input) {
+            const currentImage = document.getElementById('currentImage');
+            const imageError = document.getElementById('imageError');
+            
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                
+                // Kiểm tra kích thước file (5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    imageError.textContent = 'Kích thước file không được vượt quá 5MB';
+                    input.value = '';
+                    return;
+                }
+                
+                // Kiểm tra định dạng file
+                if (!file.type.startsWith('image/')) {
+                    imageError.textContent = 'Vui lòng chọn file hình ảnh';
+                    input.value = '';
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    currentImage.src = e.target.result;
+                    imageError.textContent = '';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function dragOverHandler(event) {
+            event.preventDefault();
+            event.currentTarget.classList.add('border-blue-500', 'bg-blue-50');
+        }
+
+        function dragLeaveHandler(event) {
+            event.currentTarget.classList.remove('border-blue-500', 'bg-blue-50');
+        }
+
+        function dropHandler(event) {
+            event.preventDefault();
+            event.currentTarget.classList.remove('border-blue-500', 'bg-blue-50');
+            
+            const dt = event.dataTransfer;
+            const files = dt.files;
+            
+            if (files.length > 0) {
+                const fileInput = document.getElementById('imageFile');
+                fileInput.files = files;
+                previewImage(fileInput);
+            }
+        }
     </script>
 }

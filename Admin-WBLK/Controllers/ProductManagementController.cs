@@ -38,8 +38,10 @@ namespace Admin_WBLK.Controllers
             ViewData["CurrentThuongHieu"] = thuongHieu;
             ViewData["CurrentSort"] = sortOrder;
 
+            // Lấy toàn bộ dữ liệu về trước
             var query = _context.Sanphams.AsQueryable();
 
+            // Áp dụng các điều kiện lọc cơ bản
             if (!string.IsNullOrEmpty(searchString))
             {
                 searchString = searchString.ToLower();
@@ -47,17 +49,12 @@ namespace Admin_WBLK.Controllers
                                         s.Tensanpham.ToLower().Contains(searchString));
             }
 
-            if (!string.IsNullOrEmpty(loaiSp))
-            {
-                query = query.Where(s => s.Loaisanpham == loaiSp);
-            }
-
             if (!string.IsNullOrEmpty(thuongHieu))
             {
                 query = query.Where(s => s.Thuonghieu == thuongHieu);
             }
 
-            // Sắp xếp theo tùy chọn người dùng
+            // Thực hiện sắp xếp
             switch (sortOrder)
             {
                 case "oldest":
@@ -69,15 +66,58 @@ namespace Admin_WBLK.Controllers
                     break;
             }
 
-            ViewBag.LoaiSps = await _context.Sanphams.Select(s => s.Loaisanpham).Distinct().ToListAsync();
+            // Lấy dữ liệu về và thực hiện lọc theo Danh mục
+            var items = await query.ToListAsync();
+            
+            if (!string.IsNullOrEmpty(loaiSp))
+            {
+                if (loaiSp == "PC" || loaiSp == "Laptop" || loaiSp == "Monitor")
+                {
+                    items = items.Where(s => s.Loaisanpham == loaiSp).ToList();
+                }
+                else
+                {
+                    items = items.Where(s => {
+                        var specs = JsonSerializer.Deserialize<Dictionary<string, string>>(s.Thongsokythuat, _jsonOptions);
+                        return specs != null && 
+                            (
+                                (specs.ContainsKey("Danh mục") && specs["Danh mục"] == loaiSp) ||
+                                (specs.ContainsKey("Loại ổ cứng") && specs["Loại ổ cứng"] == loaiSp)
+                            );
+                    }).ToList();
+                }
+            }
+
+            // Lấy danh sách các danh mục từ thongsokythuat và loaisanpham
+            var allProducts = await _context.Sanphams.ToListAsync();
+            var danhMucs = allProducts
+                .Select(s => {
+                    if (s.Loaisanpham == "PC" || s.Loaisanpham == "Laptop" || s.Loaisanpham == "Monitor")
+                        return s.Loaisanpham;
+
+                    var specs = JsonSerializer.Deserialize<Dictionary<string, string>>(s.Thongsokythuat, _jsonOptions);
+                    if (specs != null)
+                    {
+                        if (specs.ContainsKey("Danh mục")) return specs["Danh mục"];
+                        if (specs.ContainsKey("Loại ổ cứng")) return specs["Loại ổ cứng"];
+                    }
+                    return null;
+                })
+                .Where(dm => dm != null)
+                .Distinct()
+                .ToList();
+
+            ViewBag.LoaiSps = danhMucs;
             ViewBag.ThuongHieus = await _context.Sanphams.Select(s => s.Thuonghieu).Distinct().ToListAsync();
 
-            var totalItems = await query.CountAsync();
-            var items = await query.Skip((pageNumber - 1) * pageSize)
-                                  .Take(pageSize)
-                                  .ToListAsync();
+            // Thực hiện phân trang
+            var totalItems = items.Count;
+            var pagedItems = items
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
 
-            var model = new PaginatedList<Sanpham>(items, totalItems, pageNumber, pageSize);
+            var model = new PaginatedList<Sanpham>(pagedItems, totalItems, pageNumber, pageSize);
             return View(model);
         }
 
@@ -213,6 +253,16 @@ namespace Admin_WBLK.Controllers
                 return NotFound();
             }
 
+            // Lưu các tham số hiện tại vào TempData
+            if (string.IsNullOrEmpty(returnUrl))
+            {
+                TempData["CurrentPage"] = Request.Query["pageNumber"].ToString();
+                TempData["CurrentFilter"] = Request.Query["searchString"].ToString();
+                TempData["CurrentLoaiSp"] = Request.Query["loaiSp"].ToString();
+                TempData["CurrentThuongHieu"] = Request.Query["thuongHieu"].ToString();
+                TempData["CurrentSort"] = Request.Query["sortOrder"].ToString();
+            }
+
             ViewData["ReturnUrl"] = returnUrl;
             return View(sanpham);
         }
@@ -223,18 +273,26 @@ namespace Admin_WBLK.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(string id, [Bind("IdSp,Tensanpham,Gia,Soluongton,Loaisanpham,Thuonghieu,Hinhanh,Mota,Thongsokythuat")] Sanpham sanpham, 
-            IFormFile? imageFile, string returnUrl)
+            IFormFile? imageFile, string? returnUrl)
         {
-            if (id != sanpham.IdSp)
+            try 
             {
-                return NotFound();
-            }
+                Console.WriteLine($"ImageFile is null: {imageFile == null}");
+                if (imageFile != null) 
+                {
+                    Console.WriteLine($"ImageFile length: {imageFile.Length}");
+                    Console.WriteLine($"ImageFile name: {imageFile.FileName}");
+                }
+                
+                if (id != sanpham.IdSp)
+                {
+                    return NotFound();
+                }
 
-            try
-            {
                 // Bỏ qua validation cho các trường sẽ được tự động set
                 ModelState.Remove("IdNvNavigation");
                 ModelState.Remove("IdNv");
+                ModelState.Remove("returnUrl");
                 
                 if (!ModelState.IsValid)
                 {
@@ -266,7 +324,7 @@ namespace Admin_WBLK.Controllers
                         var oldImagePath = Path.Combine(
                             Directory.GetCurrentDirectory(),
                             "wwwroot",
-                            existingProduct.Hinhanh.TrimStart('/')
+                            existingProduct.Hinhanh.TrimStart('/').Replace("/", "\\")
                         );
                         if (System.IO.File.Exists(oldImagePath))
                         {
@@ -274,22 +332,22 @@ namespace Admin_WBLK.Controllers
                         }
                     }
 
-                    // Lưu file ảnh mới
-                    var fileName = Path.GetRandomFileName() + Path.GetExtension(imageFile.FileName);
+                    // Tạo thư mục nếu chưa tồn tại
                     var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Images", "ProductImage");
-                    
-                    if (!Directory.Exists(uploadPath))
-                    {
-                        Directory.CreateDirectory(uploadPath);
-                    }
+                    Directory.CreateDirectory(uploadPath); // Sẽ tạo thư mục nếu chưa tồn tại
 
+                    // Tạo tên file ngẫu nhiên với đuôi file gốc
+                    var fileName = $"{Guid.NewGuid()}{Path.GetExtension(imageFile.FileName)}";
                     var filePath = Path.Combine(uploadPath, fileName);
+
+                    // Lưu file
                     using (var stream = new FileStream(filePath, FileMode.Create))
                     {
                         await imageFile.CopyToAsync(stream);
                     }
 
-                    sanpham.Hinhanh = "/Images/ProductImage/" + fileName;
+                    // Cập nhật đường dẫn trong database (sử dụng dấu / cho URL)
+                    sanpham.Hinhanh = $"/Images/ProductImage/{fileName}";
                 }
                 else
                 {
@@ -331,25 +389,26 @@ namespace Admin_WBLK.Controllers
 
                 TempData["Success"] = "Cập nhật sản phẩm thành công!";
                 
+                // Nếu có returnUrl, giải mã và chuyển hướng về đó
                 if (!string.IsNullOrEmpty(returnUrl))
-                    return Redirect(returnUrl);
-                return RedirectToAction(nameof(Index));
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!SanphamExists(sanpham.IdSp))
                 {
-                    return NotFound();
+                    return Redirect(Uri.UnescapeDataString(returnUrl));
                 }
-                else
+
+                // Nếu không có returnUrl, chuyển về Index với các tham số hiện tại
+                return RedirectToAction(nameof(Index), new
                 {
-                    throw;
-                }
+                    pageNumber = TempData["CurrentPage"],
+                    searchString = TempData["CurrentFilter"],
+                    loaiSp = TempData["CurrentLoaiSp"],
+                    thuongHieu = TempData["CurrentThuongHieu"],
+                    sortOrder = TempData["CurrentSort"]
+                });
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Lỗi: " + ex.Message);
-                Console.WriteLine("Stack trace: " + ex.StackTrace);
+                Console.WriteLine($"Error in Edit action: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
                 ModelState.AddModelError("", $"Có lỗi xảy ra: {ex.Message}");
                 return View(sanpham);
             }
