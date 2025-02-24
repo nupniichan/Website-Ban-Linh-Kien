@@ -23,31 +23,36 @@ namespace Website_Ban_Linh_Kien.Controllers
             var viewModel = new CheckoutViewModel
             {
                 StoreAddress = STORE_ADDRESS,
-                DeliveryMethod = DeliveryMethod.HomeDelivery
+                DeliveryMethod = DeliveryMethod.HomeDelivery,
+                VipDiscountPercentage = 0  // default for non-VIP or guest
             };
 
             if (User.Identity?.IsAuthenticated == true)
             {
-                // Lấy CustomerId từ Claims
                 var customerId = User.FindFirstValue("CustomerId");
                 if (!string.IsNullOrEmpty(customerId))
                 {
-                    // Lấy thông tin khách hàng từ database
                     var customer = await _context.Khachhangs
                         .Include(k => k.Giohangs)
                             .ThenInclude(g => g.Chitietgiohangs)
                                 .ThenInclude(c => c.IdSpNavigation)
+                        .Include(k => k.IdXephangvipNavigation) // Include VIP info
                         .FirstOrDefaultAsync(k => k.IdKh == customerId);
 
                     if (customer != null)
                     {
-                        // Điền thông tin khách hàng vào viewModel
                         viewModel.CustomerId = customer.IdKh;
                         viewModel.ReceiverName = customer.Hoten;
                         viewModel.Email = customer.Email;
                         viewModel.ReceiverPhone = customer.Sodienthoai;
 
-                        // Lấy giỏ hàng hiện tại của khách hàng
+                        // Set VIP discount percentage if available
+                        if (customer.IdXephangvipNavigation != null)
+                        {
+                            viewModel.VipDiscountPercentage = customer.IdXephangvipNavigation.Phantramgiamgia;
+                        }
+
+                        // Populate cart items...
                         var currentCart = customer.Giohangs
                             .OrderByDescending(g => g.Thoigiancapnhat)
                             .FirstOrDefault();
@@ -67,10 +72,9 @@ namespace Website_Ban_Linh_Kien.Controllers
                             }
                         }
 
-                        // Nếu có địa chỉ, điền vào form
+                        // Process address...
                         if (!string.IsNullOrEmpty(customer.Diachi))
                         {
-                            // Giả sử địa chỉ được lưu theo format: "Số nhà, Phường/Xã, Quận/Huyện, Tỉnh/TP"
                             var addressParts = customer.Diachi.Split(',').Select(p => p.Trim()).ToList();
                             if (addressParts.Count >= 4)
                             {
@@ -83,6 +87,9 @@ namespace Website_Ban_Linh_Kien.Controllers
                     }
                 }
             }
+
+            // Optionally calculate TotalAmount here, e.g.
+            // viewModel.TotalAmount = viewModel.Items.Sum(i => i.Price * i.Quantity);
 
             return View(viewModel);
         }
@@ -133,7 +140,9 @@ namespace Website_Ban_Linh_Kien.Controllers
                         .Include(k => k.Giohangs)
                             .ThenInclude(g => g.Chitietgiohangs)
                                 .ThenInclude(c => c.IdSpNavigation)
+                        .Include(k => k.IdXephangvipNavigation) // include VIP info here
                         .FirstOrDefaultAsync(k => k.IdKh == customerId);
+
 
                     if (loggedInCustomer?.Giohangs != null)
                     {
@@ -282,6 +291,15 @@ namespace Website_Ban_Linh_Kien.Controllers
                 }
                 string orderId = $"DH{nextOrderId:D6}";
 
+                // Calculate original total and apply VIP discount if available
+                decimal originalTotal = model.Items.Sum(i => i.Price * i.Quantity);
+                decimal discountPercentage = 0;
+                if (loggedInCustomer != null && loggedInCustomer.IdXephangvipNavigation != null)
+                {
+                    discountPercentage = loggedInCustomer.IdXephangvipNavigation.Phantramgiamgia;
+                }
+                decimal totalAfterDiscount = originalTotal * (1 - discountPercentage / 100);
+
                 // Tạo đơn hàng với địa chỉ giao hàng riêng
                 var order = new Donhang
                 {
@@ -294,7 +312,7 @@ namespace Website_Ban_Linh_Kien.Controllers
                     Phuongthucthanhtoan = "COD",
                     Trangthai = "Chờ xác nhận",
                     Ghichu = string.IsNullOrWhiteSpace(model.Note) ? null : model.Note,
-                    Tongtien = model.Items.Sum(i => i.Price * i.Quantity)
+                    Tongtien = totalAfterDiscount
                 };
 
                 using (var transaction = await _context.Database.BeginTransactionAsync())
@@ -511,6 +529,16 @@ namespace Website_Ban_Linh_Kien.Controllers
                 }
                 string orderId = $"DH{nextOrderId:D6}";
 
+                // Calculate original total and apply VIP discount if available
+                decimal originalTotal = model.Items.Sum(i => i.Price * i.Quantity);
+                decimal discountPercentage = 0;
+                // For guest orders, no VIP discount is applied
+                if (existingCustomer != null && existingCustomer.IdXephangvipNavigation != null)
+                {
+                    discountPercentage = existingCustomer.IdXephangvipNavigation.Phantramgiamgia;
+                }
+                decimal totalAfterDiscount = originalTotal * (1 - discountPercentage / 100);
+
                 var order = new Donhang
                 {
                     IdDh = orderId,
@@ -522,7 +550,7 @@ namespace Website_Ban_Linh_Kien.Controllers
                     Phuongthucthanhtoan = "COD",
                     Trangthai = "Chờ xác nhận",
                     Ghichu = string.IsNullOrWhiteSpace(model.Note) ? null : model.Note,
-                    Tongtien = model.Items.Sum(i => i.Price * i.Quantity)
+                    Tongtien = totalAfterDiscount
                 };
 
                 using (var transaction = await _context.Database.BeginTransactionAsync())

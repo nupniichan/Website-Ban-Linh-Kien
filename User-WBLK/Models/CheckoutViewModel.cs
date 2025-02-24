@@ -34,6 +34,12 @@ public class CheckoutViewModel
 
     [Display(Name = "Tổng tiền")]
     public decimal TotalAmount => Items.Sum(item => item.SubTotal);
+
+    // Add this property for the VIP discount percentage (e.g., 3, 7, or 10)
+    public decimal VipDiscountPercentage { get; set; } = 0;
+
+    // A computed property that shows the final total after discount.
+    public decimal DiscountedTotal => TotalAmount * (1 - VipDiscountPercentage / 100);
 }
 
 public class CheckoutItemViewModel

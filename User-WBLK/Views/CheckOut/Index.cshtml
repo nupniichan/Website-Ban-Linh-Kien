@@ -158,12 +158,26 @@
             <!-- Tổng tiền -->
             <div class="bg-white p-4 border border-gray-200 rounded-lg">
                 <div class="flex justify-between items-center">
-                    <span class="text-lg">Tổng tiền tạm tính:</span>
-                    <span id="totalAmount" class="text-xl text-red-500 font-medium">
+                    <span class="text-lg">Tổng tiền ban đầu:</span>
+                    <span id="originalTotal" class="text-xl text-gray-700 font-medium">
                         @Model.TotalAmount.ToString("N0")đ
                     </span>
                 </div>
+                <div class="flex justify-between items-center mt-2">
+                    <span class="text-lg">
+                        Tổng tiền sau giảm 
+                        (<span id="discountPercentage">
+                            @((User.Identity?.IsAuthenticated == true) ? Model.VipDiscountPercentage.ToString() : "0")
+                        </span>%):
+                    </span>
+                    <span id="discountedTotal" class="text-xl text-red-500 font-medium">
+                        @(User.Identity?.IsAuthenticated == true 
+                            ? (Model.TotalAmount * (1 - Model.VipDiscountPercentage / 100)).ToString("N0") 
+                            : Model.TotalAmount.ToString("N0"))đ
+                    </span>
+                </div>
             </div>
+
 
             <!-- Modal xác nhận đặt hàng cho khách đã đăng nhập -->
             @if (User.Identity?.IsAuthenticated == true)
@@ -285,49 +299,59 @@
         }
 
         function showOrderConfirmation() {
+            // Determine if the user is logged in.
             const isAuthenticated = @Json.Serialize(User.Identity?.IsAuthenticated == true);
-            
+
+            // If logged in, get the discount percentage from the server.
+            // This will be a raw number (e.g. 3 for 3% discount).
+            let discountPercentage = 0;
             if (isAuthenticated) {
-                // Lấy thông tin từ form
-                const form = document.getElementById('checkoutForm');
-                const name = form.querySelector('[name="ReceiverName"]').value;
-                const phone = form.querySelector('[name="ReceiverPhone"]').value;
-                const deliveryMethod = form.querySelector('input[name="DeliveryMethod"]:checked').value;
-                
-                let address = '';
-                if (deliveryMethod === '0') { // Store pickup
-                    address = '@Model.StoreAddress';
-                } else {
-                    const street = form.querySelector('[name="StreetAddress"]').value;
-                    const ward = form.querySelector('[name="Ward"]').value;
-                    const district = form.querySelector('[name="District"]').value;
-                    const city = form.querySelector('[name="City"]').value;
-                    address = `${street}, ${ward}, ${district}, ${city}`;
-                }
+                discountPercentage = @((User.Identity?.IsAuthenticated == true) ? Model.VipDiscountPercentage : 0);
+            }
 
-                // Tính tổng tiền
-                const total = Array.from(document.querySelectorAll('.cart-item'))
-                    .reduce((sum, item) => {
-                        const price = parseFloat(item.dataset.price);
-                        const quantity = parseInt(item.dataset.quantity);
-                        return sum + (price * quantity);
-                    }, 0);
+            // Get information from the form.
+            const form = document.getElementById('checkoutForm');
+            const name = form.querySelector('[name="ReceiverName"]').value;
+            const phone = form.querySelector('[name="ReceiverPhone"]').value;
+            const deliveryMethod = form.querySelector('input[name="DeliveryMethod"]:checked').value;
+            
+            let address = '';
+            if (deliveryMethod === '0') { // Store pickup
+                address = '@Model.StoreAddress';
+            } else {
+                const street = form.querySelector('[name="StreetAddress"]').value;
+                const ward = form.querySelector('[name="Ward"]').value;
+                const district = form.querySelector('[name="District"]').value;
+                const city = form.querySelector('[name="City"]').value;
+                address = `${street}, ${ward}, ${district}, ${city}`;
+            }
 
-                // Hiển thị thông tin trong modal
-                document.getElementById('confirmName').textContent = name;
-                document.getElementById('confirmPhone').textContent = phone;
-                document.getElementById('confirmAddress').textContent = address;
-                document.getElementById('confirmTotal').textContent = total.toLocaleString('vi-VN') + 'đ';
+            // Calculate the original total from all cart items.
+            const total = Array.from(document.querySelectorAll('.cart-item')).reduce((sum, item) => {
+                const price = parseFloat(item.dataset.price);
+                const quantity = parseInt(item.dataset.quantity);
+                return sum + (price * quantity);
+            }, 0);
+            
+            // If the user is logged in, apply the discount.
+            const finalTotal = isAuthenticated ? total * (1 - discountPercentage / 100) : total;
+            
+            // Display the information in the confirmation modal.
+            document.getElementById('confirmName').textContent = name;
+            document.getElementById('confirmPhone').textContent = phone;
+            document.getElementById('confirmAddress').textContent = address;
+            document.getElementById('confirmTotal').textContent = finalTotal.toLocaleString('vi-VN') + 'đ';
 
-                // Hiện modal xác nhận
+            // Show the appropriate modal.
+            if (isAuthenticated) {
                 document.getElementById('loggedInOrderConfirmModal').classList.remove('hidden');
                 document.getElementById('loggedInOrderConfirmModal').classList.add('flex');
             } else {
-                // Hiện modal cho khách vãng lai
                 document.getElementById('orderConfirmModal').classList.remove('hidden');
                 document.getElementById('orderConfirmModal').classList.add('flex');
             }
         }
+
 
         function closeOrderConfirm() {
             const isAuthenticated = @Json.Serialize(User.Identity?.IsAuthenticated == true);
