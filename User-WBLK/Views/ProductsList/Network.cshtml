@@ -222,7 +222,9 @@
                 break;
             }
             default:
-                <div class="text-gray-500">Vui lòng chọn danh mục để xem các bộ lọc chi tiết</div>
+                <script>
+                    window.location.href = '@Url.Action("Network", "ProductsList", new { category = "router" })';
+                </script>
                 break;
         }
 

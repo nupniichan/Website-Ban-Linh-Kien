@@ -447,7 +447,9 @@
                 break;
 
             default:
-                <div class="text-gray-500">Vui lòng chọn danh mục để xem các bộ lọc chi tiết</div>
+                <script>
+                    window.location.href = '@Url.Action("Peripherals", "ProductsList", new { category = "keyboard" })';
+                </script>
                 break;
         }
     </div>
