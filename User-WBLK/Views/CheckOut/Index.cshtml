@@ -1,5 +1,4 @@
-﻿@* Index.cshtml *@
-@model CheckoutViewModel
+﻿@model CheckoutViewModel
 
 <div class="container mx-auto px-4 md:px-8 lg:px-32">
     <div class="max-w-[700px] mx-auto py-5">
@@ -60,13 +59,11 @@
             <!-- Thông tin nhận hàng -->
             <div class="bg-white p-4 border border-gray-200 rounded-lg mb-4">
                 <h5 class="text-lg mb-3 font-bold">Thông tin giao - nhận hàng</h5>
-                
                 <!-- Phương thức nhận hàng -->
                 <div class="bg-gray-100 p-4 rounded-lg mb-6">
                     <div class="flex justify-between">
                         <label class="flex items-center cursor-pointer">
-                            <input type="radio" name="DeliveryMethod" value="0" id="store-pickup"
-                                   class="hidden peer">
+                            <input type="radio" name="DeliveryMethod" value="0" id="store-pickup" class="hidden peer">
                             <span class="w-4 h-4 border border-gray-300 rounded-full inline-block mr-2 relative
                                        peer-checked:border-blue-500 peer-checked:before:content-[''] 
                                        peer-checked:before:absolute peer-checked:before:w-2 peer-checked:before:h-2 
@@ -77,8 +74,7 @@
                             <span class="text-gray-700">Nhận tại cửa hàng</span>
                         </label>
                         <label class="flex items-center cursor-pointer">
-                            <input type="radio" name="DeliveryMethod" value="1" id="home-delivery" checked
-                                   class="hidden peer">
+                            <input type="radio" name="DeliveryMethod" value="1" id="home-delivery" checked class="hidden peer">
                             <span class="w-4 h-4 border border-gray-300 rounded-full inline-block mr-2 relative
                                        peer-checked:border-blue-500 peer-checked:before:content-[''] 
                                        peer-checked:before:absolute peer-checked:before:w-2 peer-checked:before:h-2 
@@ -90,14 +86,12 @@
                         </label>
                     </div>
                 </div>
-
                 <!-- Địa chỉ cửa hàng (ẩn mặc định) -->
                 <div id="store-address" class="bg-gray-50 p-4 rounded-lg mb-4 hidden">
                     <p class="font-medium mb-2">Địa chỉ cửa hàng:</p>
                     <p class="text-gray-600">123 Nguyễn Văn A, Phường 1, Quận 1, TP.HCM</p>
                     <p class="text-gray-600 mt-2">Thời gian làm việc: 8:00 - 21:00 (Thứ 2 - Chủ nhật)</p>
                 </div>
-
                 <!-- Form địa chỉ giao hàng -->
                 <div id="delivery-address" class="space-y-4">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -112,7 +106,6 @@
                                    class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all">
                         </div>
                     </div>
-
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm text-gray-600 mb-1">Phường/Xã</label>
@@ -226,8 +219,8 @@
                 </div>
             }
 
-            <!-- Modal xác nhận đặt hàng (chỉ hiển thị cho khách vãng lai) -->
-            @if (!User.Identity?.IsAuthenticated == true)
+            <!-- Modal xác nhận đặt hàng (khách vãng lai) -->
+            @if (!(User.Identity?.IsAuthenticated ?? false))
             {
                 <div id="orderConfirmModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
                     <div class="bg-white p-6 rounded-lg max-w-md w-full mx-4">
@@ -267,6 +260,17 @@
         document.addEventListener('DOMContentLoaded', function() {
             if (!@Json.Serialize(User.Identity?.IsAuthenticated == true)) {
                 loadGuestCart();
+                // Recalculate originalPrice from guestCart and update vipPrice accordingly.
+                let guestCart = JSON.parse(localStorage.getItem('guestCart') || '[]');
+                window.originalPrice = guestCart.reduce((sum, item) => {
+                    return sum + (parseFloat(item.price) * parseInt(item.quantity));
+                }, 0);
+                // For guest users, vipDiscount is 0.
+                vipPrice = window.originalPrice * (1 - vipDiscount / 100);
+                document.getElementById('originalTotal').textContent = window.originalPrice.toLocaleString('vi-VN') + 'đ';
+                if (document.getElementById('vipPrice')) {
+                    document.getElementById('vipPrice').textContent = vipPrice.toLocaleString('vi-VN') + 'đ';
+                }
             }
         });
 
@@ -274,12 +278,10 @@
             const cart = JSON.parse(localStorage.getItem('guestCart')) || [];
             const checkoutItems = document.getElementById('checkoutItems');
             let totalAmount = 0;
-
             if (cart.length === 0) {
                 window.location.href = '/';
                 return;
             }
-
             let itemsHtml = '';
             cart.forEach(item => {
                 const subtotal = item.price * item.quantity;
@@ -308,9 +310,9 @@
                     </div>
                 `;
             });
-
             checkoutItems.innerHTML = itemsHtml;
-            document.getElementById('totalAmount').textContent = totalAmount.toLocaleString('vi-VN') + 'đ';
+            document.getElementById('originalTotal').textContent = totalAmount.toLocaleString('vi-VN') + 'đ';
+            window.originalPrice = totalAmount;
         }
 
         function showOrderConfirmation() {
@@ -321,7 +323,7 @@
             const deliveryMethod = form.querySelector('input[name="DeliveryMethod"]:checked').value;
             
             let address = '';
-            if (deliveryMethod === '0') { // Store pickup
+            if (deliveryMethod === '0') {
                 address = '@Model.StoreAddress';
             } else {
                 const street = form.querySelector('[name="StreetAddress"]').value;
@@ -330,7 +332,7 @@
                 const city = form.querySelector('[name="City"]').value;
                 address = `${street}, ${ward}, ${district}, ${city}`;
             }
-
+            
             var discountCodeInput = document.querySelector('[name="DiscountCode"]');
             var code = discountCodeInput ? discountCodeInput.value.trim() : "";
             var codeDiscount = 0;
@@ -340,15 +342,16 @@
             
             var finalTotal = isAuthenticated ? vipPrice * (1 - codeDiscount / 100) : originalPrice;
             
-            document.getElementById('confirmName').textContent = name;
-            document.getElementById('confirmPhone').textContent = phone;
-            document.getElementById('confirmAddress').textContent = address;
-            document.getElementById('confirmTotal').textContent = finalTotal.toLocaleString('vi-VN') + 'đ';
-
             if (isAuthenticated) {
+                document.getElementById('confirmName').textContent = name;
+                document.getElementById('confirmPhone').textContent = phone;
+                document.getElementById('confirmAddress').textContent = address;
+                document.getElementById('confirmTotal').textContent = finalTotal.toLocaleString('vi-VN') + 'đ';
+                
                 document.getElementById('loggedInOrderConfirmModal').classList.remove('hidden');
                 document.getElementById('loggedInOrderConfirmModal').classList.add('flex');
             } else {
+                // For guests, show the guest modal without setting confirm* fields.
                 document.getElementById('orderConfirmModal').classList.remove('hidden');
                 document.getElementById('orderConfirmModal').classList.add('flex');
             }
@@ -356,7 +359,6 @@
 
         function closeOrderConfirm() {
             const isAuthenticated = @Json.Serialize(User.Identity?.IsAuthenticated == true);
-            
             if (isAuthenticated) {
                 document.getElementById('loggedInOrderConfirmModal').classList.add('hidden');
                 document.getElementById('loggedInOrderConfirmModal').classList.remove('flex');
@@ -372,11 +374,9 @@
                 console.error('Không tìm thấy form checkout');
                 return;
             }
-
             try {
                 let cartItems;
                 const isAuthenticated = @Json.Serialize(User.Identity?.IsAuthenticated == true);
-                
                 if (!isAuthenticated) {
                     const guestCart = localStorage.getItem('guestCart');
                     if (!guestCart) {
@@ -397,10 +397,7 @@
                         Price: parseFloat(item.dataset.price)
                     }));
                 }
-
                 const deliveryMethod = parseInt(form.querySelector('input[name="DeliveryMethod"]:checked').value);
-
-                // Include DiscountCode in the payload!
                 const formData = {
                     ReceiverName: form.querySelector('[name="ReceiverName"]').value,
                     Email: form.querySelector('[name="Email"]').value,
@@ -414,12 +411,9 @@
                     DiscountCode: form.querySelector('[name="DiscountCode"]').value.trim(),
                     Items: cartItems
                 };
-
                 fetch(form.action, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(formData)
                 })
                 .then(response => response.json())
@@ -437,7 +431,6 @@
                     console.error('Error:', error);
                     alert('Có lỗi xảy ra khi đặt hàng');
                 });
-
             } catch (error) {
                 console.error('Lỗi khi xử lý đơn hàng:', error);
                 alert('Có lỗi xảy ra khi xử lý đơn hàng');
@@ -452,7 +445,6 @@
                     submitOrder();
                 });
             }
-
             const guestCart = localStorage.getItem('guestCart');
             if (guestCart) {
                 try {
@@ -468,7 +460,6 @@
         function displayCartItems(cartItems) {
             const cartContainer = document.querySelector('.cart-items-container');
             if (!cartContainer) return;
-
             let total = 0;
             cartContainer.innerHTML = cartItems.map(item => {
                 const itemTotal = item.price * item.quantity;
@@ -494,7 +485,6 @@
                     </div>
                 `;
             }).join('');
-
             const totalElement = document.getElementById('cartTotal');
             if (totalElement) {
                 totalElement.textContent = new Intl.NumberFormat('vi-VN', {
@@ -507,13 +497,13 @@
         function showLoginPopup() {
             document.getElementById('orderConfirmModal').classList.add('hidden');
             document.getElementById('orderConfirmModal').classList.remove('flex');
-            
             const loginPopup = document.getElementById('loginPopup');
             if (loginPopup) {
                 loginPopup.classList.remove('hidden');
                 loginPopup.classList.add('flex');
             }
         }
+
         // Build mapping of available discount codes
         var availableDiscounts = {};
         @foreach(var d in Model.AvailableDiscounts)
@@ -525,14 +515,13 @@
         var originalPrice = @Model.TotalAmount;
         var vipDiscount = @((User.Identity?.IsAuthenticated == true) ? Model.VipDiscountPercentage : 0);
         var vipPrice = originalPrice * (1 - vipDiscount / 100);
+        // For guest users, originalPrice has been re-calculated in loadGuestCart
 
-        // Update VIP price display if present.
         var vipPriceElem = document.getElementById('vipPrice');
         if (vipPriceElem) {
             vipPriceElem.textContent = vipPrice.toLocaleString('vi-VN') + 'đ';
         }
 
-        // Function to update final price based on discount code.
         function updateFinalPrice() {
             var codeInput = document.querySelector('[name="DiscountCode"]');
             var code = codeInput.value.trim();
@@ -541,9 +530,7 @@
                 codeDiscount = availableDiscounts[code];
             }
             document.getElementById('codeDiscountPercentage').textContent = codeDiscount;
-            
             var afterDiscountCodePrice = vipPrice * (1 - codeDiscount / 100);
-            
             if (codeDiscount > 0) {
                 document.getElementById('discountCodeBlock').style.display = "flex";
             } else {
@@ -553,7 +540,7 @@
         }
 
         var discountCodeInput = document.querySelector('[name="DiscountCode"]');
-        if(discountCodeInput){
+        if (discountCodeInput) {
             discountCodeInput.addEventListener('change', updateFinalPrice);
             discountCodeInput.addEventListener('blur', updateFinalPrice);
         }

@@ -1,5 +1,4 @@
-﻿// CheckoutController.cs
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Website_Ban_Linh_Kien.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
@@ -54,7 +53,6 @@ namespace Website_Ban_Linh_Kien.Controllers
                         viewModel.Email = customer.Email;
                         viewModel.ReceiverPhone = customer.Sodienthoai;
 
-                        // Set VIP discount percentage if available
                         if (customer.IdXephangvipNavigation != null)
                         {
                             viewModel.VipDiscountPercentage = customer.IdXephangvipNavigation.Phantramgiamgia;
@@ -97,7 +95,6 @@ namespace Website_Ban_Linh_Kien.Controllers
             return View(viewModel);
         }
 
-
         [HttpPost]
         public async Task<IActionResult> Index([FromBody] CheckoutViewModel model)
         {
@@ -108,7 +105,6 @@ namespace Website_Ban_Linh_Kien.Controllers
                     return Json(new { success = false, message = "Dữ liệu không hợp lệ" });
                 }
 
-                // Ensure Items is not null
                 model.Items ??= new List<CheckoutItemViewModel>();
 
                 if (!model.Items.Any())
@@ -116,7 +112,6 @@ namespace Website_Ban_Linh_Kien.Controllers
                     return Json(new { success = false, message = "Giỏ hàng trống" });
                 }
 
-                // Validate required fields
                 if (string.IsNullOrEmpty(model.ReceiverName) || 
                     string.IsNullOrEmpty(model.ReceiverPhone) || 
                     string.IsNullOrEmpty(model.Email))
@@ -132,19 +127,17 @@ namespace Website_Ban_Linh_Kien.Controllers
 
                 if (User.Identity?.IsAuthenticated == true)
                 {
-                    // Get CustomerId from Claims for logged-in users
                     customerId = User.FindFirstValue("CustomerId");
                     if (string.IsNullOrEmpty(customerId))
                     {
                         return Json(new { success = false, message = "Không tìm thấy thông tin khách hàng" });
                     }
 
-                    // Update model with cart information from the database
                     loggedInCustomer = await _context.Khachhangs
                         .Include(k => k.Giohangs)
                             .ThenInclude(g => g.Chitietgiohangs)
                                 .ThenInclude(c => c.IdSpNavigation)
-                        .Include(k => k.IdXephangvipNavigation) // include VIP info
+                        .Include(k => k.IdXephangvipNavigation)
                         .FirstOrDefaultAsync(k => k.IdKh == customerId);
 
                     if (loggedInCustomer?.Giohangs != null)
@@ -168,7 +161,6 @@ namespace Website_Ban_Linh_Kien.Controllers
                 }
                 else
                 {
-                    // Create a new customer for guest users
                     var lastCustomerId = await _context.Khachhangs
                         .OrderByDescending(k => k.IdKh)
                         .Select(k => k.IdKh)
@@ -203,7 +195,6 @@ namespace Website_Ban_Linh_Kien.Controllers
                     customerId = newCustomerId;
                 }
 
-                // Check and create customer if not exists
                 var customer = await _context.Khachhangs
                     .FirstOrDefaultAsync(k => k.Email == model.Email || k.Sodienthoai == model.ReceiverPhone);
 
@@ -273,7 +264,6 @@ namespace Website_Ban_Linh_Kien.Controllers
                     }
                 }
 
-                // Create new order
                 var lastOrderId = await _context.Donhangs
                     .OrderByDescending(d => d.IdDh)
                     .Select(d => d.IdDh)
@@ -286,10 +276,7 @@ namespace Website_Ban_Linh_Kien.Controllers
                 }
                 string orderId = $"DH{nextOrderId:D6}";
 
-                // Calculate original total
                 decimal originalTotal = model.Items.Sum(i => i.Price * i.Quantity);
-                
-                // Apply VIP discount if available
                 decimal vipDiscountPercentage = 0;
                 if (loggedInCustomer != null && loggedInCustomer.IdXephangvipNavigation != null)
                 {
@@ -297,7 +284,6 @@ namespace Website_Ban_Linh_Kien.Controllers
                 }
                 decimal afterVipPrice = originalTotal * (1 - vipDiscountPercentage / 100);
 
-                // Look up discount code if one was entered
                 decimal discountCodePercentage = 0;
                 if (!string.IsNullOrEmpty(model.DiscountCode))
                 {
@@ -314,7 +300,6 @@ namespace Website_Ban_Linh_Kien.Controllers
                         _context.Magiamgia.Update(discountRecord);
                     }
                 }
-                // Apply discount code on top of VIP discount
                 decimal afterDiscountCodePrice = afterVipPrice * (1 - discountCodePercentage / 100);
                 decimal finalPrice = afterDiscountCodePrice;
 
@@ -378,10 +363,8 @@ namespace Website_Ban_Linh_Kien.Controllers
 
                             _context.Chitietdonhangs.Add(orderDetail);
                             detailStartId++;
-                            
-                            Console.WriteLine($"Updated product {product.IdSp}: " +
-                                            $"New stock: {product.Soluongton}, " +
-                                            $"Total purchased: {product.Damuahang}");
+
+                            Console.WriteLine($"Updated product {product.IdSp}: New stock: {product.Soluongton}, Total purchased: {product.Damuahang}");
                         }
 
                         await _context.SaveChangesAsync();
@@ -412,7 +395,6 @@ namespace Website_Ban_Linh_Kien.Controllers
                 }
 
                 TempData["OrderId"] = orderId;
-
                 return Json(new { success = true, redirectUrl = Url.Action("PaymentSuccess", "PaymentResult") });
             }
             catch (Exception ex)
