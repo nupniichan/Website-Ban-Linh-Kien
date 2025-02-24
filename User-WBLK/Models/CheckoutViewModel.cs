@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using Website_Ban_Linh_Kien.Models;
 
 public class CheckoutViewModel
 {
@@ -38,8 +39,11 @@ public class CheckoutViewModel
     // Add this property for the VIP discount percentage (e.g., 3, 7, or 10)
     public decimal VipDiscountPercentage { get; set; } = 0;
 
-    // A computed property that shows the final total after discount.
-    public decimal DiscountedTotal => TotalAmount * (1 - VipDiscountPercentage / 100);
+    // The discount code entered by the customer
+    public string? DiscountCode { get; set; }
+    
+    // A list of discount codes that are currently valid.
+    public List<Magiamgia> AvailableDiscounts { get; set; } = new List<Magiamgia>();
 }
 
 public class CheckoutItemViewModel
