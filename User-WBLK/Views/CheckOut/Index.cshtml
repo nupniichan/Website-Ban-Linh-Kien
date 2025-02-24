@@ -225,9 +225,9 @@
                             <br>- Kim cương (5000+ điểm): Giảm 10%
                         </p>
                         <div class="flex justify-end gap-4">
-                            <a href="/Account/Login" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                            <button type="button" onclick="showLoginPopup()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
                                 Đăng nhập
-                            </a>
+                            </button>
                             <button type="button" onclick="submitOrder()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
                                 Tiếp tục
                             </button>
@@ -508,6 +508,19 @@
                     style: 'currency',
                     currency: 'VND'
                 }).format(total);
+            }
+        }
+
+        function showLoginPopup() {
+            // Đóng modal xác nhận đặt hàng
+            document.getElementById('orderConfirmModal').classList.add('hidden');
+            document.getElementById('orderConfirmModal').classList.remove('flex');
+            
+            // Hiển thị popup đăng nhập
+            const loginPopup = document.getElementById('loginPopup');
+            if (loginPopup) {
+                loginPopup.classList.remove('hidden');
+                loginPopup.classList.add('flex');
             }
         }
     </script>
