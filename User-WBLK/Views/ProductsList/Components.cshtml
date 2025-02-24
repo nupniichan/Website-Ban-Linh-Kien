@@ -142,13 +142,87 @@
                 break;
 
             case "vga":
-                <!-- (Other cases remain the same) -->
+                <div class="space-y-4">
+                    <div class="flex flex-wrap gap-2">
+                        <!-- Brand Filter -->
+                        <select id="brand" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
+                            @{
+                                var vgaBrands = new[] {
+                                    new { Value = "", Text = "Tất cả thương hiệu" },
+                                    new { Value = "nvidia", Text = "NVIDIA" },
+                                    new { Value = "amd", Text = "AMD" },
+                                    new { Value = "asus", Text = "ASUS" },
+                                    new { Value = "msi", Text = "MSI" },
+                                    new { Value = "gigabyte", Text = "Gigabyte" }
+                                };
+                            }
+                            @foreach (var brand in vgaBrands)
+                            {
+                                var parameters = new Dictionary<string, string>
+                                {
+                                    { "category", Model.Category }
+                                };
+                                if (!string.IsNullOrEmpty(brand.Value))
+                                    parameters.Add("brand", brand.Value);
+                                if (!string.IsNullOrEmpty(Model.PriceRange))
+                                    parameters.Add("priceRange", Model.PriceRange);
+                                if (Model.AdditionalFilters != null)
+                                {
+                                    if (Model.AdditionalFilters.ContainsKey("memory"))
+                                        parameters.Add("memory", Model.AdditionalFilters["memory"]);
+                                }
+                                
+                                var url = Url.Action("Components", "ProductsList", parameters);
+                                var isSelected = Model.Brand == brand.Value;
+                                <option value="@url" selected="@isSelected">@brand.Text</option>
+                            }
+                        </select>
+
+                        <!-- Memory Filter -->
+                        <select id="memory" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
+                            @{
+                                var memories = new[] {
+                                    new { Value = "", Text = "Dung lượng VRAM" },
+                                    new { Value = "4", Text = "4GB" },
+                                    new { Value = "6", Text = "6GB" },
+                                    new { Value = "8", Text = "8GB" },
+                                    new { Value = "12", Text = "12GB" },
+                                    new { Value = "16", Text = "16GB" }
+                                };
+                            }
+                            @foreach (var memory in memories)
+                            {
+                                var parameters = new Dictionary<string, string>
+                                {
+                                    { "category", Model.Category }
+                                };
+                                
+                                if (!string.IsNullOrEmpty(Model.Brand))
+                                    parameters.Add("brand", Model.Brand);
+                                if (!string.IsNullOrEmpty(Model.PriceRange))
+                                    parameters.Add("priceRange", Model.PriceRange);
+                                if (!string.IsNullOrEmpty(memory.Value))
+                                    parameters.Add("memory", memory.Value);
+                                
+                                var url = Url.Action("Components", "ProductsList", parameters);
+                                var isSelected = Model.AdditionalFilters != null && 
+                                                Model.AdditionalFilters.ContainsKey("memory") && 
+                                                Model.AdditionalFilters["memory"] == memory.Value;
+                                
+                                <option value="@url" selected="@isSelected">@memory.Text</option>
+                            }
+                        </select>
+                    </div>
+                </div>
                 break;
 
             // ... other category cases ...
 
             default:
-                <div class="text-gray-500">Vui lòng chọn danh mục để xem các bộ lọc chi tiết</div>
+                // Redirect to CPU category if no category is selected
+                <script>
+                    window.location.href = '@Url.Action("Components", "ProductsList", new { category = "cpu" })';
+                </script>
                 break;
         }
 
