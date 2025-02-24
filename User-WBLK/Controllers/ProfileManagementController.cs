@@ -49,9 +49,10 @@ namespace Website_Ban_Linh_Kien.Controllers
                 return Unauthorized();
             }
 
-            // Retrieve the customer (khách hàng) info including the related account info
+            // Retrieve the customer (khách hàng) info including the related account info and rank info
             var khachhang = await _context.Khachhangs
                 .Include(k => k.IdTkNavigation)
+                .Include(k => k.IdXephangvipNavigation)
                 .FirstOrDefaultAsync(k => k.IdTk == account.IdTk);
             if (khachhang == null)
             {
@@ -81,6 +82,7 @@ namespace Website_Ban_Linh_Kien.Controllers
 
             var khachhang = await _context.Khachhangs
                 .Include(k => k.IdTkNavigation)
+                .Include(k => k.IdXephangvipNavigation)
                 .FirstOrDefaultAsync(k => k.IdTk == account.IdTk);
             if (khachhang == null)
             {

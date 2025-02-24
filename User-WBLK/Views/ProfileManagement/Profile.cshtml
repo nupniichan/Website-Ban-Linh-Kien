@@ -64,6 +64,24 @@
                             <label class="block font-medium">Tên tài khoản:</label>
                             <input type="text" value="@Model.IdTkNavigation?.Tentaikhoan" class="form-input mt-1 block w-full" disabled />
                         </div>
+                        <div class="mb-4">
+                            <label class="block font-medium">Điểm tích lũy:</label>
+                            <input type="text" value="@(Model.Diemtichluy ?? 0)" class="form-input mt-1 block w-full" disabled />
+                        </div>
+                        <div class="mb-4">
+                            <label class="block font-medium">Hạng thành viên:</label>
+                            <div class="relative">
+                                <input type="text" value="@(Model.IdXephangvipNavigation?.Tenhang ?? "Chưa có hạng")" 
+                                       class="form-input mt-1 block w-full" disabled />
+                                @if (Model.IdXephangvipNavigation != null)
+                                {
+                                    <div class="text-xs text-gray-500 mt-1">
+                                        <div>Giảm giá: @Model.IdXephangvipNavigation.Phantramgiamgia%</div>
+                                        <div>Điểm yêu cầu: @Model.IdXephangvipNavigation.Diemtoithieu - @Model.IdXephangvipNavigation.Diemtoida</div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
                     </div>
                     <div class="mt-6 flex justify-between">
                         <!-- Cancel button reloads the page in display mode -->
@@ -107,6 +125,23 @@
                     <div class="bg-gray-50 p-3 rounded-lg shadow-md flex items-center">
                         <span class="font-medium">Tên tài khoản:</span>
                         <span class="ml-auto">@Model.IdTkNavigation?.Tentaikhoan</span>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg shadow-md flex items-center">
+                        <span class="font-medium">Điểm tích lũy:</span>
+                        <span class="ml-auto">@(Model.Diemtichluy ?? 0)</span>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg shadow-md">
+                        <div class="flex items-center">
+                            <span class="font-medium">Hạng thành viên:</span>
+                            <span class="ml-auto">@(Model.IdXephangvipNavigation?.Tenhang ?? "Chưa có hạng")</span>
+                        </div>
+                        @if (Model.IdXephangvipNavigation != null)
+                        {
+                            <div class="text-xs text-gray-500 mt-2 border-t pt-2">
+                                <div>Giảm giá: @Model.IdXephangvipNavigation.Phantramgiamgia%</div>
+                                <div>Điểm yêu cầu: @Model.IdXephangvipNavigation.Diemtoithieu - @Model.IdXephangvipNavigation.Diemtoida</div>
+                            </div>
+                        }
                     </div>
                 </div>
                 <div class="mt-6 text-right">
