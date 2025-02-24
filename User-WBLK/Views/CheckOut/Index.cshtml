@@ -1,4 +1,5 @@
-﻿@model CheckoutViewModel
+﻿@* Index.cshtml *@
+@model CheckoutViewModel
 
 <div class="container mx-auto px-4 md:px-8 lg:px-32">
     <div class="max-w-[700px] mx-auto py-5">
@@ -313,10 +314,7 @@
         }
 
         function showOrderConfirmation() {
-            // Determine if the user is logged in.
             const isAuthenticated = @Json.Serialize(User.Identity?.IsAuthenticated == true);
-
-            // Get information from the form.
             const form = document.getElementById('checkoutForm');
             const name = form.querySelector('[name="ReceiverName"]').value;
             const phone = form.querySelector('[name="ReceiverPhone"]').value;
@@ -377,7 +375,6 @@
 
             try {
                 let cartItems;
-                
                 const isAuthenticated = @Json.Serialize(User.Identity?.IsAuthenticated == true);
                 
                 if (!isAuthenticated) {
@@ -403,6 +400,7 @@
 
                 const deliveryMethod = parseInt(form.querySelector('input[name="DeliveryMethod"]:checked').value);
 
+                // Include DiscountCode in the payload!
                 const formData = {
                     ReceiverName: form.querySelector('[name="ReceiverName"]').value,
                     Email: form.querySelector('[name="Email"]').value,
@@ -413,6 +411,7 @@
                     Ward: form.querySelector('[name="Ward"]').value,
                     StreetAddress: form.querySelector('[name="StreetAddress"]').value,
                     Note: form.querySelector('[name="Note"]').value,
+                    DiscountCode: form.querySelector('[name="DiscountCode"]').value.trim(),
                     Items: cartItems
                 };
 

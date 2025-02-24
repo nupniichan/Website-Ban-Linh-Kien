@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿// CheckoutController.cs
+using Microsoft.AspNetCore.Mvc;
 using Website_Ban_Linh_Kien.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
@@ -107,7 +108,7 @@ namespace Website_Ban_Linh_Kien.Controllers
                     return Json(new { success = false, message = "Dữ liệu không hợp lệ" });
                 }
 
-                // Khởi tạo Items nếu null
+                // Ensure Items is not null
                 model.Items ??= new List<CheckoutItemViewModel>();
 
                 if (!model.Items.Any())
@@ -115,7 +116,7 @@ namespace Website_Ban_Linh_Kien.Controllers
                     return Json(new { success = false, message = "Giỏ hàng trống" });
                 }
 
-                // Kiểm tra thông tin bắt buộc
+                // Validate required fields
                 if (string.IsNullOrEmpty(model.ReceiverName) || 
                     string.IsNullOrEmpty(model.ReceiverPhone) || 
                     string.IsNullOrEmpty(model.Email))
@@ -131,21 +132,20 @@ namespace Website_Ban_Linh_Kien.Controllers
 
                 if (User.Identity?.IsAuthenticated == true)
                 {
-                    // Lấy CustomerId từ Claims cho khách hàng đã đăng nhập
+                    // Get CustomerId from Claims for logged-in users
                     customerId = User.FindFirstValue("CustomerId");
                     if (string.IsNullOrEmpty(customerId))
                     {
                         return Json(new { success = false, message = "Không tìm thấy thông tin khách hàng" });
                     }
 
-                    // Cập nhật model với thông tin từ giỏ hàng trong database
+                    // Update model with cart information from the database
                     loggedInCustomer = await _context.Khachhangs
                         .Include(k => k.Giohangs)
                             .ThenInclude(g => g.Chitietgiohangs)
                                 .ThenInclude(c => c.IdSpNavigation)
-                        .Include(k => k.IdXephangvipNavigation) // include VIP info here
+                        .Include(k => k.IdXephangvipNavigation) // include VIP info
                         .FirstOrDefaultAsync(k => k.IdKh == customerId);
-
 
                     if (loggedInCustomer?.Giohangs != null)
                     {
@@ -168,7 +168,7 @@ namespace Website_Ban_Linh_Kien.Controllers
                 }
                 else
                 {
-                    // Tạo khách hàng mới
+                    // Create a new customer for guest users
                     var lastCustomerId = await _context.Khachhangs
                         .OrderByDescending(k => k.IdKh)
                         .Select(k => k.IdKh)
@@ -203,7 +203,7 @@ namespace Website_Ban_Linh_Kien.Controllers
                     customerId = newCustomerId;
                 }
 
-                // Kiểm tra và tạo khách hàng mới nếu chưa tồn tại
+                // Check and create customer if not exists
                 var customer = await _context.Khachhangs
                     .FirstOrDefaultAsync(k => k.Email == model.Email || k.Sodienthoai == model.ReceiverPhone);
 
@@ -273,7 +273,7 @@ namespace Website_Ban_Linh_Kien.Controllers
                     }
                 }
 
-                // Tạo đơn hàng mới
+                // Create new order
                 var lastOrderId = await _context.Donhangs
                     .OrderByDescending(d => d.IdDh)
                     .Select(d => d.IdDh)
