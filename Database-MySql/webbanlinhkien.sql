@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 23, 2025 at 05:48 AM
+-- Generation Time: Feb 24, 2025 at 07:04 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -80,6 +80,14 @@ CREATE TABLE `chitietgiohang` (
   `thoigiancapnhat` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `chitietgiohang`
+--
+
+INSERT INTO `chitietgiohang` (`IdGh`, `IdSp`, `soluongsanpham`, `thoigiancapnhat`) VALUES
+('56b89602-5', 'SP000022', 1, '2025-02-24 11:16:02'),
+('56b89602-5', 'SP000045', 1, '2025-02-24 11:16:02');
+
 -- --------------------------------------------------------
 
 --
@@ -155,6 +163,7 @@ CREATE TABLE `giohang` (
 --
 
 INSERT INTO `giohang` (`IdGh`, `IdKh`, `thoigiancapnhat`) VALUES
+('56b89602-5', 'KH230104', '2025-02-24 11:16:02'),
 ('GH000001', 'KH000001', NULL),
 ('GH000002', 'KH000002', NULL),
 ('GH000003', 'KH000003', NULL),
@@ -220,7 +229,8 @@ INSERT INTO `khachhang` (`IdKh`, `hoten`, `diachi`, `email`, `gioitinh`, `ngaysi
 ('KH000018', 'Trương Thị N', '100 Phạm Hùng, Phường Thịnh Quang, Quận Thanh Xuân, Hà Nội', 'ttn@gmail.com', 'Nữ', '2004-06-05', '0901234567', 1200, 'TK000019', 'BAC', b'1'),
 ('KH000021', 'asd', '249Đ Nguyễn Văn Luông, Phường 11, Quận 6, Hồ Chí Minh', 'asd@gmail.com', NULL, NULL, '0949752094', 0, NULL, 'THANTHIET', b'0'),
 ('KH000022', 'gas', '249Đ, Nguyễn Văn Luông, Phường 11, Quận 6, Thành phố Hồ Chí Minh, a, a, Tp.Hồ Chí Minh', 'gas@gmail.com', NULL, NULL, '0949752092', 0, NULL, 'THANTHIET', b'0'),
-('KH000023', 'sadsa', '', 'kjgs@gmail.com', NULL, NULL, '095353163', 0, NULL, 'THANTHIET', b'0');
+('KH000023', 'sadsa', '', 'kjgs@gmail.com', NULL, NULL, '095353163', 0, NULL, 'THANTHIET', b'0'),
+('KH230104', 'Trần Hồng Phát', 'C17 Khu nhà ở U&I, Phường An Phú, Thành Phố Thuận An, Bình Dương', 'asdsaphat@gmail.com', 'Nam', '2004-01-23', '0948048197', 0, 'TK230104', 'THANTHIET', b'1');
 
 -- --------------------------------------------------------
 
@@ -575,7 +585,7 @@ INSERT INTO `sanpham` (`IdSp`, `tensanpham`, `gia`, `soluongton`, `thuonghieu`, 
 INSERT INTO `sanpham` (`IdSp`, `tensanpham`, `gia`, `soluongton`, `thuonghieu`, `mota`, `thongsokythuat`, `loaisanpham`, `hinhanh`, `soluotxem`, `damuahang`) VALUES
 ('SP000240', 'Wifi Card Gigabyte GC-WB1732 Dual-Band Model T', 725000.00, 21, 'Gigabyte', 'Wifi Card Gigabyte GC-WB1732 hỗ trợ WiFi 5, Model T.', '{\"Danh mục\": \"Wifi Card\", \"Tiêu chuẩn mạng\": \"802.11ac\", \"Công nghệ AX\": \"WiFi 5\", \"Truyền/nhận\": \"Up to 1300Mbps\", \"Bộ xử lý\": \"Single-core\", \"Bộ nhớ\": \"32MB\"}', 'Network', 'wifi_gigabyte_gcwb1732.jpg', 0, 0),
 ('SP000241', 'Màn hình ASUS TUF Gaming VG249Q3A 23.8\" 144Hz', 3050000.00, 34, 'ASUS', 'Monitor ASUS TUF Gaming VG249Q3A với tần số 144Hz và hình ảnh sắc nét.', '{\r\n  \"Kích thước\": \"23.8 inch\",\r\n  \"Độ phân giải\": \"1920x1080\",\r\n  \"Tần số quét\": \"144Hz\",\r\n  \"Công nghệ màn hình\": \"IPS\",\r\n  \"Cổng kết nối\": \"HDMI, DisplayPort\"\r\n}', 'Monitor', '/Images/ProductImage/b5c009b6-7ac6-4ce0-bf00-5c1dc7895ab3.webp', 0, 0),
-('SP000242', 'Màn hình Acer Nitro XV242Q 23.8\" 144Hz', 3100000.00, 30, 'Acer', 'Monitor Acer Nitro XV242Q với thiết kế Predator và tần số 144Hz.', '{\r\n  \"Kích thước\": \"23.8 inch\",\r\n  \"Độ phân giải\": \"1920x1080\",\r\n  \"Tần số quét\": \"144Hz\",\r\n  \"Công nghệ màn hình\": \"IPS\",\r\n  \"Cổng kết nối\": \"HDMI, DisplayPort\"\r\n}', 'Monitor', '/Images/ProductImage/fa8060ff-4561-4e66-b276-05186e6ee8b3.jpg', 11, 0),
+('SP000242', 'Màn hình Acer Nitro XV242Q 23.8\" 144Hz', 3100000.00, 30, 'Acer', 'Monitor Acer Nitro XV242Q với thiết kế Predator và tần số 144Hz.', '{\r\n  \"Kích thước\": \"23.8 inch\",\r\n  \"Độ phân giải\": \"1920x1080\",\r\n  \"Tần số quét\": \"144Hz\",\r\n  \"Công nghệ màn hình\": \"IPS\",\r\n  \"Cổng kết nối\": \"HDMI, DisplayPort\"\r\n}', 'Monitor', '/Images/ProductImage/fa8060ff-4561-4e66-b276-05186e6ee8b3.jpg', 12, 0),
 ('SP000243', 'Màn hình LG UltraGear 24GN600-B 23.8\" 144Hz', 3080000.00, 28, 'LG', 'Monitor LG UltraGear 24GN600-B với thời gian phản hồi nhanh và màu sắc sống động.', '{\r\n  \"Kích thước\": \"23.8 inch\",\r\n  \"Độ phân giải\": \"1920x1080\",\r\n  \"Tần số quét\": \"144Hz\",\r\n  \"Công nghệ màn hình\": \"IPS\",\r\n  \"Cổng kết nối\": \"HDMI, DisplayPort\"\r\n}', 'Monitor', '/Images/ProductImage/1eb93afe-32b4-4bae-b6e5-a9915237bcc0.png', 0, 0),
 ('SP000244', 'Màn hình Dell S2421HGF 23.8\" 144Hz', 3070000.00, 26, 'Dell', 'Monitor Dell S2421HGF mang đến hình ảnh sắc nét cho game thủ.', '{\r\n  \"Kích thước\": \"23.8 inch\",\r\n  \"Độ phân giải\": \"1920x1080\",\r\n  \"Tần số quét\": \"144Hz\",\r\n  \"Công nghệ màn hình\": \"TN\",\r\n  \"Cổng kết nối\": \"HDMI, DisplayPort\"\r\n}', 'Monitor', '/Images/ProductImage/4fe746f4-4361-435d-aa45-ebdb69fc4265.jpg', 0, 0),
 ('SP000245', 'Màn hình Samsung Odyssey G3 23.8\" 144Hz', 3060000.00, 32, 'Samsung', 'Monitor Samsung Odyssey G3 với công nghệ hiển thị tiên tiến.', '{\r\n  \"Kích thước\": \"23.8 inch\",\r\n  \"Độ phân giải\": \"1920x1080\",\r\n  \"Tần số quét\": \"144Hz\",\r\n  \"Công nghệ màn hình\": \"VA\",\r\n  \"Cổng kết nối\": \"HDMI, DisplayPort\"\r\n}', 'Monitor', '/Images/ProductImage/f76803af-9efb-4249-b0d5-8405ca80e1c3.webp', 0, 0),
@@ -744,7 +754,8 @@ INSERT INTO `taikhoan` (`IdTk`, `matkhau`, `tentaikhoan`, `ngaytaotk`, `ngaysuad
 ('TK000036', 'trinhthiq', 'trinhthiq', '2025-02-23', NULL, 'nhanvienkinhdoanh'),
 ('TK000037', 'phanvanr', 'phanvanr', '2025-02-23', NULL, 'nhanvienmarketing'),
 ('TK000038', 'luuminhs', 'luuminhs', '2025-02-23', NULL, 'nhanvienmarketing'),
-('TK000039', 'tathit', 'tathit', '2025-02-23', NULL, 'nhanvienkinhdoanh');
+('TK000039', 'tathit', 'tathit', '2025-02-23', NULL, 'nhanvienkinhdoanh'),
+('TK230104', '230104', 'thepinkcat', '2025-02-24', NULL, 'khachhang');
 
 -- --------------------------------------------------------
 
