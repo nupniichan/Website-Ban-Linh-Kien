@@ -287,6 +287,61 @@ namespace Website_Ban_Linh_Kien.Controllers
                 return Json(new { success = false, message = "Lỗi khi merge giỏ hàng: " + ex.Message });
             }
         }
+
+        [HttpPost]
+        public async Task<IActionResult> BuyNow(string productId, int quantity)
+        {
+            try
+            {
+                var customerId = User.FindFirstValue("CustomerId");
+                if (customerId == null)
+                {
+                    return Json(new { success = false, message = "Vui lòng đăng nhập để mua hàng" });
+                }
+
+                // Kiểm tra sản phẩm
+                var product = await _context.Sanphams.FindAsync(productId);
+                if (product == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy sản phẩm" });
+                }
+
+                // Kiểm tra số lượng
+                if (quantity <= 0 || quantity > product.Soluongton)
+                {
+                    return Json(new { success = false, message = "Số lượng không hợp lệ" });
+                }
+
+                // Tạo giỏ hàng tạm thời cho việc mua ngay
+                var tempCart = new Giohang
+                {
+                    IdGh = "TEMP_" + Guid.NewGuid().ToString().Substring(0, 10),
+                    IdKh = customerId,
+                    Thoigiancapnhat = DateTime.Now
+                };
+
+                _context.Giohangs.Add(tempCart);
+                
+                // Thêm sản phẩm vào giỏ hàng tạm thời
+                _context.Chitietgiohangs.Add(new Chitietgiohang
+                {
+                    IdGh = tempCart.IdGh,
+                    IdSp = productId,
+                    Soluongsanpham = quantity,
+                    Thoigiancapnhat = DateTime.Now
+                });
+
+                await _context.SaveChangesAsync();
+
+                // Chuyển đến trang thanh toán với giỏ hàng tạm thời
+                return Json(new { success = true, redirectUrl = $"/Checkout/Index?cartId={tempCart.IdGh}" });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError($"Error in buy now: {ex.Message}");
+                return Json(new { success = false, message = "Có lỗi xảy ra khi xử lý mua ngay" });
+            }
+        }
     }
     public class MergeCartItemDto
     {

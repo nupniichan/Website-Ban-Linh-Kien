@@ -128,7 +128,8 @@
                                 THÊM VÀO GIỎ
                             </button>
                         }
-                        <button class="w-full px-4 py-3 bg-[#007AFF] text-white rounded-lg hover:bg-blue-600 font-medium">
+                        <button onclick="buyNow()"
+                                class="w-full px-4 py-3 bg-[#007AFF] text-white rounded-lg hover:bg-blue-600 font-medium">
                             MUA NGAY
                         </button>
                     </div>
@@ -591,6 +592,143 @@
             });
 
             return false; // Ngăn form submit
+        }
+
+        function buyNow() {
+            const quantity = parseInt(document.getElementById('quantity').value);
+            
+            if (quantity <= 0 || quantity > @(Model.SoLuongTon * 0.2)) {
+                alert('Số lượng sản phẩm không hợp lệ!');
+                return;
+            }
+
+            // Tạo đối tượng sản phẩm để lưu vào localStorage
+            const product = {
+                id: '@Model.Id',
+                name: '@Model.Name',
+                price: @Model.Price,
+                image: '@Model.ImageUrl',
+                quantity: quantity
+            };
+
+            if (!@User.Identity?.IsAuthenticated.ToString().ToLower()) {
+                // Nếu là guest, lưu sản phẩm vào localStorage và chuyển đến trang checkout
+                localStorage.setItem('guestCart', JSON.stringify([product])); // Lưu như một mảng chỉ có 1 sản phẩm
+                window.location.href = '/Checkout/Index';
+                return;
+            }
+
+            // Nếu là user đã đăng nhập, tiếp tục với logic hiện tại
+            fetch('/Cart/BuyNow', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `productId=@Model.Id&quantity=${quantity}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = data.redirectUrl;
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi xử lý mua ngay');
+            });
+        }
+
+        function submitOrder() {
+            const form = document.getElementById('checkoutForm');
+            if (!form) {
+                console.error('Không tìm thấy form checkout');
+                return;
+            }
+            try {
+                let cartItems;
+                const isAuthenticated = @User.Identity?.IsAuthenticated.ToString().ToLower();
+                
+                if (!isAuthenticated) {
+                    // Xử lý cho guest
+                    const guestCart = localStorage.getItem('guestCart');
+                    if (!guestCart) {
+                        alert('Giỏ hàng trống');
+                        return;
+                    }
+                    cartItems = JSON.parse(guestCart).map(item => ({
+                        ProductId: item.id,
+                        ProductName: item.name,
+                        ImageUrl: item.image,
+                        Quantity: parseInt(item.quantity),
+                        Price: parseFloat(item.price)
+                    }));
+                } else {
+                    // Xử lý cho user đã đăng nhập
+                    cartItems = Array.from(document.querySelectorAll('.cart-item')).map(item => ({
+                        ProductId: item.dataset.productId,
+                        ProductName: item.dataset.productName,
+                        ImageUrl: item.dataset.imageUrl,
+                        Quantity: parseInt(item.dataset.quantity),
+                        Price: parseFloat(item.dataset.price)
+                    }));
+                }
+
+                const deliveryMethod = parseInt(form.querySelector('input[name="DeliveryMethod"]:checked').value);
+                const formData = {
+                    ReceiverName: form.querySelector('[name="ReceiverName"]').value,
+                    Email: form.querySelector('[name="Email"]').value,
+                    ReceiverPhone: form.querySelector('[name="ReceiverPhone"]').value,
+                    DeliveryMethod: deliveryMethod,
+                    City: form.querySelector('[name="City"]').value,
+                    District: form.querySelector('[name="District"]').value,
+                    Ward: form.querySelector('[name="Ward"]').value,
+                    StreetAddress: form.querySelector('[name="StreetAddress"]').value,
+                    Note: form.querySelector('[name="Note"]').value,
+                    DiscountCode: form.querySelector('[name="DiscountCode"]').value.trim(),
+                    Items: cartItems,
+                    IsGuest: !isAuthenticated
+                };
+
+                // Validate required fields
+                if (!formData.ReceiverName || !formData.Email || !formData.ReceiverPhone) {
+                    alert('Vui lòng điền đầy đủ thông tin người nhận');
+                    return;
+                }
+
+                if (deliveryMethod === 1 && (!formData.City || !formData.District || !formData.Ward || !formData.StreetAddress)) {
+                    alert('Vui lòng điền đầy đủ địa chỉ giao hàng');
+                    return;
+                }
+
+                // Close modal before submitting
+                closeOrderConfirm();
+
+                fetch(form.action, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        if (!isAuthenticated) {
+                            localStorage.removeItem('guestCart');
+                        }
+                        window.location.href = data.redirectUrl;
+                    } else {
+                        alert(data.message || 'Có lỗi xảy ra khi đặt hàng');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Có lỗi xảy ra khi đặt hàng');
+                });
+            } catch (error) {
+                console.error('Lỗi khi xử lý đơn hàng:', error);
+                alert('Có lỗi xảy ra khi xử lý đơn hàng');
+            }
         }
     </script>
 }
