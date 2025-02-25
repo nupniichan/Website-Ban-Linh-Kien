@@ -250,7 +250,7 @@
                             {
                                 var parameters = new Dictionary<string, string>
                                 {
-                                    { "category", Model.Category }
+                                    { "category", "mainboard" }
                                 };
                                 if (!string.IsNullOrEmpty(brand.Value))
                                     parameters.Add("brand", brand.Value);
@@ -260,14 +260,12 @@
                                 {
                                     if (Model.AdditionalFilters.ContainsKey("socket"))
                                         parameters.Add("socket", Model.AdditionalFilters["socket"]);
-                                    if (Model.AdditionalFilters.ContainsKey("chipset"))
-                                        parameters.Add("chipset", Model.AdditionalFilters["chipset"]);
                                     if (Model.AdditionalFilters.ContainsKey("formFactor"))
                                         parameters.Add("formFactor", Model.AdditionalFilters["formFactor"]);
                                 }
                                 
                                 var url = Url.Action("Components", "ProductsList", parameters);
-                                var isSelected = Model.Brand == brand.Value;
+                                var isSelected = Model.Brand?.ToLower() == brand.Value.ToLower();
                                 <option value="@url" selected="@isSelected">@brand.Text</option>
                             }
                         </select>
@@ -277,16 +275,17 @@
                             @{
                                 var sockets = new[] {
                                     new { Value = "", Text = "Tất cả socket" },
-                                    new { Value = "lga1700", Text = "LGA 1700" },
-                                    new { Value = "am5", Text = "AM5" },
-                                    new { Value = "am4", Text = "AM4" }
+                                    new { Value = "LGA1700", Text = "LGA 1700" },
+                                    new { Value = "AM5", Text = "AM5" },
+                                    new { Value = "AM4", Text = "AM4" },
+                                    new { Value = "LGA1200", Text = "LGA 1200" }
                                 };
                             }
                             @foreach (var socket in sockets)
                             {
                                 var parameters = new Dictionary<string, string>
                                 {
-                                    { "category", Model.Category }
+                                    { "category", "mainboard" }
                                 };
                                 if (!string.IsNullOrEmpty(Model.Brand))
                                     parameters.Add("brand", Model.Brand);
@@ -294,52 +293,12 @@
                                     parameters.Add("socket", socket.Value);
                                 if (!string.IsNullOrEmpty(Model.PriceRange))
                                     parameters.Add("priceRange", Model.PriceRange);
-                                if (Model.AdditionalFilters != null)
-                                {
-                                    if (Model.AdditionalFilters.ContainsKey("chipset"))
-                                        parameters.Add("chipset", Model.AdditionalFilters["chipset"]);
-                                    if (Model.AdditionalFilters.ContainsKey("formFactor"))
-                                        parameters.Add("formFactor", Model.AdditionalFilters["formFactor"]);
-                                }
+                                if (Model.AdditionalFilters?.ContainsKey("formFactor") == true)
+                                    parameters.Add("formFactor", Model.AdditionalFilters["formFactor"]);
                                 
                                 var url = Url.Action("Components", "ProductsList", parameters);
                                 var isSelected = Model.AdditionalFilters?.GetValueOrDefault("socket") == socket.Value;
                                 <option value="@url" selected="@isSelected">@socket.Text</option>
-                            }
-                        </select>
-
-                        <!-- Chipset Filter -->
-                        <select id="chipset" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
-                            @{
-                                var chipsets = new[] {
-                                    new { Value = "", Text = "Tất cả chipset" },
-                                    new { Value = "z790", Text = "Z790" },
-                                    new { Value = "b760", Text = "B760" },
-                                    new { Value = "x670", Text = "X670" },
-                                    new { Value = "b650", Text = "B650" }
-                                };
-                            }
-                            @foreach (var chipset in chipsets)
-                            {
-                                var parameters = new Dictionary<string, string>
-                                {
-                                    { "category", Model.Category }
-                                };
-                                if (!string.IsNullOrEmpty(Model.Brand))
-                                    parameters.Add("brand", Model.Brand);
-                                if (!string.IsNullOrEmpty(chipset.Value))
-                                    parameters.Add("chipset", chipset.Value);
-                                if (!string.IsNullOrEmpty(Model.PriceRange))
-                                    parameters.Add("priceRange", Model.PriceRange);
-                                if (Model.AdditionalFilters != null)
-                                {
-                                    if (Model.AdditionalFilters.ContainsKey("formFactor"))
-                                        parameters.Add("formFactor", Model.AdditionalFilters["formFactor"]);
-                                }
-                                
-                                var url = Url.Action("Components", "ProductsList", parameters);
-                                var isSelected = Model.AdditionalFilters?.GetValueOrDefault("chipset") == chipset.Value;
-                                <option value="@url" selected="@isSelected">@chipset.Text</option>
                             }
                         </select>
 
@@ -348,32 +307,29 @@
                             @{
                                 var formFactors = new[] {
                                     new { Value = "", Text = "Tất cả kích thước" },
-                                    new { Value = "atx", Text = "ATX" },
-                                    new { Value = "matx", Text = "Micro-ATX" },
-                                    new { Value = "itx", Text = "Mini-ITX" }
+                                    new { Value = "ATX", Text = "ATX" },
+                                    new { Value = "Micro-ATX", Text = "Micro-ATX" },
+                                    new { Value = "E-ATX", Text = "E-ATX" }
                                 };
                             }
-                            @foreach (var formFactor in formFactors)
+                            @foreach (var factor in formFactors)
                             {
                                 var parameters = new Dictionary<string, string>
                                 {
-                                    { "category", Model.Category }
+                                    { "category", "mainboard" }
                                 };
                                 if (!string.IsNullOrEmpty(Model.Brand))
                                     parameters.Add("brand", Model.Brand);
-                                if (!string.IsNullOrEmpty(formFactor.Value))
-                                    parameters.Add("formFactor", formFactor.Value);
+                                if (!string.IsNullOrEmpty(factor.Value))
+                                    parameters.Add("formFactor", factor.Value);
                                 if (!string.IsNullOrEmpty(Model.PriceRange))
                                     parameters.Add("priceRange", Model.PriceRange);
-                                if (Model.AdditionalFilters != null)
-                                {
-                                    if (Model.AdditionalFilters.ContainsKey("chipset"))
-                                        parameters.Add("chipset", Model.AdditionalFilters["chipset"]);
-                                }
+                                if (Model.AdditionalFilters?.ContainsKey("socket") == true)
+                                    parameters.Add("socket", Model.AdditionalFilters["socket"]);
                                 
                                 var url = Url.Action("Components", "ProductsList", parameters);
-                                var isSelected = Model.AdditionalFilters?.GetValueOrDefault("formFactor") == formFactor.Value;
-                                <option value="@url" selected="@isSelected">@formFactor.Text</option>
+                                var isSelected = Model.AdditionalFilters?.GetValueOrDefault("formFactor") == factor.Value;
+                                <option value="@url" selected="@isSelected">@factor.Text</option>
                             }
                         </select>
                     </div>

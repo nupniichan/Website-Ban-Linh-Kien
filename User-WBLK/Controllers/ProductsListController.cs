@@ -196,7 +196,9 @@ namespace Website_Ban_Linh_Kien.Controllers
             string priceRange = null,
             string cpuSeries = null,
             string cores = null,
-            string memory = null)
+            string memory = null,
+            string socket = null,
+            string formFactor = null)
         {
             // Only consider products with Loaisanpham "Components"
             var query = _context.Sanphams.Where(p => p.Loaisanpham == "Components");
@@ -221,42 +223,52 @@ namespace Website_Ban_Linh_Kien.Controllers
                 additionalFilters.Add("cores", cores);
             if (!string.IsNullOrEmpty(memory))
                 additionalFilters.Add("memory", memory);
+            if (!string.IsNullOrEmpty(socket))
+                additionalFilters.Add("socket", socket);
+            if (!string.IsNullOrEmpty(formFactor))
+                additionalFilters.Add("formFactor", formFactor);
 
             // Apply additional filters based on the sub-category
-            if (additionalFilters != null)
+            if (additionalFilters.Any())
             {
-                foreach (var filter in additionalFilters)
+                switch (category?.ToLower())
                 {
-                    if (!string.IsNullOrEmpty(filter.Value))
-                    {
-                        switch (category?.ToLower())
+                    case "cpu":
+                        if (additionalFilters.ContainsKey("cpuSeries"))
                         {
-                            case "cpu":
-                                if (filter.Key == "cpuSeries")
-                                {
-                                    // If the user selected "Intel core", 
-                                    // let's remove the trailing quote so we match "intel core i9", "intel core i7", etc.
-                                    var searchString = $"\"dòng cpu\": \"{filter.Value.ToLower()}";
-                                    query = query.Where(p => p.Thongsokythuat.ToLower().Contains(searchString));
-                                }
-                                else if (filter.Key == "cores")
-                                {
-                                    var searchString = $"\"số nhân\": \"{filter.Value.ToLower()}\"";
-                                    query = query.Where(p => p.Thongsokythuat.ToLower().Contains(searchString));
-                                }
-
-                                break;
-
-                            case "vga":
-                                if (filter.Key == "memory")
-                                {
-                                    // Tìm kiếm chỉ với số dung lượng
-                                    var searchString = $"\"bộ nhớ\": \"{filter.Value}gb";
-                                    query = query.Where(p => p.Thongsokythuat.ToLower().Contains(searchString.ToLower()));
-                                }
-                                break;
+                            // If the user selected "Intel core", 
+                            // let's remove the trailing quote so we match "intel core i9", "intel core i7", etc.
+                            var searchString = $"\"dòng cpu\": \"{additionalFilters["cpuSeries"].ToLower()}";
+                            query = query.Where(p => p.Thongsokythuat.ToLower().Contains(searchString));
                         }
-                    }
+                        else if (additionalFilters.ContainsKey("cores"))
+                        {
+                            var searchString = $"\"số nhân\": \"{additionalFilters["cores"].ToLower()}\"";
+                            query = query.Where(p => p.Thongsokythuat.ToLower().Contains(searchString));
+                        }
+                        break;
+
+                    case "vga":
+                        if (additionalFilters.ContainsKey("memory"))
+                        {
+                            // Tìm kiếm chỉ với số dung lượng
+                            var searchString = $"\"bộ nhớ\": \"{additionalFilters["memory"]}gb";
+                            query = query.Where(p => p.Thongsokythuat.ToLower().Contains(searchString.ToLower()));
+                        }
+                        break;
+
+                    case "mainboard":
+                        if (additionalFilters.ContainsKey("socket"))
+                        {
+                            // Tìm kiếm socket trong thông số kỹ thuật
+                            query = query.Where(p => p.Thongsokythuat.ToLower().Contains($"\"socket hỗ trợ\": \"{additionalFilters["socket"].ToLower()}\""));
+                        }
+                        if (additionalFilters.ContainsKey("formFactor"))
+                        {
+                            // Tìm kiếm kích thước mainboard
+                            query = query.Where(p => p.Thongsokythuat.ToLower().Contains($"\"kích thước\": \"{additionalFilters["formFactor"]}\""));
+                        }
+                        break;
                 }
             }
 
@@ -286,7 +298,6 @@ namespace Website_Ban_Linh_Kien.Controllers
                 }
             }
 
-            // Execute the query
             var products = await query.ToListAsync();
 
             var viewModel = new ProductListViewModel
