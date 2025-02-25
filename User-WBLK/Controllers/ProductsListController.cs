@@ -201,6 +201,8 @@ namespace Website_Ban_Linh_Kien.Controllers
             string formFactor = null,
             string ram = null,
             string capacity = null,
+            string wattage = null,     // Công suất PSU
+            string size = null,        // Thêm tham số kích thước case
             int page = 1)
         {
             // Only consider products with Loaisanpham "Components"
@@ -234,6 +236,10 @@ namespace Website_Ban_Linh_Kien.Controllers
                 additionalFilters.Add("capacity", capacity);
             if (!string.IsNullOrEmpty(ram))
                 additionalFilters.Add("ram", ram);
+            if (!string.IsNullOrEmpty(wattage))
+                additionalFilters.Add("wattage", wattage);
+            if (!string.IsNullOrEmpty(size))
+                additionalFilters.Add("size", size);
 
             // Apply additional filters based on the sub-category
             if (additionalFilters.Any())
@@ -286,6 +292,26 @@ namespace Website_Ban_Linh_Kien.Controllers
                             var searchValue = additionalFilters["capacity"] + "GB";
                             query = query.Where(p => 
                                 p.Thongsokythuat.ToLower().Contains($"\"dung lượng\": \"{searchValue}\"".ToLower()));
+                        }
+                        break;
+
+                    case "psu":
+                        if (additionalFilters.ContainsKey("wattage"))
+                        {
+                            var wattageValue = additionalFilters["wattage"];
+                            query = query.Where(p => p.Thongsokythuat.ToLower().Contains($"\"công suất\": \"{wattageValue}w\""));
+                        }
+                        break;
+
+                    case "case":
+                        if (additionalFilters.ContainsKey("brand"))
+                        {
+                            query = query.Where(p => p.Thuonghieu.ToLower() == additionalFilters["brand"].ToLower());
+                        }
+                        if (additionalFilters.ContainsKey("size"))
+                        {
+                            var sizeValue = additionalFilters["size"].ToLower();
+                            query = query.Where(p => p.Thongsokythuat.ToLower().Contains($"\"kích thước\": \"{sizeValue}\""));
                         }
                         break;
                 }

@@ -464,6 +464,8 @@
                                     parameters.Add("brand", brand.Value);
                                 if (!string.IsNullOrEmpty(Model.PriceRange))
                                     parameters.Add("priceRange", Model.PriceRange);
+                                if (Model.AdditionalFilters?.ContainsKey("wattage") == true)
+                                    parameters.Add("wattage", Model.AdditionalFilters["wattage"]);
                                 
                                 var url = Url.Action("Components", "ProductsList", parameters);
                                 var isSelected = Model.Brand == brand.Value;
@@ -497,76 +499,8 @@
                                     parameters.Add("priceRange", Model.PriceRange);
                                 
                                 var url = Url.Action("Components", "ProductsList", parameters);
-                                var isSelected = Model.AdditionalFilters != null && 
-                                                Model.AdditionalFilters.ContainsKey("wattage") && 
-                                                Model.AdditionalFilters["wattage"] == wattage.Value;
-                                
+                                var isSelected = Model.AdditionalFilters?.GetValueOrDefault("wattage") == wattage.Value;
                                 <option value="@url" selected="@isSelected">@wattage.Text</option>
-                            }
-                        </select>
-
-                        <!-- Efficiency Filter -->
-                        <select id="efficiency" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
-                            @{
-                                var efficiencies = new[] {
-                                    new { Value = "", Text = "Tất cả hiệu suất" },
-                                    new { Value = "80plus", Text = "80 PLUS Standard" },
-                                    new { Value = "80plus-bronze", Text = "80 PLUS Bronze" },
-                                    new { Value = "80plus-gold", Text = "80 PLUS Gold" },
-                                    new { Value = "80plus-platinum", Text = "80 PLUS Platinum" }
-                                };
-                            }
-                            @foreach (var efficiency in efficiencies)
-                            {
-                                var parameters = new Dictionary<string, string>
-                                {
-                                    { "category", Model.Category }
-                                };
-                                if (!string.IsNullOrEmpty(Model.Brand))
-                                    parameters.Add("brand", Model.Brand);
-                                if (!string.IsNullOrEmpty(efficiency.Value))
-                                    parameters.Add("efficiency", efficiency.Value);
-                                if (!string.IsNullOrEmpty(Model.PriceRange))
-                                    parameters.Add("priceRange", Model.PriceRange);
-                                
-                                var url = Url.Action("Components", "ProductsList", parameters);
-                                var isSelected = Model.AdditionalFilters != null && 
-                                                Model.AdditionalFilters.ContainsKey("efficiency") && 
-                                                Model.AdditionalFilters["efficiency"] == efficiency.Value;
-                                
-                                <option value="@url" selected="@isSelected">@efficiency.Text</option>
-                            }
-                        </select>
-
-                        <!-- Modular Filter -->
-                        <select id="modular" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
-                            @{
-                                var modularTypes = new[] {
-                                    new { Value = "", Text = "Tất cả kiểu dây" },
-                                    new { Value = "full", Text = "Full Modular" },
-                                    new { Value = "semi", Text = "Semi Modular" },
-                                    new { Value = "non", Text = "Non Modular" }
-                                };
-                            }
-                            @foreach (var modular in modularTypes)
-                            {
-                                var parameters = new Dictionary<string, string>
-                                {
-                                    { "category", Model.Category }
-                                };
-                                if (!string.IsNullOrEmpty(Model.Brand))
-                                    parameters.Add("brand", Model.Brand);
-                                if (!string.IsNullOrEmpty(modular.Value))
-                                    parameters.Add("modular", modular.Value);
-                                if (!string.IsNullOrEmpty(Model.PriceRange))
-                                    parameters.Add("priceRange", Model.PriceRange);
-                                
-                                var url = Url.Action("Components", "ProductsList", parameters);
-                                var isSelected = Model.AdditionalFilters != null && 
-                                                Model.AdditionalFilters.ContainsKey("modular") && 
-                                                Model.AdditionalFilters["modular"] == modular.Value;
-                                
-                                <option value="@url" selected="@isSelected">@modular.Text</option>
                             }
                         </select>
                     </div>
@@ -591,112 +525,47 @@
                             {
                                 var parameters = new Dictionary<string, string>
                                 {
-                                    { "category", Model.Category }
+                                    { "category", "case" }
                                 };
                                 if (!string.IsNullOrEmpty(brand.Value))
                                     parameters.Add("brand", brand.Value);
                                 if (!string.IsNullOrEmpty(Model.PriceRange))
                                     parameters.Add("priceRange", Model.PriceRange);
+                                if (Model.AdditionalFilters?.ContainsKey("size") == true)
+                                    parameters.Add("size", Model.AdditionalFilters["size"]);
                                 
                                 var url = Url.Action("Components", "ProductsList", parameters);
-                                var isSelected = Model.Brand == brand.Value;
+                                var isSelected = Model.Brand?.ToLower() == brand.Value.ToLower();
                                 <option value="@url" selected="@isSelected">@brand.Text</option>
                             }
                         </select>
 
-                        <!-- Form Factor Filter -->
-                        <select id="caseSize" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
+                        <!-- Size Filter -->
+                        <select id="size" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
                             @{
-                                var caseSizes = new[] {
+                                var sizes = new[] {
                                     new { Value = "", Text = "Tất cả kích thước" },
-                                    new { Value = "full-tower", Text = "Full Tower" },
-                                    new { Value = "mid-tower", Text = "Mid Tower" },
-                                    new { Value = "mini-tower", Text = "Mini Tower" }
+                                    new { Value = "full tower", Text = "Full Tower" },
+                                    new { Value = "mid tower", Text = "Mid Tower" },
+                                    new { Value = "mini tower", Text = "Mini Tower" }
                                 };
                             }
-                            @foreach (var size in caseSizes)
+                            @foreach (var size in sizes)
                             {
                                 var parameters = new Dictionary<string, string>
                                 {
-                                    { "category", Model.Category }
+                                    { "category", "case" }
                                 };
                                 if (!string.IsNullOrEmpty(Model.Brand))
                                     parameters.Add("brand", Model.Brand);
                                 if (!string.IsNullOrEmpty(size.Value))
-                                    parameters.Add("caseSize", size.Value);
+                                    parameters.Add("size", size.Value);
                                 if (!string.IsNullOrEmpty(Model.PriceRange))
                                     parameters.Add("priceRange", Model.PriceRange);
                                 
                                 var url = Url.Action("Components", "ProductsList", parameters);
-                                var isSelected = Model.AdditionalFilters != null && 
-                                                Model.AdditionalFilters.ContainsKey("caseSize") && 
-                                                Model.AdditionalFilters["caseSize"] == size.Value;
-                                
+                                var isSelected = Model.AdditionalFilters?.GetValueOrDefault("size") == size.Value;
                                 <option value="@url" selected="@isSelected">@size.Text</option>
-                            }
-                        </select>
-
-                        <!-- Color Filter -->
-                        <select id="color" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
-                            @{
-                                var colors = new[] {
-                                    new { Value = "", Text = "Tất cả màu sắc" },
-                                    new { Value = "black", Text = "Đen" },
-                                    new { Value = "white", Text = "Trắng" },
-                                    new { Value = "rgb", Text = "RGB" }
-                                };
-                            }
-                            @foreach (var color in colors)
-                            {
-                                var parameters = new Dictionary<string, string>
-                                {
-                                    { "category", Model.Category }
-                                };
-                                if (!string.IsNullOrEmpty(Model.Brand))
-                                    parameters.Add("brand", Model.Brand);
-                                if (!string.IsNullOrEmpty(color.Value))
-                                    parameters.Add("color", color.Value);
-                                if (!string.IsNullOrEmpty(Model.PriceRange))
-                                    parameters.Add("priceRange", Model.PriceRange);
-                                
-                                var url = Url.Action("Components", "ProductsList", parameters);
-                                var isSelected = Model.AdditionalFilters != null && 
-                                                Model.AdditionalFilters.ContainsKey("color") && 
-                                                Model.AdditionalFilters["color"] == color.Value;
-                                
-                                <option value="@url" selected="@isSelected">@color.Text</option>
-                            }
-                        </select>
-
-                        <!-- Side Panel Filter -->
-                        <select id="sidePanel" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
-                            @{
-                                var sidePanels = new[] {
-                                    new { Value = "", Text = "Tất cả loại mặt hông" },
-                                    new { Value = "tempered-glass", Text = "Kính cường lực" },
-                                    new { Value = "acrylic", Text = "Acrylic" },
-                                    new { Value = "solid", Text = "Panel kim loại" }
-                                };
-                            }
-                            @foreach (var panel in sidePanels)
-                            {
-                                var parameters = new Dictionary<string, string>
-                                {
-                                    { "category", Model.Category }
-                                };
-                                if (!string.IsNullOrEmpty(Model.Brand))
-                                    parameters.Add("brand", Model.Brand);
-                                if (!string.IsNullOrEmpty(panel.Value))
-                                    parameters.Add("sidePanel", panel.Value);
-                                if (!string.IsNullOrEmpty(Model.PriceRange))
-                                    parameters.Add("priceRange", Model.PriceRange);
-                                
-                                var url = Url.Action("Components", "ProductsList", parameters);
-                                var isSelected = Model.AdditionalFilters != null && 
-                                                Model.AdditionalFilters.ContainsKey("sidePanel") && 
-                                                Model.AdditionalFilters["sidePanel"] == panel.Value;
-                                
-                                <option value="@url" selected="@isSelected">@panel.Text</option>
                             }
                         </select>
                     </div>
