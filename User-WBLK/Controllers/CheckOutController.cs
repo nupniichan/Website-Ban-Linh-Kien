@@ -113,13 +113,42 @@ namespace Website_Ban_Linh_Kien.Controllers
                     return Json(new { success = false, message = "Vui lòng điền đầy đủ thông tin người nhận" });
                 }
 
-                // Tạo hoặc lấy thông tin khách hàng
-                var customer = await _context.Khachhangs
+                // Khai báo biến customer
+                Khachhang customer;
+
+                // Kiểm tra xem email hoặc số điện thoại đã tồn tại chưa
+                var existingCustomer = await _context.Khachhangs
                     .FirstOrDefaultAsync(k => k.Email == model.Email || k.Sodienthoai == model.ReceiverPhone);
 
-                if (customer == null)
+                if (existingCustomer != null)
                 {
-                    // Tạo mã khách hàng mới
+                    if (model.Email != existingCustomer.Email || 
+                        model.ReceiverPhone != existingCustomer.Sodienthoai || 
+                        model.ReceiverName != existingCustomer.Hoten)
+                    {
+                        return Json(new { 
+                            success = false, 
+                            message = "Vui lòng sử dụng thông tin đã đăng ký:",
+                            correctInfo = new {
+                                name = existingCustomer.Hoten,
+                                email = existingCustomer.Email,
+                                phone = existingCustomer.Sodienthoai
+                            }
+                        });
+                    }
+
+                    // Chỉ cho phép cập nhật địa chỉ
+                    if (model.DeliveryMethod == DeliveryMethod.HomeDelivery)
+                    {
+                        existingCustomer.Diachi = $"{model.StreetAddress}, {model.Ward}, {model.District}, {model.City}";
+                        await _context.SaveChangesAsync();
+                    }
+                    
+                    customer = existingCustomer;
+                }
+                else
+                {
+                    // Tạo khách hàng mới nếu chưa tồn tại
                     var lastCustomerId = await _context.Khachhangs
                         .OrderByDescending(k => k.IdKh)
                         .Select(k => k.IdKh)
@@ -267,6 +296,31 @@ namespace Website_Ban_Linh_Kien.Controllers
             }
 
             return Json(viewModel);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CheckExistingCustomer([FromBody] CustomerCheckModel model)
+        {
+            var existingCustomer = await _context.Khachhangs
+                .FirstOrDefaultAsync(k => k.Email == model.Email || k.Sodienthoai == model.Phone);
+
+            if (existingCustomer != null)
+            {
+                return Json(new
+                {
+                    exists = true,
+                    customer = new
+                    {
+                        name = existingCustomer.Hoten,
+                        email = existingCustomer.Email,
+                        phone = existingCustomer.Sodienthoai,
+                        address = existingCustomer.Diachi,
+                        matchType = existingCustomer.Email == model.Email ? "email" : "phone"
+                    }
+                });
+            }
+
+            return Json(new { exists = false });
         }
     }
 }

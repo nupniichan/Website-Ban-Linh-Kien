@@ -244,6 +244,31 @@
                 </div>
             }
 
+            <!-- Add this dialog after your existing modals -->
+            <div id="existingCustomerModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
+                <div class="bg-white p-6 rounded-lg max-w-md w-full mx-4">
+                    <h3 class="text-lg font-bold mb-4">Thông tin khách hàng</h3>
+                    <p class="mb-4">Đã tìm thấy thông tin khách hàng với <span id="matchType"></span> này:</p>
+                    <div class="mb-4 text-gray-600">
+                        <p>Họ tên: <span id="existingName"></span></p>
+                        <p>Email: <span id="existingEmail"></span></p>
+                        <p>Số điện thoại: <span id="existingPhone"></span></p>
+                        <p>Địa chỉ: <span id="existingAddress"></span></p>
+                    </div>
+                    <p class="mb-4">Bạn có muốn sử dụng thông tin này không?</p>
+                    <div class="flex justify-end gap-4">
+                        <button type="button" onclick="useExistingInfo()" 
+                                class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                            Sử dụng
+                        </button>
+                        <button type="button" onclick="closeExistingCustomerModal()" 
+                                class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+                            Không
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Button Đặt hàng -->
             <button type="button" onclick="showOrderConfirmation()" 
                     class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-500/50 transition-all font-medium mt-4">
@@ -315,43 +340,99 @@
             window.originalPrice = totalAmount;
         }
 
-        function showOrderConfirmation() {
-            const isAuthenticated = @Json.Serialize(User.Identity?.IsAuthenticated == true);
-            const form = document.getElementById('checkoutForm');
-            const name = form.querySelector('[name="ReceiverName"]').value;
-            const phone = form.querySelector('[name="ReceiverPhone"]').value;
-            const deliveryMethod = form.querySelector('input[name="DeliveryMethod"]:checked').value;
+        let isValidCustomerInfo = false; // Thêm biến kiểm tra toàn cục
+        let existingCustomerInfo = null;
+
+        async function checkExistingCustomer() {
+            const email = document.querySelector('[name="Email"]').value;
+            const phone = document.querySelector('[name="ReceiverPhone"]').value;
+            const name = document.querySelector('[name="ReceiverName"]').value;
             
-            let address = '';
-            if (deliveryMethod === '0') {
-                address = '@Model.StoreAddress';
-            } else {
-                const street = form.querySelector('[name="StreetAddress"]').value;
-                const ward = form.querySelector('[name="Ward"]').value;
-                const district = form.querySelector('[name="District"]').value;
-                const city = form.querySelector('[name="City"]').value;
-                address = `${street}, ${ward}, ${district}, ${city}`;
-            }
-            
-            var discountCodeInput = document.querySelector('[name="DiscountCode"]');
-            var code = discountCodeInput ? discountCodeInput.value.trim() : "";
-            var codeDiscount = 0;
-            if (availableDiscounts.hasOwnProperty(code)) {
-                codeDiscount = availableDiscounts[code];
-            }
-            
-            var finalTotal = isAuthenticated ? vipPrice * (1 - codeDiscount / 100) : originalPrice;
-            
-            if (isAuthenticated) {
-                document.getElementById('confirmName').textContent = name;
-                document.getElementById('confirmPhone').textContent = phone;
-                document.getElementById('confirmAddress').textContent = address;
-                document.getElementById('confirmTotal').textContent = finalTotal.toLocaleString('vi-VN') + 'đ';
+            if (!email && !phone) return;
+
+            try {
+                const response = await fetch('@Url.Action("CheckExistingCustomer", "Checkout")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, phone })
+                });
+
+                const data = await response.json();
                 
+                if (data.exists) {
+                    if (email !== data.customer.email || 
+                        phone !== data.customer.phone || 
+                        name !== data.customer.name) {
+                        
+                        isValidCustomerInfo = false; // Đánh dấu thông tin không hợp lệ
+                        existingCustomerInfo = data.customer; // Lưu thông tin khách hàng
+
+                        document.getElementById('existingName').textContent = data.customer.name;
+                        document.getElementById('existingEmail').textContent = data.customer.email;
+                        document.getElementById('existingPhone').textContent = data.customer.phone;
+                        document.getElementById('existingAddress').textContent = data.customer.address;
+                        document.getElementById('matchType').textContent = 
+                            data.customer.matchType === 'email' ? 'email' : 'số điện thoại';
+                        
+                        const confirmMessage = `Đã tìm thấy thông tin khách hàng với ${data.customer.matchType} này:
+
+Họ tên: ${data.customer.name}
+Email: ${data.customer.email}
+Số điện thoại: ${data.customer.phone}
+
+Bạn có muốn sử dụng thông tin này không?`;
+
+                        if (confirm(confirmMessage)) {
+                            useExistingInfo();
+                        }
+                    } else {
+                        isValidCustomerInfo = true; // Đánh dấu thông tin hợp lệ
+                    }
+                } else {
+                    isValidCustomerInfo = true; // Khách hàng mới
+                }
+            } catch (error) {
+                console.error('Error checking existing customer:', error);
+            }
+        }
+
+        function useExistingInfo() {
+            if (existingCustomerInfo) {
+                document.querySelector('[name="ReceiverName"]').value = existingCustomerInfo.name;
+                document.querySelector('[name="Email"]').value = existingCustomerInfo.email;
+                document.querySelector('[name="ReceiverPhone"]').value = existingCustomerInfo.phone;
+                
+                if (existingCustomerInfo.address) {
+                    const addressParts = existingCustomerInfo.address.split(',').map(part => part.trim());
+                    if (addressParts.length >= 4) {
+                        document.querySelector('[name="StreetAddress"]').value = addressParts[0];
+                        document.querySelector('[name="Ward"]').value = addressParts[1];
+                        document.querySelector('[name="District"]').value = addressParts[2];
+                        document.querySelector('[name="City"]').value = addressParts[3];
+                    }
+                }
+                isValidCustomerInfo = true;
+            }
+            closeExistingCustomerModal();
+        }
+
+        function showOrderConfirmation() {
+            if (!isValidCustomerInfo) {
+                alert(`Vui lòng sử dụng thông tin đã đăng ký trước đó:
+
+Họ tên: ${existingCustomerInfo.name}
+Email: ${existingCustomerInfo.email}
+Số điện thoại: ${existingCustomerInfo.phone}`);
+                return;
+            }
+
+            const isAuthenticated = @Json.Serialize(User.Identity?.IsAuthenticated == true);
+            if (isAuthenticated) {
                 document.getElementById('loggedInOrderConfirmModal').classList.remove('hidden');
                 document.getElementById('loggedInOrderConfirmModal').classList.add('flex');
             } else {
-                // For guests, show the guest modal without setting confirm* fields.
                 document.getElementById('orderConfirmModal').classList.remove('hidden');
                 document.getElementById('orderConfirmModal').classList.add('flex');
             }
@@ -368,7 +449,16 @@
             }
         }
 
-        function submitOrder() {
+        async function submitOrder() {
+            if (!isValidCustomerInfo) {
+                alert(`Vui lòng sử dụng thông tin đã đăng ký trước đó:
+
+Họ tên: ${existingCustomerInfo.name}
+Email: ${existingCustomerInfo.email}
+Số điện thoại: ${existingCustomerInfo.phone}`);
+                return;
+            }
+
             const form = document.getElementById('checkoutForm');
             if (!form) {
                 console.error('Không tìm thấy form checkout');
@@ -424,7 +514,17 @@
                         }
                         window.location.href = data.redirectUrl;
                     } else {
-                        alert(data.message || 'Có lỗi xảy ra khi đặt hàng');
+                        if (data.correctInfo) {
+                            // Tự động điền toàn bộ thông tin cũ
+                            document.querySelector('[name="ReceiverName"]').value = data.correctInfo.name;
+                            document.querySelector('[name="Email"]').value = data.correctInfo.email;
+                            document.querySelector('[name="ReceiverPhone"]').value = data.correctInfo.phone;
+                            
+                            // Hiển thị thông báo chi tiết
+                            alert(`${data.message}\n\nHọ tên: ${data.correctInfo.name}\nEmail: ${data.correctInfo.email}\nSố điện thoại: ${data.correctInfo.phone}`);
+                        } else {
+                            alert(data.message);
+                        }
                     }
                 })
                 .catch(error => {
@@ -544,6 +644,11 @@
             discountCodeInput.addEventListener('change', updateFinalPrice);
             discountCodeInput.addEventListener('blur', updateFinalPrice);
         }
+
+        // Thêm event listeners để kiểm tra khi người dùng thay đổi thông tin
+        document.querySelector('[name="Email"]').addEventListener('change', () => { isValidCustomerInfo = false; checkExistingCustomer(); });
+        document.querySelector('[name="ReceiverPhone"]').addEventListener('change', () => { isValidCustomerInfo = false; checkExistingCustomer(); });
+        document.querySelector('[name="ReceiverName"]').addEventListener('change', () => { isValidCustomerInfo = false; checkExistingCustomer(); });
     </script>
 }
 
@@ -567,4 +672,12 @@
         storePickup.addEventListener('change', toggleDeliveryMethod);
         homeDelivery.addEventListener('change', toggleDeliveryMethod);
     });
+</script>
+
+<script>
+    // Add these new functions
+    function closeExistingCustomerModal() {
+        document.getElementById('existingCustomerModal').classList.add('hidden');
+        document.getElementById('existingCustomerModal').classList.remove('flex');
+    }
 </script>
