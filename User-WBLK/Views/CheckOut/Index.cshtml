@@ -133,7 +133,7 @@
             <!-- Phương thức thanh toán -->
             <div class="bg-white p-4 border border-gray-200 rounded-lg mb-4">
                 <h5 class="text-lg mb-2 font-bold">Phương thức thanh toán</h5>
-                <select class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all appearance-none bg-white bg-[url('data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3e%3c/svg%3e')] bg-[length:1.5em_1.5em] bg-no-repeat bg-[right_0.5rem_center] cursor-pointer">
+                <select class="payment-method w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all appearance-none bg-white bg-[url('data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3e%3c/svg%3e')] bg-[length:1.5em_1.5em] bg-no-repeat bg-[right_0.5rem_center] cursor-pointer">
                     <option value="COD">Thanh toán khi nhận hàng</option>
                     <option value="VNPay">VNPay</option>
                     <option value="Paypal">Paypal</option>
@@ -450,92 +450,128 @@ Số điện thoại: ${existingCustomerInfo.phone}`);
         }
 
         async function submitOrder() {
-            if (!isValidCustomerInfo) {
-                alert(`Vui lòng sử dụng thông tin đã đăng ký trước đó:
+            const paymentMethod = document.querySelector('select.payment-method').value;
 
-Họ tên: ${existingCustomerInfo.name}
-Email: ${existingCustomerInfo.email}
-Số điện thoại: ${existingCustomerInfo.phone}`);
-                return;
-            }
+            if (paymentMethod === 'VNPay') {
+                // Lấy giá trị tổng tiền từ các phần tử HTML
+                let totalAmount = 0;
+                
+                // Thử lấy từ finalPrice (sau khi áp dụng mã giảm giá)
+                const finalPriceElem = document.getElementById('finalPrice');
+                if (finalPriceElem && finalPriceElem.style.display !== 'none') {
+                    const finalPriceText = finalPriceElem.textContent;
+                    totalAmount = parseFloat(finalPriceText.replace(/[đ,.\s]/g, ''));
+                } 
+                // Nếu không có finalPrice, thử lấy từ vipPrice (sau khi áp dụng giảm giá VIP)
+                else if (document.getElementById('vipPrice')) {
+                    const vipPriceText = document.getElementById('vipPrice').textContent;
+                    totalAmount = parseFloat(vipPriceText.replace(/[đ,.\s]/g, ''));
+                } 
+                // Nếu không có cả hai, lấy từ originalTotal
+                else {
+                    const originalTotalText = document.getElementById('originalTotal').textContent;
+                    totalAmount = parseFloat(originalTotalText.replace(/[đ,.\s]/g, ''));
+                }
+                
+                console.log('Final total amount:', totalAmount);
+                
+                // Kiểm tra nếu totalAmount vẫn là 0 hoặc NaN
+                if (isNaN(totalAmount) || totalAmount <= 0) {
+                    // Tính lại từ các sản phẩm trong giỏ hàng
+                    totalAmount = Array.from(document.querySelectorAll('.cart-item')).reduce((sum, item) => {
+                        const price = parseFloat(item.dataset.price);
+                        const quantity = parseInt(item.dataset.quantity);
+                        return sum + (price * quantity);
+                    }, 0);
+                    
+                    console.log('Recalculated total amount from cart items:', totalAmount);
+                }
 
-            const form = document.getElementById('checkoutForm');
-            if (!form) {
-                console.error('Không tìm thấy form checkout');
-                return;
-            }
-            try {
-                let cartItems;
-                const isAuthenticated = @Json.Serialize(User.Identity?.IsAuthenticated == true);
-                if (!isAuthenticated) {
-                    const guestCart = localStorage.getItem('guestCart');
-                    if (!guestCart) {
-                        alert('Giỏ hàng trống');
-                        return;
-                    }
-                    cartItems = JSON.parse(guestCart).map(item => ({
-                        ProductId: item.id,
-                        ProductName: item.name,
-                        Quantity: parseInt(item.quantity),
-                        Price: parseFloat(item.price)
-                    }));
-                } else {
-                    cartItems = Array.from(document.querySelectorAll('.cart-item')).map(item => ({
+                // Lấy thông tin từ form
+                const formData = {
+                    ReceiverName: document.querySelector('[name="ReceiverName"]').value,
+                    Email: document.querySelector('[name="Email"]').value,
+                    ReceiverPhone: document.querySelector('[name="ReceiverPhone"]').value,
+                    DeliveryMethod: parseInt(document.querySelector('[name="DeliveryMethod"]:checked').value),
+                    StreetAddress: document.querySelector('[name="StreetAddress"]').value,
+                    Ward: document.querySelector('[name="Ward"]').value,
+                    District: document.querySelector('[name="District"]').value,
+                    City: document.querySelector('[name="City"]').value,
+                    Note: document.querySelector('[name="Note"]').value,
+                    TotalAmount: totalAmount,
+                    Items: Array.from(document.querySelectorAll('.cart-item')).map(item => ({
                         ProductId: item.dataset.productId,
                         ProductName: item.dataset.productName,
+                        ImageUrl: item.dataset.imageUrl,
                         Quantity: parseInt(item.dataset.quantity),
                         Price: parseFloat(item.dataset.price)
-                    }));
-                }
-                const deliveryMethod = parseInt(form.querySelector('input[name="DeliveryMethod"]:checked').value);
-                const formData = {
-                    ReceiverName: form.querySelector('[name="ReceiverName"]').value,
-                    Email: form.querySelector('[name="Email"]').value,
-                    ReceiverPhone: form.querySelector('[name="ReceiverPhone"]').value,
-                    DeliveryMethod: deliveryMethod,
-                    City: form.querySelector('[name="City"]').value,
-                    District: form.querySelector('[name="District"]').value,
-                    Ward: form.querySelector('[name="Ward"]').value,
-                    StreetAddress: form.querySelector('[name="StreetAddress"]').value,
-                    Note: form.querySelector('[name="Note"]').value,
-                    DiscountCode: form.querySelector('[name="DiscountCode"]').value.trim(),
-                    Items: cartItems
+                    }))
                 };
-                fetch(form.action, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(formData)
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        if (!isAuthenticated) {
-                            localStorage.removeItem('guestCart');
-                        }
-                        window.location.href = data.redirectUrl;
-                    } else {
-                        if (data.correctInfo) {
-                            // Tự động điền toàn bộ thông tin cũ
-                            document.querySelector('[name="ReceiverName"]').value = data.correctInfo.name;
-                            document.querySelector('[name="Email"]').value = data.correctInfo.email;
-                            document.querySelector('[name="ReceiverPhone"]').value = data.correctInfo.phone;
-                            
-                            // Hiển thị thông báo chi tiết
-                            alert(`${data.message}\n\nHọ tên: ${data.correctInfo.name}\nEmail: ${data.correctInfo.email}\nSố điện thoại: ${data.correctInfo.phone}`);
-                        } else {
-                            alert(data.message);
-                        }
+
+                // Debug: In ra dữ liệu cuối cùng sẽ gửi đi
+                console.log('Final form data:', formData);
+
+                try {
+                    const response = await fetch('/Checkout/ProcessVNPayPayment', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(formData)
+                    });
+
+                    // Debug: In ra response
+                    console.log('Response status:', response.status);
+                    
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error('Error response:', errorText);
+                        throw new Error(`HTTP error! status: ${response.status}`);
                     }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Có lỗi xảy ra khi đặt hàng');
-                });
-            } catch (error) {
-                console.error('Lỗi khi xử lý đơn hàng:', error);
-                alert('Có lỗi xảy ra khi xử lý đơn hàng');
+
+                    // Nếu response là redirect URL trực tiếp
+                    const contentType = response.headers.get("content-type");
+                    if (contentType && contentType.indexOf("application/json") !== -1) {
+                        const result = await response.json();
+                        console.log('Response JSON:', result);
+                        if (result.success === false) {
+                            alert(result.message);
+                            return;
+                        }
+                        if (result.redirectUrl) {
+                            window.location.href = result.redirectUrl;
+                            return;
+                        }
+                    } else {
+                        // Nếu response là redirect trực tiếp
+                        window.location.href = response.url;
+                    }
+                } catch (error) {
+                    console.error('Lỗi khi xử lý thanh toán VNPay:', error);
+                    alert('Có lỗi xảy ra khi xử lý thanh toán VNPay: ' + error.message);
+                }
+                return false;
             }
+            
+            return true;
         }
+
+        // Đảm bảo form chỉ được submit một lần
+        let isSubmitting = false;
+
+        // Thêm event listener cho form
+        document.getElementById('checkoutForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (isSubmitting) return;
+            isSubmitting = true;
+
+            try {
+                await submitOrder();
+            } finally {
+                isSubmitting = false;
+            }
+        });
 
         document.addEventListener('DOMContentLoaded', function() {
             const checkoutForm = document.getElementById('checkoutForm');
