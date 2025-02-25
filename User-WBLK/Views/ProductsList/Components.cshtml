@@ -175,7 +175,9 @@
                                     new { Value = "amd", Text = "AMD" },
                                     new { Value = "asus", Text = "ASUS" },
                                     new { Value = "msi", Text = "MSI" },
-                                    new { Value = "gigabyte", Text = "Gigabyte" }
+                                    new { Value = "gigabyte", Text = "Gigabyte" },
+                                    new { Value = "zotac", Text = "Zotac" },
+                                    new { Value = "intel", Text = "Intel" }
                                 };
                             }
                             @foreach (var brand in vgaBrandOptions)
@@ -186,8 +188,8 @@
                                 };
                                 if (!string.IsNullOrEmpty(brand.Value))
                                     parameters.Add("brand", brand.Value);
-                                if (Model.AdditionalFilters != null && Model.AdditionalFilters.ContainsKey("Bộ nhớ"))
-                                    parameters.Add("Bộ nhớ", Model.AdditionalFilters["Bộ nhớ"]);
+                                if (Model.AdditionalFilters != null && Model.AdditionalFilters.ContainsKey("memory"))
+                                    parameters.Add("memory", Model.AdditionalFilters["memory"]);
                                 if (!string.IsNullOrEmpty(Model.PriceRange))
                                     parameters.Add("priceRange", Model.PriceRange);
                                 
@@ -202,13 +204,13 @@
                             @{
                                 var memoryOptions = new[] {
                                     new { Value = "", Text = "Tất cả dung lượng" },
-                                    new { Value = "8GB GDDR6", Text = "8GB GDDR6" },
-                                    new { Value = "12GB GDDR6", Text = "12GB GDDR6" },
-                                    new { Value = "16GB GDDR6", Text = "16GB GDDR6" },
-                                    new { Value = "24GB GDDR6", Text = "24GB GDDR6" }
+                                    new { Value = "8", Text = "8GB" },
+                                    new { Value = "12", Text = "12GB" },
+                                    new { Value = "16", Text = "16GB" },
+                                    new { Value = "24", Text = "24GB" }
                                 };
                             }
-                            @foreach (var memory in memoryOptions)
+                            @foreach (var mem in memoryOptions)
                             {
                                 var parameters = new Dictionary<string, string>
                                 {
@@ -216,14 +218,14 @@
                                 };
                                 if (!string.IsNullOrEmpty(Model.Brand))
                                     parameters.Add("brand", Model.Brand);
-                                if (!string.IsNullOrEmpty(memory.Value))
-                                    parameters.Add("Bộ nhớ", memory.Value);
+                                if (!string.IsNullOrEmpty(mem.Value))
+                                    parameters.Add("memory", mem.Value);
                                 if (!string.IsNullOrEmpty(Model.PriceRange))
                                     parameters.Add("priceRange", Model.PriceRange);
                                 
                                 var url = Url.Action("Components", "ProductsList", parameters);
-                                var isSelected = Model.AdditionalFilters?.GetValueOrDefault("Bộ nhớ") == memory.Value;
-                                <option value="@url" selected="@isSelected">@memory.Text</option>
+                                var isSelected = Model.AdditionalFilters?.GetValueOrDefault("memory") == mem.Value;
+                                <option value="@url" selected="@isSelected">@mem.Text</option>
                             }
                         </select>
                     </div>
