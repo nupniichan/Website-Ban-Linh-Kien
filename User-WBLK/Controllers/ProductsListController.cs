@@ -198,7 +198,10 @@ namespace Website_Ban_Linh_Kien.Controllers
             string cores = null,
             string memory = null,
             string socket = null,
-            string formFactor = null)
+            string formFactor = null,
+            string ram = null,
+            string capacity = null,
+            int page = 1)
         {
             // Only consider products with Loaisanpham "Components"
             var query = _context.Sanphams.Where(p => p.Loaisanpham == "Components");
@@ -227,6 +230,10 @@ namespace Website_Ban_Linh_Kien.Controllers
                 additionalFilters.Add("socket", socket);
             if (!string.IsNullOrEmpty(formFactor))
                 additionalFilters.Add("formFactor", formFactor);
+            if (!string.IsNullOrEmpty(capacity))
+                additionalFilters.Add("capacity", capacity);
+            if (!string.IsNullOrEmpty(ram))
+                additionalFilters.Add("ram", ram);
 
             // Apply additional filters based on the sub-category
             if (additionalFilters.Any())
@@ -260,13 +267,25 @@ namespace Website_Ban_Linh_Kien.Controllers
                     case "mainboard":
                         if (additionalFilters.ContainsKey("socket"))
                         {
-                            // Tìm kiếm socket trong thông số kỹ thuật
                             query = query.Where(p => p.Thongsokythuat.ToLower().Contains($"\"socket hỗ trợ\": \"{additionalFilters["socket"].ToLower()}\""));
                         }
                         if (additionalFilters.ContainsKey("formFactor"))
                         {
-                            // Tìm kiếm kích thước mainboard
                             query = query.Where(p => p.Thongsokythuat.ToLower().Contains($"\"kích thước\": \"{additionalFilters["formFactor"]}\""));
+                        }
+                        if (additionalFilters.ContainsKey("ramSlots"))
+                        {
+                            query = query.Where(p => p.Thongsokythuat.ToLower().Contains($"\"số khe ram\": \"{additionalFilters["ramSlots"]}\""));
+                        }
+                        break;
+
+                    case "ram":
+                        if (additionalFilters.ContainsKey("capacity"))
+                        {
+                            // Tìm kiếm dung lượng RAM trong thông số kỹ thuật
+                            var searchValue = additionalFilters["capacity"] + "GB";
+                            query = query.Where(p => 
+                                p.Thongsokythuat.ToLower().Contains($"\"dung lượng\": \"{searchValue}\"".ToLower()));
                         }
                         break;
                 }
@@ -298,11 +317,15 @@ namespace Website_Ban_Linh_Kien.Controllers
                 }
             }
 
-            var products = await query.ToListAsync();
+            // Thêm phân trang
+            var products = await GetPagedProductsAsync(query, page);
+            var totalPages = await GetTotalPagesAsync(query);
 
             var viewModel = new ProductListViewModel
             {
                 Products = products,
+                CurrentPage = page,
+                TotalPages = totalPages,
                 Category = category,
                 Brand = brand,
                 PriceRange = priceRange,

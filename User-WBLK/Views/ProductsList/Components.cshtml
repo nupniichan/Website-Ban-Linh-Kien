@@ -295,6 +295,8 @@
                                     parameters.Add("priceRange", Model.PriceRange);
                                 if (Model.AdditionalFilters?.ContainsKey("formFactor") == true)
                                     parameters.Add("formFactor", Model.AdditionalFilters["formFactor"]);
+                                if (Model.AdditionalFilters?.ContainsKey("ramSlots") == true)
+                                    parameters.Add("ramSlots", Model.AdditionalFilters["ramSlots"]);
                                 
                                 var url = Url.Action("Components", "ProductsList", parameters);
                                 var isSelected = Model.AdditionalFilters?.GetValueOrDefault("socket") == socket.Value;
@@ -326,10 +328,45 @@
                                     parameters.Add("priceRange", Model.PriceRange);
                                 if (Model.AdditionalFilters?.ContainsKey("socket") == true)
                                     parameters.Add("socket", Model.AdditionalFilters["socket"]);
+                                if (Model.AdditionalFilters?.ContainsKey("ramSlots") == true)
+                                    parameters.Add("ramSlots", Model.AdditionalFilters["ramSlots"]);
                                 
                                 var url = Url.Action("Components", "ProductsList", parameters);
                                 var isSelected = Model.AdditionalFilters?.GetValueOrDefault("formFactor") == factor.Value;
                                 <option value="@url" selected="@isSelected">@factor.Text</option>
+                            }
+                        </select>
+
+                        <!-- RAM Slots Filter -->
+                        <select id="ramSlots" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
+                            @{
+                                var ramSlots = new[] {
+                                    new { Value = "", Text = "Tất cả số khe RAM" },
+                                    new { Value = "2", Text = "2 khe" },
+                                    new { Value = "4", Text = "4 khe" },
+                                    new { Value = "8", Text = "8 khe" }
+                                };
+                            }
+                            @foreach (var slots in ramSlots)
+                            {
+                                var parameters = new Dictionary<string, string>
+                                {
+                                    { "category", "mainboard" }
+                                };
+                                if (!string.IsNullOrEmpty(Model.Brand))
+                                    parameters.Add("brand", Model.Brand);
+                                if (!string.IsNullOrEmpty(slots.Value))
+                                    parameters.Add("ramSlots", slots.Value);
+                                if (!string.IsNullOrEmpty(Model.PriceRange))
+                                    parameters.Add("priceRange", Model.PriceRange);
+                                if (Model.AdditionalFilters?.ContainsKey("socket") == true)
+                                    parameters.Add("socket", Model.AdditionalFilters["socket"]);
+                                if (Model.AdditionalFilters?.ContainsKey("formFactor") == true)
+                                    parameters.Add("formFactor", Model.AdditionalFilters["formFactor"]);
+                                
+                                var url = Url.Action("Components", "ProductsList", parameters);
+                                var isSelected = Model.AdditionalFilters?.GetValueOrDefault("ramSlots") == slots.Value;
+                                <option value="@url" selected="@isSelected">@slots.Text</option>
                             }
                         </select>
                     </div>
@@ -354,16 +391,49 @@
                             {
                                 var parameters = new Dictionary<string, string>
                                 {
-                                    { "category", Model.Category }
+                                    { "category", "ram" }
                                 };
                                 if (!string.IsNullOrEmpty(brand.Value))
                                     parameters.Add("brand", brand.Value);
                                 if (!string.IsNullOrEmpty(Model.PriceRange))
                                     parameters.Add("priceRange", Model.PriceRange);
+                                if (Model.AdditionalFilters?.ContainsKey("capacity") == true)
+                                    parameters.Add("capacity", Model.AdditionalFilters["capacity"]);
                                 
                                 var url = Url.Action("Components", "ProductsList", parameters);
-                                var isSelected = Model.Brand == brand.Value;
+                                var isSelected = Model.Brand?.ToLower() == brand.Value.ToLower();
                                 <option value="@url" selected="@isSelected">@brand.Text</option>
+                            }
+                        </select>
+
+                        <!-- Capacity Filter -->
+                        <select id="capacity" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
+                            @{
+                                var capacities = new[] {
+                                    new { Value = "", Text = "Tất cả dung lượng" },
+                                    new { Value = "8", Text = "8GB" },
+                                    new { Value = "16", Text = "16GB" },
+                                    new { Value = "32", Text = "32GB" },
+                                    new { Value = "64", Text = "64GB" },
+                                    new { Value = "128", Text = "128GB" }
+                                };
+                            }
+                            @foreach (var capacity in capacities)
+                            {
+                                var parameters = new Dictionary<string, string>
+                                {
+                                    { "category", "ram" }
+                                };
+                                if (!string.IsNullOrEmpty(Model.Brand))
+                                    parameters.Add("brand", Model.Brand);
+                                if (!string.IsNullOrEmpty(capacity.Value))
+                                    parameters.Add("capacity", capacity.Value);
+                                if (!string.IsNullOrEmpty(Model.PriceRange))
+                                    parameters.Add("priceRange", Model.PriceRange);
+                                
+                                var url = Url.Action("Components", "ProductsList", parameters);
+                                var isSelected = Model.AdditionalFilters?.GetValueOrDefault("capacity") == capacity.Value;
+                                <option value="@url" selected="@isSelected">@capacity.Text</option>
                             }
                         </select>
                     </div>
