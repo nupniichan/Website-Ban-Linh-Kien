@@ -195,16 +195,16 @@ namespace Website_Ban_Linh_Kien.Controllers
             string brand = null,
             string priceRange = null,
             string cpuSeries = null,
-            string cores = null)
+            string cores = null,
+            string memory = null)
         {
             // Only consider products with Loaisanpham "Components"
             var query = _context.Sanphams.Where(p => p.Loaisanpham == "Components");
 
-            // Filter by sub-category (e.g. "cpu")
+            // Filter by sub-category (e.g. "vga")
             if (!string.IsNullOrEmpty(category))
             {
-                // Use lower-case matching for robustness
-                query = query.Where(p => p.Thongsokythuat.ToLower().Contains($"\"{category.ToLower()}\""));
+                query = query.Where(p => p.Thongsokythuat.ToLower().Contains($"\"danh mục\": \"{category.ToLower()}\""));
             }
 
             // Filter by brand (if provided)
@@ -219,9 +219,10 @@ namespace Website_Ban_Linh_Kien.Controllers
                 additionalFilters.Add("cpuSeries", cpuSeries);
             if (!string.IsNullOrEmpty(cores))
                 additionalFilters.Add("cores", cores);
+            if (!string.IsNullOrEmpty(memory))
+                additionalFilters.Add("memory", memory);
 
-            // Apply additional filters based on the sub-category.
-            // Here we assume that when category == "cpu", the JSON contains keys "Dòng CPU" and "Số nhân".
+            // Apply additional filters based on the sub-category
             if (additionalFilters != null)
             {
                 foreach (var filter in additionalFilters)
@@ -246,7 +247,14 @@ namespace Website_Ban_Linh_Kien.Controllers
 
                                 break;
 
-                            // Add additional cases for other sub-categories if needed.
+                            case "vga":
+                                if (filter.Key == "memory")
+                                {
+                                    // Tìm kiếm chỉ với số dung lượng
+                                    var searchString = $"\"bộ nhớ\": \"{filter.Value}gb";
+                                    query = query.Where(p => p.Thongsokythuat.ToLower().Contains(searchString.ToLower()));
+                                }
+                                break;
                         }
                     }
                 }
