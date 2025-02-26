@@ -5,6 +5,12 @@
     ViewData["Title"] = "Đặt hàng thành công";
 }
 
+@section Styles {
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, post-check=0, pre-check=0" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+}
+
 <div class="container mx-auto px-4 py-8 max-w-[700px]">
     <div class="text-center space-y-4">
         <!-- Icon Success -->
@@ -20,6 +26,14 @@
         <!-- Message -->
         <p class="text-gray-600">Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi.</p>
         <p class="text-gray-600">Mã đơn hàng của bạn: <span class="font-bold">@TempData["OrderId"]</span></p>
+        
+        <!-- Transaction Info -->
+        @if (TempData["TransactionInfo"] != null)
+        {
+            <div class="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <p class="text-green-700">@TempData["TransactionInfo"]</p>
+            </div>
+        }
 
         <!-- Buttons -->
         <div class="flex justify-center gap-4 pt-4">
@@ -41,3 +55,37 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        // Đảm bảo không có mã JavaScript nào tự động chuyển hướng
+        // Ghi log để debug
+        console.log("Payment success page loaded");
+        console.log("OrderId: @TempData["OrderId"]");
+        console.log("TransactionInfo: @TempData["TransactionInfo"]");
+        
+        // Ngăn chặn chuyển hướng tự động
+        window.onbeforeunload = function(e) {
+            console.log("Attempting to leave page");
+            return "Bạn có chắc chắn muốn rời khỏi trang này?";
+        };
+        
+        // Ghi đè lên bất kỳ hàm chuyển hướng nào
+        var originalSetTimeout = window.setTimeout;
+        window.setTimeout = function(callback, timeout) {
+            if (typeof callback === 'function') {
+                var wrappedCallback = function() {
+                    console.log("setTimeout callback executed");
+                    var result = callback.apply(this, arguments);
+                    return result;
+                };
+                return originalSetTimeout(wrappedCallback, timeout);
+            } else {
+                console.log("setTimeout with string callback: " + callback);
+                return originalSetTimeout(function() {
+                    console.log("Prevented potential redirect in setTimeout");
+                }, timeout);
+            }
+        };
+    </script>
+}

@@ -43,29 +43,31 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Xử lý form submit với Ajax
-    loginForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const formData = new FormData(this);
+    if (loginForm) {
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
 
-        fetch('/Login/Login', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                window.location.href = data.redirectUrl;
-            } else {
-                errorMessage.textContent = data.message;
+            fetch('/Login/Login', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = data.redirectUrl;
+                } else {
+                    errorMessage.textContent = data.message;
+                    errorMessage.classList.remove('hidden');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                errorMessage.textContent = 'Đã có lỗi xảy ra. Vui lòng thử lại.';
                 errorMessage.classList.remove('hidden');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            errorMessage.textContent = 'Đã có lỗi xảy ra. Vui lòng thử lại.';
-            errorMessage.classList.remove('hidden');
+            });
         });
-    });
+    }
 
     // Chuyển sang form đăng ký
     document.getElementById('showRegisterBtn').addEventListener('click', function(e) {
@@ -73,4 +75,12 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('loginPopup').classList.add('hidden');
         document.getElementById('registerPopup').classList.remove('hidden');
     });
+
+    // Tương tự cho các phần tử khác
+    const registerForm = document.getElementById('registerForm');
+    if (registerForm) {
+        registerForm.addEventListener('submit', function(event) {
+            // Xử lý form đăng ký
+        });
+    }
 });

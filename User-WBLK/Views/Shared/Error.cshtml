@@ -1,17 +1,33 @@
 ﻿@model ErrorViewModel
 @{
-    ViewData["Title"] = "Error";
+    ViewData["Title"] = "Lỗi";
 }
 
-<h1 class="text-danger">Error.</h1>
-<h2 class="text-danger">An error occurred while processing your request.</h2>
-
-@if (Model.ShowRequestId)
-{
-    <p>
-        <strong>Request ID:</strong> <code>@Model.RequestId</code>
-    </p>
-}
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-white p-6 rounded-lg shadow-md">
+        <h1 class="text-2xl font-bold text-red-600 mb-4">Đã xảy ra lỗi</h1>
+        
+        @if (Model != null && !string.IsNullOrEmpty(Model.RequestId))
+        {
+            <p class="mb-2">
+                <strong>Request ID:</strong> <code>@Model.RequestId</code>
+            </p>
+        }
+        
+        @if (ViewBag != null && ViewBag.ErrorMessage != null)
+        {
+            <p class="text-gray-700 mb-4">@ViewBag.ErrorMessage</p>
+        }
+        else
+        {
+            <p class="text-gray-700 mb-4">Đã xảy ra lỗi trong quá trình xử lý yêu cầu của bạn.</p>
+        }
+        
+        <a href="/" class="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+            Quay lại trang chủ
+        </a>
+    </div>
+</div>
 
 <h3>Development Mode</h3>
 <p>

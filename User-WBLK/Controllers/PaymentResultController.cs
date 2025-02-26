@@ -14,36 +14,53 @@ namespace Website_Ban_Linh_Kien.Controllers
             _context = context;
         }
 
-        // GET: PaymentResultController
-        public async Task<ActionResult> PaymentSuccess()
+        public async Task<IActionResult> PaymentSuccess(string orderId, string transId, long amount)
         {
-            var orderId = TempData["OrderId"]?.ToString();
-            if (orderId != null)
+            // Ghi log để debug
+            Console.WriteLine($"PaymentSuccess called with orderId: {orderId}, transId: {transId}, amount: {amount}");
+            
+            // Lưu thông tin vào TempData để hiển thị trên trang
+            TempData["OrderId"] = orderId;
+            TempData["TransactionInfo"] = $"Mã giao dịch: {transId}, Số tiền: {amount}";
+            
+            // Kiểm tra xem đơn hàng đã tồn tại chưa
+            if (!string.IsNullOrEmpty(orderId))
             {
                 var payment = await _context.Thanhtoans
                     .FirstOrDefaultAsync(t => t.IdDh == orderId);
                 
                 if (payment != null)
                 {
-                    return View(payment);
+                    Console.WriteLine($"Found payment for order: {orderId}");
+                    ViewData["Payment"] = payment;
+                }
+                else
+                {
+                    Console.WriteLine($"No payment found for order: {orderId}");
                 }
             }
+            
+            // Ngăn chặn chuyển hướng tự động
+            Response.Headers.Add("Cache-Control", "no-store, no-cache, must-revalidate, post-check=0, pre-check=0");
+            Response.Headers.Add("Pragma", "no-cache");
+            Response.Headers.Add("Expires", "0");
+            
             return View();
         }
 
-        public async Task<ActionResult> PaymentFailed()
+        public IActionResult PaymentFailed(string errorMessage)
         {
-            var orderId = TempData["OrderId"]?.ToString();
-            if (orderId != null)
-            {
-                var payment = await _context.Thanhtoans
-                    .FirstOrDefaultAsync(t => t.IdDh == orderId);
-                
-                if (payment != null)
-                {
-                    return View(payment);
-                }
-            }
+            // Ghi log để debug
+            Console.WriteLine($"PaymentFailed called with errorMessage: {errorMessage}");
+            
+            // Lưu thông tin vào TempData để hiển thị trên trang
+            TempData["ErrorMessage"] = errorMessage;
+            
+            // Ngăn chặn chuyển hướng tự động
+            Response.Headers.Add("Cache-Control", "no-store, no-cache, must-revalidate, post-check=0, pre-check=0");
+            Response.Headers.Add("Pragma", "no-cache");
+            Response.Headers.Add("Expires", "0");
+            
             return View();
         }
     }
