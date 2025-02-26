@@ -392,6 +392,50 @@ namespace Website_Ban_Linh_Kien.Controllers
             }
             return Json(new { success = false, message = "Không tìm thấy sản phẩm trong giỏ hàng" });
         }
+
+        [HttpPost]
+        public async Task<IActionResult> ClearCart()
+        {
+            try
+            {
+                // Nếu người dùng đã đăng nhập
+                if (User.Identity?.IsAuthenticated == true)
+                {
+                    var customerId = User.FindFirst("CustomerId")?.Value;
+                    if (!string.IsNullOrEmpty(customerId))
+                    {
+                        // Xóa giỏ hàng của khách hàng
+                        var cart = await _context.Giohangs
+                            .Include(g => g.Chitietgiohangs)
+                            .Where(g => g.IdKh == customerId)
+                            .OrderByDescending(g => g.Thoigiancapnhat)
+                            .FirstOrDefaultAsync();
+                        
+                        if (cart != null)
+                        {
+                            // Xóa chi tiết giỏ hàng
+                            _context.Chitietgiohangs.RemoveRange(cart.Chitietgiohangs);
+                            
+                            // Xóa giỏ hàng
+                            _context.Giohangs.Remove(cart);
+                            
+                            await _context.SaveChangesAsync();
+                            Console.WriteLine($"Cleared cart for customer {customerId}");
+                        }
+                    }
+                }
+                
+                // Xóa session giỏ hàng
+                HttpContext.Session.Remove("CartItems");
+                
+                return Ok(new { success = true, message = "Cart cleared successfully" });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error clearing cart: {ex.Message}");
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
     }
 
     // DTO classes for AJAX calls

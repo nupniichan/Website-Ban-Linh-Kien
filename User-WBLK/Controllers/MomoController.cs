@@ -203,11 +203,12 @@ namespace Website_Ban_Linh_Kien.Controllers
                         Console.WriteLine($"WARNING: Order {orderId} not found");
                     }
                     
-                    // Chuyển hướng đến trang thành công
+                    // Chuyển hướng đến trang thành công với tham số clearCart
                     return RedirectToAction("PaymentSuccess", "PaymentResult", new { 
                         orderId = orderId, 
                         transId = transId,
-                        amount = amount
+                        amount = amount,
+                        clearCart = true
                     });
                 }
                 catch (Exception ex)
@@ -231,7 +232,7 @@ namespace Website_Ban_Linh_Kien.Controllers
         }
 
         [HttpPost]
-        public IActionResult MomoNotify([FromBody] MomoIPN ipn)
+        public async Task<IActionResult> MomoNotify([FromBody] MomoIPN ipn)
         {
             try
             {
@@ -251,33 +252,59 @@ namespace Website_Ban_Linh_Kien.Controllers
                     // Ghi log và cập nhật trạng thái thanh toán
                     Console.WriteLine($"Payment successful for order {ipn.OrderId}, transaction {ipn.TransId}");
                     
-                    // Kiểm tra xem đơn hàng đã tồn tại chưa
-                    var existingOrder = _context.Donhangs.FirstOrDefault(d => d.IdDh == ipn.OrderId);
-                    if (existingOrder != null)
+                    // Cập nhật trạng thái đơn hàng
+                    var order = await _context.Donhangs.FirstOrDefaultAsync(d => d.IdDh == ipn.OrderId);
+                    if (order != null)
                     {
-                        // Chỉ tạo thanh toán nếu đơn hàng đã tồn tại
-                        var existingPayment = _context.Thanhtoans.FirstOrDefault(t => t.IdDh == ipn.OrderId);
+                        order.Trangthai = "Đã thanh toán";
+                        
+                        // Lấy thông tin khách hàng
+                        var customer = await _context.Khachhangs.FindAsync(order.IdKh);
+                        if (customer != null)
+                        {
+                            // Xóa giỏ hàng của khách hàng
+                            var cart = await _context.Giohangs
+                                .Include(g => g.Chitietgiohangs)
+                                .Where(g => g.IdKh == customer.IdKh)
+                                .OrderByDescending(g => g.Thoigiancapnhat)
+                                .FirstOrDefaultAsync();
+                            
+                            if (cart != null)
+                            {
+                                // Xóa chi tiết giỏ hàng
+                                _context.Chitietgiohangs.RemoveRange(cart.Chitietgiohangs);
+                                
+                                // Xóa giỏ hàng
+                                _context.Giohangs.Remove(cart);
+                                
+                                Console.WriteLine($"Removed cart for customer {customer.IdKh}");
+                            }
+                        }
+                        
+                        // Tạo thanh toán nếu chưa tồn tại
+                        var existingPayment = await _context.Thanhtoans.FirstOrDefaultAsync(t => t.IdDh == ipn.OrderId);
                         if (existingPayment == null)
                         {
                             var thanhtoan = new Thanhtoan
                             {
-                                IdTt = Guid.NewGuid().ToString(),
+                                IdTt = Guid.NewGuid().ToString().Substring(0, 10),
                                 IdDh = ipn.OrderId,
                                 Trangthai = "Thành công",
                                 Tienthanhtoan = ipn.Amount,
                                 Ngaythanhtoan = DateTime.Now,
-                                // Các trường khác tùy theo model của bạn
                                 Mathanhtoan = ipn.TransId,
                                 Noidungthanhtoan = $"Thanh toán qua Momo, mã giao dịch: {ipn.TransId}"
                             };
                             
                             _context.Thanhtoans.Add(thanhtoan);
-                            _context.SaveChanges();
                         }
+                        
+                        await _context.SaveChangesAsync();
+                        Console.WriteLine($"Updated order status for {ipn.OrderId} to 'Đã thanh toán' and cleared cart");
                     }
                     else
                     {
-                        Console.WriteLine($"WARNING: Order {ipn.OrderId} does not exist, cannot create payment");
+                        Console.WriteLine($"WARNING: Order {ipn.OrderId} not found");
                     }
                 }
                 else

@@ -58,34 +58,43 @@
 
 @section Scripts {
     <script>
-        // Đảm bảo không có mã JavaScript nào tự động chuyển hướng
-        // Ghi log để debug
-        console.log("Payment success page loaded");
-        console.log("OrderId: @TempData["OrderId"]");
-        console.log("TransactionInfo: @TempData["TransactionInfo"]");
-        
-        // Ngăn chặn chuyển hướng tự động
-        window.onbeforeunload = function(e) {
-            console.log("Attempting to leave page");
-            return "Bạn có chắc chắn muốn rời khỏi trang này?";
-        };
-        
-        // Ghi đè lên bất kỳ hàm chuyển hướng nào
-        var originalSetTimeout = window.setTimeout;
-        window.setTimeout = function(callback, timeout) {
-            if (typeof callback === 'function') {
-                var wrappedCallback = function() {
-                    console.log("setTimeout callback executed");
-                    var result = callback.apply(this, arguments);
-                    return result;
-                };
-                return originalSetTimeout(wrappedCallback, timeout);
-            } else {
-                console.log("setTimeout with string callback: " + callback);
-                return originalSetTimeout(function() {
-                    console.log("Prevented potential redirect in setTimeout");
-                }, timeout);
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Payment success page loaded');
+            
+            // Xóa giỏ hàng trong localStorage
+            if (localStorage.getItem('cart')) {
+                localStorage.removeItem('cart');
+                console.log('Cleared cart from localStorage');
             }
-        };
+            
+            // Gửi yêu cầu AJAX để xóa giỏ hàng trên server
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/Cart/ClearCart', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            
+            // Thêm token chống giả mạo nếu có
+            var token = document.querySelector('input[name="__RequestVerificationToken"]');
+            if (token) {
+                xhr.setRequestHeader('RequestVerificationToken', token.value);
+            }
+            
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    console.log('Cart cleared successfully');
+                    
+                    // Cập nhật UI giỏ hàng (nếu cần)
+                    var cartCountElement = document.querySelector('.cart-count');
+                    if (cartCountElement) {
+                        cartCountElement.textContent = '0';
+                    }
+                }
+            };
+            
+            xhr.onerror = function() {
+                console.error('Error clearing cart');
+            };
+            
+            xhr.send();
+        });
     </script>
 }
