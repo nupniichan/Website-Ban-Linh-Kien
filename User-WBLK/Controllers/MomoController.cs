@@ -45,6 +45,95 @@ namespace Website_Ban_Linh_Kien.Controllers
                 HttpContext.Session.SetString("OrderId", request.OrderId);
                 HttpContext.Session.SetString("OrderAmount", request.Amount.ToString());
                 
+                // Tạo đơn hàng TRƯỚC KHI thanh toán, tương tự như CheckOutController
+                if (!string.IsNullOrEmpty(request.CartItems))
+                {
+                    try
+                    {
+                        var cartItems = JsonConvert.DeserializeObject<List<CartItem>>(request.CartItems);
+                        
+                        // Kiểm tra xem đơn hàng đã tồn tại chưa
+                        var existingOrder = await _context.Donhangs.FirstOrDefaultAsync(d => d.IdDh == request.OrderId);
+                        if (existingOrder == null)
+                        {
+                            // Lấy thông tin khách hàng
+                            string customerId = "KH000001"; // Mặc định
+                            if (User.Identity?.IsAuthenticated == true)
+                            {
+                                var userCustomerId = User.FindFirstValue("CustomerId");
+                                if (!string.IsNullOrEmpty(userCustomerId))
+                                {
+                                    customerId = userCustomerId;
+                                }
+                            }
+                            
+                            // Tạo đơn hàng mới
+                            var donhang = new Donhang
+                            {
+                                IdDh = request.OrderId,
+                                Ngaydathang = DateTime.Now,
+                                Diachigiaohang = request.ShippingAddress,
+                                Tongtien = request.Amount,
+                                Trangthai = "Chờ xác nhận",
+                                Phuongthucthanhtoan = "Momo",
+                                IdKh = customerId
+                            };
+                            
+                            _context.Donhangs.Add(donhang);
+                            await _context.SaveChangesAsync();
+                            
+                            // Tạo chi tiết đơn hàng
+                            int detailStartId = 1;
+                            var lastDetailId = await _context.Chitietdonhangs
+                                .OrderByDescending(c => c.Idchitietdonhang)
+                                .Select(c => c.Idchitietdonhang)
+                                .FirstOrDefaultAsync();
+                                
+                            if (lastDetailId != null && int.TryParse(lastDetailId.Substring(4), out int currentId))
+                            {
+                                detailStartId = currentId + 1;
+                            }
+                            
+                            foreach (var item in cartItems)
+                            {
+                                var product = await _context.Sanphams.FindAsync(item.ProductId);
+                                if (product != null)
+                                {
+                                    var chitietdonhang = new Chitietdonhang
+                                    {
+                                        Idchitietdonhang = $"CTDH{detailStartId:D5}",
+                                        IdDh = request.OrderId,
+                                        IdSp = item.ProductId,
+                                        Soluongsanpham = item.Quantity,
+                                        Dongia = item.Price
+                                    };
+                                    
+                                    _context.Chitietdonhangs.Add(chitietdonhang);
+                                    
+                                    // Cập nhật số lượng tồn kho
+                                    product.Soluongton -= item.Quantity;
+                                    product.Damuahang += item.Quantity;
+                                    
+                                    detailStartId++;
+                                }
+                            }
+                            
+                            await _context.SaveChangesAsync();
+                            Console.WriteLine($"Created order {request.OrderId} with {cartItems.Count} items");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Order {request.OrderId} already exists");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error creating order: {ex.Message}");
+                        Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                        // Tiếp tục xử lý thanh toán ngay cả khi tạo đơn hàng thất bại
+                    }
+                }
+                
                 Console.WriteLine($"Using RequestType: {request.RequestType}");
                 
                 var response = await _momoService.CreatePaymentAsync(
@@ -81,32 +170,40 @@ namespace Website_Ban_Linh_Kien.Controllers
             if (resultCode == 0) // Thanh toán thành công
             {
                 try {
-                    // Lấy thông tin đơn hàng từ session
-                    var shippingAddress = HttpContext.Session.GetString("ShippingAddress");
-                    var cartItemsJson = HttpContext.Session.GetString("CartItems");
-                    var sessionOrderId = HttpContext.Session.GetString("OrderId");
-                    
-                    Console.WriteLine($"Session data - ShippingAddress: {shippingAddress}");
-                    Console.WriteLine($"Session data - CartItems: {cartItemsJson}");
-                    Console.WriteLine($"Session data - OrderId: {sessionOrderId}");
-                    
-                    // Nếu session bị mất, chỉ ghi nhận thông tin và chuyển hướng đến trang thành công
-                    if (string.IsNullOrEmpty(cartItemsJson))
+                    // Cập nhật trạng thái đơn hàng
+                    var order = _context.Donhangs.FirstOrDefault(d => d.IdDh == orderId);
+                    if (order != null)
                     {
-                        Console.WriteLine("WARNING: CartItems is null or empty in session");
+                        order.Trangthai = "Đã thanh toán";
+                        _context.SaveChanges();
+                        Console.WriteLine($"Updated order status for {orderId} to 'Đã thanh toán'");
                         
-                        // KHÔNG tạo thanh toán ở đây vì đơn hàng chưa tồn tại
-                        // Chuyển hướng đến trang thành công với thông tin tối thiểu
-                        return RedirectToAction("PaymentSuccess", "PaymentResult", new { 
-                            orderId = orderId, 
-                            transId = transId,
-                            amount = amount
-                        });
+                        // Tạo thanh toán
+                        var existingPayment = _context.Thanhtoans.FirstOrDefault(t => t.IdDh == orderId);
+                        if (existingPayment == null)
+                        {
+                            var thanhtoan = new Thanhtoan
+                            {
+                                IdTt = Guid.NewGuid().ToString().Substring(0, 10),
+                                IdDh = orderId,
+                                Trangthai = "Thành công",
+                                Tienthanhtoan = amount,
+                                Ngaythanhtoan = DateTime.Now,
+                                Mathanhtoan = transId,
+                                Noidungthanhtoan = $"Thanh toán qua Momo, mã giao dịch: {transId}"
+                            };
+                            
+                            _context.Thanhtoans.Add(thanhtoan);
+                            _context.SaveChanges();
+                            Console.WriteLine($"Created payment record for order {orderId}");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine($"WARNING: Order {orderId} not found");
                     }
                     
-                    // Xử lý tạo đơn hàng nếu có đủ thông tin
-                    // ... (code tạo đơn hàng)
-                    
+                    // Chuyển hướng đến trang thành công
                     return RedirectToAction("PaymentSuccess", "PaymentResult", new { 
                         orderId = orderId, 
                         transId = transId,
