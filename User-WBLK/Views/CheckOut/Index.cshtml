@@ -133,9 +133,10 @@
             <!-- Phương thức thanh toán -->
             <div class="bg-white p-4 border border-gray-200 rounded-lg mb-4">
                 <h5 class="text-lg mb-2 font-bold">Phương thức thanh toán</h5>
-                <select class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all appearance-none bg-white bg-[url('data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3e%3c/svg%3e')] bg-[length:1.5em_1.5em] bg-no-repeat bg-[right_0.5rem_center] cursor-pointer">
+                <select id="paymentMethod" name="PaymentMethod" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all appearance-none bg-white bg-[url('data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3e%3c/svg%3e')] bg-[length:1.5em_1.5em] bg-no-repeat bg-[right_0.5rem_center] cursor-pointer">
                     <option value="COD">Thanh toán khi nhận hàng</option>
                     <option value="VNPay">VNPay</option>
+                    <option value="Momo">Momo</option>
                     <option value="Paypal">Paypal</option>
                 </select>
             </div>
@@ -398,11 +399,20 @@
                     }));
                 }
                 const deliveryMethod = parseInt(form.querySelector('input[name="DeliveryMethod"]:checked').value);
+                const paymentMethod = document.getElementById('paymentMethod').value;
+                
+                // Nếu chọn thanh toán Momo, xử lý riêng
+                if (paymentMethod === 'Momo') {
+                    processMomoPayment(cartItems);
+                    return;
+                }
+                
                 const formData = {
                     ReceiverName: form.querySelector('[name="ReceiverName"]').value,
                     Email: form.querySelector('[name="Email"]').value,
                     ReceiverPhone: form.querySelector('[name="ReceiverPhone"]').value,
                     DeliveryMethod: deliveryMethod,
+                    PaymentMethod: paymentMethod,
                     City: form.querySelector('[name="City"]').value,
                     District: form.querySelector('[name="District"]').value,
                     Ward: form.querySelector('[name="Ward"]').value,
@@ -435,6 +445,114 @@
                 console.error('Lỗi khi xử lý đơn hàng:', error);
                 alert('Có lỗi xảy ra khi xử lý đơn hàng');
             }
+        }
+        
+        // Thêm hàm xử lý thanh toán Momo
+        function processMomoPayment(cartItems) {
+            const form = document.getElementById('checkoutForm');
+            if (!form) {
+                console.error('Không tìm thấy form checkout');
+                return;
+            }
+            
+            // Tính tổng tiền
+            let totalAmount = 0;
+            cartItems.forEach(item => {
+                totalAmount += item.Price * item.Quantity;
+            });
+            
+            // Áp dụng giảm giá VIP nếu có
+            const vipDiscount = @((User.Identity?.IsAuthenticated == true) ? Model.VipDiscountPercentage : 0);
+            if (vipDiscount > 0) {
+                totalAmount = totalAmount * (1 - vipDiscount / 100);
+            }
+            
+            // Áp dụng mã giảm giá nếu có
+            const discountCode = form.querySelector('[name="DiscountCode"]').value.trim();
+            if (discountCode && availableDiscounts[discountCode]) {
+                const codeDiscount = availableDiscounts[discountCode];
+                totalAmount = totalAmount * (1 - codeDiscount / 100);
+            }
+            
+            // Làm tròn số
+            totalAmount = Math.round(totalAmount);
+            
+            // Tạo mã đơn hàng
+            const orderId = 'DH' + new Date().getTime();
+            
+            // Tạo thông tin đơn hàng
+            const orderInfo = 'Thanh toán đơn hàng ' + orderId;
+            
+            // Lấy thông tin người nhận
+            const receiverName = form.querySelector('[name="ReceiverName"]').value;
+            const receiverPhone = form.querySelector('[name="ReceiverPhone"]').value;
+            
+            // Lấy thông tin địa chỉ giao hàng
+            let shippingAddress = "";
+            const deliveryMethod = form.querySelector('input[name="DeliveryMethod"]:checked').value;
+            if (deliveryMethod === '1') { // Giao hàng tận nơi
+                const city = form.querySelector('[name="City"]').value;
+                const district = form.querySelector('[name="District"]').value;
+                const ward = form.querySelector('[name="Ward"]').value;
+                const streetAddress = form.querySelector('[name="StreetAddress"]').value;
+                shippingAddress = `${receiverName}, ${receiverPhone}, ${streetAddress}, ${ward}, ${district}, ${city}`;
+            } else { // Nhận tại cửa hàng
+                shippingAddress = `${receiverName}, ${receiverPhone}, Nhận tại cửa hàng: 123 Nguyễn Văn A, Phường 1, Quận 1, TP.HCM`;
+            }
+            
+            // Ghi log thông tin
+            console.log('Thông tin thanh toán Momo:');
+            console.log('- Mã đơn hàng:', orderId);
+            console.log('- Tổng tiền:', totalAmount);
+            console.log('- Địa chỉ giao hàng:', shippingAddress);
+            console.log('- Giỏ hàng:', cartItems);
+            
+            // Gọi API tạo thanh toán Momo
+            fetch('/Momo/CreatePayment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    amount: totalAmount,
+                    orderId: orderId,
+                    orderInfo: orderInfo,
+                    extraData: '',
+                    requestType: 'payWithMethod',
+                    shippingAddress: shippingAddress,
+                    cartItems: JSON.stringify(cartItems)
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.payUrl) {
+                    // Lưu thông tin đơn hàng vào localStorage để sử dụng sau khi thanh toán
+                    const orderData = {
+                        orderId: orderId,
+                        receiverName: receiverName,
+                        receiverPhone: receiverPhone,
+                        email: form.querySelector('[name="Email"]').value,
+                        deliveryMethod: deliveryMethod,
+                        city: form.querySelector('[name="City"]')?.value || '',
+                        district: form.querySelector('[name="District"]')?.value || '',
+                        ward: form.querySelector('[name="Ward"]')?.value || '',
+                        streetAddress: form.querySelector('[name="StreetAddress"]')?.value || '',
+                        note: form.querySelector('[name="Note"]')?.value || '',
+                        discountCode: discountCode,
+                        items: cartItems,
+                        totalAmount: totalAmount,
+                        paymentMethod: 'Momo'
+                    };
+                    localStorage.setItem('pendingOrder', JSON.stringify(orderData));
+                    
+                    // Chuyển hướng đến trang thanh toán Momo
+                    window.location.href = data.payUrl;
+                } else {
+                    alert(data.message || 'Có lỗi xảy ra khi tạo thanh toán Momo');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi tạo thanh toán Momo');
+            });
         }
 
         document.addEventListener('DOMContentLoaded', function() {

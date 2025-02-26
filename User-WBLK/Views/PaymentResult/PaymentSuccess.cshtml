@@ -5,6 +5,12 @@
     ViewData["Title"] = "Đặt hàng thành công";
 }
 
+@section Styles {
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, post-check=0, pre-check=0" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+}
+
 <div class="container mx-auto px-4 py-8 max-w-[700px]">
     <div class="text-center space-y-4">
         <!-- Icon Success -->
@@ -20,6 +26,14 @@
         <!-- Message -->
         <p class="text-gray-600">Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi.</p>
         <p class="text-gray-600">Mã đơn hàng của bạn: <span class="font-bold">@TempData["OrderId"]</span></p>
+        
+        <!-- Transaction Info -->
+        @if (TempData["TransactionInfo"] != null)
+        {
+            <div class="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <p class="text-green-700">@TempData["TransactionInfo"]</p>
+            </div>
+        }
 
         <!-- Buttons -->
         <div class="flex justify-center gap-4 pt-4">
@@ -41,3 +55,46 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Payment success page loaded');
+            
+            // Xóa giỏ hàng trong localStorage
+            if (localStorage.getItem('cart')) {
+                localStorage.removeItem('cart');
+                console.log('Cleared cart from localStorage');
+            }
+            
+            // Gửi yêu cầu AJAX để xóa giỏ hàng trên server
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/Cart/ClearCart', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            
+            // Thêm token chống giả mạo nếu có
+            var token = document.querySelector('input[name="__RequestVerificationToken"]');
+            if (token) {
+                xhr.setRequestHeader('RequestVerificationToken', token.value);
+            }
+            
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    console.log('Cart cleared successfully');
+                    
+                    // Cập nhật UI giỏ hàng (nếu cần)
+                    var cartCountElement = document.querySelector('.cart-count');
+                    if (cartCountElement) {
+                        cartCountElement.textContent = '0';
+                    }
+                }
+            };
+            
+            xhr.onerror = function() {
+                console.error('Error clearing cart');
+            };
+            
+            xhr.send();
+        });
+    </script>
+}

@@ -54,11 +54,103 @@
                         </tbody>
                     </table>
                 </div>
+                @* Badge based on order status, matching only the provided list *@
+                <div>
+                    @if(order.Trangthai == "Chờ xác nhận")
+                    {
+                        <span class="bg-yellow-100 text-yellow-700 text-sm font-medium px-3 py-1 rounded-full">Chờ xác nhận</span>
+                    }
+                    else if(order.Trangthai == "Đặt hàng thành công")
+                    {
+                        <span class="bg-blue-100 text-blue-700 text-sm font-medium px-3 py-1 rounded-full">Đặt hàng thành công</span>
+                    }
+                    else if(order.Trangthai == "Đã duyệt đơn")
+                    {
+                        <span class="bg-indigo-100 text-indigo-700 text-sm font-medium px-3 py-1 rounded-full">Đã duyệt đơn</span>
+                    }
+                    else if(order.Trangthai == "Đang giao")
+                    {
+                        <span class="bg-green-100 text-green-700 text-sm font-medium px-3 py-1 rounded-full">Đang giao</span>
+                    }
+                    else if(order.Trangthai == "Giao thành công")
+                    {
+                        <span class="bg-blue-500 text-white text-sm font-medium px-3 py-1 rounded-full">Giao thành công</span>
+                    }
+                    else if(order.Trangthai == "Không giao")
+                    {
+                        <span class="bg-orange-100 text-orange-700 text-sm font-medium px-3 py-1 rounded-full">Không giao</span>
+                    }
+                    else if(order.Trangthai == "Hủy đơn")
+                    {
+                        <span class="bg-gray-100 text-gray-700 text-sm font-medium px-3 py-1 rounded-full">Hủy đơn</span>
+                    }
+                </div>
+                @* "Đánh giá" button appears if the order is "Giao thành công" and not reviewed *@
+                @if(order.Trangthai == "Giao thành công" && order.Chitietdonhangs.All(ct => ct.IdDg != null) == false)
+                {
+                    <div class="mt-6 text-right">
+                        <button id="openReviewModal" class="bg-blue-500 text-white px-4 py-2 rounded-md font-medium shadow hover:bg-blue-600">
+                            Đánh giá
+                        </button>
+                    </div>
+                }
+                @* "Hủy đơn" button appears if the order is in "Chờ xác nhận" or "Đã duyệt đơn" status *@
+                @if(order.Trangthai == "Chờ xác nhận" || order.Trangthai == "Đã duyệt đơn")
+                {
+                    <div class="mt-6 text-right">
+                        <form id="cancelOrderForm" method="post" asp-action="CancelOrder">
+                            <input type="hidden" name="orderId" value="@order.IdDh" />
+                            <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded-md font-medium shadow hover:bg-red-600">
+                                Hủy đơn
+                            </button>
+                        </form>
+                    </div>
+                }
                 <div class="mt-6 text-right">
                     <!-- "Đóng" returns to the order list -->
                     <a asp-action="OrderHistory" class="bg-gray-500 text-white px-6 py-2 rounded-lg font-medium shadow hover:bg-gray-600">
                         Đóng
                     </a>
+                </div>
+
+                @* Modal Popup for Submitting a Review (inside the detail block) *@
+                <div id="reviewModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
+                    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                        <h2 class="text-xl font-bold mb-4">Đánh giá đơn hàng</h2>
+                        <form id="reviewForm" method="post" asp-action="SubmitReview">
+                            @* Use the first order detail that has not yet been reviewed *@
+                            @{
+                                var firstUnreviewedItem = order.Chitietdonhangs.FirstOrDefault(ct => ct.IdDg == null);
+                            }
+                            @if (firstUnreviewedItem != null)
+                            {
+                                <input type="hidden" name="Idchitietdonhang" value="@firstUnreviewedItem.Idchitietdonhang" />
+                            }
+                            else
+                            {
+                                <p>Tất cả sản phẩm trong đơn hàng này đã được đánh giá.</p>
+                            }
+
+                            <div class="mb-4">
+                                <label class="block text-gray-700">Đánh giá:</label>
+                                <select name="rating" class="mt-1 block w-full">
+                                    <option value="1">1 sao</option>
+                                    <option value="2">2 sao</option>
+                                    <option value="3">3 sao</option>
+                                    <option value="4">4 sao</option>
+                                    <option value="5">5 sao</option>
+                                </select>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700">Bình luận:</label>
+                                <textarea name="comment" class="mt-1 block w-full" rows="3"></textarea>
+                            </div>
+                            <div class="flex justify-end">
+                                <button type="button" id="closeReviewModal" class="bg-gray-500 text-white px-4 py-2 rounded-md mr-2">Đóng</button>
+                                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-md">Gửi đánh giá</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             }
             else
@@ -86,30 +178,34 @@
                                         </p>
                                     </div>
                                     <div>
-                                        @* Badge based on order status *@
-                                        @if(order.Trangthai.Contains("Chờ") || order.Trangthai.Contains("Đặt hàng"))
+                                        @* Badge based on order status, matching the provided list *@
+                                        @if(order.Trangthai == "Chờ xác nhận")
                                         {
                                             <span class="bg-yellow-100 text-yellow-700 text-sm font-medium px-3 py-1 rounded-full">Chờ xác nhận</span>
                                         }
-                                        else if(order.Trangthai.Contains("Đang giao"))
+                                        else if(order.Trangthai == "Đặt hàng thành công")
                                         {
-                                            <span class="bg-green-100 text-green-700 text-sm font-medium px-3 py-1 rounded-full">Đang giao hàng</span>
+                                            <span class="bg-blue-100 text-blue-700 text-sm font-medium px-3 py-1 rounded-full">Đặt hàng thành công</span>
                                         }
-                                        else if(order.Trangthai.Contains("Đã giao"))
+                                        else if(order.Trangthai == "Đã duyệt đơn")
                                         {
-                                            <span class="bg-blue-100 text-blue-700 text-sm font-medium px-3 py-1 rounded-full">Đã giao hàng</span>
+                                            <span class="bg-indigo-100 text-indigo-700 text-sm font-medium px-3 py-1 rounded-full">Đã duyệt đơn</span>
                                         }
-                                        else if(order.Trangthai.Contains("Hủy"))
+                                        else if(order.Trangthai == "Đang giao")
                                         {
-                                            <span class="bg-gray-100 text-gray-700 text-sm font-medium px-3 py-1 rounded-full">Đã hủy</span>
+                                            <span class="bg-green-100 text-green-700 text-sm font-medium px-3 py-1 rounded-full">Đang giao</span>
                                         }
-                                        else if(order.Trangthai.Contains("Hoàn tiền"))
+                                        else if(order.Trangthai == "Giao thành công")
                                         {
-                                            <span class="bg-green-100 text-green-700 text-sm font-medium px-3 py-1 rounded-full">Đã hoàn tiền</span>
+                                            <span class="bg-blue-500 text-white text-sm font-medium px-3 py-1 rounded-full">Giao thành công</span>
                                         }
-                                        else
+                                        else if(order.Trangthai == "Không giao")
                                         {
-                                            <span class="bg-blue-500 text-white text-sm font-medium px-3 py-1 rounded-full">Hoàn tất</span>
+                                            <span class="bg-orange-100 text-orange-700 text-sm font-medium px-3 py-1 rounded-full">Không giao</span>
+                                        }
+                                        else if(order.Trangthai == "Hủy đơn")
+                                        {
+                                            <span class="bg-gray-100 text-gray-700 text-sm font-medium px-3 py-1 rounded-full">Hủy đơn</span>
                                         }
                                     </div>
                                 </div>
@@ -165,3 +261,68 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        // Open the review modal
+        document.getElementById('openReviewModal')?.addEventListener('click', function () {
+            document.getElementById('reviewModal').classList.remove('hidden');
+        });
+        // Close the review modal
+        document.getElementById('closeReviewModal')?.addEventListener('click', function () {
+            document.getElementById('reviewModal').classList.add('hidden');
+        });
+
+        // AJAX submission for review form
+        const reviewForm = document.getElementById('reviewForm');
+        if (reviewForm) {
+            reviewForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(reviewForm);
+                fetch(reviewForm.action, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    if (data.success) {
+                        // Redirect back to OrderHistory on success
+                        window.location.href = '/ProfileManagement/OrderHistory';
+                    }
+                })
+                .catch(error => {
+                    alert("Có lỗi xảy ra khi gửi đánh giá.");
+                    console.error(error);
+                });
+            });
+        }
+
+        // AJAX submission for cancel order form with confirmation
+        const cancelForm = document.getElementById('cancelOrderForm');
+        if (cancelForm) {
+            cancelForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                if (confirm("Bạn có chắc chắn muốn hủy đơn hàng này?")) {
+                    const formData = new FormData(cancelForm);
+                    fetch(cancelForm.action, {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        alert(data.message);
+                        if (data.success) {
+                            // Redirect back to OrderHistory on success
+                            window.location.href = '/ProfileManagement/OrderHistory';
+                        }
+                    })
+                    .catch(error => {
+                        alert("Có lỗi xảy ra khi hủy đơn.");
+                        console.error(error);
+                    });
+                }
+            });
+        }
+    </script>
+}

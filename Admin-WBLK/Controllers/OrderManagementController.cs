@@ -55,9 +55,9 @@ namespace Admin_WBLK.Controllers
             if (!string.IsNullOrEmpty(searchString))
             {
                 searchString = searchString.ToLower();
-                query = query.Where(d => 
+                query = query.Where(d =>
                     d.IdDh.ToLower().Contains(searchString) ||
-                    (d.IdKhNavigation != null && 
+                    (d.IdKhNavigation != null &&
                      d.IdKhNavigation.Hoten.ToLower().Contains(searchString)));
             }
 
@@ -190,14 +190,18 @@ namespace Admin_WBLK.Controllers
         // POST: OrderManagement/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("IdKh,Diachigiaohang,Phuongthucthanhtoan,IdMgg,Ghichu,LydoHuy,Tongtien,Trangthai")] Donhang donhang,
-            string chitietdonhangs, string? Mathanhtoan, string? NoiDungThanhToan)
+        public async Task<IActionResult> Create(
+            [Bind("IdKh,Diachigiaohang,Phuongthucthanhtoan,IdMgg,Ghichu,LydoHuy,Tongtien,Trangthai")]
+            Donhang donhang,
+            string chitietdonhangs,
+            string? Mathanhtoan,
+            string? NoiDungThanhToan)
         {
             try
             {
                 using var transaction = await _context.Database.BeginTransactionAsync();
 
-                // Kiểm tra mã thanh toán nếu là thanh toán online
+                // Check payment info if online payment is used.
                 if (donhang.Phuongthucthanhtoan != "COD")
                 {
                     if (string.IsNullOrEmpty(Mathanhtoan))
@@ -213,22 +217,32 @@ namespace Admin_WBLK.Controllers
                     }
                 }
 
-                // Tạo mã đơn hàng mới
+                // Generate a new order ID and set the order date.
                 donhang.IdDh = await GenerateOrderId();
                 donhang.Ngaydathang = DateTime.Now;
 
-                // Thêm đơn hàng
+                // Add the order to the context.
                 _context.Donhangs.Add(donhang);
-
-                // Process order details
+                // Process order details.
+                decimal originalTotal = 0;
                 if (!string.IsNullOrEmpty(chitietdonhangs))
                 {
                     var chitietList = JsonSerializer.Deserialize<List<Chitietdonhang>>(chitietdonhangs);
+                    int detailStartId = 0;
+
+                    // Get the last detail ID if any.
+                    var lastDetailId = await _context.Chitietdonhangs
+                        .OrderByDescending(c => c.Idchitietdonhang)
+                        .Select(c => c.Idchitietdonhang)
+                        .FirstOrDefaultAsync() ?? "CTDH00000";
+                    detailStartId = int.Parse(lastDetailId.Substring(4)) + 1;
+
                     foreach (var chitiet in chitietList)
                     {
-                        // Generate and assign a new primary key for each order detail
-                        chitiet.Idchitietdonhang = await GenerateOrderDetailId();
+                        // Generate a new primary key for each order detail.
+                        chitiet.Idchitietdonhang = $"CTDH{detailStartId:D6}";
                         chitiet.IdDh = donhang.IdDh;
+
                         var product = await _context.Sanphams.FindAsync(chitiet.IdSp);
                         if (product == null)
                         {
@@ -239,16 +253,26 @@ namespace Admin_WBLK.Controllers
                             throw new Exception($"Sản phẩm {product.Tensanpham} chỉ còn {product.Soluongton} sản phẩm!");
                         }
 
+                        // **Always use the product's price from the database**:
+                        chitiet.Dongia = product.Gia;
+
+                        // Deduct the quantity.
                         product.Soluongton -= chitiet.Soluongsanpham;
                         _context.Update(product);
 
+                        // Add the detail.
                         _context.Chitietdonhangs.Add(chitiet);
+                        detailStartId++;
+
+                        // Sum up the original price using the DB price
+                        originalTotal += chitiet.Dongia * chitiet.Soluongsanpham;
                     }
                 }
 
+                // Save so we have order + details in DB before applying discounts.
                 await _context.SaveChangesAsync();
 
-                // Add payment info if needed
+                // Add payment info if needed.
                 if (!string.IsNullOrEmpty(Mathanhtoan) && donhang.Phuongthucthanhtoan != "COD")
                 {
                     var thanhtoan = new Thanhtoan
@@ -256,7 +280,7 @@ namespace Admin_WBLK.Controllers
                         IdTt = await GeneratePaymentId(),
                         Mathanhtoan = Mathanhtoan,
                         Trangthai = "Chờ xác nhận",
-                        Tienthanhtoan = donhang.Tongtien,
+                        Tienthanhtoan = donhang.Tongtien, // Will be updated after discount
                         Ngaythanhtoan = DateTime.Now,
                         Noidungthanhtoan = NoiDungThanhToan ?? "",
                         IdDh = donhang.IdDh
@@ -264,6 +288,47 @@ namespace Admin_WBLK.Controllers
                     _context.Thanhtoans.Add(thanhtoan);
                     await _context.SaveChangesAsync();
                 }
+
+                // --- Recalculate final price with VIP discount applied BEFORE discount code ---
+                decimal vipDiscountPercentage = 0;
+                if (!string.IsNullOrEmpty(donhang.IdKh))
+                {
+                    var customer = await _context.Khachhangs
+                        .Include(k => k.IdXephangvipNavigation)
+                        .FirstOrDefaultAsync(k => k.IdKh == donhang.IdKh);
+                    if (customer?.IdXephangvipNavigation != null)
+                    {
+                        vipDiscountPercentage = customer.IdXephangvipNavigation.Phantramgiamgia;
+                    }
+                }
+                decimal priceAfterVip = originalTotal * (1 - vipDiscountPercentage / 100);
+
+                // Check for a discount code (stored in donhang.IdMgg).
+                decimal discountCodePercentage = 0;
+                if (!string.IsNullOrEmpty(donhang.IdMgg))
+                {
+                    var discountRecord = await _context.Magiamgia.FirstOrDefaultAsync(m =>
+                        m.IdMgg == donhang.IdMgg &&
+                        m.Ngaysudung <= DateOnly.FromDateTime(DateTime.Now) &&
+                        m.Ngayhethan >= DateOnly.FromDateTime(DateTime.Now) &&
+                        m.Soluong > 0);
+                    if (discountRecord != null)
+                    {
+                        discountCodePercentage = discountRecord.Tilechietkhau;
+                        // Reduce the available uses.
+                        discountRecord.Soluong--;
+                        _context.Magiamgia.Update(discountRecord);
+                        await _context.SaveChangesAsync(); // Save discount usage
+                    }
+                }
+                decimal finalPrice = priceAfterVip * (1 - discountCodePercentage / 100);
+
+                // Update order's final total
+                donhang.Tongtien = finalPrice;
+                _context.Update(donhang);
+
+                // IMPORTANT: Save again so finalPrice is persisted.
+                await _context.SaveChangesAsync();
 
                 await transaction.CommitAsync();
 
@@ -297,12 +362,12 @@ namespace Admin_WBLK.Controllers
             string newId = "TT000001";
             var lastPayment = await _context.Thanhtoans
                 .OrderByDescending(t => t.IdTt)
-                .Select(t => new { t.IdTt })
+                .Select(t => t.IdTt)
                 .FirstOrDefaultAsync();
 
             if (lastPayment != null)
             {
-                int lastNumber = int.Parse(lastPayment.IdTt.Substring(2));
+                int lastNumber = int.Parse(lastPayment.Substring(2));
                 newId = $"TT{(lastNumber + 1):D6}";
             }
 
@@ -317,6 +382,7 @@ namespace Admin_WBLK.Controllers
                 .Where(k => k.IdKh == id)
                 .Select(k => new { k.IdKh, k.Hoten })
                 .FirstOrDefaultAsync();
+
             return Json(customer);
         }
 
@@ -488,6 +554,7 @@ namespace Admin_WBLK.Controllers
 
             var donhang = await _context.Donhangs
                 .Include(d => d.IdKhNavigation)
+                    .ThenInclude(k => k.IdXephangvipNavigation)
                 .Include(d => d.IdMggNavigation)
                 .Include(d => d.Chitietdonhangs)
                     .ThenInclude(c => c.IdSpNavigation)
@@ -506,7 +573,16 @@ namespace Admin_WBLK.Controllers
                     IdKhNavigation = d.IdKhNavigation == null ? null : new Khachhang
                     {
                         IdKh = d.IdKhNavigation.IdKh ?? "",
-                        Hoten = d.IdKhNavigation.Hoten ?? ""
+                        Hoten = d.IdKhNavigation.Hoten ?? "",
+                        Diemtichluy = d.IdKhNavigation.Diemtichluy,
+                        IdXephangvipNavigation = d.IdKhNavigation.IdXephangvipNavigation == null ? null : new Xephangvip
+                        {
+                            Id = d.IdKhNavigation.IdXephangvipNavigation.Id,
+                            Tenhang = d.IdKhNavigation.IdXephangvipNavigation.Tenhang ?? "",
+                            Phantramgiamgia = d.IdKhNavigation.IdXephangvipNavigation.Phantramgiamgia,
+                            Diemtoithieu = d.IdKhNavigation.IdXephangvipNavigation.Diemtoithieu,
+                            Diemtoida = d.IdKhNavigation.IdXephangvipNavigation.Diemtoida
+                        }
                     },
                     IdMggNavigation = d.IdMggNavigation,
                     Chitietdonhangs = d.Chitietdonhangs.Select(c => new Chitietdonhang
@@ -529,7 +605,7 @@ namespace Admin_WBLK.Controllers
                 return NotFound();
             }
 
-            // Load thông tin thanh toán nếu có
+            // Load payment information if available
             if (donhang.Phuongthucthanhtoan != "COD")
             {
                 var thanhtoan = await _context.Thanhtoans
@@ -552,8 +628,14 @@ namespace Admin_WBLK.Controllers
         // POST: OrderManagement/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(string id, [Bind("IdDh,IdKh,Trangthai,Tongtien,Diachigiaohang,Ngaydathang,Phuongthucthanhtoan,IdMgg,Ghichu,LydoHuy")] Donhang donhang,
-            string? Mathanhtoan, string? TrangthaiThanhtoan, string? Noidungthanhtoan, string returnUrl)
+        public async Task<IActionResult> Edit(
+            string id,
+            [Bind("IdDh,IdKh,Trangthai,Tongtien,Diachigiaohang,Ngaydathang,Phuongthucthanhtoan,IdMgg,Ghichu,LydoHuy")]
+            Donhang donhang,
+            string? Mathanhtoan,
+            string? TrangthaiThanhtoan,
+            string? NoiDungThanhToan,
+            string returnUrl)
         {
             if (id != donhang.IdDh)
             {
@@ -564,12 +646,12 @@ namespace Admin_WBLK.Controllers
             {
                 using var transaction = await _context.Database.BeginTransactionAsync();
 
-                // Bỏ qua validation cho các trường không cần thiết
+                // Remove validation for navigation properties.
                 ModelState.Remove("IdKhNavigation");
                 ModelState.Remove("IdMggNavigation");
                 ModelState.Remove("Chitietdonhangs");
 
-                // Lấy đơn hàng hiện tại và chi tiết
+                // Retrieve the existing order and its details.
                 var existingOrder = await _context.Donhangs
                     .Include(d => d.Chitietdonhangs)
                     .AsNoTracking()
@@ -580,12 +662,12 @@ namespace Admin_WBLK.Controllers
                     return NotFound();
                 }
 
-                // Cập nhật thông tin đơn hàng
+                // Update order info.
                 donhang.Chitietdonhangs = existingOrder.Chitietdonhangs;
                 _context.Entry(existingOrder).State = EntityState.Detached;
                 _context.Update(donhang);
 
-                // Xử lý thông tin thanh toán
+                // Process payment info.
                 if (donhang.Phuongthucthanhtoan != "COD" && !string.IsNullOrEmpty(Mathanhtoan))
                 {
                     var thanhtoan = await _context.Thanhtoans
@@ -601,7 +683,7 @@ namespace Admin_WBLK.Controllers
                             Trangthai = TrangthaiThanhtoan ?? "Chờ thanh toán",
                             Tienthanhtoan = donhang.Tongtien,
                             Ngaythanhtoan = DateTime.Now,
-                            Noidungthanhtoan = Noidungthanhtoan ?? ""
+                            Noidungthanhtoan = NoiDungThanhToan ?? ""
                         };
                         _context.Thanhtoans.Add(thanhtoan);
                     }
@@ -610,16 +692,50 @@ namespace Admin_WBLK.Controllers
                         thanhtoan.Mathanhtoan = Mathanhtoan;
                         thanhtoan.Trangthai = TrangthaiThanhtoan ?? thanhtoan.Trangthai;
                         thanhtoan.Tienthanhtoan = donhang.Tongtien;
-                        thanhtoan.Noidungthanhtoan = Noidungthanhtoan ?? thanhtoan.Noidungthanhtoan;
+                        thanhtoan.Noidungthanhtoan = NoiDungThanhToan ?? thanhtoan.Noidungthanhtoan;
                         _context.Update(thanhtoan);
                     }
                 }
+
+                // --- Recalculate final price with VIP discount applied BEFORE discount code in Edit ---
+                // Calculate original total from existing order details.
+                decimal originalTotal = donhang.Chitietdonhangs.Sum(item => item.Dongia * item.Soluongsanpham);
+
+                // Lookup customer for VIP discount.
+                decimal vipDiscountPercentage = 0;
+                if (!string.IsNullOrEmpty(donhang.IdKh))
+                {
+                    var customer = await _context.Khachhangs
+                        .Include(k => k.IdXephangvipNavigation)
+                        .FirstOrDefaultAsync(k => k.IdKh == donhang.IdKh);
+                    if (customer?.IdXephangvipNavigation != null)
+                    {
+                        vipDiscountPercentage = customer.IdXephangvipNavigation.Phantramgiamgia;
+                    }
+                }
+                decimal priceAfterVip = originalTotal * (1 - vipDiscountPercentage / 100);
+
+                // Check if a discount code was applied.
+                decimal discountCodePercentage = 0;
+                if (!string.IsNullOrEmpty(donhang.IdMgg))
+                {
+                    var discountRecord = await _context.Magiamgia.FirstOrDefaultAsync(m =>
+                        m.IdMgg == donhang.IdMgg &&
+                        m.Ngaysudung <= DateOnly.FromDateTime(DateTime.Now) &&
+                        m.Ngayhethan >= DateOnly.FromDateTime(DateTime.Now));
+                    if (discountRecord != null)
+                    {
+                        discountCodePercentage = discountRecord.Tilechietkhau;
+                    }
+                }
+                decimal finalPrice = priceAfterVip * (1 - discountCodePercentage / 100);
+                donhang.Tongtien = finalPrice;
+                _context.Update(donhang);
 
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
                 TempData["Success"] = "Cập nhật đơn hàng thành công!";
-                
                 if (!string.IsNullOrEmpty(returnUrl))
                     return Redirect(returnUrl);
                 return RedirectToAction(nameof(Index));
@@ -720,11 +836,32 @@ namespace Admin_WBLK.Controllers
                 donhang.Trangthai = newStatus;
                 _context.Update(donhang);
 
+                // If the order status is updated to "Giao thành công", add reward points to the customer.
+                if (newStatus == "Giao thành công")
+                {
+                    var customer = await _context.Khachhangs.FindAsync(donhang.IdKh);
+                    if (customer != null)
+                    {
+                        int currentPoints = customer.Diemtichluy ?? 0;
+                        int additionalPoints = (int)(donhang.Tongtien / 10000);
+                        customer.Diemtichluy = currentPoints + additionalPoints;
+                        _context.Update(customer);
+
+                        // Now update the customer's VIP tier based on the new reward points.
+                        var vipTier = await _context.Xephangvips
+                            .FirstOrDefaultAsync(v => v.Diemtoithieu <= customer.Diemtichluy &&
+                                                      v.Diemtoida >= customer.Diemtichluy);
+
+                        customer.IdXephangvip = vipTier != null ? vipTier.Id : "THANTHIET";
+                        _context.Update(customer);
+                    }
+                }
+
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
                 TempData["Success"] = $"Đã cập nhật trạng thái đơn hàng thành '{newStatus}'!";
-                
+
                 if (!string.IsNullOrEmpty(returnUrl))
                     return Redirect(returnUrl);
                 return RedirectToAction(nameof(Index));

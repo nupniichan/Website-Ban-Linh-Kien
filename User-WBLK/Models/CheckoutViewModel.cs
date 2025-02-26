@@ -36,13 +36,13 @@ public class CheckoutViewModel
     [Display(Name = "Tổng tiền")]
     public decimal TotalAmount => Items.Sum(item => item.SubTotal);
 
-    // Add this property for the VIP discount percentage (e.g., 3, 7, or 10)
+    // VIP discount percentage (e.g., 3, 7, or 10)
     public decimal VipDiscountPercentage { get; set; } = 0;
 
-    // The discount code entered by the customer
-    public string? DiscountCode { get; set; }
+    // Discount code entered by the customer
+    public string? DiscountCode { get; set; } = null;
     
-    // A list of discount codes that are currently valid.
+    // List of available discount codes.
     public List<Magiamgia> AvailableDiscounts { get; set; } = new List<Magiamgia>();
 }
 
@@ -63,4 +63,4 @@ public enum DeliveryMethod
     
     [Display(Name = "Giao hàng tận nơi")]
     HomeDelivery
-} 
+}

@@ -26,5 +26,6 @@ namespace Website_Ban_Linh_Kien.Models
         public Dictionary<int, int> RatingDistribution { get; set; } = new Dictionary<int, int>();
         public int SoLuongTon { get; set; }
         public List<ProductCardViewModel> RelatedProducts { get; set; } = new List<ProductCardViewModel>();
+        public bool HasPurchased { get; set; }
     }
 }

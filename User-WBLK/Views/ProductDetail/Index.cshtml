@@ -2,10 +2,6 @@
 @{
     ViewData["Title"] = Model.Name;
     Layout = "~/Views/Shared/_Layout.cshtml";
-    
-    // Add debug information
-    System.Diagnostics.Debug.WriteLine($"Product ID: {Model.Id}");
-    System.Diagnostics.Debug.WriteLine($"Product Category: {Model.Category}");
 }
 
 <div class="container mx-auto px-4 py-8">
@@ -13,11 +9,7 @@
         <!-- Product Images -->
         <div class="space-y-4">
             <div class="bg-white p-4 rounded-lg shadow-md">
-                @* Nào có data thì tui mở lại sau*@
                 <img src="http://localhost:5177/@Model.ImageUrl" alt="@Model.Name" class="w-full h-auto rounded-lg">
-                @* <img src="/imgs/products/cpu-amd.jpg" 
-                     class="w-full h-[500px] object-contain rounded-lg" 
-                     alt="@Model.Name"> *@
             </div>
             @if (Model.AdditionalImages?.Any() == true)
             {
@@ -89,13 +81,14 @@
                                     class="px-3 py-1 border-r hover:bg-gray-100 transition-colors">
                                 -
                             </button>
-                            <input type="number" 
-                                   id="quantity"
-                                   value="1" 
-                                   min="1"
-                                   max="@(Model.SoLuongTon * 0.2)" 
-                                   onchange="validateQuantity(this)"
-                                   class="w-16 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+                           <input type="number" 
+                                    id="quantity"
+                                    value="1" 
+                                    min="1"
+                                    max="@(Math.Max(5, Model.SoLuongTon))" 
+                                    onchange="validateQuantity(this)"
+                                    class="w-16 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+
                             <button onclick="increaseQuantity()" 
                                     class="px-3 py-1 border-l hover:bg-gray-100 transition-colors">
                                 +
@@ -140,25 +133,29 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="flex items-center gap-2">
                                 <svg class="w-6 h-6 text-[#007AFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                          d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                                 <span>Cam kết giá tốt nhất thị trường</span>
                             </div>
                             <div class="flex items-center gap-2">
                                 <svg class="w-6 h-6 text-[#007AFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                          d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                                 </svg>
                                 <span>Sản phẩm mới 100%</span>
                             </div>
                             <div class="flex items-center gap-2">
                                 <svg class="w-6 h-6 text-[#007AFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                 </svg>
                                 <span>Lỗi 1 đổi 1 ngay lập tức</span>
                             </div>
                             <div class="flex items-center gap-2">
                                 <svg class="w-6 h-6 text-[#007AFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                          d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                                 </svg>
                                 <span>Bảo hành chính hãng</span>
                             </div>
@@ -270,8 +267,7 @@
                             <div class="flex items-center gap-2">
                                 <span class="text-sm w-8">@i sao</span>
                                 <div class="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                                    <div class="h-full bg-yellow-400 rounded-full" 
-                                         style="width: @percentage%"></div>
+                                    <div class="h-full bg-yellow-400 rounded-full" style="width: @percentage%"></div>
                                 </div>
                                 <span class="text-sm text-gray-500 w-12">@count</span>
                             </div>
@@ -310,9 +306,7 @@
                         @if (Model.Reviews.Count > 4)
                         {
                             <div class="text-center mt-4">
-                                <button id="showMoreBtn" 
-                                        class="bg-blue-500 text-white px-6 py-1.5 rounded-lg hover:bg-blue-600 transition-colors text-sm"
-                                        onclick="toggleReviews()">
+                                <button id="showMoreBtn" class="bg-blue-500 text-white px-6 py-1.5 rounded-lg hover:bg-blue-600 transition-colors text-sm" onclick="toggleReviews()">
                                     Xem thêm
                                 </button>
                             </div>
@@ -328,20 +322,14 @@
         <div class="bg-white rounded-lg shadow-md p-6">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-xl font-bold">Sản phẩm liên quan</h2>
-                <a href="/productslist/@Model.Category.ToLower()" 
-                   class="text-blue-600 hover:text-blue-700 text-sm">
-                    Xem tất cả
-                </a>
+                <a href="/productslist/@Model.Category.ToLower()" class="text-blue-600 hover:text-blue-700 text-sm">Xem tất cả</a>
             </div>
-
-            <!-- Product Grid -->
             <div class="grid grid-cols-5 gap-6">
                 @foreach (var product in Model.RelatedProducts.Take(5))
                 {
                     <partial name="_ProductCard" model="product" />
                 }
             </div>
-
             @if (!Model.RelatedProducts.Any())
             {
                 <p class="text-gray-500 text-center py-4">Không có sản phẩm liên quan</p>
@@ -370,37 +358,54 @@
 
 @section Scripts {
     <script>
+        // Thumbnail click: change main image
         document.addEventListener('DOMContentLoaded', function() {
             const thumbnails = document.querySelectorAll('.grid-cols-4 img');
             const mainImage = document.querySelector('.bg-white.p-4 img');
-
             thumbnails.forEach(thumb => {
                 thumb.addEventListener('click', function() {
                     mainImage.src = this.src;
                 });
             });
         });
-        
+
+        // Submit review via AJAX
+        function submitReviewForm() {
+            var form = document.getElementById('reviewForm');
+            var formData = new FormData(form);
+            fetch(form.action, {
+                method: 'POST',
+                body: new URLSearchParams(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                if (data.success) {
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi gửi đánh giá.');
+            });
+            return false;
+        }
+
+        // Tab switching logic
         function switchTab(tabName) {
-            // Ẩn tất cả tab content
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.add('hidden');
             });
-            
-            // Hiện tab được chọn
             document.getElementById(`${tabName}-tab`).classList.remove('hidden');
-            
-            // Cập nhật style cho các nút tab
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.classList.remove('border-blue-500', 'text-blue-600');
                 btn.classList.add('border-transparent', 'text-gray-500');
             });
-            
-            // Style cho nút tab được chọn
             event.currentTarget.classList.remove('border-transparent', 'text-gray-500');
             event.currentTarget.classList.add('border-blue-500', 'text-blue-600');
         }
 
+        // Review list toggle logic
         let currentReviewCount = 4;
         const allReviews = @Json.Serialize(Model.Reviews);
         const showMoreBtn = document.getElementById('showMoreBtn');
@@ -408,15 +413,11 @@
         
         function toggleReviews() {
             const reviewsList = document.getElementById('reviewsList');
-            
             if (!isExpanded) {
-                // Hiển thị thêm review
                 const nextReviews = allReviews.slice(currentReviewCount, currentReviewCount + 4);
-                
                 nextReviews.forEach(review => {
                     const reviewElement = document.createElement('div');
                     reviewElement.className = 'py-2';
-                    
                     const stars = '⭐'.repeat(review.rating);
                     reviewElement.innerHTML = `
                         <div class="flex flex-wrap items-center gap-1">
@@ -425,44 +426,32 @@
                         </div>
                         <p class="text-gray-600 mt-1">${review.comment}</p>
                     `;
-                    
                     reviewsList.appendChild(reviewElement);
                 });
-                
                 currentReviewCount += 4;
-                
-                // Nếu đã hiển thị hết review, đổi text thành "Ẩn bớt"
                 if (currentReviewCount >= allReviews.length) {
                     showMoreBtn.textContent = 'Ẩn bớt';
                     isExpanded = true;
                 }
             } else {
-                // Ẩn bớt review, chỉ giữ lại 4 review đầu tiên
                 const reviews = reviewsList.querySelectorAll('.py-2');
                 for (let i = 4; i < reviews.length; i++) {
                     reviews[i].remove();
                 }
-                
-                // Reset các biến
                 currentReviewCount = 4;
                 showMoreBtn.textContent = 'Xem thêm';
                 isExpanded = false;
             }
         }
 
+        // Quantity adjustment and cart functions
         const maxQuantity = @(Model.SoLuongTon * 0.2);
         const quantityInput = document.getElementById('quantity');
         const quantityError = document.getElementById('quantityError');
 
         function validateQuantity(input) {
             let value = parseInt(input.value);
-            
-            // Kiểm tra giá trị tối thiểu
-            if (value < 1) {
-                value = 1;
-            }
-            
-            // Kiểm tra giá trị tối đa (20% số lượng tồn)
+            if (value < 1) { value = 1; }
             if (value > maxQuantity) {
                 value = Math.floor(maxQuantity);
                 quantityError.textContent = `Số lượng tối đa có thể mua là ${value}`;
@@ -470,7 +459,6 @@
             } else {
                 quantityError.classList.add('hidden');
             }
-            
             input.value = value;
         }
 
@@ -490,27 +478,17 @@
             }
         }
 
-        // Validate khi load trang
         document.addEventListener('DOMContentLoaded', function() {
             validateQuantity(quantityInput);
         });
 
         function setCartQuantity() {
-            const quantityInput = document.getElementById('quantity');
             const cartQuantityInput = document.getElementById('cartQuantity');
             cartQuantityInput.value = quantityInput.value;
         }
 
         function addToGuestCart() {
-            const quantity = parseInt(document.getElementById('quantity').value);
-            const stock = @Model.SoLuongTon; // Lấy số lượng tồn từ Model
-            
-            if (quantity <= 0 || quantity > stock) {
-                alert('Số lượng sản phẩm không hợp lệ!');
-                return;
-            }
-
-            // Tạo đối tượng sản phẩm với đầy đủ thông tin bao gồm cả stock
+            const quantity = parseInt(quantityInput.value);
             const product = {
                 id: '@Model.Id',
                 name: '@Model.Name',
@@ -519,71 +497,52 @@
                 quantity: quantity,
                 stock: @Model.SoLuongTon // Thêm thông tin stock
             };
-
-            // Lấy giỏ hàng hiện tại từ localStorage
             let cart = JSON.parse(localStorage.getItem('guestCart')) || [];
-            
-            // Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
-            const existingItemIndex = cart.findIndex(item => item.id === product.id);
-            
-            if (existingItemIndex !== -1) {
-                // Nếu sản phẩm đã tồn tại, cập nhật số lượng
-                const newQuantity = cart[existingItemIndex].quantity + quantity;
-                if (newQuantity > stock) {
-                    alert(`Tổng số lượng (${newQuantity}) vượt quá số lượng tồn kho (${stock})`);
-                    return;
-                }
-                cart[existingItemIndex].quantity = newQuantity;
+            const existingProductIndex = cart.findIndex(item => item.id === product.id);
+            if (existingProductIndex !== -1) {
+                cart[existingProductIndex].quantity += quantity;
             } else {
-                // Nếu sản phẩm chưa tồn tại, thêm mới
                 cart.push(product);
             }
-
-            // Lưu giỏ hàng vào localStorage
             localStorage.setItem('guestCart', JSON.stringify(cart));
-            
-            // Hiển thị thông báo thành công
-            showSuccessMessage('Đã thêm sản phẩm vào giỏ hàng');
-            
-            // Trigger event để cập nhật số lượng giỏ hàng trên header
             window.dispatchEvent(new Event('cartUpdated'));
+            const successAlert = document.createElement('div');
+            successAlert.id = 'successAlert';
+            successAlert.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg';
+            successAlert.textContent = 'Sản phẩm đã được thêm vào giỏ hàng!';
+            document.body.appendChild(successAlert);
+            setTimeout(() => {
+                successAlert.style.opacity = '0';
+                successAlert.style.transition = 'opacity 0.5s ease';
+                setTimeout(() => successAlert.remove(), 500);
+            }, 3000);
         }
 
         function validateFormSubmit() {
-            const quantity = parseInt(document.getElementById('quantity').value);
+            const quantity = parseInt(quantityInput.value);
             document.getElementById('cartQuantity').value = quantity;
-            
             if (quantity <= 0 || quantity > @(Model.SoLuongTon * 0.2)) {
                 alert('Số lượng sản phẩm không hợp lệ!');
                 return false;
             }
-
-            // Gửi request AJAX thay vì submit form
             fetch('/Cart/AddToCart', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: `productId=@Model.Id&quantity=${quantity}`
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Hiển thị thông báo thành công
                     const successAlert = document.createElement('div');
                     successAlert.id = 'successAlert';
                     successAlert.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg';
                     successAlert.textContent = data.message;
                     document.body.appendChild(successAlert);
-
-                    // Xóa thông báo sau 3 giây
                     setTimeout(() => {
                         successAlert.style.opacity = '0';
                         successAlert.style.transition = 'opacity 0.5s ease';
                         setTimeout(() => successAlert.remove(), 500);
                     }, 3000);
-
-                    // Trigger event để cập nhật số lượng giỏ hàng trên header (nếu có)
                     window.dispatchEvent(new Event('cartUpdated'));
                 } else {
                     alert(data.message);
@@ -593,19 +552,15 @@
                 console.error('Error:', error);
                 alert('Có lỗi xảy ra khi thêm vào giỏ hàng');
             });
-
-            return false; // Ngăn form submit
+            return false;
         }
 
         function buyNow() {
-            const quantity = parseInt(document.getElementById('quantity').value);
-            
+            const quantity = parseInt(quantityInput.value);
             if (quantity <= 0 || quantity > @(Model.SoLuongTon * 0.2)) {
                 alert('Số lượng sản phẩm không hợp lệ!');
                 return;
             }
-
-            // Tạo đối tượng sản phẩm để lưu vào localStorage
             const product = {
                 id: '@Model.Id',
                 name: '@Model.Name',
@@ -613,20 +568,14 @@
                 image: '@Model.ImageUrl',
                 quantity: quantity
             };
-
             if (!@User.Identity?.IsAuthenticated.ToString().ToLower()) {
-                // Nếu là guest, lưu sản phẩm vào localStorage và chuyển đến trang checkout
-                localStorage.setItem('guestCart', JSON.stringify([product])); // Lưu như một mảng chỉ có 1 sản phẩm
+                localStorage.setItem('guestCart', JSON.stringify([product]));
                 window.location.href = '/Checkout/Index';
                 return;
             }
-
-            // Nếu là user đã đăng nhập, tiếp tục với logic hiện tại
             fetch('/Cart/BuyNow', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: `productId=@Model.Id&quantity=${quantity}`
             })
             .then(response => response.json())
@@ -652,9 +601,7 @@
             try {
                 let cartItems;
                 const isAuthenticated = @User.Identity?.IsAuthenticated.ToString().ToLower();
-                
                 if (!isAuthenticated) {
-                    // Xử lý cho guest
                     const guestCart = localStorage.getItem('guestCart');
                     if (!guestCart) {
                         alert('Giỏ hàng trống');
@@ -668,7 +615,6 @@
                         Price: parseFloat(item.price)
                     }));
                 } else {
-                    // Xử lý cho user đã đăng nhập
                     cartItems = Array.from(document.querySelectorAll('.cart-item')).map(item => ({
                         ProductId: item.dataset.productId,
                         ProductName: item.dataset.productName,
@@ -677,7 +623,6 @@
                         Price: parseFloat(item.dataset.price)
                     }));
                 }
-
                 const deliveryMethod = parseInt(form.querySelector('input[name="DeliveryMethod"]:checked').value);
                 const formData = {
                     ReceiverName: form.querySelector('[name="ReceiverName"]').value,
@@ -693,21 +638,15 @@
                     Items: cartItems,
                     IsGuest: !isAuthenticated
                 };
-
-                // Validate required fields
                 if (!formData.ReceiverName || !formData.Email || !formData.ReceiverPhone) {
                     alert('Vui lòng điền đầy đủ thông tin người nhận');
                     return;
                 }
-
                 if (deliveryMethod === 1 && (!formData.City || !formData.District || !formData.Ward || !formData.StreetAddress)) {
                     alert('Vui lòng điền đầy đủ địa chỉ giao hàng');
                     return;
                 }
-
-                // Close modal before submitting
                 closeOrderConfirm();
-
                 fetch(form.action, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -716,9 +655,7 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        if (!isAuthenticated) {
-                            localStorage.removeItem('guestCart');
-                        }
+                        if (!isAuthenticated) { localStorage.removeItem('guestCart'); }
                         window.location.href = data.redirectUrl;
                     } else {
                         alert(data.message || 'Có lỗi xảy ra khi đặt hàng');
