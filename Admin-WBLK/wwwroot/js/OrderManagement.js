@@ -205,6 +205,160 @@
             return;
         }
 
+        // Nếu không có product được truyền vào, thêm một dòng trống
+        if (!product) {
+            const row = document.createElement('tr');
+            const rowId = new Date().getTime(); // Tạo ID duy nhất cho dòng
+            
+            row.innerHTML = `
+                <td>
+                    <input type="text" name="IdSp" class="form-control product-id w-full px-4 py-2 border border-gray-300 rounded-lg" 
+                           placeholder="Mã SP" required pattern="^SP[0-9]{5}$" 
+                           title="Mã sản phẩm phải bắt đầu bằng 'SP' và theo sau là 5 số" />
+                </td>
+                <td>
+                    <input type="text" class="form-control product-name w-full px-4 py-2 border border-gray-300 rounded-lg" 
+                           placeholder="Tên sản phẩm" readonly />
+                </td>
+                <td>
+                    <input type="number" 
+                        class="form-control quantity-input w-full px-4 py-2 border border-gray-300 rounded-lg" 
+                        value="1"
+                        min="1" 
+                        onchange="updateRowTotal(this.parentElement.parentElement)">
+                </td>
+                <td>
+                    <input type="number" 
+                        class="form-control price-input w-full px-4 py-2 border border-gray-300 rounded-lg" 
+                        placeholder="Đơn giá"
+                        min="0" 
+                        onchange="updateRowTotal(this.parentElement.parentElement)">
+                    <span class="product-price hidden" data-price="0"></span>
+                </td>
+                <td class="row-total px-4 py-2">0 VNĐ</td>
+                <td>
+                    <button type="button" 
+                            class="btn btn-danger btn-sm px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                            onclick="removeProductRow(this.parentElement.parentElement)">
+                        Xóa
+                    </button>
+                </td>
+            `;
+
+            // Thêm dòng vào bảng
+            table.appendChild(row);
+            
+            // Thêm event listener cho input mã sản phẩm để tự động điền thông tin
+            const productIdInput = row.querySelector('[name="IdSp"]');
+
+            // Thêm debounce function để tránh gọi API quá nhiều lần
+            function debounce(func, timeout = 300) {
+                let timer;
+                return (...args) => {
+                    clearTimeout(timer);
+                    timer = setTimeout(() => { func.apply(this, args); }, timeout);
+                };
+            }
+
+            // Hàm tìm kiếm sản phẩm
+            const searchProduct = async function(value) {
+                // Kiểm tra xem row có còn tồn tại trong DOM không
+                if (!row.isConnected) return;
+                
+                const productNameField = row.querySelector('.product-name');
+                const priceInput = row.querySelector('.price-input');
+                const priceElement = row.querySelector('.product-price');
+                const quantityInput = row.querySelector('.quantity-input');
+                
+                if (!productNameField || !priceInput || !priceElement || !quantityInput) return;
+                
+                // Nếu không có giá trị, xóa tất cả thông tin sản phẩm
+                if (!value) {
+                    productNameField.value = '';
+                    productNameField.classList.remove('text-red-500');
+                    priceInput.value = '';
+                    priceElement.dataset.price = '0';
+                    updateRowTotal(row);
+                    return;
+                }
+                
+                // Chỉ tìm kiếm khi có ít nhất 2 ký tự
+                if (value.length < 2) return;
+                
+                try {
+                    const response = await fetch(`/OrderManagement/GetProductInfo?id=${encodeURIComponent(value)}`);
+                    const data = await response.json();
+                    
+                    if (data && data.tensanpham) {
+                        productNameField.value = data.tensanpham;
+                        productNameField.classList.remove('text-red-500');
+                        priceInput.value = data.gia;
+                        priceElement.dataset.price = data.gia;
+                        
+                        // Cập nhật số lượng tối đa
+                        quantityInput.max = data.soluongton;
+                        
+                        updateRowTotal(row);
+                    } else {
+                        // Hiển thị thông báo "Không tìm thấy sản phẩm" ngay khi đang gõ
+                        productNameField.value = 'Không tìm thấy sản phẩm';
+                        productNameField.classList.add('text-red-500');
+                        priceInput.value = '';
+                        priceElement.dataset.price = '0';
+                        updateRowTotal(row);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    if (row.isConnected && productNameField) {
+                        productNameField.value = 'Lỗi khi tìm kiếm sản phẩm';
+                        productNameField.classList.add('text-red-500');
+                    }
+                }
+            };
+
+            // Sử dụng debounce để tránh gọi API quá nhiều lần khi người dùng đang gõ
+            const debouncedSearch = debounce(searchProduct, 300);
+
+            // Thêm event listener cho input để tìm kiếm khi người dùng gõ
+            productIdInput.addEventListener('input', function() {
+                const value = this.value;
+                const productNameField = row.querySelector('.product-name');
+                
+                // Nếu xóa hết ID, xóa luôn thông tin sản phẩm
+                if (!value) {
+                    if (productNameField) {
+                        productNameField.value = '';
+                        productNameField.classList.remove('text-red-500');
+                    }
+                    const priceInput = row.querySelector('.price-input');
+                    if (priceInput) priceInput.value = '';
+                    const priceElement = row.querySelector('.product-price');
+                    if (priceElement) priceElement.dataset.price = '0';
+                    updateRowTotal(row);
+                    return;
+                }
+                
+                // Nếu đang có thông báo lỗi, xóa đi để chuẩn bị tìm kiếm mới
+                if (productNameField) {
+                    if (productNameField.value === 'Không tìm thấy sản phẩm' || productNameField.value === 'Lỗi khi tìm kiếm sản phẩm') {
+                        productNameField.value = '';
+                    }
+                    productNameField.classList.remove('text-red-500');
+                }
+                
+                // Tìm kiếm sản phẩm khi người dùng gõ
+                debouncedSearch(value);
+            });
+
+            // Vẫn giữ event blur để xử lý khi người dùng rời khỏi trường nhập
+            productIdInput.addEventListener('blur', function() {
+                const productId = this.value;
+                searchProduct(productId);
+            });
+            
+            return;
+        }
+
         // Kiểm tra sản phẩm đã tồn tại
         const existingRow = document.querySelector(`tr[data-product-id="${product.idSp}"]`);
         if (existingRow) {
@@ -257,8 +411,26 @@
 
     // Hàm cập nhật tổng tiền của một dòng
     function updateRowTotal(row) {
-        const quantity = parseInt(row.querySelector('.quantity-input').value);
-        const price = parseFloat(row.querySelector('.product-price').dataset.price);
+        const quantityInput = row.querySelector('.quantity-input');
+        const quantity = parseInt(quantityInput?.value || 0);
+        
+        let price = 0;
+        const priceElement = row.querySelector('.product-price');
+        const priceInput = row.querySelector('.price-input');
+        
+        if (priceElement && priceElement.dataset.price) {
+            price = parseFloat(priceElement.dataset.price);
+        } else if (priceInput) {
+            price = parseFloat(priceInput.value || 0);
+            // Cập nhật data-price nếu có nhập giá mới
+            if (priceInput.value) {
+                const hiddenPriceElement = row.querySelector('.product-price');
+                if (hiddenPriceElement) {
+                    hiddenPriceElement.dataset.price = price;
+                }
+            }
+        }
+        
         const total = quantity * price;
 
         // Format và hiển thị tổng tiền
@@ -267,7 +439,10 @@
             currency: 'VND'
         }).format(total);
 
-        row.querySelector('.row-total').textContent = formattedTotal;
+        const rowTotalElement = row.querySelector('.row-total');
+        if (rowTotalElement) {
+            rowTotalElement.textContent = formattedTotal;
+        }
 
         // Cập nhật tổng tiền đơn hàng
         updateOrderTotal();
@@ -285,23 +460,40 @@
         const rows = document.querySelectorAll('#productTable tbody tr');
         
         rows.forEach(row => {
-            const quantity = parseInt(row.querySelector('.quantity-input').value);
-            const price = parseFloat(row.querySelector('.product-price').dataset.price);
-            subtotal += quantity * price;
+            const quantityInput = row.querySelector('.quantity-input');
+            const priceElement = row.querySelector('.product-price');
+            
+            if (quantityInput && priceElement && priceElement.dataset.price) {
+                const quantity = parseInt(quantityInput.value || 0);
+                const price = parseFloat(priceElement.dataset.price || 0);
+                subtotal += quantity * price;
+            }
         });
 
         // Lấy tỉ lệ giảm giá (nếu có)
-        const discountRate = parseFloat(document.getElementById('discountRate')?.value || 0) / 100;
+        const discountRate = currentDiscount / 100;
         const discount = subtotal * discountRate;
         const total = subtotal - discount;
 
-        // Cập nhật hiển thị
-        document.getElementById('subtotal').textContent = formatCurrency(subtotal);
-        document.getElementById('discount').textContent = formatCurrency(discount);
-        document.getElementById('total').textContent = formatCurrency(total);
+        // Cập nhật hiển thị - thêm null checks
+        const subtotalElement = document.getElementById('originalTotal');
+        const discountElement = document.getElementById('discountAmount');
+        const totalElement = document.getElementById('displayTotal');
+        const totalInputElement = document.getElementById('Tongtien');
         
-        // Cập nhật input hidden để submit form
-        document.getElementById('Tongtien').value = total;
+        if (subtotalElement) subtotalElement.textContent = formatCurrency(subtotal);
+        
+        if (discountElement) {
+            if (discount > 0) {
+                discountElement.textContent = `Giảm giá: ${formatCurrency(discount)}`;
+                discountElement.classList.remove('hidden');
+            } else {
+                discountElement.classList.add('hidden');
+            }
+        }
+        
+        if (totalElement) totalElement.textContent = formatCurrency(total);
+        if (totalInputElement) totalInputElement.value = total;
     }
 
     // Hàm format tiền tệ
@@ -335,35 +527,59 @@
                     'paymentMethod': 'Phương thức thanh toán'
                 };
 
+                let isValid = true;
+                let errorMessages = [];
+
                 for (const [id, label] of Object.entries(requiredFields)) {
                     const field = document.getElementById(id);
                     if (!field || !field.value.trim()) {
-                        alert(`Vui lòng nhập ${label}`);
-                        field?.focus();
-                        return;
+                        errorMessages.push(`Vui lòng nhập ${label}`);
+                        field?.classList.add('border-red-500');
+                        isValid = false;
                     }
                 }
 
                 // Kiểm tra bảng sản phẩm
                 const productRows = document.querySelectorAll('#productTable tbody tr');
                 if (productRows.length === 0) {
-                    alert('Vui lòng thêm ít nhất một sản phẩm');
+                    errorMessages.push('Vui lòng thêm ít nhất một sản phẩm');
+                    isValid = false;
+                }
+
+                // Hiển thị lỗi nếu có
+                const validationSummary = document.getElementById('validation-summary');
+                if (!isValid && validationSummary) {
+                    validationSummary.innerHTML = errorMessages.map(msg => `<li>${msg}</li>`).join('');
+                    validationSummary.classList.remove('hidden');
                     return;
                 }
 
                 // Thu thập thông tin chi tiết đơn hàng
                 const chitietdonhangs = [];
+                let hasProductError = false;
+
                 for (const row of productRows) {
                     const idSp = row.querySelector('[name="IdSp"]').value;
                     const soluong = parseInt(row.querySelector('.quantity-input').value);
                     const dongia = parseFloat(row.querySelector('.product-price').dataset.price);
+                    const productName = row.querySelector('.product-name')?.value;
 
-                    if (!idSp || isNaN(soluong) || isNaN(dongia)) {
-                        alert('Vui lòng kiểm tra lại thông tin sản phẩm');
-                        return;
+                    if (!idSp || isNaN(soluong) || isNaN(dongia) || dongia <= 0 || 
+                        productName === 'Không tìm thấy sản phẩm' || productName === 'Lỗi khi tìm kiếm sản phẩm') {
+                        row.classList.add('bg-red-50');
+                        hasProductError = true;
+                        continue;
                     }
 
                     chitietdonhangs.push({ IdSp: idSp, Soluong: soluong, Dongia: dongia });
+                }
+
+                if (hasProductError) {
+                    if (validationSummary) {
+                        validationSummary.innerHTML = '<li>Vui lòng kiểm tra lại thông tin sản phẩm</li>';
+                        validationSummary.classList.remove('hidden');
+                    }
+                    return;
                 }
 
                 // Thêm hidden input cho chitietdonhangs

@@ -15,13 +15,35 @@ namespace Website_Ban_Linh_Kien.Controllers
         }
 
         // GET: PaymentResultController
-        public ActionResult PaymentSuccess()
+        public async Task<ActionResult> PaymentSuccess()
         {
-            // Hiển thị thông tin đơn hàng từ TempData nếu có
+            var orderId = TempData["OrderId"]?.ToString();
+            if (orderId != null)
+            {
+                var payment = await _context.Thanhtoans
+                    .FirstOrDefaultAsync(t => t.IdDh == orderId);
+                
+                if (payment != null)
+                {
+                    return View(payment);
+                }
+            }
             return View();
         }
-        public ActionResult PaymentFailed()
+
+        public async Task<ActionResult> PaymentFailed()
         {
+            var orderId = TempData["OrderId"]?.ToString();
+            if (orderId != null)
+            {
+                var payment = await _context.Thanhtoans
+                    .FirstOrDefaultAsync(t => t.IdDh == orderId);
+                
+                if (payment != null)
+                {
+                    return View(payment);
+                }
+            }
             return View();
         }
     }
