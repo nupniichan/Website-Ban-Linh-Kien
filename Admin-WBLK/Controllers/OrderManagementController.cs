@@ -55,9 +55,9 @@ namespace Admin_WBLK.Controllers
             if (!string.IsNullOrEmpty(searchString))
             {
                 searchString = searchString.ToLower();
-                query = query.Where(d => 
+                query = query.Where(d =>
                     d.IdDh.ToLower().Contains(searchString) ||
-                    (d.IdKhNavigation != null && 
+                    (d.IdKhNavigation != null &&
                      d.IdKhNavigation.Hoten.ToLower().Contains(searchString)));
             }
 
@@ -190,8 +190,12 @@ namespace Admin_WBLK.Controllers
         // POST: OrderManagement/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("IdKh,Diachigiaohang,Phuongthucthanhtoan,IdMgg,Ghichu,LydoHuy,Tongtien,Trangthai")] Donhang donhang,
-            string chitietdonhangs, string? Mathanhtoan, string? NoiDungThanhToan)
+        public async Task<IActionResult> Create(
+            [Bind("IdKh,Diachigiaohang,Phuongthucthanhtoan,IdMgg,Ghichu,LydoHuy,Tongtien,Trangthai")]
+            Donhang donhang,
+            string chitietdonhangs,
+            string? Mathanhtoan,
+            string? NoiDungThanhToan)
         {
             try
             {
@@ -219,13 +223,13 @@ namespace Admin_WBLK.Controllers
 
                 // Add the order to the context.
                 _context.Donhangs.Add(donhang);
-
                 // Process order details.
                 decimal originalTotal = 0;
                 if (!string.IsNullOrEmpty(chitietdonhangs))
                 {
                     var chitietList = JsonSerializer.Deserialize<List<Chitietdonhang>>(chitietdonhangs);
                     int detailStartId = 0;
+
                     // Get the last detail ID if any.
                     var lastDetailId = await _context.Chitietdonhangs
                         .OrderByDescending(c => c.Idchitietdonhang)
@@ -238,6 +242,7 @@ namespace Admin_WBLK.Controllers
                         // Generate a new primary key for each order detail.
                         chitiet.Idchitietdonhang = $"CTDH{detailStartId:D6}";
                         chitiet.IdDh = donhang.IdDh;
+
                         var product = await _context.Sanphams.FindAsync(chitiet.IdSp);
                         if (product == null)
                         {
@@ -248,6 +253,9 @@ namespace Admin_WBLK.Controllers
                             throw new Exception($"Sản phẩm {product.Tensanpham} chỉ còn {product.Soluongton} sản phẩm!");
                         }
 
+                        // **Always use the product's price from the database**:
+                        chitiet.Dongia = product.Gia;
+
                         // Deduct the quantity.
                         product.Soluongton -= chitiet.Soluongsanpham;
                         _context.Update(product);
@@ -256,11 +264,12 @@ namespace Admin_WBLK.Controllers
                         _context.Chitietdonhangs.Add(chitiet);
                         detailStartId++;
 
-                        // Sum up the original price.
+                        // Sum up the original price using the DB price
                         originalTotal += chitiet.Dongia * chitiet.Soluongsanpham;
                     }
                 }
 
+                // Save so we have order + details in DB before applying discounts.
                 await _context.SaveChangesAsync();
 
                 // Add payment info if needed.
@@ -271,7 +280,7 @@ namespace Admin_WBLK.Controllers
                         IdTt = await GeneratePaymentId(),
                         Mathanhtoan = Mathanhtoan,
                         Trangthai = "Chờ xác nhận",
-                        Tienthanhtoan = donhang.Tongtien,
+                        Tienthanhtoan = donhang.Tongtien, // Will be updated after discount
                         Ngaythanhtoan = DateTime.Now,
                         Noidungthanhtoan = NoiDungThanhToan ?? "",
                         IdDh = donhang.IdDh
@@ -280,7 +289,7 @@ namespace Admin_WBLK.Controllers
                     await _context.SaveChangesAsync();
                 }
 
-                // --- NEW: Recalculate final price with VIP discount applied BEFORE discount code ---
+                // --- Recalculate final price with VIP discount applied BEFORE discount code ---
                 decimal vipDiscountPercentage = 0;
                 if (!string.IsNullOrEmpty(donhang.IdKh))
                 {
@@ -306,15 +315,20 @@ namespace Admin_WBLK.Controllers
                     if (discountRecord != null)
                     {
                         discountCodePercentage = discountRecord.Tilechietkhau;
-                        // Optionally reduce the available uses.
+                        // Reduce the available uses.
                         discountRecord.Soluong--;
                         _context.Magiamgia.Update(discountRecord);
+                        await _context.SaveChangesAsync(); // Save discount usage
                     }
                 }
                 decimal finalPrice = priceAfterVip * (1 - discountCodePercentage / 100);
+
+                // Update order's final total
                 donhang.Tongtien = finalPrice;
                 _context.Update(donhang);
-                // --- End new changes ---
+
+                // IMPORTANT: Save again so finalPrice is persisted.
+                await _context.SaveChangesAsync();
 
                 await transaction.CommitAsync();
 
@@ -348,12 +362,12 @@ namespace Admin_WBLK.Controllers
             string newId = "TT000001";
             var lastPayment = await _context.Thanhtoans
                 .OrderByDescending(t => t.IdTt)
-                .Select(t => new { t.IdTt })
+                .Select(t => t.IdTt)
                 .FirstOrDefaultAsync();
 
             if (lastPayment != null)
             {
-                int lastNumber = int.Parse(lastPayment.IdTt.Substring(2));
+                int lastNumber = int.Parse(lastPayment.Substring(2));
                 newId = $"TT{(lastNumber + 1):D6}";
             }
 
@@ -368,6 +382,7 @@ namespace Admin_WBLK.Controllers
                 .Where(k => k.IdKh == id)
                 .Select(k => new { k.IdKh, k.Hoten })
                 .FirstOrDefaultAsync();
+
             return Json(customer);
         }
 
@@ -560,7 +575,6 @@ namespace Admin_WBLK.Controllers
                         IdKh = d.IdKhNavigation.IdKh ?? "",
                         Hoten = d.IdKhNavigation.Hoten ?? "",
                         Diemtichluy = d.IdKhNavigation.Diemtichluy,
-                        // Include VIP tier info for client display
                         IdXephangvipNavigation = d.IdKhNavigation.IdXephangvipNavigation == null ? null : new Xephangvip
                         {
                             Id = d.IdKhNavigation.IdXephangvipNavigation.Id,
@@ -611,12 +625,17 @@ namespace Admin_WBLK.Controllers
             return View(donhang);
         }
 
-
         // POST: OrderManagement/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(string id, [Bind("IdDh,IdKh,Trangthai,Tongtien,Diachigiaohang,Ngaydathang,Phuongthucthanhtoan,IdMgg,Ghichu,LydoHuy")] Donhang donhang,
-            string? Mathanhtoan, string? TrangthaiThanhtoan, string? NoiDungThanhToan, string returnUrl)
+        public async Task<IActionResult> Edit(
+            string id,
+            [Bind("IdDh,IdKh,Trangthai,Tongtien,Diachigiaohang,Ngaydathang,Phuongthucthanhtoan,IdMgg,Ghichu,LydoHuy")]
+            Donhang donhang,
+            string? Mathanhtoan,
+            string? TrangthaiThanhtoan,
+            string? NoiDungThanhToan,
+            string returnUrl)
         {
             if (id != donhang.IdDh)
             {
@@ -678,7 +697,7 @@ namespace Admin_WBLK.Controllers
                     }
                 }
 
-                // --- NEW: Recalculate final price with VIP discount applied BEFORE discount code in Edit ---
+                // --- Recalculate final price with VIP discount applied BEFORE discount code in Edit ---
                 // Calculate original total from existing order details.
                 decimal originalTotal = donhang.Chitietdonhangs.Sum(item => item.Dongia * item.Soluongsanpham);
 
@@ -712,7 +731,6 @@ namespace Admin_WBLK.Controllers
                 decimal finalPrice = priceAfterVip * (1 - discountCodePercentage / 100);
                 donhang.Tongtien = finalPrice;
                 _context.Update(donhang);
-                // --- End new changes ---
 
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
@@ -728,7 +746,6 @@ namespace Admin_WBLK.Controllers
                 return View(donhang);
             }
         }
-
 
         public class ChitietdonhangDTO
         {
@@ -818,7 +835,7 @@ namespace Admin_WBLK.Controllers
 
                 donhang.Trangthai = newStatus;
                 _context.Update(donhang);
-                
+
                 // If the order status is updated to "Giao thành công", add reward points to the customer.
                 if (newStatus == "Giao thành công")
                 {
@@ -833,18 +850,18 @@ namespace Admin_WBLK.Controllers
                         // Now update the customer's VIP tier based on the new reward points.
                         var vipTier = await _context.Xephangvips
                             .FirstOrDefaultAsync(v => v.Diemtoithieu <= customer.Diemtichluy &&
-                                                    v.Diemtoida >= customer.Diemtichluy);
-                        // If no tier is found (should not happen if you have a default), you can set a default tier.
+                                                      v.Diemtoida >= customer.Diemtichluy);
+
                         customer.IdXephangvip = vipTier != null ? vipTier.Id : "THANTHIET";
                         _context.Update(customer);
                     }
                 }
-                
+
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
                 TempData["Success"] = $"Đã cập nhật trạng thái đơn hàng thành '{newStatus}'!";
-                
+
                 if (!string.IsNullOrEmpty(returnUrl))
                     return Redirect(returnUrl);
                 return RedirectToAction(nameof(Index));
@@ -857,7 +874,6 @@ namespace Admin_WBLK.Controllers
                 return RedirectToAction(nameof(Index));
             }
         }
-
 
         // Add this helper method to generate a new order detail ID.
         private async Task<string> GenerateOrderDetailId()

@@ -61,12 +61,15 @@
                             Mã giảm giá
                         </label>
                         <input asp-for="IdMgg" id="discountCode"
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
-                               pattern="^MGG[0-9]{3}$" title="Mã giảm giá phải bắt đầu bằng 'MGG' và theo sau là 3 số" />
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
+                            pattern="^MGG[0-9]{3}$" title="Mã giảm giá phải bắt đầu bằng 'MGG' và theo sau là 3 số" />
                         <span asp-validation-for="IdMgg" class="text-red-500 text-sm mt-1"></span>
                         <span id="discountError" class="text-red-500 text-sm mt-1 hidden"></span>
                         <span id="discountSuccess" class="text-green-500 text-sm mt-1 hidden"></span>
+                        <!-- Container for discount suggestions -->
+                        <div id="discountSuggestions" class="absolute z-10 bg-white border border-gray-300 rounded-lg shadow-sm mt-1 hidden"></div>
                     </div>
+
 
                     <!-- Trạng thái -->
                     <div>
@@ -300,5 +303,51 @@
             submitButton.disabled = true;
             submitButton.innerHTML = 'Đang xử lý...';
         });
+        // Add discount suggestion functionality
+        document.getElementById('discountCode').addEventListener('input', async function () {
+            const term = this.value.trim();
+            const suggestionsContainer = document.getElementById('discountSuggestions');
+
+            // If no term, hide suggestions
+            if (!term) {
+                suggestionsContainer.innerHTML = '';
+                suggestionsContainer.classList.add('hidden');
+                updateTotalAmount();
+                return;
+            }
+
+            try {
+                const response = await fetch('/OrderManagement/GetDiscountSuggestions?term=' + encodeURIComponent(term));
+                const suggestions = await response.json();
+                
+                // Clear any previous suggestions
+                suggestionsContainer.innerHTML = '';
+
+                if (suggestions && suggestions.length > 0) {
+                    suggestions.forEach(suggestion => {
+                        const suggestionItem = document.createElement('div');
+                        suggestionItem.classList.add('p-2', 'cursor-pointer', 'hover:bg-gray-100', 'text-sm');
+                        suggestionItem.textContent = `${suggestion.id} - ${suggestion.ten} (${suggestion.tilechietkhau}%)`;
+                        suggestionItem.addEventListener('click', function () {
+                            // Fill in the discount code field with the chosen suggestion
+                            document.getElementById('discountCode').value = suggestion.id;
+                            // Hide the suggestions container
+                            suggestionsContainer.innerHTML = '';
+                            suggestionsContainer.classList.add('hidden');
+                            // Update totals based on new discount code
+                            updateTotalAmount();
+                        });
+                        suggestionsContainer.appendChild(suggestionItem);
+                    });
+                    suggestionsContainer.classList.remove('hidden');
+                } else {
+                    suggestionsContainer.classList.add('hidden');
+                }
+            } catch (error) {
+                console.error('Error fetching discount suggestions:', error);
+                suggestionsContainer.classList.add('hidden');
+            }
+        });
+
     </script>
 }
