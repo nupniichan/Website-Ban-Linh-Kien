@@ -59,104 +59,82 @@
                         <!-- Brand Filter -->
                         <select id="brand" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
                             @{
-                                var cpuBrandOptions = new[] {
+                                var brands = new[] {
                                     new { Value = "", Text = "Tất cả thương hiệu" },
                                     new { Value = "intel", Text = "Intel" },
                                     new { Value = "amd", Text = "AMD" }
                                 };
                             }
-                            @foreach (var brand in cpuBrandOptions)
+                            @foreach (var brand in brands)
                             {
                                 var parameters = new Dictionary<string, string>
                                 {
-                                    { "category", "cpu" }
+                                    { "category", Model.Category }
                                 };
+                                
                                 if (!string.IsNullOrEmpty(brand.Value))
                                     parameters.Add("brand", brand.Value);
+                                if (!string.IsNullOrEmpty(Model.PriceRange))
+                                    parameters.Add("priceRange", Model.PriceRange);
                                 if (Model.AdditionalFilters != null)
                                 {
                                     if (Model.AdditionalFilters.ContainsKey("cpuSeries"))
                                         parameters.Add("cpuSeries", Model.AdditionalFilters["cpuSeries"]);
-                                    if (Model.AdditionalFilters.ContainsKey("coreCount"))
-                                        parameters.Add("coreCount", Model.AdditionalFilters["coreCount"]);
+                                    if (Model.AdditionalFilters.ContainsKey("cores"))
+                                        parameters.Add("cores", Model.AdditionalFilters["cores"]);
                                 }
-                                if (!string.IsNullOrEmpty(Model.PriceRange))
-                                    parameters.Add("priceRange", Model.PriceRange);
                                 
                                 var url = Url.Action("Components", "ProductsList", parameters);
-                                var isSelected = Model.Brand?.ToLower() == brand.Value.ToLower();
+                                var isSelected = Model.Brand == brand.Value;
                                 <option value="@url" selected="@isSelected">@brand.Text</option>
                             }
                         </select>
 
                         <!-- CPU Series Filter -->
                         <select id="cpuSeries" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
-                            @{
-                                var cpuSeriesOptions = new[] {
-                                    new { Value = "", Text = "Tất cả dòng CPU" },
-                                    new { Value = "intel core i9", Text = "Intel Core i9" },
-                                    new { Value = "intel core i7", Text = "Intel Core i7" },
-                                    new { Value = "intel core i5", Text = "Intel Core i5" },
-                                    new { Value = "intel core i3", Text = "Intel Core i3" },
-                                    new { Value = "amd ryzen 9", Text = "AMD Ryzen 9" },
-                                    new { Value = "amd ryzen 7", Text = "AMD Ryzen 7" },
-                                    new { Value = "amd ryzen 5", Text = "AMD Ryzen 5" },
-                                    new { Value = "amd ryzen 3", Text = "AMD Ryzen 3" }
-                                };
-                            }
-                            @foreach (var series in cpuSeriesOptions)
+                            @foreach (var series in cpuSeries)
                             {
                                 var parameters = new Dictionary<string, string>
                                 {
-                                    { "category", "cpu" }
+                                    { "category", Model.Category }
                                 };
+                                
                                 if (!string.IsNullOrEmpty(Model.Brand))
                                     parameters.Add("brand", Model.Brand);
                                 if (!string.IsNullOrEmpty(series.Value))
                                     parameters.Add("cpuSeries", series.Value);
                                 if (!string.IsNullOrEmpty(Model.PriceRange))
                                     parameters.Add("priceRange", Model.PriceRange);
-                                if (Model.AdditionalFilters != null && Model.AdditionalFilters.ContainsKey("coreCount"))
-                                    parameters.Add("coreCount", Model.AdditionalFilters["coreCount"]);
+                                if (Model.AdditionalFilters?.ContainsKey("cores") == true)
+                                    parameters.Add("cores", Model.AdditionalFilters["cores"]);
                                 
                                 var url = Url.Action("Components", "ProductsList", parameters);
-                                var isSelected = Model.AdditionalFilters?.GetValueOrDefault("cpuSeries")?.ToLower() == series.Value.ToLower();
+                                var isSelected = Model.AdditionalFilters?.GetValueOrDefault("cpuSeries") == series.Value;
                                 <option value="@url" selected="@isSelected">@series.Text</option>
                             }
                         </select>
 
-                        <!-- Core Count Filter -->
-                        <select id="coreCount" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
-                            @{
-                                var coreCountOptions = new[] {
-                                    new { Value = "", Text = "Tất cả số nhân" },
-                                    new { Value = "4", Text = "4 nhân" },
-                                    new { Value = "6", Text = "6 nhân" },
-                                    new { Value = "8", Text = "8 nhân" },
-                                    new { Value = "12", Text = "12 nhân" },
-                                    new { Value = "16", Text = "16 nhân" },
-                                    new { Value = "24", Text = "24 nhân" },
-                                    new { Value = "32", Text = "32 nhân" }
-                                };
-                            }
-                            @foreach (var coreOption in coreCountOptions)
+                        <!-- Cores Filter -->
+                        <select id="cores" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
+                            @foreach (var core in cores)
                             {
                                 var parameters = new Dictionary<string, string>
                                 {
-                                    { "category", "cpu" }
+                                    { "category", Model.Category }
                                 };
+                                
                                 if (!string.IsNullOrEmpty(Model.Brand))
                                     parameters.Add("brand", Model.Brand);
-                                if (!string.IsNullOrEmpty(coreOption.Value))
-                                    parameters.Add("cores", coreOption.Value);
+                                if (!string.IsNullOrEmpty(core.Value))
+                                    parameters.Add("cores", core.Value);
                                 if (!string.IsNullOrEmpty(Model.PriceRange))
                                     parameters.Add("priceRange", Model.PriceRange);
-                                if (Model.AdditionalFilters != null && Model.AdditionalFilters.ContainsKey("cpuSeries"))
+                                if (Model.AdditionalFilters?.ContainsKey("cpuSeries") == true)
                                     parameters.Add("cpuSeries", Model.AdditionalFilters["cpuSeries"]);
                                 
                                 var url = Url.Action("Components", "ProductsList", parameters);
-                                var isSelected = Model.AdditionalFilters?.GetValueOrDefault("cores") == coreOption.Value;
-                                <option value="@url" selected="@isSelected">@coreOption.Text</option>
+                                var isSelected = Model.AdditionalFilters?.GetValueOrDefault("cores") == core.Value;
+                                <option value="@url" selected="@isSelected">@core.Text</option>
                             }
                         </select>
                     </div>
@@ -169,88 +147,20 @@
                         <!-- Brand Filter -->
                         <select id="brand" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
                             @{
-                                var vgaBrandOptions = new[] {
+                                var vgaBrands = new[] {
                                     new { Value = "", Text = "Tất cả thương hiệu" },
                                     new { Value = "nvidia", Text = "NVIDIA" },
                                     new { Value = "amd", Text = "AMD" },
                                     new { Value = "asus", Text = "ASUS" },
                                     new { Value = "msi", Text = "MSI" },
-                                    new { Value = "gigabyte", Text = "Gigabyte" },
-                                    new { Value = "zotac", Text = "Zotac" },
-                                    new { Value = "intel", Text = "Intel" }
+                                    new { Value = "gigabyte", Text = "Gigabyte" }
                                 };
                             }
-                            @foreach (var brand in vgaBrandOptions)
+                            @foreach (var brand in vgaBrands)
                             {
                                 var parameters = new Dictionary<string, string>
                                 {
-                                    { "category", "vga" }
-                                };
-                                if (!string.IsNullOrEmpty(brand.Value))
-                                    parameters.Add("brand", brand.Value);
-                                if (Model.AdditionalFilters != null && Model.AdditionalFilters.ContainsKey("memory"))
-                                    parameters.Add("memory", Model.AdditionalFilters["memory"]);
-                                if (!string.IsNullOrEmpty(Model.PriceRange))
-                                    parameters.Add("priceRange", Model.PriceRange);
-                                
-                                var url = Url.Action("Components", "ProductsList", parameters);
-                                var isSelected = Model.Brand?.ToLower() == brand.Value.ToLower();
-                                <option value="@url" selected="@isSelected">@brand.Text</option>
-                            }
-                        </select>
-
-                        <!-- Memory Filter -->
-                        <select id="memory" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
-                            @{
-                                var memoryOptions = new[] {
-                                    new { Value = "", Text = "Tất cả dung lượng" },
-                                    new { Value = "8", Text = "8GB" },
-                                    new { Value = "12", Text = "12GB" },
-                                    new { Value = "16", Text = "16GB" },
-                                    new { Value = "24", Text = "24GB" }
-                                };
-                            }
-                            @foreach (var mem in memoryOptions)
-                            {
-                                var parameters = new Dictionary<string, string>
-                                {
-                                    { "category", "vga" }
-                                };
-                                if (!string.IsNullOrEmpty(Model.Brand))
-                                    parameters.Add("brand", Model.Brand);
-                                if (!string.IsNullOrEmpty(mem.Value))
-                                    parameters.Add("memory", mem.Value);
-                                if (!string.IsNullOrEmpty(Model.PriceRange))
-                                    parameters.Add("priceRange", Model.PriceRange);
-                                
-                                var url = Url.Action("Components", "ProductsList", parameters);
-                                var isSelected = Model.AdditionalFilters?.GetValueOrDefault("memory") == mem.Value;
-                                <option value="@url" selected="@isSelected">@mem.Text</option>
-                            }
-                        </select>
-                    </div>
-                </div>
-                break;
-
-            case "mainboard":
-                <div class="space-y-4">
-                    <div class="flex flex-wrap gap-2">
-                        <!-- Brand Filter -->
-                        <select id="brand" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
-                            @{
-                                var mainboardBrands = new[] {
-                                    new { Value = "", Text = "Tất cả thương hiệu" },
-                                    new { Value = "asus", Text = "ASUS" },
-                                    new { Value = "msi", Text = "MSI" },
-                                    new { Value = "gigabyte", Text = "Gigabyte" },
-                                    new { Value = "asrock", Text = "ASRock" }
-                                };
-                            }
-                            @foreach (var brand in mainboardBrands)
-                            {
-                                var parameters = new Dictionary<string, string>
-                                {
-                                    { "category", "mainboard" }
+                                    { "category", Model.Category }
                                 };
                                 if (!string.IsNullOrEmpty(brand.Value))
                                     parameters.Add("brand", brand.Value);
@@ -258,214 +168,9 @@
                                     parameters.Add("priceRange", Model.PriceRange);
                                 if (Model.AdditionalFilters != null)
                                 {
-                                    if (Model.AdditionalFilters.ContainsKey("socket"))
-                                        parameters.Add("socket", Model.AdditionalFilters["socket"]);
-                                    if (Model.AdditionalFilters.ContainsKey("formFactor"))
-                                        parameters.Add("formFactor", Model.AdditionalFilters["formFactor"]);
+                                    if (Model.AdditionalFilters.ContainsKey("memory"))
+                                        parameters.Add("memory", Model.AdditionalFilters["memory"]);
                                 }
-                                
-                                var url = Url.Action("Components", "ProductsList", parameters);
-                                var isSelected = Model.Brand?.ToLower() == brand.Value.ToLower();
-                                <option value="@url" selected="@isSelected">@brand.Text</option>
-                            }
-                        </select>
-
-                        <!-- Socket Filter -->
-                        <select id="socket" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
-                            @{
-                                var sockets = new[] {
-                                    new { Value = "", Text = "Tất cả socket" },
-                                    new { Value = "LGA1700", Text = "LGA 1700" },
-                                    new { Value = "AM5", Text = "AM5" },
-                                    new { Value = "AM4", Text = "AM4" },
-                                    new { Value = "LGA1200", Text = "LGA 1200" }
-                                };
-                            }
-                            @foreach (var socket in sockets)
-                            {
-                                var parameters = new Dictionary<string, string>
-                                {
-                                    { "category", "mainboard" }
-                                };
-                                if (!string.IsNullOrEmpty(Model.Brand))
-                                    parameters.Add("brand", Model.Brand);
-                                if (!string.IsNullOrEmpty(socket.Value))
-                                    parameters.Add("socket", socket.Value);
-                                if (!string.IsNullOrEmpty(Model.PriceRange))
-                                    parameters.Add("priceRange", Model.PriceRange);
-                                if (Model.AdditionalFilters?.ContainsKey("formFactor") == true)
-                                    parameters.Add("formFactor", Model.AdditionalFilters["formFactor"]);
-                                if (Model.AdditionalFilters?.ContainsKey("ramSlots") == true)
-                                    parameters.Add("ramSlots", Model.AdditionalFilters["ramSlots"]);
-                                
-                                var url = Url.Action("Components", "ProductsList", parameters);
-                                var isSelected = Model.AdditionalFilters?.GetValueOrDefault("socket") == socket.Value;
-                                <option value="@url" selected="@isSelected">@socket.Text</option>
-                            }
-                        </select>
-
-                        <!-- Form Factor Filter -->
-                        <select id="formFactor" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
-                            @{
-                                var formFactors = new[] {
-                                    new { Value = "", Text = "Tất cả kích thước" },
-                                    new { Value = "ATX", Text = "ATX" },
-                                    new { Value = "Micro-ATX", Text = "Micro-ATX" },
-                                    new { Value = "E-ATX", Text = "E-ATX" }
-                                };
-                            }
-                            @foreach (var factor in formFactors)
-                            {
-                                var parameters = new Dictionary<string, string>
-                                {
-                                    { "category", "mainboard" }
-                                };
-                                if (!string.IsNullOrEmpty(Model.Brand))
-                                    parameters.Add("brand", Model.Brand);
-                                if (!string.IsNullOrEmpty(factor.Value))
-                                    parameters.Add("formFactor", factor.Value);
-                                if (!string.IsNullOrEmpty(Model.PriceRange))
-                                    parameters.Add("priceRange", Model.PriceRange);
-                                if (Model.AdditionalFilters?.ContainsKey("socket") == true)
-                                    parameters.Add("socket", Model.AdditionalFilters["socket"]);
-                                if (Model.AdditionalFilters?.ContainsKey("ramSlots") == true)
-                                    parameters.Add("ramSlots", Model.AdditionalFilters["ramSlots"]);
-                                
-                                var url = Url.Action("Components", "ProductsList", parameters);
-                                var isSelected = Model.AdditionalFilters?.GetValueOrDefault("formFactor") == factor.Value;
-                                <option value="@url" selected="@isSelected">@factor.Text</option>
-                            }
-                        </select>
-
-                        <!-- RAM Slots Filter -->
-                        <select id="ramSlots" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
-                            @{
-                                var ramSlots = new[] {
-                                    new { Value = "", Text = "Tất cả số khe RAM" },
-                                    new { Value = "2", Text = "2 khe" },
-                                    new { Value = "4", Text = "4 khe" },
-                                    new { Value = "8", Text = "8 khe" }
-                                };
-                            }
-                            @foreach (var slots in ramSlots)
-                            {
-                                var parameters = new Dictionary<string, string>
-                                {
-                                    { "category", "mainboard" }
-                                };
-                                if (!string.IsNullOrEmpty(Model.Brand))
-                                    parameters.Add("brand", Model.Brand);
-                                if (!string.IsNullOrEmpty(slots.Value))
-                                    parameters.Add("ramSlots", slots.Value);
-                                if (!string.IsNullOrEmpty(Model.PriceRange))
-                                    parameters.Add("priceRange", Model.PriceRange);
-                                if (Model.AdditionalFilters?.ContainsKey("socket") == true)
-                                    parameters.Add("socket", Model.AdditionalFilters["socket"]);
-                                if (Model.AdditionalFilters?.ContainsKey("formFactor") == true)
-                                    parameters.Add("formFactor", Model.AdditionalFilters["formFactor"]);
-                                
-                                var url = Url.Action("Components", "ProductsList", parameters);
-                                var isSelected = Model.AdditionalFilters?.GetValueOrDefault("ramSlots") == slots.Value;
-                                <option value="@url" selected="@isSelected">@slots.Text</option>
-                            }
-                        </select>
-                    </div>
-                </div>
-                break;
-
-            case "ram":
-                <div class="space-y-4">
-                    <div class="flex flex-wrap gap-2">
-                        <!-- Brand Filter -->
-                        <select id="brand" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
-                            @{
-                                var ramBrands = new[] {
-                                    new { Value = "", Text = "Tất cả thương hiệu" },
-                                    new { Value = "corsair", Text = "Corsair" },
-                                    new { Value = "gskill", Text = "G.Skill" },
-                                    new { Value = "kingston", Text = "Kingston" },
-                                    new { Value = "crucial", Text = "Crucial" }
-                                };
-                            }
-                            @foreach (var brand in ramBrands)
-                            {
-                                var parameters = new Dictionary<string, string>
-                                {
-                                    { "category", "ram" }
-                                };
-                                if (!string.IsNullOrEmpty(brand.Value))
-                                    parameters.Add("brand", brand.Value);
-                                if (!string.IsNullOrEmpty(Model.PriceRange))
-                                    parameters.Add("priceRange", Model.PriceRange);
-                                if (Model.AdditionalFilters?.ContainsKey("capacity") == true)
-                                    parameters.Add("capacity", Model.AdditionalFilters["capacity"]);
-                                
-                                var url = Url.Action("Components", "ProductsList", parameters);
-                                var isSelected = Model.Brand?.ToLower() == brand.Value.ToLower();
-                                <option value="@url" selected="@isSelected">@brand.Text</option>
-                            }
-                        </select>
-
-                        <!-- Capacity Filter -->
-                        <select id="capacity" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
-                            @{
-                                var capacities = new[] {
-                                    new { Value = "", Text = "Tất cả dung lượng" },
-                                    new { Value = "8", Text = "8GB" },
-                                    new { Value = "16", Text = "16GB" },
-                                    new { Value = "32", Text = "32GB" },
-                                    new { Value = "64", Text = "64GB" },
-                                    new { Value = "128", Text = "128GB" }
-                                };
-                            }
-                            @foreach (var capacity in capacities)
-                            {
-                                var parameters = new Dictionary<string, string>
-                                {
-                                    { "category", "ram" }
-                                };
-                                if (!string.IsNullOrEmpty(Model.Brand))
-                                    parameters.Add("brand", Model.Brand);
-                                if (!string.IsNullOrEmpty(capacity.Value))
-                                    parameters.Add("capacity", capacity.Value);
-                                if (!string.IsNullOrEmpty(Model.PriceRange))
-                                    parameters.Add("priceRange", Model.PriceRange);
-                                
-                                var url = Url.Action("Components", "ProductsList", parameters);
-                                var isSelected = Model.AdditionalFilters?.GetValueOrDefault("capacity") == capacity.Value;
-                                <option value="@url" selected="@isSelected">@capacity.Text</option>
-                            }
-                        </select>
-                    </div>
-                </div>
-                break;
-
-            case "psu":
-                <div class="space-y-4">
-                    <div class="flex flex-wrap gap-2">
-                        <!-- Brand Filter -->
-                        <select id="brand" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
-                            @{
-                                var psuBrands = new[] {
-                                    new { Value = "", Text = "Tất cả thương hiệu" },
-                                    new { Value = "corsair", Text = "Corsair" },
-                                    new { Value = "seasonic", Text = "Seasonic" },
-                                    new { Value = "evga", Text = "EVGA" },
-                                    new { Value = "cooler master", Text = "Cooler Master" }
-                                };
-                            }
-                            @foreach (var brand in psuBrands)
-                            {
-                                var parameters = new Dictionary<string, string>
-                                {
-                                    { "category", Model.Category }
-                                };
-                                if (!string.IsNullOrEmpty(brand.Value))
-                                    parameters.Add("brand", brand.Value);
-                                if (!string.IsNullOrEmpty(Model.PriceRange))
-                                    parameters.Add("priceRange", Model.PriceRange);
-                                if (Model.AdditionalFilters?.ContainsKey("wattage") == true)
-                                    parameters.Add("wattage", Model.AdditionalFilters["wattage"]);
                                 
                                 var url = Url.Action("Components", "ProductsList", parameters);
                                 var isSelected = Model.Brand == brand.Value;
@@ -473,116 +178,51 @@
                             }
                         </select>
 
-                        <!-- Wattage Filter -->
-                        <select id="wattage" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
+                        <!-- Memory Filter -->
+                        <select id="memory" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
                             @{
-                                var wattages = new[] {
-                                    new { Value = "", Text = "Tất cả công suất" },
-                                    new { Value = "550", Text = "550W" },
-                                    new { Value = "650", Text = "650W" },
-                                    new { Value = "750", Text = "750W" },
-                                    new { Value = "850", Text = "850W" },
-                                    new { Value = "1000", Text = "1000W" }
+                                var memories = new[] {
+                                    new { Value = "", Text = "Dung lượng VRAM" },
+                                    new { Value = "4", Text = "4GB" },
+                                    new { Value = "6", Text = "6GB" },
+                                    new { Value = "8", Text = "8GB" },
+                                    new { Value = "12", Text = "12GB" },
+                                    new { Value = "16", Text = "16GB" }
                                 };
                             }
-                            @foreach (var wattage in wattages)
+                            @foreach (var memory in memories)
                             {
                                 var parameters = new Dictionary<string, string>
                                 {
                                     { "category", Model.Category }
                                 };
+                                
                                 if (!string.IsNullOrEmpty(Model.Brand))
                                     parameters.Add("brand", Model.Brand);
-                                if (!string.IsNullOrEmpty(wattage.Value))
-                                    parameters.Add("wattage", wattage.Value);
                                 if (!string.IsNullOrEmpty(Model.PriceRange))
                                     parameters.Add("priceRange", Model.PriceRange);
+                                if (!string.IsNullOrEmpty(memory.Value))
+                                    parameters.Add("memory", memory.Value);
                                 
                                 var url = Url.Action("Components", "ProductsList", parameters);
-                                var isSelected = Model.AdditionalFilters?.GetValueOrDefault("wattage") == wattage.Value;
-                                <option value="@url" selected="@isSelected">@wattage.Text</option>
+                                var isSelected = Model.AdditionalFilters != null && 
+                                                Model.AdditionalFilters.ContainsKey("memory") && 
+                                                Model.AdditionalFilters["memory"] == memory.Value;
+                                
+                                <option value="@url" selected="@isSelected">@memory.Text</option>
                             }
                         </select>
                     </div>
                 </div>
                 break;
 
-            case "case":
-                <div class="space-y-4">
-                    <div class="flex flex-wrap gap-2">
-                        <!-- Brand Filter -->
-                        <select id="brand" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
-                            @{
-                                var caseBrands = new[] {
-                                    new { Value = "", Text = "Tất cả thương hiệu" },
-                                    new { Value = "nzxt", Text = "NZXT" },
-                                    new { Value = "lian li", Text = "Lian Li" },
-                                    new { Value = "phanteks", Text = "Phanteks" },
-                                    new { Value = "cooler master", Text = "Cooler Master" }
-                                };
-                            }
-                            @foreach (var brand in caseBrands)
-                            {
-                                var parameters = new Dictionary<string, string>
-                                {
-                                    { "category", "case" }
-                                };
-                                if (!string.IsNullOrEmpty(brand.Value))
-                                    parameters.Add("brand", brand.Value);
-                                if (!string.IsNullOrEmpty(Model.PriceRange))
-                                    parameters.Add("priceRange", Model.PriceRange);
-                                if (Model.AdditionalFilters?.ContainsKey("size") == true)
-                                    parameters.Add("size", Model.AdditionalFilters["size"]);
-                                
-                                var url = Url.Action("Components", "ProductsList", parameters);
-                                var isSelected = Model.Brand?.ToLower() == brand.Value.ToLower();
-                                <option value="@url" selected="@isSelected">@brand.Text</option>
-                            }
-                        </select>
+            // ... other category cases ...
 
-                        <!-- Size Filter -->
-                        <select id="size" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
-                            @{
-                                var sizes = new[] {
-                                    new { Value = "", Text = "Tất cả kích thước" },
-                                    new { Value = "full tower", Text = "Full Tower" },
-                                    new { Value = "mid tower", Text = "Mid Tower" },
-                                    new { Value = "mini tower", Text = "Mini Tower" }
-                                };
-                            }
-                            @foreach (var size in sizes)
-                            {
-                                var parameters = new Dictionary<string, string>
-                                {
-                                    { "category", "case" }
-                                };
-                                if (!string.IsNullOrEmpty(Model.Brand))
-                                    parameters.Add("brand", Model.Brand);
-                                if (!string.IsNullOrEmpty(size.Value))
-                                    parameters.Add("size", size.Value);
-                                if (!string.IsNullOrEmpty(Model.PriceRange))
-                                    parameters.Add("priceRange", Model.PriceRange);
-                                
-                                var url = Url.Action("Components", "ProductsList", parameters);
-                                var isSelected = Model.AdditionalFilters?.GetValueOrDefault("size") == size.Value;
-                                <option value="@url" selected="@isSelected">@size.Text</option>
-                            }
-                        </select>
-                    </div>
-                </div>
-                break;
-
-            case null:
-            case "":
+            default:
+                // Redirect to CPU category if no category is selected
                 <script>
                     window.location.href = '@Url.Action("Components", "ProductsList", new { category = "cpu" })';
                 </script>
-                break;
-
-            default:
-                <div class="text-center py-4 text-gray-500">
-                    Không tìm thấy danh mục phù hợp
-                </div>
                 break;
         }
 

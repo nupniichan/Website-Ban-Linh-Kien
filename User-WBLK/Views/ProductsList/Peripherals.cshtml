@@ -417,11 +417,7 @@
                                     new { Value = "", Text = "Tất cả thương hiệu" },
                                     new { Value = "logitech", Text = "Logitech" },
                                     new { Value = "microsoft", Text = "Microsoft" },
-                                    new { Value = "razer", Text = "Razer" },
-                                    new { Value = "dell", Text = "Dell" },
-                                    new { Value = "a4tech", Text = "A4Tech" },
-                                    new { Value = "creative", Text = "Creative" },
-                                    new { Value = "ausdom", Text = "AUSDOM" }
+                                    new { Value = "razer", Text = "Razer" }
                                 };
                             }
                             @foreach (var brand in webcamBrands)
@@ -434,41 +430,16 @@
                                     parameters.Add("brand", brand.Value);
                                 if (!string.IsNullOrEmpty(Model.PriceRange))
                                     parameters.Add("priceRange", Model.PriceRange);
-                                if (Model.AdditionalFilters != null && Model.AdditionalFilters.ContainsKey("framerate"))
-                                    parameters.Add("framerate", Model.AdditionalFilters["framerate"]);
-                                
-                                var url = Url.Action("Peripherals", parameters);
-                                bool isSelected = Model?.Brand?.ToLower() == brand.Value.ToLower();
-                                <option value="@url" selected="@isSelected">@brand.Text</option>
-                            }
-                        </select>
-
-                        <!-- Webcam Framerate Filter -->
-                        <select id="framerate" class="px-4 py-2 border rounded-md" onchange="window.location.href=this.value">
-                            @{
-                                var framerates = new[] {
-                                    new { Value = "", Text = "Tất cả FPS" },
-                                    new { Value = "30", Text = "30 FPS" },
-                                    new { Value = "60", Text = "60 FPS" }
-                                };
-                            }
-                            @foreach (var fps in framerates)
-                            {
-                                var parameters = new Dictionary<string, string>
+                                var url = Url.Action("Peripherals", "ProductsList", parameters);
+                                bool isSelected = (Model?.Brand ?? "").ToLower() == brand.Value;
+                                if (isSelected)
                                 {
-                                    { "category", Model.Category }
-                                };
-                                if (!string.IsNullOrEmpty(Model.Brand))
-                                    parameters.Add("brand", Model.Brand);
-                                if (!string.IsNullOrEmpty(fps.Value))
-                                    parameters.Add("framerate", fps.Value);
-                                if (!string.IsNullOrEmpty(Model.PriceRange))
-                                    parameters.Add("priceRange", Model.PriceRange);
-
-                                var url = Url.Action("Peripherals", parameters);
-                                bool isSelected = Model?.AdditionalFilters != null &&
-                                                Model.AdditionalFilters.GetValueOrDefault("framerate") == fps.Value;
-                                <option value="@url" selected="@isSelected">@fps.Text</option>
+                                    <option value="@url" selected>@brand.Text</option>
+                                }
+                                else
+                                {
+                                    <option value="@url">@brand.Text</option>
+                                }
                             }
                         </select>
                     </div>
