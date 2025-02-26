@@ -81,13 +81,14 @@
                                     class="px-3 py-1 border-r hover:bg-gray-100 transition-colors">
                                 -
                             </button>
-                            <input type="number" 
-                                   id="quantity"
-                                   value="1" 
-                                   min="1"
-                                   max="@(Model.SoLuongTon * 0.2)" 
-                                   onchange="validateQuantity(this)"
-                                   class="w-16 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+                           <input type="number" 
+                                    id="quantity"
+                                    value="1" 
+                                    min="1"
+                                    max="@(Math.Max(5, Model.SoLuongTon))" 
+                                    onchange="validateQuantity(this)"
+                                    class="w-16 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+
                             <button onclick="increaseQuantity()" 
                                     class="px-3 py-1 border-l hover:bg-gray-100 transition-colors">
                                 +

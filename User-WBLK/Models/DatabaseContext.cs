@@ -64,7 +64,7 @@ public partial class DatabaseContext : DbContext
 
             entity.Property(e => e.Idchitietdonhang).HasMaxLength(10);
             entity.Property(e => e.Dongia)
-                .HasPrecision(10, 2)
+                .HasPrecision(15, 2)
                 .HasColumnName("dongia");
             entity.Property(e => e.IdDg).HasMaxLength(10);
             entity.Property(e => e.IdDh).HasMaxLength(10);
