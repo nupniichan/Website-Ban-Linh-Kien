@@ -1,9 +1,13 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using Website_Ban_Linh_Kien.Models;
+using System.Linq;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace Website_Ban_Linh_Kien.Controllers
 {
@@ -65,16 +69,37 @@ namespace Website_Ban_Linh_Kien.Controllers
                 System.Diagnostics.Debug.WriteLine($"Spec: {spec.Key} = {spec.Value}");
             }
 
-            // Lấy đánh giá từ chi tiết đơn hàng
-            var reviews = _context.Chitietdonhangs
+            // Gather distinct review IDs for this product as a list
+            var distinctReviewIds = _context.Chitietdonhangs
                 .Where(ct => ct.IdSp == sp.IdSp && ct.IdDg != null)
-                .Select(ct => ct.IdDgNavigation)
-                .Where(dg => dg != null)
+                .Select(ct => ct.IdDg)
+                .Distinct()
                 .ToList();
+
+            // Force client evaluation on the Contains part
+            var reviews = _context.Danhgia
+                .AsEnumerable()  // switch to client evaluation
+                .Where(dg => distinctReviewIds.Contains(dg.IdDg))
+                .ToList();
+
+
 
             var totalReviews = reviews.Count;
             var averageRating = totalReviews > 0 ? reviews.Average(r => r.Sosao) : 0;
-            
+
+            // Determine if the current (authenticated) user has purchased this product
+            // in an order with status "Giao thành công".
+            bool hasPurchased = false;
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                hasPurchased = _context.Chitietdonhangs.Any(ct =>
+                    ct.IdSp == sp.IdSp &&
+                    ct.IdDhNavigation.IdKh == userId &&
+                    ct.IdDhNavigation.Trangthai == "Giao thành công"
+                );
+            }
+
             // Tạo phân phối rating (1-5 sao)
             var ratingDistribution = new Dictionary<int, int>();
             for (int i = 1; i <= 5; i++)
@@ -86,12 +111,11 @@ namespace Website_Ban_Linh_Kien.Controllers
             var relatedProducts = _context.Sanphams
                 .Where(p => p.IdSp != sp.IdSp && p.Loaisanpham == sp.Loaisanpham)
                 .AsEnumerable()
-                .Where(p => 
+                .Where(p =>
                 {
                     try
                     {
                         if (string.IsNullOrEmpty(p.Thongsokythuat)) return false;
-                        
                         var currentSpecs = JsonSerializer.Deserialize<Dictionary<string, string>>(sp.Thongsokythuat);
                         var currentCategory = currentSpecs?.GetValueOrDefault("Danh mục")?.Trim().ToLower();
 
@@ -151,7 +175,8 @@ namespace Website_Ban_Linh_Kien.Controllers
                 Rating = averageRating,
                 Warranty = 24,
                 SoLuongTon = sp.Soluongton,
-                RelatedProducts = relatedProducts
+                RelatedProducts = relatedProducts,
+                HasPurchased = hasPurchased
             };
         }
 
@@ -193,7 +218,6 @@ namespace Website_Ban_Linh_Kien.Controllers
             if (product == null)
                 return NotFound();
 
-            // Tăng số lượt xem và lưu ngay lập tức
             product.Soluotxem += 1;
             _context.SaveChanges();
 
@@ -218,7 +242,6 @@ namespace Website_Ban_Linh_Kien.Controllers
             if (product == null)
                 return NotFound();
 
-            // Tăng số lượt xem và lưu ngay lập tức
             product.Soluotxem += 1;
             _context.SaveChanges();
 
@@ -244,7 +267,6 @@ namespace Website_Ban_Linh_Kien.Controllers
             if (product == null)
                 return NotFound();
 
-            // Tăng số lượt xem và lưu vào database
             product.Soluotxem += 1;
             _context.SaveChanges();
 
@@ -271,7 +293,6 @@ namespace Website_Ban_Linh_Kien.Controllers
             if (product == null)
                 return NotFound();
 
-            // Tăng số lượt xem và lưu ngay lập tức
             product.Soluotxem += 1;
             _context.SaveChanges();
 
@@ -296,7 +317,6 @@ namespace Website_Ban_Linh_Kien.Controllers
             if (product == null)
                 return NotFound();
 
-            // Tăng số lượt xem và lưu ngay lập tức
             product.Soluotxem += 1;
             _context.SaveChanges();
 
@@ -361,5 +381,6 @@ namespace Website_Ban_Linh_Kien.Controllers
             );
             return View("Index", viewModel);
         }
+
     }
 }

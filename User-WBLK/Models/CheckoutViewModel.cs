@@ -40,7 +40,7 @@ public class CheckoutViewModel
     public decimal VipDiscountPercentage { get; set; } = 0;
 
     // Discount code entered by the customer
-    public string? DiscountCode { get; set; }
+    public string? DiscountCode { get; set; } = null;
     
     // List of available discount codes.
     public List<Magiamgia> AvailableDiscounts { get; set; } = new List<Magiamgia>();

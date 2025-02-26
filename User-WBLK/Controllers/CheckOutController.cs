@@ -295,7 +295,9 @@
                     Console.WriteLine($"Discount Code Percentage: {discountCodePercentage}%");
                     Console.WriteLine($"Final Price (to be saved): {finalPrice}");
 
-                    // Create the order with finalPrice assigned to Tongtien
+                    if (string.IsNullOrEmpty(model.DiscountCode)){
+                        model.DiscountCode = null;
+                    }
                     var order = new Donhang
                     {
                         IdDh = orderId,
