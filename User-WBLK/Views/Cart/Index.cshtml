@@ -91,6 +91,7 @@
 @Html.AntiForgeryToken()
 
 @section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         // Helper to retrieve the anti-forgery token from the page
         function getAntiForgeryToken() {
@@ -231,41 +232,45 @@
             }
 
             let cartHTML = `<div class="bg-white rounded-lg shadow-sm p-6">`;
-
             let total = 0;
+
             cart.forEach(item => {
-                const itemTotal = item.price * item.quantity;
-                total += itemTotal;
                 cartHTML += `
                     <div class="flex items-center gap-4 py-4 border-b last:border-b-0">
                         <div class="flex-shrink-0">
-                            <img src="http://localhost:5177/${item.image}" 
-                                 alt="${item.name}"
+                            <img src="${item.image}" alt="${item.name}"
                                  class="w-24 h-24 object-contain rounded-lg border p-2">
                         </div>
                         <div class="flex-grow">
                             <h3 class="font-medium">${item.name}</h3>
                             <div class="text-red-600 font-medium mt-1">
-                                Giá: ${item.price.toLocaleString('vi-VN')}đ
+                                Giá: ${new Intl.NumberFormat('vi-VN').format(item.price)}đ
                             </div>
                         </div>
                         <div class="flex items-center gap-2">
                             <div class="flex items-center border rounded">
-                                <button onclick="updateGuestCartQuantity('${item.id}', ${item.quantity - 1})" 
+                                <button type="button" onclick="updateQuantity(this, -1, true)" 
                                         class="px-3 py-1 border-r hover:bg-gray-100">-</button>
-                                <input type="number" value="${item.quantity}" 
-                                       min="1" class="w-16 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                                       onchange="updateGuestCartQuantity('${item.id}', this.value)" />
-                                <button onclick="updateGuestCartQuantity('${item.id}', ${item.quantity + 1})" 
+                                <input type="text" 
+                                       value="${item.quantity}"
+                                       data-product-id="${item.id}"
+                                       data-stock="${item.stock || 0}"
+                                       class="w-16 text-center"
+                                       pattern="[1-9][0-9]*"
+                                       inputmode="numeric"
+                                       onkeydown="return preventInvalidInput(event)"
+                                       onkeypress="return preventInvalidInput(event)"
+                                       oninput="validateQuantityInput(this, true)"
+                                       onblur="validateFinalValue(this, true)"
+                                       required />
+                                <button type="button" onclick="updateQuantity(this, 1, true)" 
                                         class="px-3 py-1 border-l hover:bg-gray-100">+</button>
                             </div>
                             <button onclick="removeGuestCartItem('${item.id}')" 
-                                    class="ml-4 text-blue-600 hover:text-blue-800">
-                                Xóa
-                            </button>
+                                    class="ml-4 text-blue-600 hover:text-blue-800">Xóa</button>
                         </div>
-                    </div>
-                `;
+                    </div>`;
+                total += item.price * item.quantity;
             });
 
             cartHTML += `
@@ -276,15 +281,18 @@
                     </a>
                     <div class="text-right">
                         <div class="text-lg">
-                            Tạm tính: <span class="text-red-600 font-bold">${total.toLocaleString('vi-VN')}đ</span>
+                            Tạm tính: <span class="cart-total text-red-600 font-bold">
+                                ${new Intl.NumberFormat('vi-VN').format(total)}đ
+                            </span>
                         </div>
-                        <a href="/Checkout" class="inline-block mt-4 bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700">
+                        <button onclick="proceedToCheckout()" 
+                                class="mt-4 bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700">
                             Tiến hành đặt hàng
-                        </a>
+                        </button>
                     </div>
-                </div>
-            </div>`;
+                </div>`;
 
+            cartHTML += '</div>';
             guestCartContent.innerHTML = cartHTML;
         }
 
@@ -314,6 +322,294 @@
         // Load guest cart when page loads (if not authenticated)
         if (!@Json.Serialize(User.Identity?.IsAuthenticated == true)) {
             loadGuestCart();
+        }
+
+        // Ngăn chặn nhập ký tự không phải số
+        function preventNonNumericInput(event) {
+            // Cho phép: backspace, delete, tab, escape, enter
+            if (event.keyCode == 8 || event.keyCode == 9 || 
+                event.keyCode == 27 || event.keyCode == 13 || 
+                // Cho phép: Ctrl+A
+                (event.keyCode == 65 && event.ctrlKey === true) || 
+                // Cho phép: home, end, left, right
+                (event.keyCode >= 35 && event.keyCode <= 39)) {
+                return true;
+            }
+            // Chặn mọi ký tự không phải số
+            if ((event.keyCode < 48 || event.keyCode > 57) || 
+                event.keyCode === 189 || // Dấu trừ
+                event.keyCode === 69 ||  // 'e'
+                event.keyCode === 190) { // Dấu chấm
+                event.preventDefault();
+                return false;
+            }
+            return true;
+        }
+
+        function validateGuestQuantityInput(input) {
+            // Xóa mọi ký tự không phải số
+            let value = input.value.replace(/[^0-9]/g, '');
+            
+            // Xóa các số 0 ở đầu
+            value = value.replace(/^0+/, '');
+            
+            // Nếu rỗng, đặt về 1
+            if (!value) {
+                value = '1';
+            }
+
+            // Chuyển đổi sang số
+            let numValue = parseInt(value);
+            const stock = parseInt(input.dataset.stock);
+            
+            // Đảm bảo giá trị nằm trong khoảng cho phép
+            if (numValue < 1) {
+                numValue = 1;
+                showError('Số lượng không thể nhỏ hơn 1');
+            }
+            if (numValue > stock) {
+                numValue = stock;
+                showError(`Số lượng không thể vượt quá ${stock}`);
+            }
+            
+            // Cập nhật giá trị ngay lập tức
+            input.value = numValue;
+            
+            // Cập nhật giỏ hàng
+            updateGuestCartQuantity(input.dataset.productId, numValue);
+        }
+
+        function validateGuestFinalValue(input) {
+            const value = parseInt(input.value) || 1;
+            const stock = parseInt(input.dataset.stock);
+            
+            if (value < 1) {
+                input.value = '1';
+                showError('Số lượng không thể nhỏ hơn 1');
+                updateGuestCartQuantity(input.dataset.productId, 1);
+                return;
+            }
+            
+            if (value > stock) {
+                input.value = stock;
+                showError(`Số lượng không thể vượt quá ${stock}`);
+                updateGuestCartQuantity(input.dataset.productId, stock);
+                return;
+            }
+        }
+
+        function showError(message) {
+            Swal.fire({
+                title: 'Lỗi',
+                text: message,
+                icon: 'error'
+            });
+        }
+
+        function updateQuantity(button, change, isGuest = false) {
+            const input = button.parentNode.querySelector('input');
+            const currentValue = parseInt(input.value) || 0;
+            const stock = parseInt(input.dataset.stock);
+            const newValue = currentValue + change;
+            
+            if (newValue >= 1 && newValue <= stock) {
+                input.value = newValue;
+                if (isGuest) {
+                    updateGuestCartQuantity(input.dataset.productId, newValue);
+                } else {
+                    updateCartQuantity(new Event('submit'), button.closest('form'));
+                }
+            } else {
+                showError(newValue < 1 ? 
+                    'Số lượng không thể nhỏ hơn 1' : 
+                    `Số lượng không thể vượt quá ${stock}`);
+            }
+        }
+
+        async function updateCartQuantity(event, form) {
+            event.preventDefault();
+            const input = form.querySelector('input[name="quantity"]');
+            const quantity = parseInt(input.value);
+            const stock = parseInt(input.dataset.stock);
+            
+            if (!quantity || quantity < 1) {
+                showError('Số lượng phải lớn hơn 0');
+                input.value = '1';
+                return false;
+            }
+            
+            if (quantity > stock) {
+                showError(`Số lượng không thể vượt quá ${stock}`);
+                input.value = stock;
+                return false;
+            }
+
+            try {
+                const formData = new FormData(form);
+                const response = await fetch('/Cart/UpdateQuantity', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    input.value = result.newQuantity;
+                    updateCartTotalDisplay(result.total);
+                } else {
+                    showError(result.message);
+                    if (result.validQuantity) {
+                        input.value = result.validQuantity;
+                    }
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Có lỗi xảy ra khi cập nhật số lượng');
+            }
+            return false;
+        }
+
+        function preventInvalidInput(event) {
+            // Cho phép: backspace, delete, tab, escape, enter
+            if (event.keyCode === 8 || event.keyCode === 9 || 
+                event.keyCode === 27 || event.keyCode === 13 || 
+                // Cho phép: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+                (event.ctrlKey === true && (event.keyCode === 65 || event.keyCode === 67 || 
+                                          event.keyCode === 86 || event.keyCode === 88)) || 
+                // Cho phép: home, end, left, right
+                (event.keyCode >= 35 && event.keyCode <= 39)) {
+                return true;
+            }
+            
+            // Chỉ cho phép số từ 0-9
+            if ((event.keyCode < 48 || event.keyCode > 57) && (event.keyCode < 96 || event.keyCode > 105)) {
+                event.preventDefault();
+                return false;
+            }
+            return true;
+        }
+
+        function validateQuantityInput(input, isGuest = false) {
+            let value = input.value.replace(/[^0-9]/g, '');
+            value = value.replace(/^0+/, '');
+            
+            if (!value) {
+                input.value = '1';
+                return;
+            }
+
+            let numValue = parseInt(value);
+            const stock = parseInt(input.dataset.stock);
+            
+            console.log('Stock value:', input.dataset.stock);
+            console.log('Parsed stock:', stock);
+            
+            if (numValue < 1) {
+                numValue = 1;
+                showError('Số lượng không thể nhỏ hơn 1');
+            }
+            if (stock && numValue > stock) {
+                numValue = stock;
+                showError(`Số lượng không thể vượt quá ${stock}`);
+            }
+            
+            input.value = numValue;
+            
+            if (isGuest) {
+                updateGuestCartQuantity(input.dataset.productId, numValue);
+            } else {
+                updateCartQuantity(new Event('submit'), input.closest('form'));
+            }
+        }
+
+        function validateFinalValue(input, isGuest = false) {
+            const value = input.value.trim();
+            
+            if (!value) {
+                input.value = '1';
+                if (isGuest) {
+                    updateGuestCartQuantity(input.dataset.productId, 1);
+                }
+                return;
+            }
+
+            const numValue = parseInt(value);
+            const stock = parseInt(input.dataset.stock);
+            
+            if (numValue < 1) {
+                input.value = '1';
+                showError('Số lượng không thể nhỏ hơn 1');
+                if (isGuest) {
+                    updateGuestCartQuantity(input.dataset.productId, 1);
+                }
+                return;
+            }
+            
+            if (numValue > stock) {
+                input.value = stock;
+                showError(`Số lượng không thể vượt quá ${stock}`);
+                if (isGuest) {
+                    updateGuestCartQuantity(input.dataset.productId, stock);
+                }
+                return;
+            }
+
+            if (!isGuest) {
+                updateCartQuantity(new Event('submit'), input.closest('form'));
+            }
+        }
+
+        // Ngăn chặn paste nội dung không hợp lệ
+        document.querySelectorAll('input[name="quantity"]').forEach(input => {
+            input.addEventListener('paste', (e) => {
+                e.preventDefault();
+                const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+                if (/^[1-9][0-9]*$/.test(pastedText)) {
+                    const numValue = parseInt(pastedText);
+                    const stock = parseInt(input.dataset.stock);
+                    if (numValue >= 1 && numValue <= stock) {
+                        input.value = numValue;
+                        const isGuest = input.hasAttribute('data-product-id');
+                        if (isGuest) {
+                            updateGuestCartQuantity(input.dataset.productId, numValue);
+                        } else {
+                            updateCartQuantity(new Event('submit'), input.closest('form'));
+                        }
+                    }
+                }
+            });
+        });
+
+        // Áp dụng các event listeners cho guest cart inputs
+        function applyGuestCartEventListeners() {
+            document.querySelectorAll('#guestCartContent input[type="text"]').forEach(input => {
+                input.addEventListener('paste', (e) => {
+                    e.preventDefault();
+                });
+                
+                input.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                });
+                
+                input.addEventListener('dblclick', (e) => {
+                    e.preventDefault();
+                });
+            });
+        }
+
+        // Cập nhật hàm loadGuestCart để thêm event listeners sau khi load
+        const originalLoadGuestCart = loadGuestCart;
+        loadGuestCart = function() {
+            originalLoadGuestCart();
+            applyGuestCartEventListeners();
+        };
+
+        // Thêm hàm cập nhật tổng giỏ hàng
+        function updateCartTotalDisplay(total) {
+            const totalElement = document.querySelector('.cart-total');
+            if (totalElement) {
+                totalElement.textContent = new Intl.NumberFormat('vi-VN').format(total) + 'đ';
+            }
         }
     </script>
 }

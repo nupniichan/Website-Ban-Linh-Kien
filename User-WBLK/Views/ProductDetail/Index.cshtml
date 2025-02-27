@@ -494,7 +494,8 @@
                 name: '@Model.Name',
                 price: @Model.Price,
                 image: '@Model.ImageUrl',
-                quantity: quantity
+                quantity: quantity,
+                stock: @Model.SoLuongTon // Thêm thông tin stock
             };
             let cart = JSON.parse(localStorage.getItem('guestCart')) || [];
             const existingProductIndex = cart.findIndex(item => item.id === product.id);
