@@ -135,7 +135,6 @@
                 <h5 class="text-lg mb-2 font-bold">Phương thức thanh toán</h5>
                 <select id="paymentMethod" name="PaymentMethod" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all appearance-none bg-white bg-[url('data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3e%3c/svg%3e')] bg-[length:1.5em_1.5em] bg-no-repeat bg-[right_0.5rem_center] cursor-pointer">
                     <option value="COD">Thanh toán khi nhận hàng</option>
-                    <option value="VNPay">VNPay</option>
                     <option value="Momo">Momo</option>
                     <option value="Paypal">Paypal</option>
                 </select>
@@ -401,12 +400,19 @@
                 const deliveryMethod = parseInt(form.querySelector('input[name="DeliveryMethod"]:checked').value);
                 const paymentMethod = document.getElementById('paymentMethod').value;
                 
-                // Nếu chọn thanh toán Momo, xử lý riêng
+                // Xử lý riêng cho các phương thức thanh toán khác
                 if (paymentMethod === 'Momo') {
                     processMomoPayment(cartItems);
                     return;
                 }
                 
+                // Xử lý thanh toán PayPal
+                if (paymentMethod === 'Paypal') {
+                    processPaypalPayment(cartItems);
+                    return;
+                }
+                
+                // Tiếp tục xử lý đơn hàng như bình thường cho COD và phương thức khác
                 const formData = {
                     ReceiverName: form.querySelector('[name="ReceiverName"]').value,
                     Email: form.querySelector('[name="Email"]').value,
@@ -555,6 +561,73 @@
             });
         }
 
+        // Thêm hàm xử lý thanh toán PayPal
+        function processPaypalPayment(cartItems) {
+            const form = document.getElementById('checkoutForm');
+            if (!form) {
+                console.error('Không tìm thấy form checkout');
+                return;
+            }
+
+            // Lấy thông tin đơn hàng
+            const formData = {
+                ReceiverName: form.querySelector('[name="ReceiverName"]').value,
+                Email: form.querySelector('[name="Email"]').value,
+                ReceiverPhone: form.querySelector('[name="ReceiverPhone"]').value,
+                DeliveryMethod: parseInt(form.querySelector('input[name="DeliveryMethod"]:checked').value),
+                PaymentMethod: 'Paypal',
+                City: form.querySelector('[name="City"]').value,
+                District: form.querySelector('[name="District"]').value,
+                Ward: form.querySelector('[name="Ward"]').value,
+                StreetAddress: form.querySelector('[name="StreetAddress"]').value,
+                Note: form.querySelector('[name="Note"]').value,
+                DiscountCode: form.querySelector('[name="DiscountCode"]').value.trim(),
+                Items: cartItems
+            };
+
+            // Tạo đơn hàng trước
+            fetch('@Url.Action("ProcessPayPalPayment", "Checkout")', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Nếu tạo đơn hàng thành công, gửi request đến PayPal
+                    fetch('@Url.Action("CreatePayment", "Paypal")', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data.paypalData)
+                    })
+                    .then(response => response.json())
+                    .then(paypalData => {
+                        if (paypalData.success) {
+                            // Xóa giỏ hàng nếu là khách vãng lai
+                            const isAuthenticated = @Json.Serialize(User.Identity?.IsAuthenticated == true);
+                            if (!isAuthenticated) {
+                                localStorage.removeItem('guestCart');
+                            }
+                            // Chuyển hướng đến trang thanh toán PayPal
+                            window.location.href = paypalData.payUrl;
+                        } else {
+                            alert(paypalData.message || 'Có lỗi xảy ra khi tạo thanh toán PayPal');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Có lỗi xảy ra khi tạo thanh toán PayPal');
+                    });
+                } else {
+                    alert(data.message || 'Có lỗi xảy ra khi tạo đơn hàng');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi tạo đơn hàng');
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             const checkoutForm = document.getElementById('checkoutForm');
             if (checkoutForm) {
@@ -662,6 +735,124 @@
             discountCodeInput.addEventListener('change', updateFinalPrice);
             discountCodeInput.addEventListener('blur', updateFinalPrice);
         }
+
+        // Thêm biến toàn cục để theo dõi trạng thái
+        let isValidCustomerInfo = true;
+        let existingCustomerInfo = null;
+
+        // Thêm hàm kiểm tra thông tin khách hàng
+        async function checkExistingCustomer() {
+            const email = document.querySelector('[name="Email"]').value;
+            const phone = document.querySelector('[name="ReceiverPhone"]').value;
+            
+            if (!email && !phone) return;
+
+            try {
+                const response = await fetch('@Url.Action("CheckExistingCustomer", "Checkout")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, phone })
+                });
+
+                const data = await response.json();
+                
+                if (data.exists) {
+                    const name = document.querySelector('[name="ReceiverName"]').value;
+                    
+                    if (email !== data.customer.email || 
+                        phone !== data.customer.phone || 
+                        name !== data.customer.name) {
+                        
+                        isValidCustomerInfo = false;
+                        existingCustomerInfo = data.customer;
+                        
+                        const confirmMessage = `Đã tìm thấy thông tin khách hàng với ${data.customer.matchType} này:
+
+Họ tên: ${data.customer.name}
+Email: ${data.customer.email}
+Số điện thoại: ${data.customer.phone}
+
+Bạn phải sử dụng thông tin này để đặt hàng. Bạn có muốn sử dụng thông tin này không?`;
+
+                        if (confirm(confirmMessage)) {
+                            useExistingInfo();
+                        }
+                    } else {
+                        isValidCustomerInfo = true;
+                    }
+                } else {
+                    isValidCustomerInfo = true;
+                }
+            } catch (error) {
+                console.error('Error checking existing customer:', error);
+            }
+        }
+
+        // Hàm sử dụng thông tin có sẵn
+        function useExistingInfo() {
+            if (existingCustomerInfo) {
+                document.querySelector('[name="ReceiverName"]').value = existingCustomerInfo.name;
+                document.querySelector('[name="Email"]').value = existingCustomerInfo.email;
+                document.querySelector('[name="ReceiverPhone"]').value = existingCustomerInfo.phone;
+                
+                if (existingCustomerInfo.address) {
+                    const addressParts = existingCustomerInfo.address.split(',').map(part => part.trim());
+                    if (addressParts.length >= 4) {
+                        document.querySelector('[name="StreetAddress"]').value = addressParts[0];
+                        document.querySelector('[name="Ward"]').value = addressParts[1];
+                        document.querySelector('[name="District"]').value = addressParts[2];
+                        document.querySelector('[name="City"]').value = addressParts[3];
+                    }
+                }
+                isValidCustomerInfo = true;
+            }
+        }
+
+        // Sửa lại hàm submitOrder để thêm kiểm tra
+        const originalSubmitOrder = submitOrder;
+        submitOrder = function() {
+            if (!isValidCustomerInfo && existingCustomerInfo) {
+                alert(`Vui lòng sử dụng thông tin đã đăng ký trước đó:
+
+Họ tên: ${existingCustomerInfo.name}
+Email: ${existingCustomerInfo.email}
+Số điện thoại: ${existingCustomerInfo.phone}`);
+                return;
+            }
+            
+            // Gọi hàm gốc
+            originalSubmitOrder();
+        };
+
+        // Thêm event listeners để kiểm tra khi người dùng thay đổi thông tin
+        document.addEventListener('DOMContentLoaded', function() {
+            const existingDOMContentLoaded = document.onDOMContentLoaded;
+            
+            document.querySelector('[name="Email"]').addEventListener('change', () => { 
+                isValidCustomerInfo = false; 
+                checkExistingCustomer(); 
+            });
+            
+            document.querySelector('[name="ReceiverPhone"]').addEventListener('change', () => { 
+                isValidCustomerInfo = false; 
+                checkExistingCustomer(); 
+            });
+            
+            document.querySelector('[name="ReceiverName"]').addEventListener('change', () => { 
+                isValidCustomerInfo = false; 
+                checkExistingCustomer(); 
+            });
+            
+            // Kiểm tra ban đầu
+            checkExistingCustomer();
+            
+            // Gọi hàm gốc nếu có
+            if (existingDOMContentLoaded) {
+                existingDOMContentLoaded();
+            }
+        });
     </script>
 }
 

@@ -611,6 +611,11 @@
                 totalElement.textContent = new Intl.NumberFormat('vi-VN').format(total) + 'đ';
             }
         }
+
+        function proceedToCheckout() {
+            // For both guest and authenticated users, proceed directly to checkout
+            window.location.href = '@Url.Action("Index", "Checkout")';
+        }
     </script>
 }
 

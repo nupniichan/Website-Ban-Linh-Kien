@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Website_Ban_Linh_Kien.Models;
 using System.Security.Claims;
+using System.Globalization;
 
 namespace Website_Ban_Linh_Kien.Controllers
 {
@@ -15,14 +16,17 @@ namespace Website_Ban_Linh_Kien.Controllers
             _context = context;
         }
 
-        public async Task<IActionResult> PaymentSuccess(string orderId, string transId, long amount, bool clearCart = true)
+        public async Task<IActionResult> PaymentSuccess(string orderId, string transId, decimal amount, bool clearCart = true)
         {
             // Ghi log để debug
             Console.WriteLine($"PaymentSuccess called with orderId: {orderId}, transId: {transId}, amount: {amount}, clearCart: {clearCart}");
             
+            // Định dạng số tiền theo VNĐ
+            string formattedAmount = string.Format(new CultureInfo("vi-VN"), "{0:N0}", amount) + " VNĐ";
+            
             // Lưu thông tin vào TempData để hiển thị trên trang
             TempData["OrderId"] = orderId;
-            TempData["TransactionInfo"] = $"Mã giao dịch: {transId}, Số tiền: {amount}";
+            TempData["TransactionInfo"] = $"Mã đơn hàng: {orderId}, Số tiền: {formattedAmount}";
             TempData["ClearCart"] = clearCart; // Thêm flag để JavaScript biết cần làm mới giỏ hàng
             
             // Kiểm tra xem đơn hàng đã tồn tại chưa
