@@ -14,6 +14,8 @@ builder.Services.AddHttpClient();
 // Thêm HttpContextAccessor
 builder.Services.AddHttpContextAccessor();
 
+builder.Services.AddMemoryCache();
+
 // Thêm Session
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
