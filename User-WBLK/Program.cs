@@ -1,11 +1,27 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Website_Ban_Linh_Kien.Models;
+using Website_Ban_Linh_Kien.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+// Add HttpClient factory
+builder.Services.AddHttpClient();
+
+// Thêm HttpContextAccessor
+builder.Services.AddHttpContextAccessor();
+
+// Thêm Session
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
 
 // Thêm DbContext vào DI container
 builder.Services.AddDbContext<DatabaseContext>(options =>
@@ -31,6 +47,9 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.Lax; // hoặc None nếu cần
 });
 
+// Connect MomoAPI
+builder.Services.Configure<MomoOptionModel>(builder.Configuration.GetSection("MomoAPI"));
+builder.Services.AddScoped<IMomoService, MomoService>();
 
 var app = builder.Build();
 
@@ -47,6 +66,9 @@ app.UseMiddleware<CheckCookiesSession>();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+
+// Sử dụng Session trước Authentication
+app.UseSession();
 
 app.UseAuthentication();
 app.UseAuthorization();

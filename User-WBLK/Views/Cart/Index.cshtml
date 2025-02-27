@@ -4,6 +4,7 @@
 @model Giohang
 @{
     ViewData["Title"] = "Giỏ hàng";
+    var isAuthenticated = User.Identity?.IsAuthenticated == true;
 }
 
 <div class="container mx-auto px-4">
@@ -16,14 +17,14 @@
     <h1 class="text-2xl font-bold mb-6">Giỏ hàng của bạn</h1>
 
     <div id="cartContent">
-        @if (User.Identity?.IsAuthenticated == true)
+        @if (isAuthenticated)
         {
-            @if (Model?.Chitietgiohangs != null && Model.Chitietgiohangs.Any())
+            if (Model?.Chitietgiohangs != null && Model.Chitietgiohangs.Any())
             {
                 <div class="bg-white rounded-lg shadow-sm p-6">
                     @foreach (var item in Model.Chitietgiohangs)
                     {
-                        <div class="flex items-center gap-4 py-4 border-b last:border-b-0">
+                        <div class="flex items-center gap-4 py-4 border-b last:border-b-0" data-product-id="@item.IdSp">
                             <div class="flex-shrink-0">
                                 <img src="http://localhost:5177/@item.IdSpNavigation.Hinhanh" 
                                      alt="@item.IdSpNavigation.Tensanpham"
@@ -32,30 +33,17 @@
                             <div class="flex-grow">
                                 <h3 class="font-medium">@item.IdSpNavigation.Tensanpham</h3>
                                 <div class="text-red-600 font-medium mt-1">
-                                    Giá: @item.IdSpNavigation.Gia.ToString("N0")đ
+                                    Giá: <span class="unit-price" data-price="@item.IdSpNavigation.Gia">@item.IdSpNavigation.Gia.ToString("N0")</span>đ
                                 </div>
                             </div>
                             <div class="flex items-center gap-2">
-                                <form class="flex items-center border rounded" onsubmit="return updateCartQuantity(event, this)">
-                                    <input type="hidden" name="productId" value="@item.IdSp" />
-                                    <button type="button" onclick="updateQuantity(this, -1)" 
-                                            class="px-3 py-1 border-r hover:bg-gray-100">-</button>
-                                    <input type="text" 
-                                           name="quantity" 
-                                           value="@item.Soluongsanpham" 
-                                           data-stock="@item.IdSpNavigation.Soluongton"
-                                           data-min="1"
-                                           class="w-16 text-center"
-                                           pattern="[1-9][0-9]*"
-                                           inputmode="numeric"
-                                           onkeydown="return preventInvalidInput(event)"
-                                           onkeypress="return preventInvalidInput(event)"
-                                           oninput="validateQuantityInput(this)"
-                                           onblur="validateFinalValue(this)"
-                                           required />
-                                    <button type="button" onclick="updateQuantity(this, 1)" 
-                                            class="px-3 py-1 border-l hover:bg-gray-100">+</button>
-                                </form>
+                                <div class="flex items-center border rounded">
+                                    <button type="button" class="decrease px-3 py-1 border-r hover:bg-gray-100">-</button>
+                                    <input type="number" class="quantity w-16 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
+                                           value="@item.Soluongsanpham" min="1" />
+                                    <button type="button" class="increase px-3 py-1 border-l hover:bg-gray-100">+</button>
+                                </div>
+                                <button type="button" class="remove ml-4 text-blue-600 hover:text-blue-800">Xóa</button>
                             </div>
                         </div>
                     }
@@ -67,9 +55,9 @@
                         </a>
                         <div class="text-right">
                             <div class="text-lg">
-                                Tạm tính: <span class="text-red-600 font-bold">
-                                    @Model.Chitietgiohangs.Sum(c => c.IdSpNavigation.Gia * c.Soluongsanpham).ToString("N0")đ
-                                </span>
+                                Tạm tính: <span id="cartTotal" class="text-red-600 font-bold">
+                                    @Model.Chitietgiohangs.Sum(c => c.IdSpNavigation.Gia * c.Soluongsanpham).ToString("N0")
+                                </span>đ
                             </div>
                             <a href="@Url.Action("Index", "Checkout")" class="mt-4 bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 inline-block">
                                 Tiến hành đặt hàng
@@ -99,9 +87,132 @@
     </div>
 </div>
 
+@* Render the anti-forgery token for AJAX *@
+@Html.AntiForgeryToken()
+
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        // Helper to retrieve the anti-forgery token from the page
+        function getAntiForgeryToken() {
+            var tokenElement = document.querySelector('input[name="__RequestVerificationToken"]');
+            return tokenElement ? tokenElement.value : '';
+        }
+
+        // Function to check and adjust guest cart quantities on page load
+        function checkGuestCartQuantities() {
+            let cart = JSON.parse(localStorage.getItem('guestCart')) || [];
+            let updated = false;
+            cart.forEach(item => {
+                if (item.quantity > 5) {
+                    item.quantity = 5;
+                    updated = true;
+                }
+            });
+            if (updated) {
+                localStorage.setItem('guestCart', JSON.stringify(cart));
+            }
+        }
+
+        // Function to check and adjust logged-in cart quantities on page load
+        function checkCustomerCartQuantities() {
+            document.querySelectorAll("[data-product-id]").forEach(function(itemRow) {
+                var quantityInput = itemRow.querySelector(".quantity");
+                var currentQty = parseInt(quantityInput.value);
+                if (currentQty > 5) {
+                    quantityInput.value = 5;
+                    var productId = itemRow.getAttribute("data-product-id");
+                    // Optionally alert the user here if desired:
+                    // alert("Sản phẩm chỉ cho phép mua tối đa 5. Số lượng sẽ được điều chỉnh.");
+                    updateQuantity(productId, 5);
+                }
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            var isAuthenticated = @isAuthenticated.ToString().ToLower();
+            if (isAuthenticated) {
+                // For logged-in users: attach event listeners and check cart quantities
+                document.querySelectorAll("[data-product-id]").forEach(function(itemRow) {
+                    var productId = itemRow.getAttribute("data-product-id");
+                    var decreaseBtn = itemRow.querySelector(".decrease");
+                    var increaseBtn = itemRow.querySelector(".increase");
+                    var quantityInput = itemRow.querySelector(".quantity");
+                    var removeBtn = itemRow.querySelector(".remove");
+                    // unitPrice can be used if needed for additional UI logic
+                    var unitPrice = parseFloat(itemRow.querySelector(".unit-price").getAttribute("data-price"));
+
+                    decreaseBtn.addEventListener("click", function() {
+                        var currentQty = parseInt(quantityInput.value);
+                        if (currentQty > 1) {
+                            quantityInput.value = currentQty - 1;
+                            updateQuantity(productId, quantityInput.value);
+                        }
+                    });
+                    increaseBtn.addEventListener("click", function() {
+                        var currentQty = parseInt(quantityInput.value);
+                        quantityInput.value = currentQty + 1;
+                        updateQuantity(productId, quantityInput.value);
+                    });
+                    quantityInput.addEventListener("change", function() {
+                        if (quantityInput.value < 1) quantityInput.value = 1;
+                        updateQuantity(productId, quantityInput.value);
+                    });
+                    removeBtn.addEventListener("click", function() {
+                        removeItem(productId, itemRow);
+                    });
+                });
+                // Check each quantity in the customer cart and cap it at 5 if necessary.
+                checkCustomerCartQuantities();
+            } else {
+                // For guest users, check and adjust the guest cart stored in localStorage
+                checkGuestCartQuantities();
+                loadGuestCart(); // Your existing guest cart logic remains unchanged.
+            }
+        });
+
+        function updateQuantity(productId, quantity) {
+            fetch('/Cart/UpdateQuantityAjax', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': getAntiForgeryToken()
+                },
+                body: JSON.stringify({ productId: productId, quantity: parseInt(quantity) })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById("cartTotal").innerText = data.cartTotal;
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => console.error("Error updating quantity:", error));
+        }
+
+        function removeItem(productId, itemRow) {
+            fetch('/Cart/RemoveItemAjax', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': getAntiForgeryToken()
+                },
+                body: JSON.stringify({ productId: productId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    itemRow.remove();
+                    document.getElementById("cartTotal").innerText = data.cartTotal;
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => console.error("Error removing item:", error));
+        }
+
+        // Guest Cart Functions (remains unchanged except for quantity cap check in update)
         function loadGuestCart() {
             const guestCartContent = document.getElementById('guestCartContent');
             const cart = JSON.parse(localStorage.getItem('guestCart')) || [];
@@ -186,20 +297,16 @@
         }
 
         function updateGuestCartQuantity(productId, newQuantity) {
+            const maxAllowed = 5;
             let cart = JSON.parse(localStorage.getItem('guestCart')) || [];
             const index = cart.findIndex(item => item.id === productId);
-            
             if (index !== -1) {
-                const stock = cart[index].stock;
-                
-                newQuantity = parseInt(newQuantity);
-                if (isNaN(newQuantity) || newQuantity < 1) newQuantity = 1;
-                if (newQuantity > stock) {
-                    newQuantity = stock;
-                    showError(`Số lượng không thể vượt quá ${stock}`);
+                if (parseInt(newQuantity) > maxAllowed) {
+                    alert(`Sản phẩm chỉ cho phép mua tối đa ${maxAllowed}.`);
+                    cart[index].quantity = maxAllowed;
+                } else {
+                    cart[index].quantity = parseInt(newQuantity);
                 }
-                
-                cart[index].quantity = newQuantity;
                 localStorage.setItem('guestCart', JSON.stringify(cart));
                 loadGuestCart();
             }
@@ -212,7 +319,7 @@
             loadGuestCart();
         }
 
-        // Load guest cart when page loads
+        // Load guest cart when page loads (if not authenticated)
         if (!@Json.Serialize(User.Identity?.IsAuthenticated == true)) {
             loadGuestCart();
         }
@@ -506,6 +613,7 @@
         }
     </script>
 }
+
 
 @section Styles {
     <style>

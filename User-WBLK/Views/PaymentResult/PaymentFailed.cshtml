@@ -18,6 +18,14 @@
 
         <!-- Message -->
         <p class="text-gray-600">Giao dịch của bạn đã bị từ chối. Vui lòng thử lại.</p>
+        
+        <!-- Error Details -->
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p class="text-red-700">Chi tiết lỗi: @TempData["ErrorMessage"]</p>
+            </div>
+        }
 
         <!-- Buttons -->
         <div class="flex justify-center gap-4 pt-4">
@@ -33,9 +41,9 @@
 
 @section Scripts {
     <script>
-        // Tự động chuyển về trang giỏ hàng sau 5 giây
-        setTimeout(function() {
-            window.location.href = '/cart';
-        }, 5000);
+        // Đã tắt tự động chuyển hướng
+        // setTimeout(function() {
+        //     window.location.href = '/cart';
+        // }, 5000);
     </script>
 }

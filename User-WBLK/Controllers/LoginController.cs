@@ -58,6 +58,7 @@ namespace Website_Ban_Linh_Kien.Controllers
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, account.Tentaikhoan),
+                new Claim(ClaimTypes.NameIdentifier, customer.IdKh), // <-- KEY FIX: match "KH000001", etc.
                 new Claim(ClaimTypes.Role, account.Quyentruycap),
                 new Claim("CustomerId", customer.IdKh),
                 new Claim("AccountId", account.IdTk),

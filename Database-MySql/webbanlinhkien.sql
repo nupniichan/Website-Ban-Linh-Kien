@@ -111,7 +111,7 @@ CREATE TABLE `danhgia` (
 CREATE TABLE `donhang` (
   `IdDh` varchar(10) NOT NULL,
   `trangthai` varchar(50) NOT NULL DEFAULT 'Đặt hàng thành công',
-  `tongtien` decimal(10,2) NOT NULL,
+  `tongtien` decimal(15,2) NOT NULL,
   `diachigiaohang` varchar(200) NOT NULL,
   `ngaydathang` datetime DEFAULT current_timestamp(),
   `phuongthucthanhtoan` varchar(50) NOT NULL,

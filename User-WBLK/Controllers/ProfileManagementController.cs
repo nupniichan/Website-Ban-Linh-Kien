@@ -4,6 +4,9 @@ using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using Website_Ban_Linh_Kien.Models;
+using System;
+using System.Linq;
+using System.Security.Claims;
 
 namespace Website_Ban_Linh_Kien.Controllers
 {
@@ -94,7 +97,7 @@ namespace Website_Ban_Linh_Kien.Controllers
             {
                 ModelState.AddModelError("Hoten", "Tên không được để trống.");
             }
-            else if (!System.Text.RegularExpressions.Regex.IsMatch(Hoten, @"^[\p{L}\s]+$"))
+            else if (!Regex.IsMatch(Hoten, @"^[\p{L}\s]+$"))
             {
                 ModelState.AddModelError("Hoten", "Tên không được chứa ký tự đặc biệt hoặc số.");
             }
@@ -121,7 +124,6 @@ namespace Website_Ban_Linh_Kien.Controllers
             TempData["SuccessMessage"] = "Thông tin tài khoản đã được cập nhật thành công!";
             return RedirectToAction("Profile");
         }
-
 
         public async Task<IActionResult> OrderHistory(string? orderId, int pageNumber = 1)
         {
@@ -179,5 +181,151 @@ namespace Website_Ban_Linh_Kien.Controllers
                 return View(paginatedList);
             }
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SubmitReview(string Idchitietdonhang, int rating, string comment)
+        {
+            try
+            {
+                // Get the logged-in user's account
+                var username = User.Identity.Name;
+                if (string.IsNullOrEmpty(username))
+                {
+                    return Json(new { success = false, message = "User not found." });
+                }
+
+                var account = await _context.Taikhoans.FirstOrDefaultAsync(t => t.Tentaikhoan == username);
+                if (account == null)
+                {
+                    return Json(new { success = false, message = "User account not found." });
+                }
+
+                var khachhang = await _context.Khachhangs.FirstOrDefaultAsync(k => k.IdTk == account.IdTk);
+                if (khachhang == null)
+                {
+                    return Json(new { success = false, message = "Customer not found." });
+                }
+
+                // Retrieve the specific order detail record by its ID (including its parent order)
+                var orderDetail = await _context.Chitietdonhangs
+                    .Include(ct => ct.IdDhNavigation)
+                    .FirstOrDefaultAsync(ct => ct.Idchitietdonhang == Idchitietdonhang);
+
+                if (orderDetail == null)
+                {
+                    return Json(new { success = false, message = "Order detail not found." });
+                }
+
+                // Check that the order belongs to the logged-in customer
+                var order = orderDetail.IdDhNavigation;
+                if (order == null || order.IdKh != khachhang.IdKh)
+                {
+                    return Json(new { success = false, message = "Order not eligible for review." });
+                }
+
+                // Only allow reviews for orders with status "Giao thành công"
+                if (order.Trangthai != "Giao thành công")
+                {
+                    return Json(new { success = false, message = "Only orders with 'Giao thành công' status can be reviewed." });
+                }
+
+
+                // Generate a new review ID (e.g., "DG000001")
+                var lastReview = await _context.Danhgia.OrderByDescending(d => d.IdDg).FirstOrDefaultAsync();
+                int nextNumber = 1;
+                if (lastReview != null && lastReview.IdDg?.StartsWith("DG") == true)
+                {
+                    var numericPart = lastReview.IdDg.Substring(2);
+                    if (int.TryParse(numericPart, out int parsed))
+                    {
+                        nextNumber = parsed + 1;
+                    }
+                }
+                var newReviewId = "DG" + nextNumber.ToString("D6");
+
+                // Create the review
+                var review = new Danhgia
+                {
+                    IdDg = newReviewId,
+                    Sosao = rating,
+                    Noidung = comment,
+                    Ngaydanhgia = DateTime.Now,
+                    IdKh = khachhang.IdKh
+                };
+
+                _context.Danhgia.Add(review);
+                await _context.SaveChangesAsync();
+
+            // Tie the same review to *all* items in the order
+            var allDetails = _context.Chitietdonhangs.Where(ct => ct.IdDh == order.IdDh).ToList();
+            foreach (var detail in allDetails)
+            {
+                detail.IdDg = newReviewId;
+            }
+            _context.Chitietdonhangs.UpdateRange(allDetails);
+            await _context.SaveChangesAsync();
+
+
+                return Json(new { success = true, message = "Cảm ơn bạn đã đánh giá!", reviewed = true });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("[SubmitReview ERROR]: " + ex.Message);
+                return Json(new { success = false, message = "Có lỗi xảy ra khi gửi đánh giá: " + ex.Message });
+            }
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CancelOrder(string orderId)
+        {
+            try
+            {
+                // Get the logged-in user's account
+                var username = User.Identity.Name;
+                if (string.IsNullOrEmpty(username))
+                {
+                    return Json(new { success = false, message = "User not found." });
+                }
+
+                var account = await _context.Taikhoans.FirstOrDefaultAsync(t => t.Tentaikhoan == username);
+                if (account == null)
+                {
+                    return Json(new { success = false, message = "User account not found." });
+                }
+
+                var khachhang = await _context.Khachhangs.FirstOrDefaultAsync(k => k.IdTk == account.IdTk);
+                if (khachhang == null)
+                {
+                    return Json(new { success = false, message = "Customer not found." });
+                }
+
+                // Find the order and verify it belongs to the customer
+                var order = await _context.Donhangs.FirstOrDefaultAsync(o => o.IdDh == orderId && o.IdKh == khachhang.IdKh);
+                if (order == null)
+                {
+                    return Json(new { success = false, message = "Order not found." });
+                }
+
+                // Only allow cancellation if order status is "Chờ xác nhận" or "Đã duyệt đơn"
+                if (order.Trangthai != "Chờ xác nhận" && order.Trangthai != "Đã duyệt đơn")
+                {
+                    return Json(new { success = false, message = "Order cannot be cancelled in its current status." });
+                }
+
+                // Update the order's status to "Hủy đơn"
+                order.Trangthai = "Hủy đơn";
+                _context.Donhangs.Update(order);
+                await _context.SaveChangesAsync();
+
+                return Json(new { success = true, message = "Đơn hàng đã được hủy." });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("[CancelOrder ERROR]: " + ex.Message);
+                return Json(new { success = false, message = "Có lỗi xảy ra khi hủy đơn: " + ex.Message });
+            }
+        }
+
     }
 }
