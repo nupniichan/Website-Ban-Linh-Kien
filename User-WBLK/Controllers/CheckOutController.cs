@@ -313,74 +313,105 @@
                         IdMgg = model.DiscountCode // Save the discount code used
                     };
 
-
-                    // Use a transaction for consistency
-                    using (var transaction = await _context.Database.BeginTransactionAsync())
+                    // Tạo bản ghi thanh toán cho COD
+                    if (model.PaymentMethod == "COD")
                     {
-                        try
+                        var newPaymentId = await GenerateNewPaymentId();
+                        var payment = new Thanhtoan
                         {
-                            _context.Donhangs.Add(order);
-                            await _context.SaveChangesAsync();
-
-                            // Create order details
-                            var lastDetailId = await _context.Chitietdonhangs
-                                .OrderByDescending(c => c.Idchitietdonhang)
-                                .Select(c => c.Idchitietdonhang)
-                                .FirstOrDefaultAsync() ?? "CTDH00000";
-
-                            int detailStartId = int.Parse(lastDetailId.Substring(4)) + 1;
-
-                            foreach (var item in model.Items)
+                            IdTt = newPaymentId,
+                            IdDh = orderId,
+                            Trangthai = "Chờ xác nhận",
+                            Tienthanhtoan = finalPrice,
+                            Ngaythanhtoan = DateTime.Now,
+                            Noidungthanhtoan = $"Thanh toán COD cho đơn hàng {orderId}",
+                            Mathanhtoan = $"COD_{orderId}"
+                        };
+                        
+                        _context.Thanhtoans.Add(payment);
+                        await _context.SaveChangesAsync();
+                        
+                        // Chuyển hướng đến trang thành công với thông tin đơn hàng
+                        return Json(new { 
+                            success = true, 
+                            redirectUrl = Url.Action("PaymentSuccess", "PaymentResult", new { 
+                                orderId = orderId, 
+                                transId = $"COD_{orderId}", 
+                                amount = finalPrice,
+                                clearCart = true
+                            })
+                        });
+                    }
+                    else
+                    {
+                        // Use a transaction for consistency
+                        using (var transaction = await _context.Database.BeginTransactionAsync())
+                        {
+                            try
                             {
-                                var product = await _context.Sanphams.FindAsync(item.ProductId);
-                                if (product == null || product.Soluongton < item.Quantity)
+                                _context.Donhangs.Add(order);
+                                await _context.SaveChangesAsync();
+
+                                // Create order details
+                                var lastDetailId = await _context.Chitietdonhangs
+                                    .OrderByDescending(c => c.Idchitietdonhang)
+                                    .Select(c => c.Idchitietdonhang)
+                                    .FirstOrDefaultAsync() ?? "CTDH00000";
+
+                                int detailStartId = int.Parse(lastDetailId.Substring(4)) + 1;
+
+                                foreach (var item in model.Items)
                                 {
-                                    throw new Exception($"Sản phẩm {item.ProductName} không đủ số lượng trong kho");
+                                    var product = await _context.Sanphams.FindAsync(item.ProductId);
+                                    if (product == null || product.Soluongton < item.Quantity)
+                                    {
+                                        throw new Exception($"Sản phẩm {item.ProductName} không đủ số lượng trong kho");
+                                    }
+
+                                    product.Soluongton -= item.Quantity;
+                                    product.Damuahang += item.Quantity;
+
+                                    var orderDetail = new Chitietdonhang
+                                    {
+                                        Idchitietdonhang = $"CTDH{detailStartId:D5}",
+                                        IdDh = orderId,
+                                        IdSp = item.ProductId,
+                                        Soluongsanpham = item.Quantity,
+                                        Dongia = item.Price
+                                    };
+
+                                    _context.Chitietdonhangs.Add(orderDetail);
+                                    detailStartId++;
                                 }
 
-                                product.Soluongton -= item.Quantity;
-                                product.Damuahang += item.Quantity;
-
-                                var orderDetail = new Chitietdonhang
-                                {
-                                    Idchitietdonhang = $"CTDH{detailStartId:D5}",
-                                    IdDh = orderId,
-                                    IdSp = item.ProductId,
-                                    Soluongsanpham = item.Quantity,
-                                    Dongia = item.Price
-                                };
-
-                                _context.Chitietdonhangs.Add(orderDetail);
-                                detailStartId++;
+                                await _context.SaveChangesAsync();
+                                await transaction.CommitAsync();
                             }
-
-                            await _context.SaveChangesAsync();
-                            await transaction.CommitAsync();
+                            catch (Exception ex)
+                            {
+                                await transaction.RollbackAsync();
+                                return Json(new { success = false, message = ex.Message });
+                            }
                         }
-                        catch (Exception ex)
+
+                        // Clear the cart for logged in users
+                        if (User.Identity?.IsAuthenticated == true && loggedInCustomer != null)
                         {
-                            await transaction.RollbackAsync();
-                            return Json(new { success = false, message = ex.Message });
+                            var currentCart = loggedInCustomer.Giohangs
+                                .OrderByDescending(g => g.Thoigiancapnhat)
+                                .FirstOrDefault();
+
+                            if (currentCart != null)
+                            {
+                                _context.Chitietgiohangs.RemoveRange(currentCart.Chitietgiohangs);
+                                _context.Giohangs.Remove(currentCart);
+                                await _context.SaveChangesAsync();
+                            }
                         }
+
+                        TempData["OrderId"] = orderId;
+                        return Json(new { success = true, redirectUrl = Url.Action("PaymentSuccess", "PaymentResult") });
                     }
-
-                    // Clear the cart for logged in users
-                    if (User.Identity?.IsAuthenticated == true && loggedInCustomer != null)
-                    {
-                        var currentCart = loggedInCustomer.Giohangs
-                            .OrderByDescending(g => g.Thoigiancapnhat)
-                            .FirstOrDefault();
-
-                        if (currentCart != null)
-                        {
-                            _context.Chitietgiohangs.RemoveRange(currentCart.Chitietgiohangs);
-                            _context.Giohangs.Remove(currentCart);
-                            await _context.SaveChangesAsync();
-                        }
-                    }
-
-                    TempData["OrderId"] = orderId;
-                    return Json(new { success = true, redirectUrl = Url.Action("PaymentSuccess", "PaymentResult") });
                 }
                 catch (Exception ex)
                 {
@@ -388,6 +419,17 @@
                 }
             }
 
+            // Hàm tạo mã thanh toán mới
+            private async Task<string> GenerateNewPaymentId()
+            {
+                var lastPaymentId = await _context.Thanhtoans
+                    .OrderByDescending(t => t.IdTt)
+                    .Select(t => t.IdTt)
+                    .FirstOrDefaultAsync() ?? "TT00000";
+
+                int nextId = int.Parse(lastPaymentId.Substring(2)) + 1;
+                return $"TT{nextId:D5}";
+            }
 
             [HttpPost]
             public async Task<IActionResult> GetOrderConfirmation()
