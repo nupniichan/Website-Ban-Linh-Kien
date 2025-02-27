@@ -26,6 +26,9 @@ public class CheckoutViewModel
 
     public DeliveryMethod DeliveryMethod { get; set; }
 
+    [Display(Name = "Phương thức thanh toán")]
+    public string PaymentMethod { get; set; } = "COD";
+
     public string? StreetAddress { get; set; }
     public string? Ward { get; set; }
     public string? District { get; set; }
