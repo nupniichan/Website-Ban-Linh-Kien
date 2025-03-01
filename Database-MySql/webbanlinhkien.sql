@@ -33,7 +33,7 @@ CREATE TABLE `chitietdonhang` (
   `IdSp` varchar(10) NOT NULL,
   `IdDg` varchar(10) DEFAULT NULL,
   `soluongsanpham` int(11) NOT NULL,
-  `dongia` decimal(10,2) NOT NULL
+  `dongia` decimal(18,2) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -111,7 +111,7 @@ CREATE TABLE `danhgia` (
 CREATE TABLE `donhang` (
   `IdDh` varchar(10) NOT NULL,
   `trangthai` varchar(50) NOT NULL DEFAULT 'Đặt hàng thành công',
-  `tongtien` decimal(15,2) NOT NULL,
+  `tongtien` decimal(18,2) NOT NULL,
   `diachigiaohang` varchar(200) NOT NULL,
   `ngaydathang` datetime DEFAULT current_timestamp(),
   `phuongthucthanhtoan` varchar(50) NOT NULL,
@@ -283,7 +283,7 @@ CREATE TABLE `nhanvien` (
   `IdNv` varchar(10) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   `hoten` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   `chucvu` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
-  `luong` decimal(10,2) NOT NULL,
+  `luong` decimal(18,2) NOT NULL,
   `gioitinh` varchar(5) NOT NULL,
   `sodienthoai` varchar(11) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   `email` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
@@ -327,7 +327,7 @@ INSERT INTO `nhanvien` (`IdNv`, `hoten`, `chucvu`, `luong`, `gioitinh`, `sodient
 CREATE TABLE `sanpham` (
   `IdSp` varchar(10) NOT NULL,
   `tensanpham` varchar(200) NOT NULL,
-  `gia` decimal(10,2) NOT NULL,
+  `gia` decimal(18,2) NOT NULL,
   `soluongton` int(11) NOT NULL,
   `thuonghieu` varchar(100) NOT NULL,
   `mota` text DEFAULT NULL,
@@ -766,7 +766,7 @@ INSERT INTO `taikhoan` (`IdTk`, `matkhau`, `tentaikhoan`, `ngaytaotk`, `ngaysuad
 CREATE TABLE `thanhtoan` (
   `IdTt` varchar(10) NOT NULL,
   `trangthai` varchar(50) NOT NULL,
-  `tienthanhtoan` decimal(10,2) NOT NULL,
+  `tienthanhtoan` decimal(18,2) NOT NULL,
   `ngaythanhtoan` datetime DEFAULT current_timestamp(),
   `noidungthanhtoan` varchar(200) DEFAULT NULL,
   `mathanhtoan` varchar(50) DEFAULT NULL,
