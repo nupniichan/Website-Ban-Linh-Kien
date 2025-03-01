@@ -16,12 +16,11 @@
             "components" => $"/components/{Model?.IdSp ?? defaultId}",
             "storage" => $"/storage/{Model?.IdSp ?? defaultId}",
             "monitor" => $"/monitor/{Model?.IdSp ?? defaultId}",
-            "speaker" or "microphone" or "webcam" or "audio" => 
+            "speaker" or "microphone" or "webcam" or "audio" =>
                 $"/audio/{Model.LoaiSp}/{Model?.IdSp ?? defaultId}",
-            "keyboard" or "mouse" or "headphone" or "peripherals" => 
+            "keyboard" or "mouse" or "headphone" or "peripherals" =>
                 $"/peripherals/{Model.LoaiSp}/{Model?.IdSp ?? defaultId}",
             "network" => $"/network/{Model?.IdSp ?? defaultId}",
-            
             _ => "#"
         };
     }
@@ -51,25 +50,52 @@
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        function updateProductTitles() {
-            const titles = document.querySelectorAll('.product-title');            
-            titles.forEach((title, index) => {
-                const fullText = title.getAttribute('data-full-text');
-                
+    // Function to update product titles and tooltips
+    function updateProductTitles() {
+        const titles = document.querySelectorAll('.product-title');
+        titles.forEach(title => {
+            const fullText = title.getAttribute('data-full-text') || "";
+            // If text is longer than 70 characters, truncate it
+            if (fullText.length > 70) {
+                title.textContent = fullText.substring(0, 70) + '...';
+            } else {
                 title.textContent = fullText;
-                
-                if (fullText && fullText.length > 70) {
-                    const truncatedText = fullText.substring(0, 70) + '...';
-                    title.textContent = truncatedText;
-                }
-                
-                const tooltip = title.closest('.group').querySelector('.product-tooltip');
+            }
+            // Update tooltip text
+            const tooltip = title.closest('.group').querySelector('.product-tooltip');
+            if (tooltip) {
                 tooltip.textContent = fullText;
-            });
-        }
+            }
+        });
+    }
 
+    // Run update as soon as DOM content is ready
+    document.addEventListener('DOMContentLoaded', updateProductTitles);
+
+    // Use window.onload in case resources (like images) affect layout timing
+    window.onload = updateProductTitles;
+
+    // Polling: Try updating a few times to catch any delayed renders
+    let attempts = 0;
+    const maxAttempts = 5;
+    const intervalId = setInterval(() => {
         updateProductTitles();
-        setTimeout(updateProductTitles, 500);
-    });
+        attempts++;
+        if (attempts >= maxAttempts) {
+            clearInterval(intervalId);
+        }
+    }, 200);
+
+    // MutationObserver to catch any dynamically added product cards
+    const container = document.querySelector('.container');
+    if (container) {
+        const observer = new MutationObserver((mutationsList) => {
+            for (const mutation of mutationsList) {
+                if (mutation.type === 'childList') {
+                    updateProductTitles();
+                }
+            }
+        });
+        observer.observe(container, { childList: true, subtree: true });
+    }
 </script>
