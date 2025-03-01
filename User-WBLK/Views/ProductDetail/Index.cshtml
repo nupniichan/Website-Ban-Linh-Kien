@@ -85,7 +85,7 @@
                                     id="quantity"
                                     value="1" 
                                     min="1"
-                                    max="@(Math.Max(5, Model.SoLuongTon))" 
+                                    max="5" 
                                     onchange="validateQuantity(this)"
                                     class="w-16 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
 
@@ -445,7 +445,8 @@
         }
 
         // Quantity adjustment and cart functions
-        const maxQuantity = @(Model.SoLuongTon * 0.2);
+        // Set maximum allowed quantity to 5
+        const maxQuantity = 5;
         const quantityInput = document.getElementById('quantity');
         const quantityError = document.getElementById('quantityError');
 
@@ -453,8 +454,8 @@
             let value = parseInt(input.value);
             if (value < 1) { value = 1; }
             if (value > maxQuantity) {
-                value = Math.floor(maxQuantity);
-                quantityError.textContent = `Số lượng tối đa có thể mua là ${value}`;
+                value = maxQuantity;
+                quantityError.textContent = `Số lượng tối đa có thể mua là ${maxQuantity}`;
                 quantityError.classList.remove('hidden');
             } else {
                 quantityError.classList.add('hidden');
@@ -488,14 +489,16 @@
         }
 
         function addToGuestCart() {
-            const quantity = parseInt(quantityInput.value);
+            const quantity = parseInt(document.getElementById('quantity').value);
+            // Build a product object with all necessary properties
             const product = {
                 id: '@Model.Id',
                 name: '@Model.Name',
                 price: @Model.Price,
                 image: '@Model.ImageUrl',
                 quantity: quantity,
-                stock: @Model.SoLuongTon // Thêm thông tin stock
+                stock: @Model.SoLuongTon,    // Available stock
+                type: '@Model.LoaiSp'         // Product type (used for URL generation)
             };
             let cart = JSON.parse(localStorage.getItem('guestCart')) || [];
             const existingProductIndex = cart.findIndex(item => item.id === product.id);
@@ -521,8 +524,10 @@
         function validateFormSubmit() {
             const quantity = parseInt(quantityInput.value);
             document.getElementById('cartQuantity').value = quantity;
-            if (quantity <= 0 || quantity > @(Model.SoLuongTon * 0.2)) {
-                alert('Số lượng sản phẩm không hợp lệ!');
+            if (quantity <= 0 || quantity > maxQuantity) {
+                // Instead of alert, show inline error
+                quantityError.textContent = `Số lượng sản phẩm không hợp lệ! Số lượng tối đa là ${maxQuantity}`;
+                quantityError.classList.remove('hidden');
                 return false;
             }
             fetch('/Cart/AddToCart', {
@@ -557,8 +562,10 @@
 
         function buyNow() {
             const quantity = parseInt(quantityInput.value);
-            if (quantity <= 0 || quantity > @(Model.SoLuongTon * 0.2)) {
-                alert('Số lượng sản phẩm không hợp lệ!');
+            if (quantity <= 0 || quantity > maxQuantity) {
+                // Instead of alert, show inline error
+                quantityError.textContent = `Số lượng sản phẩm không hợp lệ! Số lượng tối đa là ${maxQuantity}`;
+                quantityError.classList.remove('hidden');
                 return;
             }
             const product = {
