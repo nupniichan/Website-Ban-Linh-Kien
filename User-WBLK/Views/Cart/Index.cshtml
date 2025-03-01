@@ -149,13 +149,13 @@
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        // Helper function to retrieve the anti-forgery token
+        // Helper: Retrieve anti-forgery token
         function getAntiForgeryToken() {
             var tokenElement = document.querySelector('input[name="__RequestVerificationToken"]');
             return tokenElement ? tokenElement.value : '';
         }
 
-        // Helper function to show an inline toast message using SweetAlert2
+        // Helper: Show an inline toast message using SweetAlert2
         function showInlineMessage(message) {
             Swal.fire({
                 toast: true,
@@ -168,7 +168,7 @@
             });
         }
 
-        // Logged-in users: attach event listeners
+        // Logged-in user event bindings
         document.addEventListener("DOMContentLoaded", function() {
             var isAuthenticated = @isAuthenticated.ToString().ToLower();
             if (isAuthenticated) {
@@ -200,17 +200,38 @@
                         updateQuantity(productId, quantityInput.value, quantityInput);
                     });
 
-                    // Manual change with check
+                    // Manual change with minimum and maximum check
                     quantityInput.addEventListener("change", function() {
                         var newQty = parseInt(quantityInput.value);
-                        if (newQty < 1) newQty = 1;
+                        if (isNaN(newQty)) {
+                            showInlineMessage("Vui lòng nhập số hợp lệ.");
+                            newQty = 1;
+                        }
+                        if (newQty < 1) {
+                            showInlineMessage("Số lượng không thể nhỏ hơn 1.");
+                            newQty = 1;
+                        }
                         if (newQty > 5) {
                             showInlineMessage("Sản phẩm chỉ cho phép mua tối đa 5.");
                             newQty = 5;
                         }
                         quantityInput.value = newQty;
-                        updateQuantity(productId, quantityInput.value, quantityInput);
+                        updateQuantity(productId, newQty, quantityInput);
                     });
+                    
+                    quantityInput.addEventListener("blur", function() {
+                    var newQty = parseInt(quantityInput.value);
+                    if (isNaN(newQty) || newQty < 1) {
+                        showInlineMessage("Số lượng không thể nhỏ hơn 1.");
+                        newQty = 1;
+                    }
+                    if (newQty > 5) {
+                        showInlineMessage("Sản phẩm chỉ cho phép mua tối đa 5.");
+                        newQty = 5;
+                    }
+                    quantityInput.value = newQty;
+                    updateQuantity(productId, newQty, quantityInput);
+                });
 
                     // Remove item
                     removeBtn.addEventListener("click", function() {
@@ -218,12 +239,12 @@
                     });
                 });
             } else {
-                // For guest users, load guest cart
+                // For guest users: load the guest cart
                 loadGuestCart();
             }
         });
 
-        // Function to update quantity for logged-in users
+        // Function: Update quantity for logged-in users
         function updateQuantity(productId, quantity, inputEl) {
             fetch('/Cart/UpdateQuantityAjax', {
                 method: 'POST',
@@ -279,7 +300,7 @@
             .catch(error => console.error("Error updating quantity:", error));
         }
 
-        // Function to remove an item for logged-in users
+        // Function: Remove item for logged-in users
         function removeItem(productId, itemRow) {
             fetch('/Cart/RemoveItemAjax', {
                 method: 'POST',
@@ -433,15 +454,19 @@
             guestCartContent.innerHTML = cartHTML;
         }
 
-        // Update guest cart quantity with inline toast message if exceeding allowed maximum.
+        // Update guest cart quantity with inline toast message and minimum enforcement.
         function updateGuestCartQuantity(productId, newQuantity) {
             const maxAllowed = 5;
             let cart = JSON.parse(localStorage.getItem('guestCart')) || [];
             const index = cart.findIndex(item => item.id === productId);
             if (index !== -1) {
+                newQuantity = parseInt(newQuantity);
+                if (newQuantity < 1) {
+                    showInlineMessage("Số lượng không thể nhỏ hơn 1.");
+                    newQuantity = 1;
+                }
                 const availableStock = cart[index].stock ? parseInt(cart[index].stock) : maxAllowed;
                 const allowed = Math.min(maxAllowed, availableStock);
-                newQuantity = parseInt(newQuantity);
                 if (newQuantity > allowed) {
                     showInlineMessage(`Sản phẩm chỉ cho phép mua tối đa ${allowed}.`);
                     newQuantity = allowed;

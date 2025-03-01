@@ -339,6 +339,10 @@ namespace Website_Ban_Linh_Kien.Controllers
                     {
                         return Json(new { success = false, message = $"Sản phẩm chỉ cho phép mua tối đa {maxAllowed}." });
                     }
+                    if (dto.Quantity < 1)
+                    {
+                        return Json(new{ success = false, message = "Số lượng không thể nhỏ hơn 1."});
+                    }
                     if (dto.Quantity > 0)
                     {
                         cartItem.Soluongsanpham = dto.Quantity;
