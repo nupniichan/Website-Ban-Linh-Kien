@@ -1,7 +1,4 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@model Giohang
+﻿@model Giohang
 @{
     ViewData["Title"] = "Giỏ hàng";
     var isAuthenticated = User.Identity?.IsAuthenticated == true;
@@ -24,30 +21,89 @@
                 <div class="bg-white rounded-lg shadow-sm p-6">
                     @foreach (var item in Model.Chitietgiohangs)
                     {
+                        // Compute product detail URL based on product type and id.
+                        var productUrl = "#";
+                        if (item.IdSpNavigation != null)
+                        {
+                            var type = item.IdSpNavigation.Loaisanpham.ToLower();
+                            var id = item.IdSpNavigation.IdSp;
+                            switch (type)
+                            {
+                                case "pc":
+                                    productUrl = $"/pc/{id}";
+                                    break;
+                                case "laptop":
+                                    productUrl = $"/laptop/{id}";
+                                    break;
+                                case "components":
+                                    productUrl = $"/components/{id}";
+                                    break;
+                                case "storage":
+                                    productUrl = $"/storage/{id}";
+                                    break;
+                                case "monitor":
+                                    productUrl = $"/monitor/{id}";
+                                    break;
+                                case "speaker":
+                                case "microphone":
+                                case "webcam":
+                                case "audio":
+                                    productUrl = $"/audio/{item.IdSpNavigation.Loaisanpham}/{id}";
+                                    break;
+                                case "keyboard":
+                                case "mouse":
+                                case "headphone":
+                                case "peripherals":
+                                    productUrl = $"/peripherals/{item.IdSpNavigation.Loaisanpham}/{id}";
+                                    break;
+                                case "network":
+                                    productUrl = $"/network/{id}";
+                                    break;
+                                default:
+                                    productUrl = "#";
+                                    break;
+                            }
+                        }
                         <div class="flex items-center gap-4 py-4 border-b last:border-b-0" data-product-id="@item.IdSp">
-                            <div class="flex-shrink-0">
+                            <!-- Product Image wrapped in a link -->
+                            <a href="@productUrl" class="flex-shrink-0">
                                 <img src="http://localhost:5177/@item.IdSpNavigation.Hinhanh" 
                                      alt="@item.IdSpNavigation.Tensanpham"
                                      class="w-24 h-24 object-contain rounded-lg border p-2">
-                            </div>
+                            </a>
+
+                            <!-- Product Title / Price wrapped in a link -->
                             <div class="flex-grow">
-                                <h3 class="font-medium">@item.IdSpNavigation.Tensanpham</h3>
+                                <a href="@productUrl" class="hover:text-blue-600">
+                                    <h3 class="font-medium">@item.IdSpNavigation.Tensanpham</h3>
+                                </a>
                                 <div class="text-red-600 font-medium mt-1">
-                                    Giá: <span class="unit-price" data-price="@item.IdSpNavigation.Gia">@item.IdSpNavigation.Gia.ToString("N0")</span>đ
+                                    Giá: <span class="unit-price" data-price="@item.IdSpNavigation.Gia">
+                                        @item.IdSpNavigation.Gia.ToString("N0")
+                                    </span>đ
+                                    <div class="text-sm text-gray-500">
+                                        Tổng: 
+                                        <span class="row-total">
+                                            @( (item.IdSpNavigation.Gia * item.Soluongsanpham).ToString("N0") )
+                                        </span>đ
+                                    </div>
                                 </div>
                             </div>
+
+                            <!-- Quantity Controls -->
                             <div class="flex items-center gap-2">
                                 <div class="flex items-center border rounded">
                                     <button type="button" class="decrease px-3 py-1 border-r hover:bg-gray-100">-</button>
-                                    <input type="number" class="quantity w-16 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
-                                           value="@item.Soluongsanpham" min="1" />
+                                    <input type="number" 
+                                           class="quantity w-16 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
+                                           value="@item.Soluongsanpham" min="1" max="5" />
                                     <button type="button" class="increase px-3 py-1 border-l hover:bg-gray-100">+</button>
                                 </div>
                                 <button type="button" class="remove ml-4 text-blue-600 hover:text-blue-800">Xóa</button>
                             </div>
                         </div>
                     }
-
+                    <!-- Footer: Continue shopping & Overall Cart Total -->
                     <div class="mt-6 flex justify-between items-center">
                         <a href="/" class="text-blue-600 hover:text-blue-800 flex items-center gap-2">
                             <i class="fas fa-arrow-left"></i>
@@ -55,7 +111,8 @@
                         </a>
                         <div class="text-right">
                             <div class="text-lg">
-                                Tạm tính: <span id="cartTotal" class="text-red-600 font-bold">
+                                Tạm tính: 
+                                <span id="cartTotal" class="text-red-600 font-bold">
                                     @Model.Chitietgiohangs.Sum(c => c.IdSpNavigation.Gia * c.Soluongsanpham).ToString("N0")
                                 </span>đ
                             </div>
@@ -68,7 +125,7 @@
             }
             else
             {
-                <div class="text-center py-12">
+                <div id="emptyCartMessage" class="text-center py-12">
                     <i class="fas fa-shopping-cart text-gray-400 text-6xl mb-4"></i>
                     <h3 class="text-xl font-medium mb-2">Giỏ hàng của bạn đang trống</h3>
                     <p class="text-gray-600 mb-6">Hãy thêm sản phẩm vào giỏ hàng của bạn</p>
@@ -81,116 +138,169 @@
         else
         {
             <div id="guestCartContent">
-                <!-- Guest cart will be loaded here via JavaScript -->
+                <!-- Guest cart content will be loaded via JavaScript -->
             </div>
         }
     </div>
 </div>
 
-@* Render the anti-forgery token for AJAX *@
 @Html.AntiForgeryToken()
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        // Helper to retrieve the anti-forgery token from the page
+        // Helper: Retrieve anti-forgery token
         function getAntiForgeryToken() {
             var tokenElement = document.querySelector('input[name="__RequestVerificationToken"]');
             return tokenElement ? tokenElement.value : '';
         }
 
-        // Function to check and adjust guest cart quantities on page load
-        function checkGuestCartQuantities() {
-            let cart = JSON.parse(localStorage.getItem('guestCart')) || [];
-            let updated = false;
-            cart.forEach(item => {
-                if (item.quantity > 5) {
-                    item.quantity = 5;
-                    updated = true;
-                }
-            });
-            if (updated) {
-                localStorage.setItem('guestCart', JSON.stringify(cart));
-            }
-        }
-
-        // Function to check and adjust logged-in cart quantities on page load
-        function checkCustomerCartQuantities() {
-            document.querySelectorAll("[data-product-id]").forEach(function(itemRow) {
-                var quantityInput = itemRow.querySelector(".quantity");
-                var currentQty = parseInt(quantityInput.value);
-                if (currentQty > 5) {
-                    quantityInput.value = 5;
-                    var productId = itemRow.getAttribute("data-product-id");
-                    // Optionally alert the user here if desired:
-                    // alert("Sản phẩm chỉ cho phép mua tối đa 5. Số lượng sẽ được điều chỉnh.");
-                    updateQuantity(productId, 5);
-                }
+        // Helper: Show an inline toast message using SweetAlert2
+        function showInlineMessage(message) {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'warning',
+                title: message,
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
             });
         }
 
+        // Logged-in user event bindings
         document.addEventListener("DOMContentLoaded", function() {
             var isAuthenticated = @isAuthenticated.ToString().ToLower();
             if (isAuthenticated) {
-                // For logged-in users: attach event listeners and check cart quantities
                 document.querySelectorAll("[data-product-id]").forEach(function(itemRow) {
                     var productId = itemRow.getAttribute("data-product-id");
                     var decreaseBtn = itemRow.querySelector(".decrease");
                     var increaseBtn = itemRow.querySelector(".increase");
                     var quantityInput = itemRow.querySelector(".quantity");
                     var removeBtn = itemRow.querySelector(".remove");
-                    // unitPrice can be used if needed for additional UI logic
-                    var unitPrice = parseFloat(itemRow.querySelector(".unit-price").getAttribute("data-price"));
 
+                    // Decrease quantity
                     decreaseBtn.addEventListener("click", function() {
                         var currentQty = parseInt(quantityInput.value);
                         if (currentQty > 1) {
                             quantityInput.value = currentQty - 1;
-                            updateQuantity(productId, quantityInput.value);
+                            updateQuantity(productId, quantityInput.value, quantityInput);
                         }
                     });
+
+                    // Increase quantity with check
                     increaseBtn.addEventListener("click", function() {
                         var currentQty = parseInt(quantityInput.value);
-                        quantityInput.value = currentQty + 1;
-                        updateQuantity(productId, quantityInput.value);
+                        var newQty = currentQty + 1;
+                        if (newQty > 5) {
+                            showInlineMessage("Sản phẩm chỉ cho phép mua tối đa 5.");
+                            newQty = 5;
+                        }
+                        quantityInput.value = newQty;
+                        updateQuantity(productId, quantityInput.value, quantityInput);
                     });
+
+                    // Manual change with minimum and maximum check
                     quantityInput.addEventListener("change", function() {
-                        if (quantityInput.value < 1) quantityInput.value = 1;
-                        updateQuantity(productId, quantityInput.value);
+                        var newQty = parseInt(quantityInput.value);
+                        if (isNaN(newQty)) {
+                            showInlineMessage("Vui lòng nhập số hợp lệ.");
+                            newQty = 1;
+                        }
+                        if (newQty < 1) {
+                            showInlineMessage("Số lượng không thể nhỏ hơn 1.");
+                            newQty = 1;
+                        }
+                        if (newQty > 5) {
+                            showInlineMessage("Sản phẩm chỉ cho phép mua tối đa 5.");
+                            newQty = 5;
+                        }
+                        quantityInput.value = newQty;
+                        updateQuantity(productId, newQty, quantityInput);
                     });
+                    
+                    quantityInput.addEventListener("blur", function() {
+                    var newQty = parseInt(quantityInput.value);
+                    if (isNaN(newQty) || newQty < 1) {
+                        showInlineMessage("Số lượng không thể nhỏ hơn 1.");
+                        newQty = 1;
+                    }
+                    if (newQty > 5) {
+                        showInlineMessage("Sản phẩm chỉ cho phép mua tối đa 5.");
+                        newQty = 5;
+                    }
+                    quantityInput.value = newQty;
+                    updateQuantity(productId, newQty, quantityInput);
+                });
+
+                    // Remove item
                     removeBtn.addEventListener("click", function() {
                         removeItem(productId, itemRow);
                     });
                 });
-                // Check each quantity in the customer cart and cap it at 5 if necessary.
-                checkCustomerCartQuantities();
             } else {
-                // For guest users, check and adjust the guest cart stored in localStorage
-                checkGuestCartQuantities();
-                loadGuestCart(); // Your existing guest cart logic remains unchanged.
+                // For guest users: load the guest cart
+                loadGuestCart();
             }
         });
 
-        function updateQuantity(productId, quantity) {
+        // Function: Update quantity for logged-in users
+        function updateQuantity(productId, quantity, inputEl) {
             fetch('/Cart/UpdateQuantityAjax', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'RequestVerificationToken': getAntiForgeryToken()
                 },
-                body: JSON.stringify({ productId: productId, quantity: parseInt(quantity) })
+                body: JSON.stringify({
+                    productId: productId,
+                    quantity: parseInt(quantity)
+                })
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
                     document.getElementById("cartTotal").innerText = data.cartTotal;
+                    const itemRow = document.querySelector(`[data-product-id="${productId}"]`);
+                    if (itemRow) {
+                        const unitPriceEl = itemRow.querySelector(".unit-price");
+                        const rowTotalEl = itemRow.querySelector(".row-total");
+                        const unitPrice = parseFloat(unitPriceEl.getAttribute("data-price"));
+                        const qty = parseInt(quantity);
+                        const newRowTotal = unitPrice * qty;
+                        rowTotalEl.textContent = new Intl.NumberFormat('vi-VN').format(newRowTotal);
+                    }
                 } else {
-                    alert(data.message);
+                    showInlineMessage(data.message);
+                    if (inputEl) {
+                        inputEl.value = 5;
+                        const itemRow = document.querySelector(`[data-product-id="${productId}"]`);
+                        if (itemRow) {
+                            const unitPriceEl = itemRow.querySelector(".unit-price");
+                            const rowTotalEl = itemRow.querySelector(".row-total");
+                            const unitPrice = parseFloat(unitPriceEl.getAttribute("data-price"));
+                            rowTotalEl.textContent = new Intl.NumberFormat('vi-VN').format(unitPrice * 5);
+                        }
+                    }
+                }
+                // If no items remain, show empty cart message.
+                if (document.querySelectorAll("[data-product-id]").length === 0) {
+                    document.getElementById("cartContent").innerHTML = `
+                        <div id="emptyCartMessage" class="text-center py-12">
+                            <i class="fas fa-shopping-cart text-gray-400 text-6xl mb-4"></i>
+                            <h3 class="text-xl font-medium mb-2">Giỏ hàng của bạn đang trống</h3>
+                            <p class="text-gray-600 mb-6">Hãy thêm sản phẩm vào giỏ hàng của bạn</p>
+                            <a href="/" class="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
+                                <i class="fas fa-shopping-bag"></i> Mua sắm ngay
+                            </a>
+                        </div>
+                    `;
                 }
             })
             .catch(error => console.error("Error updating quantity:", error));
         }
 
+        // Function: Remove item for logged-in users
         function removeItem(productId, itemRow) {
             fetch('/Cart/RemoveItemAjax', {
                 method: 'POST',
@@ -205,18 +315,31 @@
                 if (data.success) {
                     itemRow.remove();
                     document.getElementById("cartTotal").innerText = data.cartTotal;
+                    if (document.querySelectorAll("[data-product-id]").length === 0) {
+                        document.getElementById("cartContent").innerHTML = `
+                            <div id="emptyCartMessage" class="text-center py-12">
+                                <i class="fas fa-shopping-cart text-gray-400 text-6xl mb-4"></i>
+                                <h3 class="text-xl font-medium mb-2">Giỏ hàng của bạn đang trống</h3>
+                                <p class="text-gray-600 mb-6">Hãy thêm sản phẩm vào giỏ hàng của bạn</p>
+                                <a href="/" class="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
+                                    <i class="fas fa-shopping-bag"></i> Mua sắm ngay
+                                </a>
+                            </div>
+                        `;
+                    }
                 } else {
-                    alert(data.message);
+                    showInlineMessage(data.message);
                 }
             })
             .catch(error => console.error("Error removing item:", error));
         }
 
-        // Guest Cart Functions (remains unchanged except for quantity cap check in update)
+        // ------------------------------
+        // Guest Cart Functions
+        // ------------------------------
         function loadGuestCart() {
             const guestCartContent = document.getElementById('guestCartContent');
             const cart = JSON.parse(localStorage.getItem('guestCart')) || [];
-
             if (cart.length === 0) {
                 guestCartContent.innerHTML = `
                     <div class="text-center py-12">
@@ -233,46 +356,85 @@
 
             let cartHTML = `<div class="bg-white rounded-lg shadow-sm p-6">`;
             let total = 0;
-
             cart.forEach(item => {
+                total += item.price * item.quantity;
+                // Compute product URL similarly to product card style.
+                var productUrl = "#";
+                if(item.type) {
+                    switch(item.type.toLowerCase()) {
+                        case "pc":
+                            productUrl = `/pc/${item.id}`;
+                            break;
+                        case "laptop":
+                            productUrl = `/laptop/${item.id}`;
+                            break;
+                        case "components":
+                            productUrl = `/components/${item.id}`;
+                            break;
+                        case "storage":
+                            productUrl = `/storage/${item.id}`;
+                            break;
+                        case "monitor":
+                            productUrl = `/monitor/${item.id}`;
+                            break;
+                        case "speaker":
+                        case "microphone":
+                        case "webcam":
+                        case "audio":
+                            productUrl = `/audio/${item.type}/${item.id}`;
+                            break;
+                        case "keyboard":
+                        case "mouse":
+                        case "headphone":
+                        case "peripherals":
+                            productUrl = `/peripherals/${item.type}/${item.id}`;
+                            break;
+                        case "network":
+                            productUrl = `/network/${item.id}`;
+                            break;
+                        default:
+                            productUrl = "#";
+                            break;
+                    }
+                }
                 cartHTML += `
                     <div class="flex items-center gap-4 py-4 border-b last:border-b-0">
                         <div class="flex-shrink-0">
-                            <img src="${item.image}" alt="${item.name}"
-                                 class="w-24 h-24 object-contain rounded-lg border p-2">
+                            <a href="${productUrl}">
+                                <img src="http://localhost:5177/${item.image}" 
+                                     alt="${item.name}"
+                                     class="w-24 h-24 object-contain rounded-lg border p-2">
+                            </a>
                         </div>
                         <div class="flex-grow">
-                            <h3 class="font-medium">${item.name}</h3>
+                            <a href="${productUrl}" class="hover:text-blue-600">
+                                <h3 class="font-medium">${item.name}</h3>
+                            </a>
                             <div class="text-red-600 font-medium mt-1">
-                                Giá: ${new Intl.NumberFormat('vi-VN').format(item.price)}đ
+                                Giá: ${item.price.toLocaleString('vi-VN')}đ
+                                <div class="text-sm text-gray-500">
+                                    Tổng: <span class="row-total">${(item.price * item.quantity).toLocaleString('vi-VN')}</span>đ
+                                </div>
                             </div>
                         </div>
                         <div class="flex items-center gap-2">
                             <div class="flex items-center border rounded">
-                                <button type="button" onclick="updateQuantity(this, -1, true)" 
+                                <button onclick="updateGuestCartQuantity('${item.id}', ${item.quantity - 1})" 
                                         class="px-3 py-1 border-r hover:bg-gray-100">-</button>
-                                <input type="text" 
-                                       value="${item.quantity}"
-                                       data-product-id="${item.id}"
-                                       data-stock="${item.stock || 0}"
-                                       class="w-16 text-center"
-                                       pattern="[1-9][0-9]*"
-                                       inputmode="numeric"
-                                       onkeydown="return preventInvalidInput(event)"
-                                       onkeypress="return preventInvalidInput(event)"
-                                       oninput="validateQuantityInput(this, true)"
-                                       onblur="validateFinalValue(this, true)"
-                                       required />
-                                <button type="button" onclick="updateQuantity(this, 1, true)" 
+                                <input type="number" value="${item.quantity}" 
+                                       min="1" class="w-16 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                       onchange="updateGuestCartQuantity('${item.id}', this.value)" />
+                                <button onclick="updateGuestCartQuantity('${item.id}', ${item.quantity + 1})" 
                                         class="px-3 py-1 border-l hover:bg-gray-100">+</button>
                             </div>
                             <button onclick="removeGuestCartItem('${item.id}')" 
-                                    class="ml-4 text-blue-600 hover:text-blue-800">Xóa</button>
+                                    class="ml-4 text-blue-600 hover:text-blue-800">
+                                Xóa
+                            </button>
                         </div>
-                    </div>`;
-                total += item.price * item.quantity;
+                    </div>
+                `;
             });
-
             cartHTML += `
                 <div class="mt-6 flex justify-between items-center">
                     <a href="/" class="text-blue-600 hover:text-blue-800 flex items-center gap-2">
@@ -281,32 +443,35 @@
                     </a>
                     <div class="text-right">
                         <div class="text-lg">
-                            Tạm tính: <span class="cart-total text-red-600 font-bold">
-                                ${new Intl.NumberFormat('vi-VN').format(total)}đ
-                            </span>
+                            Tạm tính: <span class="text-red-600 font-bold">${total.toLocaleString('vi-VN')}đ</span>
                         </div>
-                        <button onclick="proceedToCheckout()" 
-                                class="mt-4 bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700">
+                        <a href="/Checkout" class="inline-block mt-4 bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700">
                             Tiến hành đặt hàng
-                        </button>
+                        </a>
                     </div>
-                </div>`;
-
-            cartHTML += '</div>';
+                </div>
+            </div>`;
             guestCartContent.innerHTML = cartHTML;
         }
 
+        // Update guest cart quantity with inline toast message and minimum enforcement.
         function updateGuestCartQuantity(productId, newQuantity) {
             const maxAllowed = 5;
             let cart = JSON.parse(localStorage.getItem('guestCart')) || [];
             const index = cart.findIndex(item => item.id === productId);
             if (index !== -1) {
-                if (parseInt(newQuantity) > maxAllowed) {
-                    alert(`Sản phẩm chỉ cho phép mua tối đa ${maxAllowed}.`);
-                    cart[index].quantity = maxAllowed;
-                } else {
-                    cart[index].quantity = parseInt(newQuantity);
+                newQuantity = parseInt(newQuantity);
+                if (newQuantity < 1) {
+                    showInlineMessage("Số lượng không thể nhỏ hơn 1.");
+                    newQuantity = 1;
                 }
+                const availableStock = cart[index].stock ? parseInt(cart[index].stock) : maxAllowed;
+                const allowed = Math.min(maxAllowed, availableStock);
+                if (newQuantity > allowed) {
+                    showInlineMessage(`Sản phẩm chỉ cho phép mua tối đa ${allowed}.`);
+                    newQuantity = allowed;
+                }
+                cart[index].quantity = newQuantity;
                 localStorage.setItem('guestCart', JSON.stringify(cart));
                 loadGuestCart();
             }
@@ -319,306 +484,12 @@
             loadGuestCart();
         }
 
-        // Load guest cart when page loads (if not authenticated)
+        // Load guest cart on page load if user is not authenticated.
         if (!@Json.Serialize(User.Identity?.IsAuthenticated == true)) {
             loadGuestCart();
         }
-
-        // Ngăn chặn nhập ký tự không phải số
-        function preventNonNumericInput(event) {
-            // Cho phép: backspace, delete, tab, escape, enter
-            if (event.keyCode == 8 || event.keyCode == 9 || 
-                event.keyCode == 27 || event.keyCode == 13 || 
-                // Cho phép: Ctrl+A
-                (event.keyCode == 65 && event.ctrlKey === true) || 
-                // Cho phép: home, end, left, right
-                (event.keyCode >= 35 && event.keyCode <= 39)) {
-                return true;
-            }
-            // Chặn mọi ký tự không phải số
-            if ((event.keyCode < 48 || event.keyCode > 57) || 
-                event.keyCode === 189 || // Dấu trừ
-                event.keyCode === 69 ||  // 'e'
-                event.keyCode === 190) { // Dấu chấm
-                event.preventDefault();
-                return false;
-            }
-            return true;
-        }
-
-        function validateGuestQuantityInput(input) {
-            // Xóa mọi ký tự không phải số
-            let value = input.value.replace(/[^0-9]/g, '');
-            
-            // Xóa các số 0 ở đầu
-            value = value.replace(/^0+/, '');
-            
-            // Nếu rỗng, đặt về 1
-            if (!value) {
-                value = '1';
-            }
-
-            // Chuyển đổi sang số
-            let numValue = parseInt(value);
-            const stock = parseInt(input.dataset.stock);
-            
-            // Đảm bảo giá trị nằm trong khoảng cho phép
-            if (numValue < 1) {
-                numValue = 1;
-                showError('Số lượng không thể nhỏ hơn 1');
-            }
-            if (numValue > stock) {
-                numValue = stock;
-                showError(`Số lượng không thể vượt quá ${stock}`);
-            }
-            
-            // Cập nhật giá trị ngay lập tức
-            input.value = numValue;
-            
-            // Cập nhật giỏ hàng
-            updateGuestCartQuantity(input.dataset.productId, numValue);
-        }
-
-        function validateGuestFinalValue(input) {
-            const value = parseInt(input.value) || 1;
-            const stock = parseInt(input.dataset.stock);
-            
-            if (value < 1) {
-                input.value = '1';
-                showError('Số lượng không thể nhỏ hơn 1');
-                updateGuestCartQuantity(input.dataset.productId, 1);
-                return;
-            }
-            
-            if (value > stock) {
-                input.value = stock;
-                showError(`Số lượng không thể vượt quá ${stock}`);
-                updateGuestCartQuantity(input.dataset.productId, stock);
-                return;
-            }
-        }
-
-        function showError(message) {
-            Swal.fire({
-                title: 'Lỗi',
-                text: message,
-                icon: 'error'
-            });
-        }
-
-        function updateQuantity(button, change, isGuest = false) {
-            const input = button.parentNode.querySelector('input');
-            const currentValue = parseInt(input.value) || 0;
-            const stock = parseInt(input.dataset.stock);
-            const newValue = currentValue + change;
-            
-            if (newValue >= 1 && newValue <= stock) {
-                input.value = newValue;
-                if (isGuest) {
-                    updateGuestCartQuantity(input.dataset.productId, newValue);
-                } else {
-                    updateCartQuantity(new Event('submit'), button.closest('form'));
-                }
-            } else {
-                showError(newValue < 1 ? 
-                    'Số lượng không thể nhỏ hơn 1' : 
-                    `Số lượng không thể vượt quá ${stock}`);
-            }
-        }
-
-        async function updateCartQuantity(event, form) {
-            event.preventDefault();
-            const input = form.querySelector('input[name="quantity"]');
-            const quantity = parseInt(input.value);
-            const stock = parseInt(input.dataset.stock);
-            
-            if (!quantity || quantity < 1) {
-                showError('Số lượng phải lớn hơn 0');
-                input.value = '1';
-                return false;
-            }
-            
-            if (quantity > stock) {
-                showError(`Số lượng không thể vượt quá ${stock}`);
-                input.value = stock;
-                return false;
-            }
-
-            try {
-                const formData = new FormData(form);
-                const response = await fetch('/Cart/UpdateQuantity', {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    input.value = result.newQuantity;
-                    updateCartTotalDisplay(result.total);
-                } else {
-                    showError(result.message);
-                    if (result.validQuantity) {
-                        input.value = result.validQuantity;
-                    }
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                showError('Có lỗi xảy ra khi cập nhật số lượng');
-            }
-            return false;
-        }
-
-        function preventInvalidInput(event) {
-            // Cho phép: backspace, delete, tab, escape, enter
-            if (event.keyCode === 8 || event.keyCode === 9 || 
-                event.keyCode === 27 || event.keyCode === 13 || 
-                // Cho phép: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
-                (event.ctrlKey === true && (event.keyCode === 65 || event.keyCode === 67 || 
-                                          event.keyCode === 86 || event.keyCode === 88)) || 
-                // Cho phép: home, end, left, right
-                (event.keyCode >= 35 && event.keyCode <= 39)) {
-                return true;
-            }
-            
-            // Chỉ cho phép số từ 0-9
-            if ((event.keyCode < 48 || event.keyCode > 57) && (event.keyCode < 96 || event.keyCode > 105)) {
-                event.preventDefault();
-                return false;
-            }
-            return true;
-        }
-
-        function validateQuantityInput(input, isGuest = false) {
-            let value = input.value.replace(/[^0-9]/g, '');
-            value = value.replace(/^0+/, '');
-            
-            if (!value) {
-                input.value = '1';
-                return;
-            }
-
-            let numValue = parseInt(value);
-            const stock = parseInt(input.dataset.stock);
-            
-            console.log('Stock value:', input.dataset.stock);
-            console.log('Parsed stock:', stock);
-            
-            if (numValue < 1) {
-                numValue = 1;
-                showError('Số lượng không thể nhỏ hơn 1');
-            }
-            if (stock && numValue > stock) {
-                numValue = stock;
-                showError(`Số lượng không thể vượt quá ${stock}`);
-            }
-            
-            input.value = numValue;
-            
-            if (isGuest) {
-                updateGuestCartQuantity(input.dataset.productId, numValue);
-            } else {
-                updateCartQuantity(new Event('submit'), input.closest('form'));
-            }
-        }
-
-        function validateFinalValue(input, isGuest = false) {
-            const value = input.value.trim();
-            
-            if (!value) {
-                input.value = '1';
-                if (isGuest) {
-                    updateGuestCartQuantity(input.dataset.productId, 1);
-                }
-                return;
-            }
-
-            const numValue = parseInt(value);
-            const stock = parseInt(input.dataset.stock);
-            
-            if (numValue < 1) {
-                input.value = '1';
-                showError('Số lượng không thể nhỏ hơn 1');
-                if (isGuest) {
-                    updateGuestCartQuantity(input.dataset.productId, 1);
-                }
-                return;
-            }
-            
-            if (numValue > stock) {
-                input.value = stock;
-                showError(`Số lượng không thể vượt quá ${stock}`);
-                if (isGuest) {
-                    updateGuestCartQuantity(input.dataset.productId, stock);
-                }
-                return;
-            }
-
-            if (!isGuest) {
-                updateCartQuantity(new Event('submit'), input.closest('form'));
-            }
-        }
-
-        // Ngăn chặn paste nội dung không hợp lệ
-        document.querySelectorAll('input[name="quantity"]').forEach(input => {
-            input.addEventListener('paste', (e) => {
-                e.preventDefault();
-                const pastedText = (e.clipboardData || window.clipboardData).getData('text');
-                if (/^[1-9][0-9]*$/.test(pastedText)) {
-                    const numValue = parseInt(pastedText);
-                    const stock = parseInt(input.dataset.stock);
-                    if (numValue >= 1 && numValue <= stock) {
-                        input.value = numValue;
-                        const isGuest = input.hasAttribute('data-product-id');
-                        if (isGuest) {
-                            updateGuestCartQuantity(input.dataset.productId, numValue);
-                        } else {
-                            updateCartQuantity(new Event('submit'), input.closest('form'));
-                        }
-                    }
-                }
-            });
-        });
-
-        // Áp dụng các event listeners cho guest cart inputs
-        function applyGuestCartEventListeners() {
-            document.querySelectorAll('#guestCartContent input[type="text"]').forEach(input => {
-                input.addEventListener('paste', (e) => {
-                    e.preventDefault();
-                });
-                
-                input.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                });
-                
-                input.addEventListener('dblclick', (e) => {
-                    e.preventDefault();
-                });
-            });
-        }
-
-        // Cập nhật hàm loadGuestCart để thêm event listeners sau khi load
-        const originalLoadGuestCart = loadGuestCart;
-        loadGuestCart = function() {
-            originalLoadGuestCart();
-            applyGuestCartEventListeners();
-        };
-
-        // Thêm hàm cập nhật tổng giỏ hàng
-        function updateCartTotalDisplay(total) {
-            const totalElement = document.querySelector('.cart-total');
-            if (totalElement) {
-                totalElement.textContent = new Intl.NumberFormat('vi-VN').format(total) + 'đ';
-            }
-        }
-
-        function proceedToCheckout() {
-            // For both guest and authenticated users, proceed directly to checkout
-            window.location.href = '@Url.Action("Index", "Checkout")';
-        }
     </script>
 }
-
 
 @section Styles {
     <style>

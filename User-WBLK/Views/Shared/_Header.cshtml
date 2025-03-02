@@ -1,3 +1,81 @@
+<style>
+        input[type="search"]::-webkit-search-cancel-button,
+        input[type="search"]::-webkit-search-decoration,
+        input[type="search"]::-webkit-search-results-button,
+        input[type="search"]::-webkit-search-results-decoration {
+            display: none;
+        }
+        /* Target only the desktop & mobile suggestions containers */
+        #desktopSearchSuggestions::-webkit-scrollbar,
+        #mobileSearchSuggestions::-webkit-scrollbar {
+            width: 8px;
+            background-color: #f0f0f0; /* Or transparent */
+        }
+
+        #desktopSearchSuggestions::-webkit-scrollbar-track,
+        #mobileSearchSuggestions::-webkit-scrollbar-track {
+            background: #f0f0f0;
+            border-radius: 8px;
+        }
+
+        #desktopSearchSuggestions::-webkit-scrollbar-thumb,
+        #mobileSearchSuggestions::-webkit-scrollbar-thumb {
+            background-color: #888;
+            border-radius: 8px;
+            border: 2px solid #f0f0f0; /* Optional border to create space around the thumb */
+        }
+
+        #desktopSearchSuggestions::-webkit-scrollbar-thumb:hover,
+        #mobileSearchSuggestions::-webkit-scrollbar-thumb:hover {
+            background-color: #555;
+        }
+        /* Basic styling for the suggestions container */
+        .suggestion-box {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background-color: #fff;
+        max-height: 300px;
+        overflow-y: auto;
+        border-radius: 0.5rem;
+        box-shadow: 0 0 5px rgba(0,0,0,0.2);
+
+        /* Start “invisible” */
+        opacity: 0;
+        transform: translateY(-5px);
+        pointer-events: none;
+
+        /* Animate opacity & transform over 0.3s */
+        transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        /* When “visible” is added, fade in */
+        .suggestion-box.visible {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto; /* allow clicks */
+        }
+
+        /* Style the scrollbar as before */
+        .suggestion-box::-webkit-scrollbar {
+        width: 8px;
+        background-color: #f0f0f0; /* Or transparent */
+        }
+        .suggestion-box::-webkit-scrollbar-track {
+        background: #f0f0f0;
+        border-radius: 8px;
+        }
+        .suggestion-box::-webkit-scrollbar-thumb {
+        background-color: #888;
+        border-radius: 8px;
+        border: 2px solid #f0f0f0;
+        }
+        .suggestion-box::-webkit-scrollbar-thumb:hover {
+        background-color: #555;
+        }
+
+    </style>
     <header>
         <nav class="bg-[#3182CE] py-3">
             <div class="container mx-auto px-4 md:px-8 lg:px-32">
@@ -16,16 +94,22 @@
                         <!-- Search bar for mobile & tablet -->
                         <div class="flex-1">
                             <div class="relative flex w-full">
-                                <input type="search" 
-                                       placeholder="Tìm kiếm" 
-                                       class="w-full px-3 py-1.5 rounded-lg focus:outline-none text-sm">
-                                <button class="absolute right-2 top-1/2 -translate-y-1/2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 text-gray-500">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-                                    </svg>
-                                </button>
+                                <form action="/Home/SearchResult" method="get" class="relative flex w-full">
+                                    <input type="search" name="query" id="mobileSearchInput" placeholder="Bạn cần tìm gì?" class="w-full px-3 py-1.5 rounded-lg focus:outline-none" autocomplete="off">
+                                    <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-500">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                                        </svg>
+                                    </button>
+                                </form>
+                                <!-- Mobile Suggestions container -->
+                                <div id="mobileSearchSuggestions"
+                                    class="suggestion-box z-10"
+                                    style="margin-top: 0.5rem;">
+                                </div>
                             </div>
                         </div>
+
 
                         <!-- Cart -->
                         <a href="/cart" class="text-white relative">
@@ -44,14 +128,20 @@
                     <!-- Desktop search bar -->
                     <div class="hidden lg:flex flex-1 mx-8">
                         <div class="relative flex w-full">
-                            <input type="search" 
-                                   placeholder="Bạn cần tìm gì?" 
-                                   class="w-full px-4 py-2 rounded-lg focus:outline-none">
-                            <button class="absolute right-2 top-1/2 -translate-y-1/2">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-500">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-                                </svg>
-                            </button>
+                            <form action="/Home/SearchResult" method="get" class="relative flex w-full">
+                                <input type="search" name="query" id="desktopSearchInput" placeholder="Bạn cần tìm gì?" class="w-full px-4 py-2 rounded-lg focus:outline-none" autocomplete="off">
+                                <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-500">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                                    </svg>
+                                </button>
+                            </form>
+                            <!-- Desktop Suggestions container -->
+                            <div id="desktopSearchSuggestions"
+                                class="suggestion-box z-10"
+                                style="margin-top: 0.5rem;">
+                            </div>
+
                         </div>
                     </div>
 
@@ -292,3 +382,124 @@
         // Custom event for updating cart count after adding items
         window.addEventListener('cartUpdated', updateCartCount);
     </script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Debounce helper
+        function debounce(func, delay) {
+            let timeoutId;
+            return function (...args) {
+                clearTimeout(timeoutId);
+                timeoutId = setTimeout(() => func.apply(this, args), delay);
+            }
+        }
+
+        // Match the same logic from _ProductCard.cshtml
+        function getProductUrl(loaiSp, idSp) {
+            if (!loaiSp) return "#";
+            loaiSp = loaiSp.toLowerCase();
+            switch (loaiSp) {
+                case "pc":
+                    return `/pc/${idSp}`;
+                case "laptop":
+                    return `/laptop/${idSp}`;
+                case "components":
+                    return `/components/${idSp}`;
+                case "storage":
+                    return `/storage/${idSp}`;
+                case "monitor":
+                    return `/monitor/${idSp}`;
+                case "speaker":
+                case "microphone":
+                case "webcam":
+                case "audio":
+                    return `/audio/${loaiSp}/${idSp}`;
+                case "keyboard":
+                case "mouse":
+                case "headphone":
+                case "peripherals":
+                    return `/peripherals/${loaiSp}/${idSp}`;
+                case "network":
+                    return `/network/${idSp}`;
+                default:
+                    return "#";
+            }
+        }
+
+        function setupSearchSuggestions(inputElement, suggestionsBox) {
+            inputElement.addEventListener('keyup', debounce(function (e) {
+                const query = e.target.value.trim();
+                if (query.length < 2) {
+                    // Fade out
+                    suggestionsBox.classList.remove('visible');
+                    suggestionsBox.innerHTML = "";
+                    return;
+                }
+                fetch('/Home/SearchSuggestions?query=' + encodeURIComponent(query))
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data && data.length > 0) {
+                            let html = "";
+                            data.forEach(item => {
+                                const productUrl = getProductUrl(item.loaiSp, item.idSp);
+                                const imageSrc = "http://localhost:5177/" + item.imageUrl;
+                                const formattedPrice = new Intl.NumberFormat('vi-VN').format(item.gia) + "đ";
+
+                                html += `
+                                    <div class="flex items-center justify-between p-2 border-b hover:bg-gray-100 cursor-pointer pl-4 pr-4"
+                                        onclick="window.location.href='${productUrl}'">
+                                        <!-- Text on the left -->
+                                        <div class="flex flex-col mr-2">
+                                            <div class="font-semibold">${item.tenSp}</div>
+                                            <div class="text-red-500">${formattedPrice}</div>
+                                        </div>
+                                        <!-- Image on the right -->
+                                        <img src="${imageSrc}"
+                                            alt="${item.tenSp}"
+                                            class="w-12 h-12 object-cover rounded"
+                                            onerror="this.onerror=null; this.src='/imgs/default-product.jpg';">
+                                    </div>
+                                `;
+                            });
+                            suggestionsBox.innerHTML = html;
+
+                            // Fade in
+                            suggestionsBox.classList.add('visible');
+                        } else {
+                            // Fade out
+                            suggestionsBox.classList.remove('visible');
+                            suggestionsBox.innerHTML = "";
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching search suggestions:', error);
+                        suggestionsBox.classList.remove('visible');
+                        suggestionsBox.innerHTML = "";
+                    });
+            }, 300));
+
+            // Hide suggestions when clicking outside
+            document.addEventListener('click', function (evt) {
+                if (!inputElement.contains(evt.target) && !suggestionsBox.contains(evt.target)) {
+                    // Fade out
+                    suggestionsBox.classList.remove('visible');
+                }
+            });
+        }
+
+
+        // Setup suggestions for mobile
+        const mobileSearchInput = document.getElementById('mobileSearchInput');
+        const mobileSearchSuggestions = document.getElementById('mobileSearchSuggestions');
+        if (mobileSearchInput && mobileSearchSuggestions) {
+            setupSearchSuggestions(mobileSearchInput, mobileSearchSuggestions);
+        }
+
+        // Setup suggestions for desktop
+        const desktopSearchInput = document.getElementById('desktopSearchInput');
+        const desktopSearchSuggestions = document.getElementById('desktopSearchSuggestions');
+        if (desktopSearchInput && desktopSearchSuggestions) {
+            setupSearchSuggestions(desktopSearchInput, desktopSearchSuggestions);
+        }
+    });
+    </script>
+

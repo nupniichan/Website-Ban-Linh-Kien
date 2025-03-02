@@ -11,6 +11,8 @@ namespace Website_Ban_Linh_Kien.Models
         public string ImageUrl { get; set; }
         public string Description { get; set; }
         public Dictionary<string, string> Specifications { get; set; }
+
+        public string LoaiSp { get; set; }
         public List<string> AdditionalImages { get; set; }
         public string Brand { get; set; }
         public bool InStock { get; set; }

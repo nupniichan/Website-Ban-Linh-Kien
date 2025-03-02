@@ -179,7 +179,7 @@ public partial class DatabaseContext : DbContext
                 .HasMaxLength(50)
                 .HasColumnName("phuongthucthanhtoan");
             entity.Property(e => e.Tongtien)
-                .HasPrecision(10, 2)
+                .HasPrecision(18, 2)
                 .HasColumnName("tongtien");
             entity.Property(e => e.Trangthai)
                 .HasMaxLength(50)
@@ -328,7 +328,7 @@ public partial class DatabaseContext : DbContext
                 .HasMaxLength(10)
                 .HasColumnName("idtk");
             entity.Property(e => e.Luong)
-                .HasPrecision(10, 2)
+                .HasPrecision(18, 2)
                 .HasColumnName("luong");
             entity.Property(e => e.Ngayvaolam).HasColumnName("ngayvaolam");
             entity.Property(e => e.Sodienthoai)
@@ -361,7 +361,7 @@ public partial class DatabaseContext : DbContext
                 .HasColumnType("int(11)")
                 .HasColumnName("damuahang");
             entity.Property(e => e.Gia)
-                .HasPrecision(10, 2)
+                .HasPrecision(18, 2)
                 .HasColumnName("gia");
             entity.Property(e => e.Hinhanh)
                 .HasMaxLength(255)
@@ -439,7 +439,7 @@ public partial class DatabaseContext : DbContext
                 .HasMaxLength(200)
                 .HasColumnName("noidungthanhtoan");
             entity.Property(e => e.Tienthanhtoan)
-                .HasPrecision(10, 2)
+                .HasPrecision(18, 2)
                 .HasColumnName("tienthanhtoan");
             entity.Property(e => e.Trangthai)
                 .HasMaxLength(50)

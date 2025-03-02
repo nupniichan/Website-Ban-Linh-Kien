@@ -1,0 +1,53 @@
+@using System.Linq
+@using Website_Ban_Linh_Kien.Models
+@{
+    ViewBag.Title = "Search Results";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    int initialCount = 16;
+}
+
+<div class="container mx-auto py-8 px-24">
+    <h2 class="text-2xl font-bold mb-4">Search Results for "@Model.SearchTerm"</h2>
+
+    @if (Model.Results != null && Model.Results.Count > 0)
+    {
+        <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            @for (int i = 0; i < Model.Results.Count; i++)
+            {
+                var hiddenClass = i >= initialCount ? "hidden" : "";
+                <div class="@hiddenClass">
+                    <partial name="_ProductCard" model="Model.Results[i]" />
+                </div>
+            }
+        </div>
+        @if (Model.Results.Count > initialCount)
+        {
+            <div class="text-center mt-4">
+                <button id="loadMoreBtn" class="px-4 py-2 bg-blue-500 text-white rounded">Xem thêm</button>
+            </div>
+        }
+    }
+    else
+    {
+        <p class="text-gray-600">No results found for "@Model.SearchTerm".</p>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var loadMoreBtn = document.getElementById('loadMoreBtn');
+            if (loadMoreBtn) {
+                loadMoreBtn.addEventListener('click', function () {
+                    // Reveal all hidden product cards
+                    var hiddenItems = document.querySelectorAll('#productGrid > div.hidden');
+                    hiddenItems.forEach(function (item) {
+                        item.classList.remove('hidden');
+                    });
+                    // Hide the "Xem thêm" button
+                    loadMoreBtn.style.display = 'none';
+                });
+            }
+        });
+    </script>
+}
