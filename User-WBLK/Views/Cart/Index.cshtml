@@ -116,7 +116,7 @@
                                     @Model.Chitietgiohangs.Sum(c => c.IdSpNavigation.Gia * c.Soluongsanpham).ToString("N0")
                                 </span>đ
                             </div>
-                            <a href="@Url.Action("Index", "Checkout")" class="mt-4 bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 inline-block">
+                            <a href="@Url.Action("Index", "Checkout")" onclick="AppLoading.showBeforeRedirect('@Url.Action("Index", "Checkout")', 'Đang chuyển đến trang thanh toán...'); return false;" class="mt-4 bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 inline-block">
                                 Tiến hành đặt hàng
                             </a>
                         </div>
@@ -445,7 +445,7 @@
                         <div class="text-lg">
                             Tạm tính: <span class="text-red-600 font-bold">${total.toLocaleString('vi-VN')}đ</span>
                         </div>
-                        <a href="/Checkout" class="inline-block mt-4 bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700">
+                        <a href="/Checkout" onclick="AppLoading.showBeforeRedirect('/Checkout', 'Đang chuyển đến trang thanh toán...'); return false;" class="inline-block mt-4 bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700">
                             Tiến hành đặt hàng
                         </a>
                     </div>

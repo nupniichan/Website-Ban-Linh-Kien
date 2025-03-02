@@ -50,7 +50,6 @@
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
                             <option value="COD">COD</option>
                             <option value="Paypal">Paypal</option>
-                            <option value="VNPay">VNPay</option>
                         </select>
                         <span asp-validation-for="Phuongthucthanhtoan" class="text-red-500 text-sm mt-1"></span>
                     </div>
@@ -79,12 +78,14 @@
                         <select asp-for="Trangthai" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required>
                             <option value="">Chọn trạng thái</option>
                             <option value="Chờ xác nhận">Chờ xác nhận</option>
-                            <option value="Đặt hàng thành công">Đặt hàng thành công</option>
+                            <option value="Đã thanh toán">Đã thanh toán</option>
+                            <option value="Thanh toán không thành công">Thanh toán không thành công</option>
                             <option value="Đã duyệt đơn">Đã duyệt đơn</option>
                             <option value="Đang giao">Đang giao</option>
                             <option value="Giao thành công">Giao thành công</option>
-                            <option value="Không giao">Không giao</option>
+                            <option value="Không nhận hàng">Không nhận hàng</option>
                             <option value="Hủy đơn">Hủy đơn</option>
+                            <option value="Đã kết thúc">Đã kết thúc</option>
                         </select>
                         <span asp-validation-for="Trangthai" class="text-red-500 text-sm mt-1"></span>
                     </div>
