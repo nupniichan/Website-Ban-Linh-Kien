@@ -775,15 +775,17 @@
                     const name = document.querySelector('[name="ReceiverName"]').value;
                     
                     // Kiểm tra xem khách hàng này đã có tài khoản chưa
-                    if (data.hasAccount) {
+                    if (data.hasAccount && data.customer) {
                         hasRegisteredAccount = true;
+                        existingCustomerInfo = data.customer;
                         showRegisteredAccountModal(data.customer);
                         return;
                     }
                     
-                    if (email !== data.customer.email || 
+                    if (data.customer && (
+                        email !== data.customer.email || 
                         phone !== data.customer.phone || 
-                        name !== data.customer.name) {
+                        name !== data.customer.name)) {
                         
                         isValidCustomerInfo = false;
                         existingCustomerInfo = data.customer;
@@ -803,6 +805,12 @@
 
         // Thêm hàm hiển thị modal thông báo khách hàng đã có tài khoản
         function showRegisteredAccountModal(customer) {
+            // Kiểm tra customer có null không
+            if (!customer) {
+                console.error('Customer data is null');
+                return;
+            }
+            
             // Tạo modal nếu chưa tồn tại
             let modal = document.getElementById('registeredAccountModal');
             if (!modal) {
@@ -869,9 +877,9 @@
             }
             
             // Cập nhật thông tin trong modal
-            document.getElementById('registeredName').textContent = customer.name;
-            document.getElementById('registeredEmail').textContent = customer.email;
-            document.getElementById('registeredPhone').textContent = customer.phone;
+            document.getElementById('registeredName').textContent = customer.name || 'Không có thông tin';
+            document.getElementById('registeredEmail').textContent = customer.email || 'Không có thông tin';
+            document.getElementById('registeredPhone').textContent = customer.phone || 'Không có thông tin';
             
             // Hiển thị modal
             modal.classList.remove('hidden');
@@ -897,7 +905,7 @@
             }
             
             // Nếu khách hàng đã có tài khoản, yêu cầu đăng nhập
-            if (hasRegisteredAccount) {
+            if (hasRegisteredAccount && existingCustomerInfo) {
                 showRegisteredAccountModal(existingCustomerInfo);
                 return;
             }
@@ -1149,9 +1157,9 @@
             }
             
             // Cập nhật thông tin trong modal
-            document.getElementById('existingName').textContent = customer.name;
-            document.getElementById('existingEmail').textContent = customer.email;
-            document.getElementById('existingPhone').textContent = customer.phone;
+            document.getElementById('existingName').textContent = customer.name || 'Không có thông tin';
+            document.getElementById('existingEmail').textContent = customer.email || 'Không có thông tin';
+            document.getElementById('existingPhone').textContent = customer.phone || 'Không có thông tin';
             
             // Hiển thị modal
             modal.classList.remove('hidden');
