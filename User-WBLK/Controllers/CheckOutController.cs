@@ -480,6 +480,7 @@
                 }
 
                 var customer = await _context.Khachhangs
+                    .Include(k => k.IdTkNavigation)
                     .FirstOrDefaultAsync(k => 
                         (!string.IsNullOrEmpty(model.Email) && k.Email == model.Email) || 
                         (!string.IsNullOrEmpty(model.Phone) && k.Sodienthoai == model.Phone));
@@ -490,8 +491,12 @@
                         ? "email" 
                         : "số điện thoại";
 
+                    // Kiểm tra xem khách hàng đã có tài khoản hay chưa
+                    bool hasAccount = customer.IdTk != null && customer.IdTkNavigation != null;
+
                     return Json(new { 
                         exists = true, 
+                        hasAccount = hasAccount,
                         customer = new { 
                             name = customer.Hoten,
                             email = customer.Email,
