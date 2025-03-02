@@ -60,6 +60,10 @@
                     {
                         <span class="bg-yellow-100 text-yellow-700 text-sm font-medium px-3 py-1 rounded-full">Chờ xác nhận</span>
                     }
+                    else if(order.Trangthai == "Đã thanh toán")
+                    {
+                        <span class="bg-green-100 text-green-500 text-sm font-medium px-3 py-1 rounded-full">Đã thanh toán</span>
+                    }
                     else if(order.Trangthai == "Đặt hàng thành công")
                     {
                         <span class="bg-blue-100 text-blue-700 text-sm font-medium px-3 py-1 rounded-full">Đặt hàng thành công</span>
@@ -182,6 +186,10 @@
                                         @if(order.Trangthai == "Chờ xác nhận")
                                         {
                                             <span class="bg-yellow-100 text-yellow-700 text-sm font-medium px-3 py-1 rounded-full">Chờ xác nhận</span>
+                                        }
+                                        else if(order.Trangthai == "Đã thanh toán")
+                                        {
+                                            <span class="bg-green-100 text-green-500 text-sm font-medium px-3 py-1 rounded-full">Đã thanh toán</span>
                                         }
                                         else if(order.Trangthai == "Đặt hàng thành công")
                                         {
