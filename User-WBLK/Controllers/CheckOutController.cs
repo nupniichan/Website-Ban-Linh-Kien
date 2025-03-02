@@ -123,6 +123,10 @@
                     string customerId;
                     Khachhang? loggedInCustomer = null;
 
+                    // Kiểm tra xem khách hàng đã tồn tại chưa (bằng email hoặc số điện thoại)
+                    var existingCustomer = await _context.Khachhangs
+                        .FirstOrDefaultAsync(k => k.Email == model.Email || k.Sodienthoai == model.ReceiverPhone);
+
                     if (User.Identity?.IsAuthenticated == true)
                     {
                         customerId = User.FindFirstValue("CustomerId");
@@ -157,70 +161,48 @@
                             }
                         }
                     }
+                    else if (existingCustomer != null)
+                    {
+                        // Sử dụng khách hàng đã tồn tại
+                        customerId = existingCustomer.IdKh;
+                    }
                     else
                     {
+                        // Tạo mã khách hàng mới với định dạng KH000000
                         var lastCustomerId = await _context.Khachhangs
                             .OrderByDescending(k => k.IdKh)
                             .Select(k => k.IdKh)
-                            .FirstOrDefaultAsync();
+                            .FirstOrDefaultAsync() ?? "KH000000";
 
                         int nextId = 1;
-                        if (lastCustomerId != null)
-                        {
-                            if (int.TryParse(lastCustomerId.Substring(2), out int currentId))
-                            {
-                                nextId = currentId + 1;
-                            }
-                            else
-                            {
-                                Console.WriteLine($"Không thể parse ID khách hàng: {lastCustomerId}");
-                                return Json(new { success = false, message = "Lỗi khi tạo mã khách hàng" });
-                            }
-                        }
-
-                        string newCustomerId;
-                        bool idExists;
-                        do
-                        {
-                            newCustomerId = $"KH{nextId:D6}";
-                            idExists = await _context.Khachhangs.AnyAsync(k => k.IdKh == newCustomerId);
-                            if (idExists)
-                            {
-                                nextId++;
-                            }
-                        } while (idExists);
-
-                        customerId = newCustomerId;
-                    }
-
-                    // Check if customer already exists by email or phone
-                    var customer = await _context.Khachhangs
-                        .FirstOrDefaultAsync(k => k.Email == model.Email || k.Sodienthoai == model.ReceiverPhone);
-
-                    if (customer == null)
-                    {
-                        // Create new customer
-                        var lastCustomerId = await _context.Khachhangs
-                            .OrderByDescending(k => k.IdKh)
-                            .Select(k => k.IdKh)
-                            .FirstOrDefaultAsync();
-
-                        int nextId = 1;
-                        if (lastCustomerId != null && int.TryParse(lastCustomerId.Substring(2), out int currentId))
+                        if (int.TryParse(lastCustomerId.Substring(2), out int currentId))
                         {
                             nextId = currentId + 1;
                         }
 
-                        string newCustomerId;
-                        do {
-                            newCustomerId = $"KH{nextId:D6}";
-                            var idExists = await _context.Khachhangs.AnyAsync(k => k.IdKh == newCustomerId);
-                            if (idExists) nextId++;
-                        } while (await _context.Khachhangs.AnyAsync(k => k.IdKh == $"KH{nextId:D6}"));
+                        customerId = $"KH{nextId:D6}";
+                    }
 
-                        customer = new Khachhang
+                    // Tạo mã đơn hàng mới với định dạng DH000000
+                    var lastOrderId = await _context.Donhangs
+                        .OrderByDescending(d => d.IdDh)
+                        .Select(d => d.IdDh)
+                        .FirstOrDefaultAsync() ?? "DH000000";
+
+                    int nextOrderId = 1;
+                    if (int.TryParse(lastOrderId.Substring(2), out int currentOrderId))
+                    {
+                        nextOrderId = currentOrderId + 1;
+                    }
+
+                    string orderId = $"DH{nextOrderId:D6}";
+
+                    // Tạo khách hàng mới nếu chưa tồn tại
+                    if (existingCustomer == null && User.Identity?.IsAuthenticated != true)
+                    {
+                        var newCustomer = new Khachhang
                         {
-                            IdKh = newCustomerId,
+                            IdKh = customerId,
                             Hoten = model.ReceiverName,
                             Email = model.Email,
                             Sodienthoai = model.ReceiverPhone,
@@ -231,23 +213,9 @@
                             Diemtichluy = 0
                         };
 
-                        _context.Khachhangs.Add(customer);
+                        _context.Khachhangs.Add(newCustomer);
                         await _context.SaveChangesAsync();
                     }
-
-                    // Create new order ID
-                    var lastOrderId = await _context.Donhangs
-                        .OrderByDescending(d => d.IdDh)
-                        .Select(d => d.IdDh)
-                        .FirstOrDefaultAsync();
-
-                    int nextOrderId = 1;
-                    if (lastOrderId != null && int.TryParse(lastOrderId.Substring(2), out int currentOrderId))
-                    {
-                        nextOrderId = currentOrderId + 1;
-                    }
-
-                    string orderId = $"DH{nextOrderId:D6}";
 
                     // Calculate pricing: original total, VIP discount, and discount code
                     decimal originalTotal = model.Items.Sum(i => i.Price * i.Quantity);
@@ -301,7 +269,7 @@
                     var order = new Donhang
                     {
                         IdDh = orderId,
-                        IdKh = customer.IdKh,
+                        IdKh = customerId,
                         Ngaydathang = DateTime.Now,
                         Diachigiaohang = model.DeliveryMethod == DeliveryMethod.StorePickup
                                             ? "123 Nguyễn Văn A, Quận 1, TP.HCM"
@@ -313,23 +281,73 @@
                         IdMgg = model.DiscountCode // Save the discount code used
                     };
 
-                    // Tạo bản ghi thanh toán cho COD
+                    // Xử lý thanh toán COD (không cần thêm vào bảng Thanhtoan)
                     if (model.PaymentMethod == "COD")
                     {
-                        var newPaymentId = await GenerateNewPaymentId();
-                        var payment = new Thanhtoan
+                        // Use a transaction for consistency
+                        using (var transaction = await _context.Database.BeginTransactionAsync())
                         {
-                            IdTt = newPaymentId,
-                            IdDh = orderId,
-                            Trangthai = "Chờ xác nhận",
-                            Tienthanhtoan = finalPrice,
-                            Ngaythanhtoan = DateTime.Now,
-                            Noidungthanhtoan = $"Thanh toán COD cho đơn hàng {orderId}",
-                            Mathanhtoan = $"COD_{orderId}"
-                        };
-                        
-                        _context.Thanhtoans.Add(payment);
-                        await _context.SaveChangesAsync();
+                            try
+                            {
+                                _context.Donhangs.Add(order);
+                                await _context.SaveChangesAsync();
+
+                                // Create order details
+                                var lastDetailId = await _context.Chitietdonhangs
+                                    .OrderByDescending(c => c.Idchitietdonhang)
+                                    .Select(c => c.Idchitietdonhang)
+                                    .FirstOrDefaultAsync() ?? "CTDH00000";
+
+                                int detailStartId = int.Parse(lastDetailId.Substring(4)) + 1;
+
+                                foreach (var item in model.Items)
+                                {
+                                    var product = await _context.Sanphams.FindAsync(item.ProductId);
+                                    if (product == null || product.Soluongton < item.Quantity)
+                                    {
+                                        throw new Exception($"Sản phẩm {item.ProductName} không đủ số lượng trong kho");
+                                    }
+
+                                    product.Soluongton -= item.Quantity;
+                                    product.Damuahang += item.Quantity;
+
+                                    var orderDetail = new Chitietdonhang
+                                    {
+                                        Idchitietdonhang = $"CTDH{detailStartId:D5}",
+                                        IdDh = orderId,
+                                        IdSp = item.ProductId,
+                                        Soluongsanpham = item.Quantity,
+                                        Dongia = item.Price
+                                    };
+
+                                    _context.Chitietdonhangs.Add(orderDetail);
+                                    detailStartId++;
+                                }
+
+                                await _context.SaveChangesAsync();
+                                await transaction.CommitAsync();
+                            }
+                            catch (Exception ex)
+                            {
+                                await transaction.RollbackAsync();
+                                return Json(new { success = false, message = ex.Message });
+                            }
+                        }
+
+                        // Clear the cart for logged in users
+                        if (User.Identity?.IsAuthenticated == true && loggedInCustomer != null)
+                        {
+                            var currentCart = loggedInCustomer.Giohangs
+                                .OrderByDescending(g => g.Thoigiancapnhat)
+                                .FirstOrDefault();
+
+                            if (currentCart != null)
+                            {
+                                _context.Chitietgiohangs.RemoveRange(currentCart.Chitietgiohangs);
+                                _context.Giohangs.Remove(currentCart);
+                                await _context.SaveChangesAsync();
+                            }
+                        }
                         
                         // Chuyển hướng đến trang thành công với thông tin đơn hàng
                         return Json(new { 
@@ -514,6 +532,10 @@
                     string customerId;
                     Khachhang? loggedInCustomer = null;
 
+                    // Kiểm tra xem khách hàng đã tồn tại chưa (bằng email hoặc số điện thoại)
+                    var existingCustomer = await _context.Khachhangs
+                        .FirstOrDefaultAsync(k => k.Email == model.Email || k.Sodienthoai == model.ReceiverPhone);
+
                     if (User.Identity?.IsAuthenticated == true)
                     {
                         customerId = User.FindFirstValue("CustomerId");
@@ -548,68 +570,31 @@
                             }
                         }
                     }
+                    else if (existingCustomer != null)
+                    {
+                        // Sử dụng khách hàng đã tồn tại
+                        customerId = existingCustomer.IdKh;
+                    }
                     else
                     {
+                        // Tạo mã khách hàng mới với định dạng KH000000
                         var lastCustomerId = await _context.Khachhangs
                             .OrderByDescending(k => k.IdKh)
                             .Select(k => k.IdKh)
-                            .FirstOrDefaultAsync();
+                            .FirstOrDefaultAsync() ?? "KH000000";
 
                         int nextId = 1;
-                        if (lastCustomerId != null)
-                        {
-                            if (int.TryParse(lastCustomerId.Substring(2), out int currentId))
-                            {
-                                nextId = currentId + 1;
-                            }
-                            else
-                            {
-                                Console.WriteLine($"Không thể parse ID khách hàng: {lastCustomerId}");
-                                return Json(new { success = false, message = "Lỗi khi tạo mã khách hàng" });
-                            }
-                        }
-
-                        string newCustomerId;
-                        bool idExists;
-                        do
-                        {
-                            newCustomerId = $"KH{nextId:D6}";
-                            idExists = await _context.Khachhangs.AnyAsync(k => k.IdKh == newCustomerId);
-                            if (idExists)
-                            {
-                                nextId++;
-                            }
-                        } while (idExists);
-
-                        customerId = newCustomerId;
-                    }
-
-                    var customer = await _context.Khachhangs
-                        .FirstOrDefaultAsync(k => k.Email == model.Email || k.Sodienthoai == model.ReceiverPhone);
-
-                    if (customer == null)
-                    {
-                        var lastCustomerId = await _context.Khachhangs
-                            .OrderByDescending(k => k.IdKh)
-                            .Select(k => k.IdKh)
-                            .FirstOrDefaultAsync();
-
-                        int nextId = 1;
-                        if (lastCustomerId != null && int.TryParse(lastCustomerId.Substring(2), out int currentId))
+                        if (int.TryParse(lastCustomerId.Substring(2), out int currentId))
                         {
                             nextId = currentId + 1;
                         }
 
-                        string newCustomerId;
-                        do {
-                            newCustomerId = $"KH{nextId:D6}";
-                            var idExists = await _context.Khachhangs.AnyAsync(k => k.IdKh == newCustomerId);
-                            if (idExists) nextId++;
-                        } while (await _context.Khachhangs.AnyAsync(k => k.IdKh == $"KH{nextId:D6}"));
-
-                        customer = new Khachhang
+                        customerId = $"KH{nextId:D6}";
+                        
+                        // Tạo khách hàng mới
+                        var newCustomer = new Khachhang
                         {
-                            IdKh = newCustomerId,
+                            IdKh = customerId,
                             Hoten = model.ReceiverName,
                             Email = model.Email,
                             Sodienthoai = model.ReceiverPhone,
@@ -620,17 +605,18 @@
                             Diemtichluy = 0
                         };
 
-                        _context.Khachhangs.Add(customer);
+                        _context.Khachhangs.Add(newCustomer);
                         await _context.SaveChangesAsync();
                     }
 
+                    // Tạo mã đơn hàng mới với định dạng DH000000
                     var lastOrderId = await _context.Donhangs
                         .OrderByDescending(d => d.IdDh)
                         .Select(d => d.IdDh)
-                        .FirstOrDefaultAsync();
+                        .FirstOrDefaultAsync() ?? "DH000000";
 
                     int nextOrderId = 1;
-                    if (lastOrderId != null && int.TryParse(lastOrderId.Substring(2), out int currentOrderId))
+                    if (int.TryParse(lastOrderId.Substring(2), out int currentOrderId))
                     {
                         nextOrderId = currentOrderId + 1;
                     }
@@ -670,7 +656,7 @@
                     var order = new Donhang
                     {
                         IdDh = orderId,
-                        IdKh = customer.IdKh,
+                        IdKh = customerId,
                         Ngaydathang = DateTime.Now,
                         Diachigiaohang = model.DeliveryMethod == DeliveryMethod.StorePickup
                                             ? "123 Nguyễn Văn A, Quận 1, TP.HCM"

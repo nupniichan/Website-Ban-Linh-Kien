@@ -324,7 +324,7 @@
             
             let address = '';
             if (deliveryMethod === '0') {
-                address = '@Model.StoreAddress';
+                address = '123 Nguyễn Văn A, Phường 1, Quận 1, TP.HCM (Nhận tại cửa hàng)';
             } else {
                 const street = form.querySelector('[name="StreetAddress"]').value;
                 const ward = form.querySelector('[name="Ward"]').value;
@@ -336,13 +336,16 @@
             var discountCodeInput = document.querySelector('[name="DiscountCode"]');
             var code = discountCodeInput ? discountCodeInput.value.trim() : "";
             var codeDiscount = 0;
-            if (availableDiscounts.hasOwnProperty(code)) {
+            if (availableDiscounts && availableDiscounts.hasOwnProperty(code)) {
                 codeDiscount = availableDiscounts[code];
             }
             
             var finalTotal = isAuthenticated ? vipPrice * (1 - codeDiscount / 100) : originalPrice;
             
             if (isAuthenticated) {
+                // Cập nhật modal xác nhận đơn hàng cho người dùng đã đăng nhập
+                updateLoggedInOrderConfirmModal();
+                
                 document.getElementById('confirmName').textContent = name;
                 document.getElementById('confirmPhone').textContent = phone;
                 document.getElementById('confirmAddress').textContent = address;
@@ -351,7 +354,9 @@
                 document.getElementById('loggedInOrderConfirmModal').classList.remove('hidden');
                 document.getElementById('loggedInOrderConfirmModal').classList.add('flex');
             } else {
-                // For guests, show the guest modal without setting confirm* fields.
+                // Cập nhật modal xác nhận đơn hàng cho khách vãng lai
+                updateGuestOrderConfirmModal();
+                
                 document.getElementById('orderConfirmModal').classList.remove('hidden');
                 document.getElementById('orderConfirmModal').classList.add('flex');
             }
@@ -739,9 +744,16 @@
         // Thêm biến toàn cục để theo dõi trạng thái
         let isValidCustomerInfo = true;
         let existingCustomerInfo = null;
+        let isUserLoggedIn = @Json.Serialize(User.Identity?.IsAuthenticated == true);
 
-        // Thêm hàm kiểm tra thông tin khách hàng
+        // Sửa lại hàm kiểm tra thông tin khách hàng
         async function checkExistingCustomer() {
+            // Nếu người dùng đã đăng nhập, không cần kiểm tra
+            if (isUserLoggedIn) {
+                isValidCustomerInfo = true;
+                return;
+            }
+            
             const email = document.querySelector('[name="Email"]').value;
             const phone = document.querySelector('[name="ReceiverPhone"]').value;
             
@@ -768,17 +780,7 @@
                         isValidCustomerInfo = false;
                         existingCustomerInfo = data.customer;
                         
-                        const confirmMessage = `Đã tìm thấy thông tin khách hàng với ${data.customer.matchType} này:
-
-Họ tên: ${data.customer.name}
-Email: ${data.customer.email}
-Số điện thoại: ${data.customer.phone}
-
-Bạn phải sử dụng thông tin này để đặt hàng. Bạn có muốn sử dụng thông tin này không?`;
-
-                        if (confirm(confirmMessage)) {
-                            useExistingInfo();
-                        }
+                        showCustomerInfoModal(data.customer);
                     } else {
                         isValidCustomerInfo = true;
                     }
@@ -787,6 +789,97 @@ Bạn phải sử dụng thông tin này để đặt hàng. Bạn có muốn s�
                 }
             } catch (error) {
                 console.error('Error checking existing customer:', error);
+            }
+        }
+
+        // Sửa lại hàm hiển thị modal thông tin khách hàng đã tồn tại
+        function showCustomerInfoModal(customer) {
+            // Tạo modal nếu chưa tồn tại
+            let modal = document.getElementById('customerInfoModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'customerInfoModal';
+                modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden';
+                modal.innerHTML = `
+                    <div class="bg-white p-6 rounded-lg max-w-md w-full mx-4 shadow-xl relative">
+                        <button type="button" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600" onclick="closeCustomerInfoModal()">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                            </svg>
+                        </button>
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-bold text-gray-800">Thông tin khách hàng đã tồn tại</h3>
+                        </div>
+                        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-4">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm text-blue-700">
+                                        Đã tìm thấy thông tin khách hàng với <span id="matchType" class="font-medium"></span> này.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <div class="grid grid-cols-3 gap-4 mb-2">
+                                <div class="text-gray-600">Họ tên:</div>
+                                <div class="col-span-2 font-medium text-gray-800" id="customerName"></div>
+                            </div>
+                            <div class="grid grid-cols-3 gap-4 mb-2">
+                                <div class="text-gray-600">Email:</div>
+                                <div class="col-span-2 font-medium text-gray-800" id="customerEmail"></div>
+                            </div>
+                            <div class="grid grid-cols-3 gap-4">
+                                <div class="text-gray-600">Số điện thoại:</div>
+                                <div class="col-span-2 font-medium text-gray-800" id="customerPhone"></div>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-4">
+                            Bạn phải sử dụng thông tin này để đặt hàng. Bạn có muốn sử dụng thông tin này không?
+                        </p>
+                        <div class="flex justify-end gap-4">
+                            <button type="button" onclick="closeCustomerInfoModal()" 
+                                    class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors">
+                                Hủy
+                            </button>
+                            <button type="button" onclick="useExistingInfo()" 
+                                    class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                                Sử dụng thông tin này
+                            </button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+                
+                // Thêm sự kiện click bên ngoài để đóng modal
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        closeCustomerInfoModal();
+                    }
+                });
+            }
+            
+            // Cập nhật thông tin trong modal
+            document.getElementById('matchType').textContent = customer.matchType;
+            document.getElementById('customerName').textContent = customer.name;
+            document.getElementById('customerEmail').textContent = customer.email;
+            document.getElementById('customerPhone').textContent = customer.phone;
+            
+            // Hiển thị modal
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        // Hàm đóng modal thông tin khách hàng
+        function closeCustomerInfoModal() {
+            const modal = document.getElementById('customerInfoModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
             }
         }
 
@@ -807,18 +900,16 @@ Bạn phải sử dụng thông tin này để đặt hàng. Bạn có muốn s�
                     }
                 }
                 isValidCustomerInfo = true;
+                closeCustomerInfoModal();
             }
         }
 
         // Sửa lại hàm submitOrder để thêm kiểm tra
         const originalSubmitOrder = submitOrder;
         submitOrder = function() {
-            if (!isValidCustomerInfo && existingCustomerInfo) {
-                alert(`Vui lòng sử dụng thông tin đã đăng ký trước đó:
-
-Họ tên: ${existingCustomerInfo.name}
-Email: ${existingCustomerInfo.email}
-Số điện thoại: ${existingCustomerInfo.phone}`);
+            // Nếu người dùng đã đăng nhập, không cần kiểm tra
+            if (!isUserLoggedIn && !isValidCustomerInfo && existingCustomerInfo) {
+                showCustomerInfoModal(existingCustomerInfo);
                 return;
             }
             
@@ -830,29 +921,163 @@ Số điện thoại: ${existingCustomerInfo.phone}`);
         document.addEventListener('DOMContentLoaded', function() {
             const existingDOMContentLoaded = document.onDOMContentLoaded;
             
-            document.querySelector('[name="Email"]').addEventListener('change', () => { 
-                isValidCustomerInfo = false; 
-                checkExistingCustomer(); 
-            });
-            
-            document.querySelector('[name="ReceiverPhone"]').addEventListener('change', () => { 
-                isValidCustomerInfo = false; 
-                checkExistingCustomer(); 
-            });
-            
-            document.querySelector('[name="ReceiverName"]').addEventListener('change', () => { 
-                isValidCustomerInfo = false; 
-                checkExistingCustomer(); 
-            });
-            
-            // Kiểm tra ban đầu
-            checkExistingCustomer();
+            // Nếu người dùng đã đăng nhập, vô hiệu hóa các trường thông tin cá nhân
+            if (isUserLoggedIn) {
+                const personalFields = ['ReceiverName', 'Email', 'ReceiverPhone'];
+                personalFields.forEach(field => {
+                    const element = document.querySelector(`[name="${field}"]`);
+                    if (element) {
+                        element.readOnly = true;
+                        element.classList.add('bg-gray-100');
+                        
+                        // Thêm tooltip khi click vào trường bị vô hiệu hóa
+                        element.addEventListener('click', function(e) {
+                            showUserInfoTooltip(e.target);
+                        });
+                    }
+                });
+            } else {
+                // Chỉ thêm event listeners nếu người dùng chưa đăng nhập
+                document.querySelector('[name="Email"]')?.addEventListener('change', () => { 
+                    isValidCustomerInfo = false; 
+                    checkExistingCustomer(); 
+                });
+                
+                document.querySelector('[name="ReceiverPhone"]')?.addEventListener('change', () => { 
+                    isValidCustomerInfo = false; 
+                    checkExistingCustomer(); 
+                });
+                
+                document.querySelector('[name="ReceiverName"]')?.addEventListener('change', () => { 
+                    isValidCustomerInfo = false; 
+                    checkExistingCustomer(); 
+                });
+                
+                // Kiểm tra ban đầu chỉ khi chưa đăng nhập
+                checkExistingCustomer();
+            }
             
             // Gọi hàm gốc nếu có
             if (existingDOMContentLoaded) {
                 existingDOMContentLoaded();
             }
         });
+        
+        // Hàm hiển thị tooltip khi người dùng đã đăng nhập nhấp vào trường bị vô hiệu hóa
+        function showUserInfoTooltip(element) {
+            // Xóa tooltip cũ nếu có
+            const existingTooltip = document.getElementById('userInfoTooltip');
+            if (existingTooltip) {
+                existingTooltip.remove();
+            }
+            
+            // Tạo tooltip mới
+            const tooltip = document.createElement('div');
+            tooltip.id = 'userInfoTooltip';
+            tooltip.className = 'absolute bg-gray-800 text-white text-sm rounded py-2 px-3 z-50 shadow-lg';
+            tooltip.style.maxWidth = '250px';
+            tooltip.innerHTML = `
+                <div class="relative">
+                    <div class="absolute -top-2 left-3 w-3 h-3 bg-gray-800 transform rotate-45"></div>
+                    <p>Nếu bạn muốn thay đổi thông tin vui lòng truy cập trang quản lý thông tin</p>
+                </div>
+            `;
+            
+            // Tính toán vị trí tooltip
+            const rect = element.getBoundingClientRect();
+            tooltip.style.top = `${rect.bottom + window.scrollY + 10}px`;
+            tooltip.style.left = `${rect.left + window.scrollX}px`;
+            
+            // Thêm tooltip vào body
+            document.body.appendChild(tooltip);
+            
+            // Tự động xóa tooltip sau 3 giây
+            setTimeout(() => {
+                if (tooltip && tooltip.parentNode) {
+                    tooltip.remove();
+                }
+            }, 3000);
+        }
+
+        // Hàm cập nhật modal xác nhận đơn hàng cho người dùng đã đăng nhập
+        function updateLoggedInOrderConfirmModal() {
+            let modal = document.getElementById('loggedInOrderConfirmModal');
+            if (modal) {
+                // Kiểm tra xem đã có nút đóng chưa
+                if (!modal.querySelector('.close-button')) {
+                    const modalContent = modal.querySelector('div');
+                    
+                    // Thêm nút đóng
+                    const closeButton = document.createElement('button');
+                    closeButton.className = 'close-button absolute top-3 right-3 text-gray-400 hover:text-gray-600';
+                    closeButton.onclick = function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        closeOrderConfirm();
+                    };
+                    closeButton.innerHTML = `
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                        </svg>
+                    `;
+                    
+                    // Thêm class relative cho modal content để định vị nút đóng
+                    modalContent.classList.add('relative');
+                    
+                    // Thêm nút đóng vào modal
+                    modalContent.insertBefore(closeButton, modalContent.firstChild);
+                    
+                    // Thêm sự kiện click bên ngoài để đóng modal
+                    modal.addEventListener('click', function(e) {
+                        if (e.target === modal) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            closeOrderConfirm();
+                        }
+                    });
+                }
+            }
+        }
+
+        // Hàm cập nhật modal xác nhận đơn hàng cho khách vãng lai
+        function updateGuestOrderConfirmModal() {
+            let modal = document.getElementById('orderConfirmModal');
+            if (modal) {
+                // Kiểm tra xem đã có nút đóng chưa
+                if (!modal.querySelector('.close-button')) {
+                    const modalContent = modal.querySelector('div');
+                    
+                    // Thêm nút đóng
+                    const closeButton = document.createElement('button');
+                    closeButton.className = 'close-button absolute top-3 right-3 text-gray-400 hover:text-gray-600';
+                    closeButton.onclick = function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        closeOrderConfirm();
+                    };
+                    closeButton.innerHTML = `
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                        </svg>
+                    `;
+                    
+                    // Thêm class relative cho modal content để định vị nút đóng
+                    modalContent.classList.add('relative');
+                    
+                    // Thêm nút đóng vào modal
+                    modalContent.insertBefore(closeButton, modalContent.firstChild);
+                    
+                    // Thêm sự kiện click bên ngoài để đóng modal
+                    modal.addEventListener('click', function(e) {
+                        if (e.target === modal) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            closeOrderConfirm();
+                        }
+                    });
+                }
+            }
+        }
     </script>
 }
 

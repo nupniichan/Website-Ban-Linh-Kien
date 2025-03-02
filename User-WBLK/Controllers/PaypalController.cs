@@ -77,10 +77,13 @@ namespace Website_Ban_Linh_Kien.Controllers
                     var sellRateStr = usdElement.Attribute("Sell")?.Value;
                     if (!string.IsNullOrEmpty(sellRateStr))
                     {
-                        // Xóa dấu phẩy và khoảng trắng
-                        sellRateStr = sellRateStr.Replace(",", "").Replace(".", "").Replace(" ", "");
-                        
-                        if (decimal.TryParse(sellRateStr, out decimal rate))
+                        // Xử lý chuỗi tỷ giá đúng cách
+                        // Dựa vào dữ liệu thực tế: "25,730.00"
+                        // Sử dụng CultureInfo của Mỹ để parse chuỗi này đúng cách
+                        if (decimal.TryParse(sellRateStr, 
+                            System.Globalization.NumberStyles.Currency, 
+                            System.Globalization.CultureInfo.GetCultureInfo("en-US"), 
+                            out decimal rate))
                         {
                             // Lưu vào cache trong 1 giờ
                             var cacheOptions = new MemoryCacheEntryOptions()
