@@ -24,43 +24,13 @@ namespace Admin_WBLK.Controllers
             ViewData["CurrentTuNgay"] = tuNgay;
             ViewData["CurrentDenNgay"] = denNgay;
 
-            // Sử dụng select để chỉ lấy các trường cần thiết và xử lý NULL
-            var query = _context.Donhangs
-                .Include(d => d.IdKhNavigation)
-                .Include(d => d.Chitietdonhangs)
-                .Select(d => new Donhang
-                {
-                    IdDh = d.IdDh ?? "",
-                    IdKh = d.IdKh,
-                    Trangthai = d.Trangthai ?? "",
-                    Tongtien = d.Tongtien != 0 ? d.Tongtien : d.Chitietdonhangs.Sum(c => c.Soluongsanpham * c.Dongia),
-                    Diachigiaohang = d.Diachigiaohang ?? "",
-                    Ngaydathang = d.Ngaydathang,
-                    Phuongthucthanhtoan = d.Phuongthucthanhtoan ?? "",
-                    IdMgg = d.IdMgg,
-                    Ghichu = d.Ghichu ?? "",
-                    LydoHuy = d.LydoHuy ?? "",
-                    IdKhNavigation = d.IdKhNavigation == null ? null : new Khachhang
-                    {
-                        IdKh = d.IdKhNavigation.IdKh,
-                        Hoten = d.IdKhNavigation.Hoten ?? ""
-                    },
-                    Chitietdonhangs = d.Chitietdonhangs
-                })
-                .AsQueryable();
+            // Tạo truy vấn cơ bản
+            var query = _context.Donhangs.AsQueryable();
 
             // Thêm điều kiện sắp xếp mặc định theo ngày đặt hàng mới nhất
-            query = query.OrderByDescending(x => x.Ngaydathang);
+            query = query.OrderByDescending(d => d.Ngaydathang);
 
-            if (!string.IsNullOrEmpty(searchString))
-            {
-                searchString = searchString.ToLower();
-                query = query.Where(d =>
-                    d.IdDh.ToLower().Contains(searchString) ||
-                    (d.IdKhNavigation != null &&
-                     d.IdKhNavigation.Hoten.ToLower().Contains(searchString)));
-            }
-
+            // Áp dụng các bộ lọc
             if (!string.IsNullOrEmpty(trangThai))
             {
                 query = query.Where(d => d.Trangthai == trangThai);
@@ -75,6 +45,25 @@ namespace Admin_WBLK.Controllers
             {
                 var endOfDay = denNgay.Value.Date.AddDays(1).AddTicks(-1);
                 query = query.Where(d => d.Ngaydathang <= endOfDay);
+            }
+
+            // Xử lý tìm kiếm theo mã đơn hàng hoặc tên khách hàng
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                searchString = searchString.ToLower();
+                
+                // Tìm theo mã đơn hàng
+                var orderIdQuery = query.Where(d => d.IdDh.ToLower().Contains(searchString));
+                
+                // Tìm theo tên khách hàng
+                var customerNameQuery = _context.Khachhangs
+                    .Where(k => k.Hoten.ToLower().Contains(searchString))
+                    .Select(k => k.IdKh);
+                
+                var customerOrdersQuery = query.Where(d => customerNameQuery.Contains(d.IdKh));
+                
+                // Kết hợp hai kết quả
+                query = orderIdQuery.Union(customerOrdersQuery);
             }
 
             // Lấy danh sách trạng thái để làm dropdown filter
@@ -94,9 +83,31 @@ namespace Admin_WBLK.Controllers
             try
             {
                 var totalItems = await query.CountAsync();
+                
                 var items = await query
                     .Skip(((pageNumber ?? 1) - 1) * pageSize)
                     .Take(pageSize)
+                    .Include(d => d.IdKhNavigation)
+                    .Include(d => d.Chitietdonhangs)
+                    .Select(d => new Donhang
+                    {
+                        IdDh = d.IdDh ?? "",
+                        IdKh = d.IdKh,
+                        Trangthai = d.Trangthai ?? "",
+                        Tongtien = d.Tongtien != 0 ? d.Tongtien : d.Chitietdonhangs.Sum(c => c.Soluongsanpham * c.Dongia),
+                        Diachigiaohang = d.Diachigiaohang ?? "",
+                        Ngaydathang = d.Ngaydathang,
+                        Phuongthucthanhtoan = d.Phuongthucthanhtoan ?? "",
+                        IdMgg = d.IdMgg,
+                        Ghichu = d.Ghichu ?? "",
+                        LydoHuy = d.LydoHuy ?? "",
+                        IdKhNavigation = d.IdKhNavigation == null ? null : new Khachhang
+                        {
+                            IdKh = d.IdKhNavigation.IdKh,
+                            Hoten = d.IdKhNavigation.Hoten ?? ""
+                        },
+                        Chitietdonhangs = d.Chitietdonhangs
+                    })
                     .ToListAsync();
 
                 var model = new PaginatedList<Donhang>(items, totalItems, pageNumber ?? 1, pageSize);
@@ -117,15 +128,54 @@ namespace Admin_WBLK.Controllers
                 return Json(new List<object>());
 
             term = term.ToLower();
-            var suggestions = await _context.Donhangs
-                .Include(d => d.IdKhNavigation)
-                .Where(d => d.IdDh.ToLower().Contains(term) ||
-                           d.IdKhNavigation.Hoten.ToLower().Contains(term))
-                .Take(5)
-                .Select(d => new { d.IdDh, CustomerName = d.IdKhNavigation.Hoten })
-                .ToListAsync();
+            try
+            {
+                // Tìm đơn hàng theo mã
+                var orderSuggestions = await _context.Donhangs
+                    .Where(d => d.IdDh.ToLower().Contains(term))
+                    .Take(3)
+                    .Select(d => new { d.IdDh, CustomerName = "" })
+                    .ToListAsync();
 
-            return Json(suggestions);
+                // Tìm khách hàng theo tên
+                var customerIds = await _context.Khachhangs
+                    .Where(k => k.Hoten.ToLower().Contains(term))
+                    .Select(k => new { k.IdKh, k.Hoten })
+                    .Take(3)
+                    .ToListAsync();
+
+                // Tìm đơn hàng của các khách hàng đã tìm thấy
+                var customerOrderSuggestions = new List<object>();
+                foreach (var customer in customerIds)
+                {
+                    var order = await _context.Donhangs
+                        .Where(d => d.IdKh == customer.IdKh)
+                        .OrderByDescending(d => d.Ngaydathang)
+                        .FirstOrDefaultAsync();
+
+                    if (order != null)
+                    {
+                        customerOrderSuggestions.Add(new { 
+                            IdDh = order.IdDh, 
+                            CustomerName = customer.Hoten 
+                        });
+                    }
+                }
+
+                // Kết hợp kết quả
+                var result = orderSuggestions
+                    .Concat(customerOrderSuggestions)
+                    .Take(5)
+                    .ToList();
+
+                return Json(result);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in SearchSuggestions: {ex.Message}");
+                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
+                return Json(new List<object>());
+            }
         }
 
         // GET: OrderManagement/Details/5
