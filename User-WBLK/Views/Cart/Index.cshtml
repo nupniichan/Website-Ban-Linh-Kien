@@ -185,6 +185,9 @@
                         if (currentQty > 1) {
                             quantityInput.value = currentQty - 1;
                             updateQuantity(productId, quantityInput.value, quantityInput);
+                        } else if (currentQty === 1) {
+                            // Nếu số lượng = 1 và nhấn giảm, xóa sản phẩm
+                            removeItem(productId, itemRow);
                         }
                     });
 
@@ -462,8 +465,9 @@
             if (index !== -1) {
                 newQuantity = parseInt(newQuantity);
                 if (newQuantity < 1) {
-                    showInlineMessage("Số lượng không thể nhỏ hơn 1.");
-                    newQuantity = 1;
+                    // Nếu số lượng < 1, xóa sản phẩm khỏi giỏ hàng
+                    removeGuestCartItem(productId);
+                    return;
                 }
                 const availableStock = cart[index].stock ? parseInt(cart[index].stock) : maxAllowed;
                 const allowed = Math.min(maxAllowed, availableStock);
