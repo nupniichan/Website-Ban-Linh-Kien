@@ -81,12 +81,14 @@ namespace Admin_WBLK.Controllers
             ViewBag.TrangThais = new List<string>
             {
                 "Chờ xác nhận",
-                "Đặt hàng thành công",
+                "Đã thanh toán",
+                "Thanh toán không thành công",
                 "Đã duyệt đơn",
                 "Đang giao",
                 "Giao thành công",
-                "Không giao",
-                "Hủy đơn"
+                "Không nhận hàng",
+                "Hủy đơn",
+                "Đã kết thúc"
             };
 
             try
@@ -798,13 +800,15 @@ namespace Admin_WBLK.Controllers
                 // Dictionary các trạng thái hợp lệ
                 var validTransitions = new Dictionary<string, string[]>
                 {
-                    { "Chờ xác nhận", new[] { "Đặt hàng thành công", "Hủy đơn" } },
-                    { "Đặt hàng thành công", new[] { "Đã duyệt đơn", "Hủy đơn" } },
+                    { "Chờ xác nhận", new[] { "Đã duyệt đơn", "Hủy đơn" } },
+                    { "Thanh toán không thành công", new[] { "Hủy đơn" } },
+                    { "Đã thanh toán", new[] { "Đang giao" } },
                     { "Đã duyệt đơn", new[] { "Đang giao" } },
-                    { "Đang giao", new[] { "Giao thành công", "Không giao" } },
+                    { "Đang giao", new[] { "Giao thành công", "Không nhận hàng" } },
                     { "Giao thành công", Array.Empty<string>() },
-                    { "Không giao", Array.Empty<string>() },
-                    { "Hủy đơn", Array.Empty<string>() }
+                    { "Không nhận hàng", Array.Empty<string>() },
+                    { "Hủy đơn", Array.Empty<string>() },
+                    { "Đã kết thúc", Array.Empty<string>() }
                 };
 
                 if (!validTransitions.ContainsKey(donhang.Trangthai) ||
@@ -820,7 +824,7 @@ namespace Admin_WBLK.Controllers
                 switch (newStatus)
                 {
                     case "Hủy đơn":
-                    case "Không giao":
+                    case "Không nhận hàng":
                         foreach (var chitiet in donhang.Chitietdonhangs)
                         {
                             var product = await _context.Sanphams.FindAsync(chitiet.IdSp);

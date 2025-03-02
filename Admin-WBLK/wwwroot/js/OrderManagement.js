@@ -608,7 +608,7 @@
         const onlinePaymentInfo = document.getElementById('onlinePaymentInfo');
         
         if (paymentMethod && onlinePaymentInfo) {
-            if (paymentMethod === 'VNPay' || paymentMethod === 'Paypal') {
+            if (paymentMethod === 'Momo' || paymentMethod === 'Paypal') {
                 onlinePaymentInfo.classList.remove('hidden');
             } else {
                 onlinePaymentInfo.classList.add('hidden');

@@ -432,6 +432,10 @@
                     DiscountCode: form.querySelector('[name="DiscountCode"]').value.trim(),
                     Items: cartItems
                 };
+                
+                // Show loading overlay
+                AppLoading.show("Đang xử lý đơn hàng...");
+                
                 fetch(form.action, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -443,12 +447,17 @@
                         if (!isAuthenticated) {
                             localStorage.removeItem('guestCart');
                         }
-                        window.location.href = data.redirectUrl;
+                        // Show loading before redirect
+                        AppLoading.showBeforeRedirect(data.redirectUrl, "Đang chuyển hướng...");
                     } else {
+                        // Hide loading on error
+                        AppLoading.hide();
                         alert(data.message || 'Có lỗi xảy ra khi đặt hàng');
                     }
                 })
                 .catch(error => {
+                    // Hide loading on error
+                    AppLoading.hide();
                     console.error('Error:', error);
                     alert('Có lỗi xảy ra khi đặt hàng');
                 });
@@ -506,6 +515,9 @@
                 Items: cartItems
             };
 
+            // Show loading overlay
+            AppLoading.show("Đang xử lý thanh toán Momo...");
+
             // Tạo đơn hàng trước
             fetch('@Url.Action("ProcessMomoPayment", "Checkout")', {
                 method: 'POST',
@@ -536,20 +548,28 @@
                                 localStorage.removeItem('guestCart');
                             }
                             // Chuyển hướng đến trang thanh toán Momo
-                            window.location.href = momoData.payUrl;
+                            AppLoading.showBeforeRedirect(momoData.payUrl, "Đang chuyển đến cổng thanh toán Momo...");
                         } else {
+                            // Hide loading on error
+                            AppLoading.hide();
                             alert(momoData.message || 'Có lỗi xảy ra khi tạo thanh toán Momo');
                         }
                     })
                     .catch(error => {
+                        // Hide loading on error
+                        AppLoading.hide();
                         console.error('Error:', error);
                         alert('Có lỗi xảy ra khi tạo thanh toán Momo');
                     });
                 } else {
+                    // Hide loading on error
+                    AppLoading.hide();
                     alert(data.message || 'Có lỗi xảy ra khi tạo đơn hàng');
                 }
             })
             .catch(error => {
+                // Hide loading on error
+                AppLoading.hide();
                 console.error('Error:', error);
                 alert('Có lỗi xảy ra khi tạo đơn hàng');
             });
