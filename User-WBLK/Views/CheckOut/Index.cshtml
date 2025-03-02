@@ -275,13 +275,19 @@
         });
 
         function loadGuestCart() {
+            // Kiểm tra xem có đang trong quá trình mua ngay không
+            const isBuyNow = localStorage.getItem('isBuyNow') === 'true';
+            
+            // Lấy giỏ hàng hiện tại
             const cart = JSON.parse(localStorage.getItem('guestCart')) || [];
             const checkoutItems = document.getElementById('checkoutItems');
             let totalAmount = 0;
+            
             if (cart.length === 0) {
                 window.location.href = '/';
                 return;
             }
+            
             let itemsHtml = '';
             cart.forEach(item => {
                 const subtotal = item.price * item.quantity;
@@ -445,7 +451,21 @@
                 .then(data => {
                     if (data.success) {
                         if (!isAuthenticated) {
-                            localStorage.removeItem('guestCart');
+                            // Kiểm tra xem có đang trong quá trình mua ngay không
+                            const isBuyNow = localStorage.getItem('isBuyNow') === 'true';
+                            
+                            // Nếu đang trong quá trình mua ngay, khôi phục giỏ hàng gốc
+                            if (isBuyNow) {
+                                const backupCart = localStorage.getItem('guestCartBackup');
+                                if (backupCart) {
+                                    localStorage.setItem('guestCart', backupCart);
+                                }
+                                localStorage.removeItem('isBuyNow');
+                                localStorage.removeItem('guestCartBackup');
+                            } else {
+                                // Nếu không phải mua ngay, xóa giỏ hàng
+                                localStorage.removeItem('guestCart');
+                            }
                         }
                         // Show loading before redirect
                         AppLoading.showBeforeRedirect(data.redirectUrl, "Đang chuyển hướng...");
@@ -545,7 +565,21 @@
                             // Xóa giỏ hàng nếu là khách vãng lai
                             const isAuthenticated = @Json.Serialize(User.Identity?.IsAuthenticated == true);
                             if (!isAuthenticated) {
-                                localStorage.removeItem('guestCart');
+                                // Kiểm tra xem có đang trong quá trình mua ngay không
+                                const isBuyNow = localStorage.getItem('isBuyNow') === 'true';
+                                
+                                // Nếu đang trong quá trình mua ngay, khôi phục giỏ hàng gốc
+                                if (isBuyNow) {
+                                    const backupCart = localStorage.getItem('guestCartBackup');
+                                    if (backupCart) {
+                                        localStorage.setItem('guestCart', backupCart);
+                                    }
+                                    localStorage.removeItem('isBuyNow');
+                                    localStorage.removeItem('guestCartBackup');
+                                } else {
+                                    // Nếu không phải mua ngay, xóa giỏ hàng
+                                    localStorage.removeItem('guestCart');
+                                }
                             }
                             // Chuyển hướng đến trang thanh toán Momo
                             AppLoading.showBeforeRedirect(momoData.payUrl, "Đang chuyển đến cổng thanh toán Momo...");
@@ -620,7 +654,21 @@
                             // Xóa giỏ hàng nếu là khách vãng lai
                             const isAuthenticated = @Json.Serialize(User.Identity?.IsAuthenticated == true);
                             if (!isAuthenticated) {
-                                localStorage.removeItem('guestCart');
+                                // Kiểm tra xem có đang trong quá trình mua ngay không
+                                const isBuyNow = localStorage.getItem('isBuyNow') === 'true';
+                                
+                                // Nếu đang trong quá trình mua ngay, khôi phục giỏ hàng gốc
+                                if (isBuyNow) {
+                                    const backupCart = localStorage.getItem('guestCartBackup');
+                                    if (backupCart) {
+                                        localStorage.setItem('guestCart', backupCart);
+                                    }
+                                    localStorage.removeItem('isBuyNow');
+                                    localStorage.removeItem('guestCartBackup');
+                                } else {
+                                    // Nếu không phải mua ngay, xóa giỏ hàng
+                                    localStorage.removeItem('guestCart');
+                                }
                             }
                             // Chuyển hướng đến trang thanh toán PayPal
                             window.location.href = paypalData.payUrl;

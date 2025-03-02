@@ -89,7 +89,7 @@ namespace Website_Ban_Linh_Kien.Controllers
                 {
                     if (cartItem.Soluongsanpham >= maxAllowed)
                     {
-                        return Json(new { success = false, message = "Sản phẩm đã đạt số lượng tối đa (5)." });
+                        return Json(new { success = false, message = "Tổng số lượng sản phẩm này trong giỏ hàng không thể vượt quá 5." });
                     }
                     if (cartItem.Soluongsanpham + quantity > maxAllowed)
                     {
