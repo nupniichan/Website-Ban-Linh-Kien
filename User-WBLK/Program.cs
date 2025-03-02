@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Website_Ban_Linh_Kien.Models;
+using Website_Ban_Linh_Kien.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -48,10 +49,9 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.Lax; // hoặc None nếu cần
 });
 
-// Connect MomoAPI - Chỉ cấu hình MomoOptionModel, không đăng ký service
+// Connect MomoAPI
 builder.Services.Configure<MomoOptionModel>(builder.Configuration.GetSection("MomoAPI"));
-// Đã gộp MomoService vào MomoController nên không cần đăng ký service nữa
-// builder.Services.AddScoped<IMomoService, MomoService>();
+builder.Services.AddScoped<IMomoService, MomoService>();
 
 var app = builder.Build();
 
