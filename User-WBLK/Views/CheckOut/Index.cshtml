@@ -143,10 +143,21 @@
             <!-- Mã giảm giá -->
             <div class="bg-white p-4 border border-gray-200 rounded-lg mb-4">
                 <h5 class="text-lg mb-2 font-bold">Mã giảm giá</h5>
+                @if (User.Identity?.IsAuthenticated != true)
+                {
+                    <div class="bg-blue-50 border-l-4 border-blue-500 p-3 mb-3 text-sm">
+                        <p class="text-blue-700">Đăng nhập để xem thêm các mã giảm giá hấp dẫn hơn!</p>
+                    </div>
+                }
                 <input type="text" name="DiscountCode" list="discountCodes" placeholder="Nhập mã giảm giá hoặc chọn"
                     class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all">
                 <datalist id="discountCodes">
-                    @foreach(var discount in Model.AvailableDiscounts)
+                    @{
+                        var filteredDiscounts = User.Identity?.IsAuthenticated == true 
+                            ? Model.AvailableDiscounts.OrderByDescending(d => d.Tilechietkhau)
+                            : Model.AvailableDiscounts.Where(d => d.Tilechietkhau <= 5);
+                    }
+                    @foreach(var discount in filteredDiscounts)
                     {
                         <option value="@discount.IdMgg">
                             @discount.Ten - @discount.Tilechietkhau% 
@@ -759,9 +770,14 @@
 
         // Build mapping of available discount codes
         var availableDiscounts = {};
-        @foreach(var d in Model.AvailableDiscounts)
+        @{
+            var filteredDiscounts = User.Identity?.IsAuthenticated == true 
+                ? Model.AvailableDiscounts.OrderByDescending(d => d.Tilechietkhau)
+                : Model.AvailableDiscounts.Where(d => d.Tilechietkhau <= 5);
+        }
+        @foreach(var discount in filteredDiscounts)
         {
-            @:availableDiscounts["@d.IdMgg"] = @d.Tilechietkhau;
+            @:availableDiscounts["@discount.IdMgg"] = @discount.Tilechietkhau;
         }
 
         // Get original and VIP price from the model.
