@@ -239,23 +239,33 @@
                         <div class="text-[#007AFF] text-4xl font-bold mb-2">
                             @Model.AverageRating.ToString("0.0")/5
                         </div>
-                        <div class="flex text-yellow-400 mb-2">
-                            @for (var i = 1; i <= 5; i++)
+                        <div class="flex items-center mb-2">
+                            @for(var i = 1; i <= 5; i++)
                             {
-                                if (i <= Math.Floor(Model.AverageRating))
+                                if(i <= Math.Floor(Model.AverageRating))
                                 {
-                                    <span>⭐</span>
+                                    <!-- Full star -->
+                                    <span class="text-yellow-400 text-2xl">★</span>
                                 }
-                                else if (i - Model.AverageRating <= 0.5 && i - Model.AverageRating > 0)
+                                else if(i == Math.Floor(Model.AverageRating) + 1)
                                 {
-                                    <span>⭐</span>
+                                    var fractional = Model.AverageRating - Math.Floor(Model.AverageRating);
+                                    var percentage = fractional * 100;
+                                    <!-- Partially filled star -->
+                                    <span class="relative inline-block text-gray-300 text-2xl">
+                                        <span>★</span>
+                                        <span class="absolute top-0 left-0 text-yellow-400 overflow-hidden" style="width:@percentage%">★</span>
+                                    </span>
                                 }
                                 else
                                 {
-                                    <span class="text-gray-300">☆</span>
+                                    <!-- Empty star -->
+                                    <span class="text-gray-300 text-2xl">★</span>
                                 }
                             }
                         </div>
+
+
                         <div class="text-gray-500">@Model.TotalReviews đánh giá</div>
 
                         <!-- Rating Distribution -->
