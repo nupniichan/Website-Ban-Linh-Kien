@@ -816,14 +816,14 @@ namespace Website_Ban_Linh_Kien.Controllers
                     case "1-2-trieu":
                         query = query.Where(p => p.Gia >= 1000000 && p.Gia <= 2000000);
                         break;
-                    case "2-3-trieu":
-                        query = query.Where(p => p.Gia >= 2000000 && p.Gia <= 3000000);
+                    case "2-5-trieu":
+                        query = query.Where(p => p.Gia >= 2000000 && p.Gia <= 5000000);
                         break;
-                    case "3-5-trieu":
-                        query = query.Where(p => p.Gia >= 3000000 && p.Gia <= 5000000);
+                    case "5-10-trieu":
+                        query = query.Where(p => p.Gia >= 5000000 && p.Gia <= 10000000);
                         break;
-                    case "tren-5-trieu":
-                        query = query.Where(p => p.Gia > 5000000);
+                    case "tren-10-trieu":
+                        query = query.Where(p => p.Gia > 10000000);
                         break;
                 }
             }
