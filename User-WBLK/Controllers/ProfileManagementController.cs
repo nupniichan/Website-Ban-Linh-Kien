@@ -307,10 +307,10 @@ namespace Website_Ban_Linh_Kien.Controllers
                     return Json(new { success = false, message = "Order not found." });
                 }
 
-                // Only allow cancellation if order status is "Chờ xác nhận" or "Đã duyệt đơn"
-                if (order.Trangthai != "Chờ xác nhận" && order.Trangthai != "Đã duyệt đơn")
+                // Only allow cancellation if order status is "Chờ xác nhận", "Đã duyệt đơn", or "Đã thanh toán"
+                if (order.Trangthai != "Chờ xác nhận" && order.Trangthai != "Đã duyệt đơn" && order.Trangthai != "Đã thanh toán")
                 {
-                    return Json(new { success = false, message = "Order cannot be cancelled in its current status." });
+                    return Json(new { success = false, message = "Không thể hủy đơn hàng ở trạng thái hiện tại." });
                 }
 
                 // Update the order's status to "Hủy đơn"

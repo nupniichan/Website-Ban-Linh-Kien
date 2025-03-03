@@ -107,8 +107,10 @@
         </div>
 
         <!-- Price Range -->
-        <div>
+        <div class="mt-4">
             <h2 class="font-semibold mb-2">Khoảng giá:</h2>
+            
+            <!-- Price Range Buttons -->
             <div class="flex flex-wrap gap-2">
                 @{
                     var priceRanges = new Dictionary<string, string>() {
@@ -117,20 +119,42 @@
                         {"15-20-trieu", "15 - 20 triệu"},
                         {"20-25-trieu", "20 - 25 triệu"},
                         {"25-35-trieu", "25 - 35 triệu"},
-                        {"35-trieu", "Trên 35 triệu"}
+                        {"tren-35-trieu", "Trên 35 triệu"}
                     };
                 }
                 @foreach (var range in priceRanges)
                 {
-                    var url = Url.Action("PC", "ProductsList", new { priceRange = range.Key, usage = Model.Usage, cpuType = Model.CpuType, ram = Model.Ram, gpu = Model.Gpu });
-                    <a href="@url" class="px-4 py-2 bg-gray-100 rounded-md hover:bg-gray-200 @(Model.PriceRange == range.Key ? "bg-blue-600 text-white" : "")">
+                    var parameters = new Dictionary<string, string>();
+                    
+                    // Thêm các tham số cơ bản
+                    if (!string.IsNullOrEmpty(Model.Usage))
+                        parameters.Add("usage", Model.Usage);
+                    if (!string.IsNullOrEmpty(Model.CpuType))
+                        parameters.Add("cpuType", Model.CpuType);
+                    if (!string.IsNullOrEmpty(Model.Ram))
+                        parameters.Add("ram", Model.Ram);
+                    if (!string.IsNullOrEmpty(Model.Gpu))
+                        parameters.Add("gpu", Model.Gpu);
+                    parameters.Add("priceRange", range.Key);
+                    
+                    var url = Url.Action("PC", "ProductsList", parameters);
+                    var isSelected = Model.PriceRange == range.Key;
+                    <a href="@url" class="price-range-btn flex-1 text-center px-3 py-2 rounded-lg transition-all duration-200 @(isSelected ? "bg-blue-600 text-white shadow-md" : "bg-gray-100 hover:bg-gray-200")">
                         @range.Value
                     </a>
                 }
             </div>
-            <a href="@Url.Action("PC", "ProductsList", new { category = Model.Category })" class="inline-block mt-3 bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600">
-                Xóa bộ lọc
-            </a>
+            
+            <!-- Clear Filters Button -->
+            <div class="mt-4 text-center">
+                @if (!string.IsNullOrEmpty(Model.Usage) || !string.IsNullOrEmpty(Model.CpuType) || !string.IsNullOrEmpty(Model.Ram) || !string.IsNullOrEmpty(Model.Gpu) || !string.IsNullOrEmpty(Model.PriceRange))
+                {
+                    <a href="@Url.Action("PC", "ProductsList")" 
+                       class="inline-block bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-all duration-200 shadow-md">
+                        <i class="fas fa-times-circle mr-2"></i>Xóa bộ lọc
+                    </a>
+                }
+            </div>
         </div>
     </div>
 
@@ -181,6 +205,22 @@
 @section Scripts {
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Thêm hiệu ứng hover cho các nút lọc giá
+            const priceButtons = document.querySelectorAll('.price-range-btn');
+            priceButtons.forEach(btn => {
+                btn.addEventListener('mouseenter', function() {
+                    if (!this.classList.contains('bg-blue-600')) {
+                        this.classList.add('shadow-sm', 'scale-105');
+                    }
+                });
+                
+                btn.addEventListener('mouseleave', function() {
+                    if (!this.classList.contains('bg-blue-600')) {
+                        this.classList.remove('shadow-sm', 'scale-105');
+                    }
+                });
+            });
+            
             const loadMoreBtn = document.getElementById('loadMoreBtn');
             const collapseBtn = document.getElementById('collapseBtn');
             const products = document.querySelectorAll('.product-item');
@@ -217,7 +257,7 @@
                             product.classList.add('hidden');
                         }
                     });
-
+                    
                     // Reset counter
                     currentlyShown = productsPerPage;
 
@@ -252,5 +292,12 @@
             setTimeout(updateProductTitles, 500);
         });
     </script>
+    
+    <style>
+        /* Hiệu ứng chuyển đổi cho các nút lọc giá */
+        .price-range-btn {
+            transition: all 0.2s ease;
+        }
+    </style>
 }
 

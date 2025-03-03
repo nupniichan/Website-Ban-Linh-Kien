@@ -18,109 +18,147 @@
             {
                 // Detail Mode: show full order details
                 var order = (Website_Ban_Linh_Kien.Models.Donhang)ViewBag.DetailOrder;
-                <h1 class="text-2xl font-bold mb-6">Chi tiết đơn hàng: @order.IdDh</h1>
-                <div class="mb-4">
-                    <p><strong>Ngày đặt:</strong> @order.Ngaydathang?.ToString("dd/MM/yyyy hh:mm tt")</p>
-                    <p><strong>Tổng tiền:</strong> @order.Tongtien.ToString("N0") VNĐ</p>
-                    <p><strong>Trạng thái:</strong> @order.Trangthai</p>
-                    <p><strong>Địa chỉ giao hàng:</strong> @order.Diachigiaohang</p>
-                    <p><strong>Phương thức thanh toán:</strong> @order.Phuongthucthanhtoan</p>
-                    @if(!string.IsNullOrEmpty(order.Ghichu))
-                    {
-                        <p><strong>Ghi chú:</strong> @order.Ghichu</p>
-                    }
-                </div>
-                <div class="mb-4">
-                    <h2 class="text-xl font-bold mb-2">Chi tiết sản phẩm</h2>
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead>
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sản phẩm</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Đơn giá</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Số lượng</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thành tiền</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            @foreach(var item in order.Chitietdonhangs)
+                <div class="border-b border-gray-200 pb-4 mb-6">
+                    <div class="flex justify-between items-center">
+                        <h1 class="text-2xl font-bold">Chi tiết đơn hàng: <span class="text-blue-600">@order.IdDh</span></h1>
+                        
+                        <!-- Order Status Badge -->
+                        <div>
+                            @if(order.Trangthai == "Chờ xác nhận")
                             {
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap">@item.IdSpNavigation.Tensanpham</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">@item.Dongia.ToString("N0") VNĐ</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">@item.Soluongsanpham</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">@((item.Dongia * item.Soluongsanpham).ToString("N0")) VNĐ</td>
-                                </tr>
+                                <span class="bg-yellow-100 text-yellow-700 text-sm font-medium px-3 py-1 rounded-full">Chờ xác nhận</span>
                             }
-                        </tbody>
-                    </table>
-                </div>
-                @* Badge based on order status, matching only the provided list *@
-                <div>
-                    @if(order.Trangthai == "Chờ xác nhận")
-                    {
-                        <span class="bg-yellow-100 text-yellow-700 text-sm font-medium px-3 py-1 rounded-full">Chờ xác nhận</span>
-                    }
-                    else if(order.Trangthai == "Đã thanh toán")
-                    {
-                        <span class="bg-green-100 text-green-500 text-sm font-medium px-3 py-1 rounded-full">Đã thanh toán</span>
-                    }
-                    else if(order.Trangthai == "Đặt hàng thành công")
-                    {
-                        <span class="bg-blue-100 text-blue-700 text-sm font-medium px-3 py-1 rounded-full">Đặt hàng thành công</span>
-                    }
-                    else if(order.Trangthai == "Đã duyệt đơn")
-                    {
-                        <span class="bg-indigo-100 text-indigo-700 text-sm font-medium px-3 py-1 rounded-full">Đã duyệt đơn</span>
-                    }
-                    else if(order.Trangthai == "Đang giao")
-                    {
-                        <span class="bg-green-100 text-green-700 text-sm font-medium px-3 py-1 rounded-full">Đang giao</span>
-                    }
-                    else if(order.Trangthai == "Giao thành công")
-                    {
-                        <span class="bg-blue-500 text-white text-sm font-medium px-3 py-1 rounded-full">Giao thành công</span>
-                    }
-                    else if(order.Trangthai == "Không giao")
-                    {
-                        <span class="bg-orange-100 text-orange-700 text-sm font-medium px-3 py-1 rounded-full">Không giao</span>
-                    }
-                    else if(order.Trangthai == "Hủy đơn")
-                    {
-                        <span class="bg-gray-100 text-gray-700 text-sm font-medium px-3 py-1 rounded-full">Hủy đơn</span>
-                    }
-                </div>
-                @* "Đánh giá" button appears if the order is "Giao thành công" and not reviewed *@
-                @if(order.Trangthai == "Giao thành công" && order.Chitietdonhangs.All(ct => ct.IdDg != null) == false)
-                {
-                    <div class="mt-6 text-right">
-                        <button id="openReviewModal" class="bg-blue-500 text-white px-4 py-2 rounded-md font-medium shadow hover:bg-blue-600">
-                            Đánh giá
-                        </button>
+                            else if(order.Trangthai == "Đã thanh toán")
+                            {
+                                <span class="bg-green-100 text-green-500 text-sm font-medium px-3 py-1 rounded-full">Đã thanh toán</span>
+                            }
+                            else if(order.Trangthai == "Thanh toán không thành công")
+                            {
+                                <span class="bg-red-100 text-red-700 text-sm font-medium px-3 py-1 rounded-full">Thanh toán không thành công</span>
+                            }
+                            else if(order.Trangthai == "Đã duyệt đơn")
+                            {
+                                <span class="bg-indigo-100 text-indigo-700 text-sm font-medium px-3 py-1 rounded-full">Đã duyệt đơn</span>
+                            }
+                            else if(order.Trangthai == "Đang giao")
+                            {
+                                <span class="bg-green-100 text-green-700 text-sm font-medium px-3 py-1 rounded-full">Đang giao</span>
+                            }
+                            else if(order.Trangthai == "Giao thành công")
+                            {
+                                <span class="bg-blue-500 text-white text-sm font-medium px-3 py-1 rounded-full">Giao thành công</span>
+                            }
+                            else if(order.Trangthai == "Không nhận hàng")
+                            {
+                                <span class="bg-orange-100 text-orange-700 text-sm font-medium px-3 py-1 rounded-full">Không nhận hàng</span>
+                            }
+                            else if(order.Trangthai == "Hủy đơn")
+                            {
+                                <span class="bg-gray-100 text-gray-700 text-sm font-medium px-3 py-1 rounded-full">Hủy đơn</span>
+                            }
+                        </div>
                     </div>
-                }
-                @* "Hủy đơn" button appears if the order is in "Chờ xác nhận" or "Đã duyệt đơn" status *@
-                @if(order.Trangthai == "Chờ xác nhận" || order.Trangthai == "Đã duyệt đơn")
-                {
-                    <div class="mt-6 text-right">
-                        <form id="cancelOrderForm" method="post" asp-action="CancelOrder">
+                </div>
+                
+                <!-- Order Information Card -->
+                <div class="bg-gray-50 rounded-lg p-5 mb-6 shadow-sm">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <h2 class="text-lg font-semibold mb-3 text-gray-700">Thông tin đơn hàng</h2>
+                            <div class="space-y-2">
+                                <p><span class="font-medium text-gray-600">Ngày đặt:</span> <span class="text-gray-800">@order.Ngaydathang?.ToString("dd/MM/yyyy hh:mm tt")</span></p>
+                                <p><span class="font-medium text-gray-600">Phương thức thanh toán:</span> <span class="text-gray-800">@order.Phuongthucthanhtoan</span></p>
+                            </div>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-semibold mb-3 text-gray-700">Thông tin giao hàng</h2>
+                            <div class="space-y-2">
+                                <p><span class="font-medium text-gray-600">Địa chỉ giao hàng:</span> <span class="text-gray-800">@order.Diachigiaohang</span></p>
+                                @if(!string.IsNullOrEmpty(order.Ghichu))
+                                {
+                                    <p><span class="font-medium text-gray-600">Ghi chú:</span> <span class="text-gray-800">@order.Ghichu</span></p>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Order Items Table -->
+                <div class="mb-6">
+                    <h2 class="text-xl font-bold mb-4 text-gray-800">Chi tiết sản phẩm</h2>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 border border-gray-200 rounded-lg">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sản phẩm</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Đơn giá</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Số lượng</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thành tiền</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @foreach(var item in order.Chitietdonhangs)
+                                {
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center">
+                                                <div class="ml-4">
+                                                    <div class="text-sm font-medium text-gray-900">@item.IdSpNavigation.Tensanpham</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@item.Dongia.ToString("N0") VNĐ</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@item.Soluongsanpham</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">@((item.Dongia * item.Soluongsanpham).ToString("N0")) VNĐ</td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot class="bg-gray-50">
+                                <tr>
+                                    <td colspan="3" class="px-6 py-4 text-right font-medium">Tổng cộng:</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-red-600">@order.Tongtien.ToString("N0") VNĐ</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="flex flex-col sm:flex-row justify-end gap-3 mt-8">
+                    @* "Đánh giá" button appears if the order is "Giao thành công" and not reviewed *@
+                    @if(order.Trangthai == "Giao thành công" && order.Chitietdonhangs.All(ct => ct.IdDg != null) == false)
+                    {
+                        <button id="openReviewModal" class="bg-blue-500 text-white px-6 py-2 rounded-md font-medium shadow hover:bg-blue-600 transition duration-200">
+                            <i class="fas fa-star mr-2"></i> Đánh giá
+                        </button>
+                    }
+                    
+                    @* "Hủy đơn" button appears if the order is in "Chờ xác nhận", "Đã duyệt đơn", or "Đã thanh toán" status *@
+                    @if(order.Trangthai == "Chờ xác nhận" || order.Trangthai == "Đã duyệt đơn" || order.Trangthai == "Đã thanh toán")
+                    {
+                        <form id="cancelOrderForm" method="post" asp-action="CancelOrder" class="inline">
                             <input type="hidden" name="orderId" value="@order.IdDh" />
-                            <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded-md font-medium shadow hover:bg-red-600">
-                                Hủy đơn
+                            <button type="submit" class="bg-red-500 text-white px-6 py-2 rounded-md font-medium shadow hover:bg-red-600 transition duration-200">
+                                <i class="fas fa-times-circle mr-2"></i> Hủy đơn
                             </button>
                         </form>
-                    </div>
-                }
-                <div class="mt-6 text-right">
+                    }
+                    
                     <!-- "Đóng" returns to the order list -->
-                    <a asp-action="OrderHistory" class="bg-gray-500 text-white px-6 py-2 rounded-lg font-medium shadow hover:bg-gray-600">
-                        Đóng
+                    <a asp-action="OrderHistory" class="bg-gray-500 text-white px-6 py-2 rounded-md font-medium shadow hover:bg-gray-600 transition duration-200">
+                        <i class="fas fa-arrow-left mr-2"></i> Quay lại
                     </a>
                 </div>
 
                 @* Modal Popup for Submitting a Review (inside the detail block) *@
-                <div id="reviewModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
+                <div id="reviewModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
                     <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-                        <h2 class="text-xl font-bold mb-4">Đánh giá đơn hàng</h2>
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-xl font-bold text-gray-800">Đánh giá sản phẩm</h2>
+                            <button type="button" id="closeReviewModal" class="text-gray-400 hover:text-gray-600">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
                         <form id="reviewForm" method="post" asp-action="SubmitReview">
                             @* Use the first order detail that has not yet been reviewed *@
                             @{
@@ -129,29 +167,34 @@
                             @if (firstUnreviewedItem != null)
                             {
                                 <input type="hidden" name="Idchitietdonhang" value="@firstUnreviewedItem.Idchitietdonhang" />
+                                <div class="mb-4">
+                                    <p class="text-gray-700 mb-2">Sản phẩm: <span class="font-medium">@firstUnreviewedItem.IdSpNavigation.Tensanpham</span></p>
+                                </div>
                             }
                             else
                             {
-                                <p>Tất cả sản phẩm trong đơn hàng này đã được đánh giá.</p>
+                                <p class="text-gray-700 mb-4">Tất cả sản phẩm trong đơn hàng này đã được đánh giá.</p>
                             }
 
                             <div class="mb-4">
-                                <label class="block text-gray-700">Đánh giá:</label>
-                                <select name="rating" class="mt-1 block w-full">
-                                    <option value="1">1 sao</option>
-                                    <option value="2">2 sao</option>
-                                    <option value="3">3 sao</option>
-                                    <option value="4">4 sao</option>
-                                    <option value="5">5 sao</option>
-                                </select>
+                                <label class="block text-gray-700 mb-2">Đánh giá:</label>
+                                <div class="flex space-x-2">
+                                    <select name="rating" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <option value="1">1 sao - Rất không hài lòng</option>
+                                        <option value="2">2 sao - Không hài lòng</option>
+                                        <option value="3">3 sao - Bình thường</option>
+                                        <option value="4">4 sao - Hài lòng</option>
+                                        <option value="5" selected>5 sao - Rất hài lòng</option>
+                                    </select>
+                                </div>
                             </div>
                             <div class="mb-4">
-                                <label class="block text-gray-700">Bình luận:</label>
-                                <textarea name="comment" class="mt-1 block w-full" rows="3"></textarea>
+                                <label class="block text-gray-700 mb-2">Bình luận:</label>
+                                <textarea name="comment" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" rows="3" placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm..."></textarea>
                             </div>
-                            <div class="flex justify-end">
-                                <button type="button" id="closeReviewModal" class="bg-gray-500 text-white px-4 py-2 rounded-md mr-2">Đóng</button>
-                                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-md">Gửi đánh giá</button>
+                            <div class="flex justify-end space-x-3">
+                                <button type="button" id="closeReviewModalBtn" class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition duration-200">Đóng</button>
+                                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-200">Gửi đánh giá</button>
                             </div>
                         </form>
                     </div>
@@ -160,111 +203,136 @@
             else
             {
                 // List Mode: show paginated order history list
-                <h1 class="text-2xl font-bold mb-6">Lịch sử giao dịch</h1>
+                <h1 class="text-2xl font-bold mb-6 text-gray-800">Lịch sử giao dịch</h1>
                 <div class="space-y-4">
                     @if(Model.Items == null || !Model.Items.Any())
                     {
-                        <p class="text-gray-500">Không có đơn hàng nào.</p>
+                        <div class="flex flex-col items-center justify-center py-12 bg-gray-50 rounded-lg">
+                            <svg class="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <p class="text-gray-500 text-lg">Không có đơn hàng nào.</p>
+                        </div>
                     }
                     else
                     {
                         @foreach(var order in Model.Items)
                         {
-                            <div class="bg-gray-50 p-4 rounded-lg shadow-md">
-                                <div class="flex items-center justify-between">
+                            <div class="bg-white p-5 rounded-lg shadow-md border border-gray-200 hover:shadow-lg transition duration-200">
+                                <div class="flex flex-col md:flex-row md:items-center md:justify-between">
                                     <div>
-                                        <h2 class="text-lg font-bold">Mã đơn hàng: @order.IdDh</h2>
-                                        <p class="text-sm text-gray-500">
-                                            Ngày đặt: @order.Ngaydathang?.ToString("dd/MM/yyyy hh:mm tt")
-                                        </p>
-                                        <p class="text-sm text-red-600 font-bold">
-                                            Tổng tiền: @order.Tongtien.ToString("N0") VNĐ
-                                        </p>
+                                        <div class="flex items-center mb-2">
+                                            <h2 class="text-lg font-bold text-gray-800">Mã đơn hàng: <span class="text-blue-600">@order.IdDh</span></h2>
+                                            <div class="ml-4">
+                                                @* Badge based on order status, matching the provided list *@
+                                                @if(order.Trangthai == "Chờ xác nhận")
+                                                {
+                                                    <span class="bg-yellow-100 text-yellow-700 text-sm font-medium px-3 py-1 rounded-full">Chờ xác nhận</span>
+                                                }
+                                                else if(order.Trangthai == "Đã thanh toán")
+                                                {
+                                                    <span class="bg-green-100 text-green-500 text-sm font-medium px-3 py-1 rounded-full">Đã thanh toán</span>
+                                                }
+                                                else if(order.Trangthai == "Thanh toán không thành công")
+                                                {
+                                                    <span class="bg-red-100 text-red-700 text-sm font-medium px-3 py-1 rounded-full">Thanh toán không thành công</span>
+                                                }
+                                                else if(order.Trangthai == "Đã duyệt đơn")
+                                                {
+                                                    <span class="bg-indigo-100 text-indigo-700 text-sm font-medium px-3 py-1 rounded-full">Đã duyệt đơn</span>
+                                                }
+                                                else if(order.Trangthai == "Đang giao")
+                                                {
+                                                    <span class="bg-green-100 text-green-700 text-sm font-medium px-3 py-1 rounded-full">Đang giao</span>
+                                                }
+                                                else if(order.Trangthai == "Giao thành công")
+                                                {
+                                                    <span class="bg-blue-500 text-white text-sm font-medium px-3 py-1 rounded-full">Giao thành công</span>
+                                                }
+                                                else if(order.Trangthai == "Không nhận hàng")
+                                                {
+                                                    <span class="bg-orange-100 text-orange-700 text-sm font-medium px-3 py-1 rounded-full">Không nhận hàng</span>
+                                                }
+                                                else if(order.Trangthai == "Hủy đơn")
+                                                {
+                                                    <span class="bg-gray-100 text-gray-700 text-sm font-medium px-3 py-1 rounded-full">Hủy đơn</span>
+                                                }
+                                            </div>
+                                        </div>
+                                        <div class="grid grid-cols-2 gap-4 text-sm">
+                                            <p class="text-gray-600">
+                                                <i class="far fa-calendar-alt mr-2"></i> Ngày đặt: <span class="text-gray-800">@order.Ngaydathang?.ToString("dd/MM/yyyy hh:mm tt")</span>
+                                            </p>
+                                            <p class="text-gray-600">
+                                                <i class="fas fa-money-bill-wave mr-2"></i> Tổng tiền: <span class="text-red-600 font-bold">@order.Tongtien.ToString("N0") VNĐ</span>
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        @* Badge based on order status, matching the provided list *@
-                                        @if(order.Trangthai == "Chờ xác nhận")
-                                        {
-                                            <span class="bg-yellow-100 text-yellow-700 text-sm font-medium px-3 py-1 rounded-full">Chờ xác nhận</span>
-                                        }
-                                        else if(order.Trangthai == "Đã thanh toán")
-                                        {
-                                            <span class="bg-green-100 text-green-500 text-sm font-medium px-3 py-1 rounded-full">Đã thanh toán</span>
-                                        }
-                                        else if(order.Trangthai == "Đặt hàng thành công")
-                                        {
-                                            <span class="bg-blue-100 text-blue-700 text-sm font-medium px-3 py-1 rounded-full">Đặt hàng thành công</span>
-                                        }
-                                        else if(order.Trangthai == "Đã duyệt đơn")
-                                        {
-                                            <span class="bg-indigo-100 text-indigo-700 text-sm font-medium px-3 py-1 rounded-full">Đã duyệt đơn</span>
-                                        }
-                                        else if(order.Trangthai == "Đang giao")
-                                        {
-                                            <span class="bg-green-100 text-green-700 text-sm font-medium px-3 py-1 rounded-full">Đang giao</span>
-                                        }
-                                        else if(order.Trangthai == "Giao thành công")
-                                        {
-                                            <span class="bg-blue-500 text-white text-sm font-medium px-3 py-1 rounded-full">Giao thành công</span>
-                                        }
-                                        else if(order.Trangthai == "Không giao")
-                                        {
-                                            <span class="bg-orange-100 text-orange-700 text-sm font-medium px-3 py-1 rounded-full">Không giao</span>
-                                        }
-                                        else if(order.Trangthai == "Hủy đơn")
-                                        {
-                                            <span class="bg-gray-100 text-gray-700 text-sm font-medium px-3 py-1 rounded-full">Hủy đơn</span>
-                                        }
+                                    <div class="mt-4 md:mt-0">
+                                        <!-- "Xem chi tiết" passes the order Id -->
+                                        <a asp-action="OrderHistory" asp-route-orderId="@order.IdDh" class="inline-flex items-center bg-blue-500 text-white px-4 py-2 rounded-md font-medium shadow hover:bg-blue-600 transition duration-200">
+                                            <i class="fas fa-eye mr-2"></i> Xem chi tiết
+                                        </a>
                                     </div>
-                                </div>
-                                <div class="flex space-x-3 mt-3">
-                                    <!-- "Xem chi tiết" passes the order Id -->
-                                    <a asp-action="OrderHistory" asp-route-orderId="@order.IdDh" class="bg-green-500 text-white px-4 py-2 rounded-md font-medium shadow hover:bg-green-600">
-                                        Xem chi tiết
-                                    </a>
                                 </div>
                             </div>
                         }
                     }
                 </div>
+                
                 <!-- Dynamic Pagination -->
-                <div class="flex justify-between items-center mt-6">
-                    @if(Model.HasPreviousPage)
-                    {
-                        <a asp-action="OrderHistory" asp-route-pageNumber="@(Model.PageNumber - 1)" class="bg-gray-200 text-gray-600 px-4 py-2 rounded-md shadow hover:bg-gray-300">
-                            ← Trước
-                        </a>
-                    }
-                    else
-                    {
-                        <span class="bg-gray-200 text-gray-600 px-4 py-2 rounded-md shadow">← Trước</span>
-                    }
-                    <div class="space-x-2">
-                        @for (int i = 1; i <= Model.TotalPages; i++)
+                @if(Model.TotalPages > 1)
+                {
+                    <div class="flex justify-between items-center mt-8">
+                        @if(Model.HasPreviousPage)
                         {
-                            if (i == Model.PageNumber)
+                            <a asp-action="OrderHistory" asp-route-pageNumber="@(Model.PageNumber - 1)" class="flex items-center bg-white text-gray-700 px-4 py-2 rounded-md shadow border border-gray-300 hover:bg-gray-50 transition duration-200">
+                                <i class="fas fa-chevron-left mr-2"></i> Trang trước
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="flex items-center bg-gray-100 text-gray-400 px-4 py-2 rounded-md shadow cursor-not-allowed">
+                                <i class="fas fa-chevron-left mr-2"></i> Trang trước
+                            </span>
+                        }
+                        
+                        <div class="hidden md:flex space-x-2">
+                            @for (int i = 1; i <= Model.TotalPages; i++)
                             {
-                                <span class="bg-blue-500 text-white px-4 py-2 rounded-md shadow">@i</span>
+                                if (i == Model.PageNumber)
+                                {
+                                    <span class="bg-blue-500 text-white px-4 py-2 rounded-md shadow">@i</span>
+                                }
+                                else
+                                {
+                                    <a asp-action="OrderHistory" asp-route-pageNumber="@i" class="bg-white text-gray-700 px-4 py-2 rounded-md shadow border border-gray-300 hover:bg-gray-50 transition duration-200">
+                                        @i
+                                    </a>
+                                }
                             }
-                            else
-                            {
-                                <a asp-action="OrderHistory" asp-route-pageNumber="@i" class="bg-gray-200 text-gray-600 px-4 py-2 rounded-md shadow hover:bg-gray-300">
-                                    @i
-                                </a>
-                            }
+                        </div>
+                        
+                        <div class="md:hidden">
+                            <span class="bg-white text-gray-700 px-4 py-2 rounded-md shadow border border-gray-300">
+                                Trang @Model.PageNumber / @Model.TotalPages
+                            </span>
+                        </div>
+                        
+                        @if(Model.HasNextPage)
+                        {
+                            <a asp-action="OrderHistory" asp-route-pageNumber="@(Model.PageNumber + 1)" class="flex items-center bg-white text-gray-700 px-4 py-2 rounded-md shadow border border-gray-300 hover:bg-gray-50 transition duration-200">
+                                Trang sau <i class="fas fa-chevron-right ml-2"></i>
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="flex items-center bg-gray-100 text-gray-400 px-4 py-2 rounded-md shadow cursor-not-allowed">
+                                Trang sau <i class="fas fa-chevron-right ml-2"></i>
+                            </span>
                         }
                     </div>
-                    @if(Model.HasNextPage)
-                    {
-                        <a asp-action="OrderHistory" asp-route-pageNumber="@(Model.PageNumber + 1)" class="bg-gray-200 text-gray-600 px-4 py-2 rounded-md shadow hover:bg-gray-300">
-                            Tiếp →
-                        </a>
-                    }
-                    else
-                    {
-                        <span class="bg-gray-200 text-gray-600 px-4 py-2 rounded-md shadow">Tiếp →</span>
-                    }
-                </div>
+                }
             }
         </div>
     </div>
@@ -276,8 +344,13 @@
         document.getElementById('openReviewModal')?.addEventListener('click', function () {
             document.getElementById('reviewModal').classList.remove('hidden');
         });
-        // Close the review modal
+        
+        // Close the review modal (both buttons)
         document.getElementById('closeReviewModal')?.addEventListener('click', function () {
+            document.getElementById('reviewModal').classList.add('hidden');
+        });
+        
+        document.getElementById('closeReviewModalBtn')?.addEventListener('click', function () {
             document.getElementById('reviewModal').classList.add('hidden');
         });
 
@@ -287,19 +360,29 @@
             reviewForm.addEventListener('submit', function(e) {
                 e.preventDefault();
                 const formData = new FormData(reviewForm);
+                
+                // Show global loading overlay
+                AppLoading.show("Đang gửi đánh giá...");
+                
                 fetch(reviewForm.action, {
                     method: 'POST',
                     body: formData
                 })
                 .then(response => response.json())
                 .then(data => {
+                    // Hide loading overlay
+                    AppLoading.hide();
+                    
                     alert(data.message);
                     if (data.success) {
-                        // Redirect back to OrderHistory on success
-                        window.location.href = '/ProfileManagement/OrderHistory';
+                        // Show loading again before redirect
+                        AppLoading.showBeforeRedirect('/ProfileManagement/OrderHistory', "Đang chuyển hướng...");
                     }
                 })
                 .catch(error => {
+                    // Hide loading overlay on error
+                    AppLoading.hide();
+                    
                     alert("Có lỗi xảy ra khi gửi đánh giá.");
                     console.error(error);
                 });
@@ -313,19 +396,29 @@
                 e.preventDefault();
                 if (confirm("Bạn có chắc chắn muốn hủy đơn hàng này?")) {
                     const formData = new FormData(cancelForm);
+                    
+                    // Show global loading overlay
+                    AppLoading.show("Đang hủy đơn hàng...");
+                    
                     fetch(cancelForm.action, {
                         method: 'POST',
                         body: formData
                     })
                     .then(response => response.json())
                     .then(data => {
+                        // Hide loading overlay
+                        AppLoading.hide();
+                        
                         alert(data.message);
                         if (data.success) {
-                            // Redirect back to OrderHistory on success
-                            window.location.href = '/ProfileManagement/OrderHistory';
+                            // Show loading again before redirect
+                            AppLoading.showBeforeRedirect('/ProfileManagement/OrderHistory', "Đang chuyển hướng...");
                         }
                     })
                     .catch(error => {
+                        // Hide loading overlay on error
+                        AppLoading.hide();
+                        
                         alert("Có lỗi xảy ra khi hủy đơn.");
                         console.error(error);
                     });

@@ -50,7 +50,7 @@
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
                             <option value="COD">COD</option>
                             <option value="Paypal">Paypal</option>
-                            <option value="VNPay">VNPay</option>
+                            <option value="Momo">Momo</option>
                         </select>
                         <span asp-validation-for="Phuongthucthanhtoan" class="text-red-500 text-sm mt-1"></span>
                     </div>
@@ -79,12 +79,14 @@
                         <select asp-for="Trangthai" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required>
                             <option value="">Chọn trạng thái</option>
                             <option value="Chờ xác nhận">Chờ xác nhận</option>
-                            <option value="Đặt hàng thành công">Đặt hàng thành công</option>
+                            <option value="Đã thanh toán">Đã thanh toán</option>
+                            <option value="Thanh toán không thành công">Thanh toán không thành công</option>
                             <option value="Đã duyệt đơn">Đã duyệt đơn</option>
                             <option value="Đang giao">Đang giao</option>
                             <option value="Giao thành công">Giao thành công</option>
-                            <option value="Không giao">Không giao</option>
+                            <option value="Không nhận hàng">Không nhận hàng</option>
                             <option value="Hủy đơn">Hủy đơn</option>
+                            <option value="Đã kết thúc">Đã kết thúc</option>
                         </select>
                         <span asp-validation-for="Trangthai" class="text-red-500 text-sm mt-1"></span>
                     </div>
@@ -200,15 +202,25 @@
         // When customer ID loses focus, fetch customer info including VIP discount
         document.getElementById('customerId').addEventListener('blur', function () {
             const customerId = this.value.trim();
-            if (!customerId) return;
+            if (!customerId) {
+                document.getElementById('tenKhachHang').value = "";
+                document.getElementById('customerError').classList.add('hidden');
+                return;
+            }
+            
+            document.getElementById('customerError').classList.add('hidden');
+            console.log("Fetching customer info for ID:", customerId);
+            
             fetch('/OrderManagement/GetCustomerInfo?id=' + encodeURIComponent(customerId))
                 .then(response => response.json())
                 .then(data => {
-                    if (data && data.IdKh) {
-                        document.getElementById('tenKhachHang').value = data.Hoten;
+                    console.log("Customer data received:", data);
+                    if (data && data.idKh) {
+                        document.getElementById('tenKhachHang').value = data.hoten;
                         vipDiscountPercentage = parseFloat(data.vipDiscount) || 0;
                         vipRankName = data.vipRankName || "";
                         document.getElementById('vipRankName').textContent = vipRankName;
+                        document.getElementById('customerError').classList.add('hidden');
                         updateTotalAmount(); // recalc totals with new VIP discount
                     } else {
                         document.getElementById('tenKhachHang').value = "";
@@ -219,7 +231,10 @@
                     }
                 })
                 .catch(error => {
-                    console.error(error);
+                    console.error("Error fetching customer:", error);
+                    document.getElementById('tenKhachHang').value = "";
+                    document.getElementById('customerError').classList.remove('hidden');
+                    document.getElementById('customerError').textContent = "Lỗi khi tìm kiếm khách hàng";
                 });
         });
 
@@ -283,26 +298,132 @@
             document.getElementById('discountCode').addEventListener('input', function () {
                 updateTotalAmount();
             });
+
+            // Thêm sự kiện change cho phương thức thanh toán
+            document.getElementById('paymentMethod').addEventListener('change', function() {
+                const onlinePaymentInfo = document.getElementById('onlinePaymentInfo');
+                if (this.value === 'Momo' || this.value === 'Paypal') {
+                    onlinePaymentInfo.classList.remove('hidden');
+                } else {
+                    onlinePaymentInfo.classList.add('hidden');
+                }
+            });
         });
 
         // Prevent multiple submissions
         document.getElementById('createOrderForm').addEventListener('submit', function (e) {
+            e.preventDefault(); // Ngăn form submit mặc định
+            
             if (this.hasAttribute('data-submitting')) {
-                e.preventDefault();
                 return;
             }
+            
             const paymentMethod = document.getElementById('paymentMethod');
             if (!paymentMethod.value) {
-                e.preventDefault();
                 alert('Vui lòng chọn phương thức thanh toán');
                 paymentMethod.focus();
                 return;
             }
+            
+            // Kiểm tra mã thanh toán cho phương thức thanh toán online
+            if ((paymentMethod.value === 'Momo' || paymentMethod.value === 'Paypal')) {
+                const mathanhtoanInput = document.querySelector('input[name="Mathanhtoan"]');
+                if (!mathanhtoanInput || !mathanhtoanInput.value.trim()) {
+                    alert('Vui lòng nhập mã thanh toán cho phương thức thanh toán online!');
+                    if (mathanhtoanInput) mathanhtoanInput.focus();
+                    return;
+                }
+            }
+            
+            // Kiểm tra các trường bắt buộc
+            const requiredFields = {
+                'customerId': 'Mã khách hàng',
+                'Diachigiaohang': 'Địa chỉ giao hàng',
+                'Trangthai': 'Trạng thái đơn hàng'
+            };
+            
+            let isValid = true;
+            let errorMessages = [];
+            
+            for (const [id, label] of Object.entries(requiredFields)) {
+                const field = document.getElementById(id);
+                if (!field || !field.value.trim()) {
+                    errorMessages.push(`Vui lòng nhập ${label}`);
+                    field?.classList.add('border-red-500');
+                    isValid = false;
+                }
+            }
+            
+            // Kiểm tra bảng sản phẩm
+            const productRows = document.querySelectorAll('#productTable tbody tr');
+            if (productRows.length === 0) {
+                errorMessages.push('Vui lòng thêm ít nhất một sản phẩm');
+                isValid = false;
+            }
+            
+            // Hiển thị lỗi nếu có
+            const validationSummary = document.getElementById('validation-summary');
+            if (!isValid && validationSummary) {
+                validationSummary.innerHTML = errorMessages.map(msg => `<li>${msg}</li>`).join('');
+                validationSummary.classList.remove('hidden');
+                return;
+            }
+            
+            // Thu thập thông tin chi tiết đơn hàng
+            const chitietdonhangs = [];
+            let hasProductError = false;
+            
+            for (const row of productRows) {
+                const idSp = row.querySelector('[name="IdSp"]').value;
+                const soluong = parseInt(row.querySelector('.quantity-input').value);
+                const priceElement = row.querySelector('.product-price');
+                const dongia = parseFloat(priceElement.dataset.price);
+                const productName = row.querySelector('.product-name')?.value;
+                
+                if (!idSp || isNaN(soluong) || isNaN(dongia) || dongia <= 0 || 
+                    productName === 'Không tìm thấy sản phẩm' || productName === 'Lỗi khi tìm kiếm sản phẩm') {
+                    row.classList.add('bg-red-50');
+                    hasProductError = true;
+                    continue;
+                }
+                
+                chitietdonhangs.push({ IdSp: idSp, Soluongsanpham: soluong, Dongia: dongia });
+            }
+            
+            if (hasProductError) {
+                if (validationSummary) {
+                    validationSummary.innerHTML = '<li>Vui lòng kiểm tra lại thông tin sản phẩm</li>';
+                    validationSummary.classList.remove('hidden');
+                }
+                return;
+            }
+            
+            // Thêm hidden input cho chitietdonhangs
+            let chitietdonhangsInput = this.querySelector('input[name="chitietdonhangs"]');
+            if (!chitietdonhangsInput) {
+                chitietdonhangsInput = document.createElement('input');
+                chitietdonhangsInput.type = 'hidden';
+                chitietdonhangsInput.name = 'chitietdonhangs';
+                this.appendChild(chitietdonhangsInput);
+            }
+            
+            // Chuyển đổi mảng thành chuỗi JSON
+            chitietdonhangsInput.value = JSON.stringify(chitietdonhangs);
+            
+            // Log để debug
+            console.log('Submitting form with chitietdonhangs:', chitietdonhangsInput.value);
+            console.log('Tổng tiền:', document.getElementById('Tongtien').value);
+            
+            // Đánh dấu form đang submit và vô hiệu hóa nút submit
             this.setAttribute('data-submitting', 'true');
             const submitButton = this.querySelector('button[type="submit"]');
             submitButton.disabled = true;
             submitButton.innerHTML = 'Đang xử lý...';
+            
+            // Submit form
+            this.submit();
         });
+
         // Add discount suggestion functionality
         document.getElementById('discountCode').addEventListener('input', async function () {
             const term = this.value.trim();
@@ -349,5 +470,145 @@
             }
         });
 
+        // Add a new product row to the table
+        function addProductRow() {
+            const table = document.querySelector('#productTable tbody');
+            const row = document.createElement('tr');
+            
+            // Generate a unique ID for the row
+            const rowId = 'product-row-' + Date.now();
+            row.id = rowId;
+            
+            // Add the HTML content
+            row.innerHTML = `
+                <td class="p-2">
+                    <input type="text" name="IdSp" class="form-control product-id w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="Mã SP" required />
+                </td>
+                <td class="p-2">
+                    <input type="text" class="form-control product-name w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100" readonly />
+                </td>
+                <td class="p-2">
+                    <input type="number" name="Soluongsanpham" class="form-control quantity-input w-full px-3 py-2 border border-gray-300 rounded-lg" value="1" min="1" onchange="updateRowTotal(this.parentElement.parentElement)" />
+                </td>
+                <td class="p-2">
+                    <input type="number" name="Dongia" class="form-control price-input w-full px-3 py-2 border border-gray-300 rounded-lg" readonly />
+                    <span class="product-price hidden" data-price="0"></span>
+                </td>
+                <td class="p-2 row-total">0 ₫</td>
+                <td class="p-2">
+                    <button type="button" class="btn btn-danger btn-sm px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600" onclick="removeProductRow(this.parentElement.parentElement)">Xóa</button>
+                </td>
+            `;
+            
+            // Add the row to the table
+            table.appendChild(row);
+            
+            // Add event listeners for product search
+            const productIdInput = row.querySelector('[name="IdSp"]');
+            
+            // Debounce function to prevent too many API calls
+            function debounce(func, timeout = 300) {
+                let timer;
+                return (...args) => {
+                    clearTimeout(timer);
+                    timer = setTimeout(() => { func.apply(this, args); }, timeout);
+                };
+            }
+            
+            // Product search function
+            const searchProduct = async function(value) {
+                if (!row.isConnected) return;
+                
+                const productNameField = row.querySelector('.product-name');
+                const priceInput = row.querySelector('.price-input');
+                const priceElement = row.querySelector('.product-price');
+                const quantityInput = row.querySelector('.quantity-input');
+                
+                if (!productNameField || !priceInput || !priceElement || !quantityInput) return;
+                
+                if (!value) {
+                    productNameField.value = '';
+                    priceInput.value = '';
+                    priceElement.dataset.price = '0';
+                    updateRowTotal(row);
+                    return;
+                }
+                
+                try {
+                    console.log(`Tìm kiếm sản phẩm: ${value}`);
+                    const response = await fetch(`/OrderManagement/GetProductInfo?id=${encodeURIComponent(value)}`);
+                    const data = await response.json();
+                    console.log('Kết quả tìm kiếm:', data);
+                    
+                    if (data && data.success) {
+                        productNameField.value = data.tensanpham;
+                        productNameField.classList.remove('text-red-500');
+                        priceInput.value = data.gia;
+                        priceElement.dataset.price = data.gia;
+                        quantityInput.max = data.soluongton;
+                        updateRowTotal(row);
+                    } else {
+                        productNameField.value = data.message || 'Không tìm thấy sản phẩm';
+                        productNameField.classList.add('text-red-500');
+                        priceInput.value = '';
+                        priceElement.dataset.price = '0';
+                        updateRowTotal(row);
+                    }
+                } catch (error) {
+                    console.error('Lỗi khi tìm kiếm sản phẩm:', error);
+                    productNameField.value = 'Lỗi khi tìm kiếm sản phẩm';
+                    productNameField.classList.add('text-red-500');
+                }
+            };
+            
+            const debouncedSearch = debounce(searchProduct, 300);
+            
+            productIdInput.addEventListener('input', function() {
+                const value = this.value;
+                if (!value) {
+                    const productNameField = row.querySelector('.product-name');
+                    if (productNameField) productNameField.value = '';
+                    const priceInput = row.querySelector('.price-input');
+                    if (priceInput) priceInput.value = '';
+                    const priceElement = row.querySelector('.product-price');
+                    if (priceElement) priceElement.dataset.price = '0';
+                    updateRowTotal(row);
+                    return;
+                }
+                debouncedSearch(value);
+            });
+            
+            productIdInput.addEventListener('blur', function() {
+                searchProduct(this.value);
+            });
+            
+            // Focus on the new input
+            productIdInput.focus();
+        }
+        
+        // Function to update row total
+        function updateRowTotal(row) {
+            const quantityInput = row.querySelector('.quantity-input');
+            const priceElement = row.querySelector('.product-price');
+            const rowTotalElement = row.querySelector('.row-total');
+            
+            if (quantityInput && priceElement && rowTotalElement) {
+                const quantity = parseInt(quantityInput.value) || 0;
+                const price = parseFloat(priceElement.dataset.price) || 0;
+                const total = quantity * price;
+                
+                rowTotalElement.textContent = formatCurrency(total) + ' ₫';
+                console.log(`Cập nhật dòng: Số lượng=${quantity}, Đơn giá=${price}, Thành tiền=${total}`);
+                
+                // Update order total
+                updateTotalAmount();
+            }
+        }
+        
+        // Function to remove a product row
+        function removeProductRow(row) {
+            row.remove();
+            updateTotalAmount();
+        }
     </script>
 }

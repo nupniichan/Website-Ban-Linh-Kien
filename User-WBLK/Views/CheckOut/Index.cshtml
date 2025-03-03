@@ -143,10 +143,21 @@
             <!-- Mã giảm giá -->
             <div class="bg-white p-4 border border-gray-200 rounded-lg mb-4">
                 <h5 class="text-lg mb-2 font-bold">Mã giảm giá</h5>
+                @if (User.Identity?.IsAuthenticated != true)
+                {
+                    <div class="bg-blue-50 border-l-4 border-blue-500 p-3 mb-3 text-sm">
+                        <p class="text-blue-700">Đăng nhập để xem thêm các mã giảm giá hấp dẫn hơn!</p>
+                    </div>
+                }
                 <input type="text" name="DiscountCode" list="discountCodes" placeholder="Nhập mã giảm giá hoặc chọn"
                     class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all">
                 <datalist id="discountCodes">
-                    @foreach(var discount in Model.AvailableDiscounts)
+                    @{
+                        var filteredDiscounts = User.Identity?.IsAuthenticated == true 
+                            ? Model.AvailableDiscounts.OrderByDescending(d => d.Tilechietkhau)
+                            : Model.AvailableDiscounts.Where(d => d.Tilechietkhau <= 5);
+                    }
+                    @foreach(var discount in filteredDiscounts)
                     {
                         <option value="@discount.IdMgg">
                             @discount.Ten - @discount.Tilechietkhau% 
@@ -275,13 +286,19 @@
         });
 
         function loadGuestCart() {
+            // Kiểm tra xem có đang trong quá trình mua ngay không
+            const isBuyNow = localStorage.getItem('isBuyNow') === 'true';
+            
+            // Lấy giỏ hàng hiện tại
             const cart = JSON.parse(localStorage.getItem('guestCart')) || [];
             const checkoutItems = document.getElementById('checkoutItems');
             let totalAmount = 0;
+            
             if (cart.length === 0) {
                 window.location.href = '/';
                 return;
             }
+            
             let itemsHtml = '';
             cart.forEach(item => {
                 const subtotal = item.price * item.quantity;
@@ -432,6 +449,10 @@
                     DiscountCode: form.querySelector('[name="DiscountCode"]').value.trim(),
                     Items: cartItems
                 };
+                
+                // Show loading overlay
+                AppLoading.show("Đang xử lý đơn hàng...");
+                
                 fetch(form.action, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -441,14 +462,33 @@
                 .then(data => {
                     if (data.success) {
                         if (!isAuthenticated) {
-                            localStorage.removeItem('guestCart');
+                            // Kiểm tra xem có đang trong quá trình mua ngay không
+                            const isBuyNow = localStorage.getItem('isBuyNow') === 'true';
+                            
+                            // Nếu đang trong quá trình mua ngay, khôi phục giỏ hàng gốc
+                            if (isBuyNow) {
+                                const backupCart = localStorage.getItem('guestCartBackup');
+                                if (backupCart) {
+                                    localStorage.setItem('guestCart', backupCart);
+                                }
+                                localStorage.removeItem('isBuyNow');
+                                localStorage.removeItem('guestCartBackup');
+                            } else {
+                                // Nếu không phải mua ngay, xóa giỏ hàng
+                                localStorage.removeItem('guestCart');
+                            }
                         }
-                        window.location.href = data.redirectUrl;
+                        // Show loading before redirect
+                        AppLoading.showBeforeRedirect(data.redirectUrl, "Đang chuyển hướng...");
                     } else {
+                        // Hide loading on error
+                        AppLoading.hide();
                         alert(data.message || 'Có lỗi xảy ra khi đặt hàng');
                     }
                 })
                 .catch(error => {
+                    // Hide loading on error
+                    AppLoading.hide();
                     console.error('Error:', error);
                     alert('Có lỗi xảy ra khi đặt hàng');
                 });
@@ -506,6 +546,9 @@
                 Items: cartItems
             };
 
+            // Show loading overlay
+            AppLoading.show("Đang xử lý thanh toán Momo...");
+
             // Tạo đơn hàng trước
             fetch('@Url.Action("ProcessMomoPayment", "Checkout")', {
                 method: 'POST',
@@ -533,23 +576,45 @@
                             // Xóa giỏ hàng nếu là khách vãng lai
                             const isAuthenticated = @Json.Serialize(User.Identity?.IsAuthenticated == true);
                             if (!isAuthenticated) {
-                                localStorage.removeItem('guestCart');
+                                // Kiểm tra xem có đang trong quá trình mua ngay không
+                                const isBuyNow = localStorage.getItem('isBuyNow') === 'true';
+                                
+                                // Nếu đang trong quá trình mua ngay, khôi phục giỏ hàng gốc
+                                if (isBuyNow) {
+                                    const backupCart = localStorage.getItem('guestCartBackup');
+                                    if (backupCart) {
+                                        localStorage.setItem('guestCart', backupCart);
+                                    }
+                                    localStorage.removeItem('isBuyNow');
+                                    localStorage.removeItem('guestCartBackup');
+                                } else {
+                                    // Nếu không phải mua ngay, xóa giỏ hàng
+                                    localStorage.removeItem('guestCart');
+                                }
                             }
                             // Chuyển hướng đến trang thanh toán Momo
-                            window.location.href = momoData.payUrl;
+                            AppLoading.showBeforeRedirect(momoData.payUrl, "Đang chuyển đến cổng thanh toán Momo...");
                         } else {
+                            // Hide loading on error
+                            AppLoading.hide();
                             alert(momoData.message || 'Có lỗi xảy ra khi tạo thanh toán Momo');
                         }
                     })
                     .catch(error => {
+                        // Hide loading on error
+                        AppLoading.hide();
                         console.error('Error:', error);
                         alert('Có lỗi xảy ra khi tạo thanh toán Momo');
                     });
                 } else {
+                    // Hide loading on error
+                    AppLoading.hide();
                     alert(data.message || 'Có lỗi xảy ra khi tạo đơn hàng');
                 }
             })
             .catch(error => {
+                // Hide loading on error
+                AppLoading.hide();
                 console.error('Error:', error);
                 alert('Có lỗi xảy ra khi tạo đơn hàng');
             });
@@ -600,7 +665,21 @@
                             // Xóa giỏ hàng nếu là khách vãng lai
                             const isAuthenticated = @Json.Serialize(User.Identity?.IsAuthenticated == true);
                             if (!isAuthenticated) {
-                                localStorage.removeItem('guestCart');
+                                // Kiểm tra xem có đang trong quá trình mua ngay không
+                                const isBuyNow = localStorage.getItem('isBuyNow') === 'true';
+                                
+                                // Nếu đang trong quá trình mua ngay, khôi phục giỏ hàng gốc
+                                if (isBuyNow) {
+                                    const backupCart = localStorage.getItem('guestCartBackup');
+                                    if (backupCart) {
+                                        localStorage.setItem('guestCart', backupCart);
+                                    }
+                                    localStorage.removeItem('isBuyNow');
+                                    localStorage.removeItem('guestCartBackup');
+                                } else {
+                                    // Nếu không phải mua ngay, xóa giỏ hàng
+                                    localStorage.removeItem('guestCart');
+                                }
                             }
                             // Chuyển hướng đến trang thanh toán PayPal
                             window.location.href = paypalData.payUrl;
@@ -691,9 +770,14 @@
 
         // Build mapping of available discount codes
         var availableDiscounts = {};
-        @foreach(var d in Model.AvailableDiscounts)
+        @{
+            var filteredDiscounts = User.Identity?.IsAuthenticated == true 
+                ? Model.AvailableDiscounts.OrderByDescending(d => d.Tilechietkhau)
+                : Model.AvailableDiscounts.Where(d => d.Tilechietkhau <= 5);
+        }
+        @foreach(var discount in filteredDiscounts)
         {
-            @:availableDiscounts["@d.IdMgg"] = @d.Tilechietkhau;
+            @:availableDiscounts["@discount.IdMgg"] = @discount.Tilechietkhau;
         }
 
         // Get original and VIP price from the model.
