@@ -18,7 +18,7 @@
                 <p class="text-2xl font-bold text-green-700" id="totalOrders">0</p>
             </div>
             <div class="bg-purple-50 p-4 rounded-lg">
-                <p class="text-sm text-purple-600 mb-1">Đơn hàng thành công</p>
+                <p class="text-sm text-purple-600 mb-1">Đơn hàng giao thành công</p>
                 <p class="text-2xl font-bold text-purple-700" id="successOrders">0</p>
             </div>
         </div>
@@ -213,14 +213,14 @@
                     let totalRevenue = 0;
                     let totalOrders = 0;
                     
-                    data.forEach(item => {
+                    data.revenueData.forEach(item => {
                         totalRevenue += item.totalAmount;
                         totalOrders += item.orderCount;
                     });
 
                     document.getElementById('totalRevenue').textContent = totalRevenue.toLocaleString('vi-VN') + ' đ';
                     document.getElementById('totalOrders').textContent = totalOrders;
-                    document.getElementById('successOrders').textContent = totalOrders;
+                    document.getElementById('successOrders').textContent = data.totalSuccessOrders;
                 });
         }
 
@@ -279,17 +279,19 @@
                     
                     let totalRevenue = 0;
                     let totalOrders = 0;
+                    let totalSuccessOrders = 0;
 
-                    if (data.length === 0) {
+                    if (data.revenueData.length === 0) {
                         tableBody.innerHTML = `
                             <tr>
                                 <td colspan="4" class="px-6 py-4 text-center text-gray-500">Không có dữ liệu thống kê trong khoảng thời gian này</td>
                             </tr>
                         `;
                     } else {
-                    data.forEach(item => {
+                    data.revenueData.forEach(item => {
                         totalRevenue += item.totalAmount;
                         totalOrders += item.orderCount;
+                        totalSuccessOrders += item.successOrderCount;
 
                         const row = `
                             <tr class="hover:bg-gray-50">
@@ -315,6 +317,9 @@
                             </tr>
                         `;
                         tableBody.innerHTML += totalRow;
+                        
+                        // Cập nhật số đơn hàng thành công
+                        document.getElementById('successOrders').textContent = totalSuccessOrders;
                     }
                 })
                 .catch(error => {

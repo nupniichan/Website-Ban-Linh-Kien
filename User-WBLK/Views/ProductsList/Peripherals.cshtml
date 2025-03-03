@@ -10,19 +10,23 @@
         <h2 class="font-semibold mb-2">Danh mục:</h2>
         <div class="flex flex-wrap gap-2">
             @{
-                var categories = new[] {
-                    ("keyboard", "Bàn phím"),
-                    ("mouse", "Chuột"),
-                    ("headphone", "Tai nghe"),
-                    ("webcam", "Webcam")
+                var categories = new Dictionary<string, string>() {
+                    {"keyboard", "Bàn phím"},
+                    {"mouse", "Chuột"},
+                    {"headphone", "Tai nghe"},
+                    {"webcam", "Webcam"}
                 };
             }
-            @foreach (var (value, text) in categories)
+            @foreach (var category in categories)
             {
-                var isActive = Model?.Category == value;
-                <a href="@Url.Action("Peripherals", new { category = value })"
-                   class="px-4 py-2 bg-gray-100 rounded-md hover:bg-gray-200 @(isActive ? "bg-blue-600 text-white" : "")">
-                    @text
+                var parameters = new Dictionary<string, string>
+                {
+                    { "category", category.Key }
+                };
+                var url = Url.Action("Peripherals", "ProductsList", parameters);
+                var isSelected = Model?.Category?.ToLower() == category.Key;
+                <a href="@url" class="category-btn flex-1 text-center px-3 py-2 rounded-lg transition-all duration-200 @(isSelected ? "bg-blue-600 text-white shadow-md" : "bg-gray-100 hover:bg-gray-200")">
+                    @category.Value
                 </a>
             }
         </div>
@@ -529,7 +533,67 @@
         
         <!-- Clear Filters Button -->
         <div class="mt-4 text-center">
-            @if (!string.IsNullOrEmpty(Model.Brand) || !string.IsNullOrEmpty(Model.PriceRange) || (Model.AdditionalFilters != null && Model.AdditionalFilters.Count > 0))
+            @{
+                // Debug: Hiển thị giá trị của các thuộc tính
+                var debugInfo = new Dictionary<string, string>
+                {
+                    { "Brand", Model.Brand ?? "null" },
+                    { "PriceRange", Model.PriceRange ?? "null" },
+                    { "AdditionalFilters Count", Model.AdditionalFilters != null ? Model.AdditionalFilters.Count.ToString() : "null" }
+                };
+                
+                // Kiểm tra xem có bộ lọc nào được áp dụng không (không tính category)
+                bool hasActiveFilters = false;
+                
+                // Kiểm tra Brand - chỉ khi có giá trị và không phải chuỗi rỗng
+                if (!string.IsNullOrEmpty(Model.Brand) && Model.Brand != "")
+                {
+                    hasActiveFilters = true;
+                }
+                
+                // Kiểm tra PriceRange - chỉ khi có giá trị và không phải chuỗi rỗng
+                if (!string.IsNullOrEmpty(Model.PriceRange) && Model.PriceRange != "")
+                {
+                    hasActiveFilters = true;
+                }
+                
+                // Kiểm tra các bộ lọc bổ sung - chỉ khi có ít nhất một bộ lọc có giá trị
+                if (Model.AdditionalFilters != null && Model.AdditionalFilters.Count > 0)
+                {
+                    // Kiểm tra xem có bộ lọc nào có giá trị không
+                    bool hasValidFilter = false;
+                    foreach (var filter in Model.AdditionalFilters)
+                    {
+                        if (!string.IsNullOrEmpty(filter.Value))
+                        {
+                            hasValidFilter = true;
+                            break;
+                        }
+                    }
+                    
+                    if (hasValidFilter)
+                    {
+                        hasActiveFilters = true;
+                    }
+                }
+            }
+            
+            <!-- Debug Info -->
+            @if (false) // Đặt thành true để hiển thị debug info
+            {
+                <div class="mt-4 p-4 bg-gray-100 rounded-lg">
+                    <h3 class="font-bold">Debug Info:</h3>
+                    <ul>
+                        @foreach (var item in debugInfo)
+                        {
+                            <li>@item.Key: @item.Value</li>
+                        }
+                        <li>hasActiveFilters: @hasActiveFilters</li>
+                    </ul>
+                </div>
+            }
+            
+            @if (hasActiveFilters)
             {
                 <a href="@Url.Action("Peripherals", "ProductsList", new { category = Model.Category })" 
                    class="inline-block bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-all duration-200 shadow-md">
@@ -647,11 +711,28 @@
                     products[0].scrollIntoView({ behavior: 'smooth' });
                 });
             }
+            
+            // Thêm hiệu ứng hover cho các nút danh mục
+            const categoryButtons = document.querySelectorAll('.category-btn');
+            categoryButtons.forEach(btn => {
+                btn.addEventListener('mouseenter', function() {
+                    if (!this.classList.contains('bg-blue-600')) {
+                        this.classList.add('shadow-sm', 'scale-105');
+                    }
+                });
+                
+                btn.addEventListener('mouseleave', function() {
+                    if (!this.classList.contains('bg-blue-600')) {
+                        this.classList.remove('shadow-sm', 'scale-105');
+                    }
+                });
+            });
         });
     </script>
     
     <style>
-        /* Hiệu ứng chuyển đổi cho các nút lọc giá */
+        /* Hiệu ứng chuyển đổi cho các nút */
+        .category-btn,
         .price-range-btn {
             transition: all 0.2s ease;
         }

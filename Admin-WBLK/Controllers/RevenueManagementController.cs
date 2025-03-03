@@ -46,11 +46,18 @@ namespace Admin_WBLK.Controllers
                 {
                     paymentMethod = g.Key,
                     totalAmount = g.Sum(d => d.Tongtien),
-                    orderCount = g.Count()
+                    orderCount = g.Count(),
+                    successOrderCount = g.Count(d => d.Trangthai == "Giao thành công")
                 })
                 .ToListAsync();
 
-            return Json(result);
+            // Tính tổng số đơn hàng thành công
+            int totalSuccessOrders = result.Sum(r => r.successOrderCount);
+
+            return Json(new { 
+                revenueData = result,
+                totalSuccessOrders = totalSuccessOrders
+            });
         }
 
         [HttpGet]
