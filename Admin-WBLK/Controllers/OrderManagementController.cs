@@ -24,43 +24,13 @@ namespace Admin_WBLK.Controllers
             ViewData["CurrentTuNgay"] = tuNgay;
             ViewData["CurrentDenNgay"] = denNgay;
 
-            // Sử dụng select để chỉ lấy các trường cần thiết và xử lý NULL
-            var query = _context.Donhangs
-                .Include(d => d.IdKhNavigation)
-                .Include(d => d.Chitietdonhangs)
-                .Select(d => new Donhang
-                {
-                    IdDh = d.IdDh ?? "",
-                    IdKh = d.IdKh,
-                    Trangthai = d.Trangthai ?? "",
-                    Tongtien = d.Tongtien != 0 ? d.Tongtien : d.Chitietdonhangs.Sum(c => c.Soluongsanpham * c.Dongia),
-                    Diachigiaohang = d.Diachigiaohang ?? "",
-                    Ngaydathang = d.Ngaydathang,
-                    Phuongthucthanhtoan = d.Phuongthucthanhtoan ?? "",
-                    IdMgg = d.IdMgg,
-                    Ghichu = d.Ghichu ?? "",
-                    LydoHuy = d.LydoHuy ?? "",
-                    IdKhNavigation = d.IdKhNavigation == null ? null : new Khachhang
-                    {
-                        IdKh = d.IdKhNavigation.IdKh,
-                        Hoten = d.IdKhNavigation.Hoten ?? ""
-                    },
-                    Chitietdonhangs = d.Chitietdonhangs
-                })
-                .AsQueryable();
+            // Tạo truy vấn cơ bản
+            var query = _context.Donhangs.AsQueryable();
 
             // Thêm điều kiện sắp xếp mặc định theo ngày đặt hàng mới nhất
-            query = query.OrderByDescending(x => x.Ngaydathang);
+            query = query.OrderByDescending(d => d.Ngaydathang);
 
-            if (!string.IsNullOrEmpty(searchString))
-            {
-                searchString = searchString.ToLower();
-                query = query.Where(d =>
-                    d.IdDh.ToLower().Contains(searchString) ||
-                    (d.IdKhNavigation != null &&
-                     d.IdKhNavigation.Hoten.ToLower().Contains(searchString)));
-            }
-
+            // Áp dụng các bộ lọc
             if (!string.IsNullOrEmpty(trangThai))
             {
                 query = query.Where(d => d.Trangthai == trangThai);
@@ -75,6 +45,25 @@ namespace Admin_WBLK.Controllers
             {
                 var endOfDay = denNgay.Value.Date.AddDays(1).AddTicks(-1);
                 query = query.Where(d => d.Ngaydathang <= endOfDay);
+            }
+
+            // Xử lý tìm kiếm theo mã đơn hàng hoặc tên khách hàng
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                searchString = searchString.ToLower();
+                
+                // Tìm theo mã đơn hàng
+                var orderIdQuery = query.Where(d => d.IdDh.ToLower().Contains(searchString));
+                
+                // Tìm theo tên khách hàng
+                var customerNameQuery = _context.Khachhangs
+                    .Where(k => k.Hoten.ToLower().Contains(searchString))
+                    .Select(k => k.IdKh);
+                
+                var customerOrdersQuery = query.Where(d => customerNameQuery.Contains(d.IdKh));
+                
+                // Kết hợp hai kết quả
+                query = orderIdQuery.Union(customerOrdersQuery);
             }
 
             // Lấy danh sách trạng thái để làm dropdown filter
@@ -94,9 +83,31 @@ namespace Admin_WBLK.Controllers
             try
             {
                 var totalItems = await query.CountAsync();
+                
                 var items = await query
                     .Skip(((pageNumber ?? 1) - 1) * pageSize)
                     .Take(pageSize)
+                    .Include(d => d.IdKhNavigation)
+                    .Include(d => d.Chitietdonhangs)
+                    .Select(d => new Donhang
+                    {
+                        IdDh = d.IdDh ?? "",
+                        IdKh = d.IdKh,
+                        Trangthai = d.Trangthai ?? "",
+                        Tongtien = d.Tongtien != 0 ? d.Tongtien : d.Chitietdonhangs.Sum(c => c.Soluongsanpham * c.Dongia),
+                        Diachigiaohang = d.Diachigiaohang ?? "",
+                        Ngaydathang = d.Ngaydathang,
+                        Phuongthucthanhtoan = d.Phuongthucthanhtoan ?? "",
+                        IdMgg = d.IdMgg,
+                        Ghichu = d.Ghichu ?? "",
+                        LydoHuy = d.LydoHuy ?? "",
+                        IdKhNavigation = d.IdKhNavigation == null ? null : new Khachhang
+                        {
+                            IdKh = d.IdKhNavigation.IdKh,
+                            Hoten = d.IdKhNavigation.Hoten ?? ""
+                        },
+                        Chitietdonhangs = d.Chitietdonhangs
+                    })
                     .ToListAsync();
 
                 var model = new PaginatedList<Donhang>(items, totalItems, pageNumber ?? 1, pageSize);
@@ -117,15 +128,54 @@ namespace Admin_WBLK.Controllers
                 return Json(new List<object>());
 
             term = term.ToLower();
-            var suggestions = await _context.Donhangs
-                .Include(d => d.IdKhNavigation)
-                .Where(d => d.IdDh.ToLower().Contains(term) ||
-                           d.IdKhNavigation.Hoten.ToLower().Contains(term))
-                .Take(5)
-                .Select(d => new { d.IdDh, CustomerName = d.IdKhNavigation.Hoten })
-                .ToListAsync();
+            try
+            {
+                // Tìm đơn hàng theo mã
+                var orderSuggestions = await _context.Donhangs
+                    .Where(d => d.IdDh.ToLower().Contains(term))
+                    .Take(3)
+                    .Select(d => new { d.IdDh, CustomerName = "" })
+                    .ToListAsync();
 
-            return Json(suggestions);
+                // Tìm khách hàng theo tên
+                var customerIds = await _context.Khachhangs
+                    .Where(k => k.Hoten.ToLower().Contains(term))
+                    .Select(k => new { k.IdKh, k.Hoten })
+                    .Take(3)
+                    .ToListAsync();
+
+                // Tìm đơn hàng của các khách hàng đã tìm thấy
+                var customerOrderSuggestions = new List<object>();
+                foreach (var customer in customerIds)
+                {
+                    var order = await _context.Donhangs
+                        .Where(d => d.IdKh == customer.IdKh)
+                        .OrderByDescending(d => d.Ngaydathang)
+                        .FirstOrDefaultAsync();
+
+                    if (order != null)
+                    {
+                        customerOrderSuggestions.Add(new { 
+                            IdDh = order.IdDh, 
+                            CustomerName = customer.Hoten 
+                        });
+                    }
+                }
+
+                // Kết hợp kết quả
+                var result = orderSuggestions
+                    .Concat(customerOrderSuggestions)
+                    .Take(5)
+                    .ToList();
+
+                return Json(result);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in SearchSuggestions: {ex.Message}");
+                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
+                return Json(new List<object>());
+            }
         }
 
         // GET: OrderManagement/Details/5
@@ -225,25 +275,27 @@ namespace Admin_WBLK.Controllers
 
                 // Add the order to the context.
                 _context.Donhangs.Add(donhang);
+                
                 // Process order details.
                 decimal originalTotal = 0;
                 if (!string.IsNullOrEmpty(chitietdonhangs))
                 {
                     var chitietList = JsonSerializer.Deserialize<List<Chitietdonhang>>(chitietdonhangs);
-                    int detailStartId = 0;
-
-                    // Get the last detail ID if any.
-                    var lastDetailId = await _context.Chitietdonhangs
-                        .OrderByDescending(c => c.Idchitietdonhang)
-                        .Select(c => c.Idchitietdonhang)
-                        .FirstOrDefaultAsync() ?? "CTDH00000";
-                    detailStartId = int.Parse(lastDetailId.Substring(4)) + 1;
-
+                    
+                    // Tạo danh sách chi tiết đơn hàng mới để tránh trùng lặp
+                    var newChitietList = new List<Chitietdonhang>();
+                    
                     foreach (var chitiet in chitietList)
                     {
-                        // Generate a new primary key for each order detail.
-                        chitiet.Idchitietdonhang = $"CTDH{detailStartId:D6}";
-                        chitiet.IdDh = donhang.IdDh;
+                        // Tạo ID mới cho mỗi chi tiết đơn hàng sử dụng phương thức an toàn
+                        var newChitiet = new Chitietdonhang
+                        {
+                            Idchitietdonhang = await GenerateOrderDetailId(),
+                            IdDh = donhang.IdDh,
+                            IdSp = chitiet.IdSp,
+                            Soluongsanpham = chitiet.Soluongsanpham,
+                            Dongia = chitiet.Dongia
+                        };
 
                         var product = await _context.Sanphams.FindAsync(chitiet.IdSp);
                         if (product == null)
@@ -256,19 +308,20 @@ namespace Admin_WBLK.Controllers
                         }
 
                         // **Always use the product's price from the database**:
-                        chitiet.Dongia = product.Gia;
+                        newChitiet.Dongia = product.Gia;
+                        originalTotal += newChitiet.Dongia * newChitiet.Soluongsanpham;
 
-                        // Deduct the quantity.
+                        // Update product inventory
                         product.Soluongton -= chitiet.Soluongsanpham;
+                        product.Damuahang = (product.Damuahang ?? 0) + chitiet.Soluongsanpham;
                         _context.Update(product);
 
-                        // Add the detail.
-                        _context.Chitietdonhangs.Add(chitiet);
-                        detailStartId++;
-
-                        // Sum up the original price using the DB price
-                        originalTotal += chitiet.Dongia * chitiet.Soluongsanpham;
+                        // Add to the new list
+                        newChitietList.Add(newChitiet);
                     }
+                    
+                    // Add all new order details to the context
+                    await _context.Chitietdonhangs.AddRangeAsync(newChitietList);
                 }
 
                 // Save so we have order + details in DB before applying discounts.
@@ -380,12 +433,36 @@ namespace Admin_WBLK.Controllers
         [HttpGet]
         public async Task<IActionResult> GetCustomerInfo(string id)
         {
-            var customer = await _context.Khachhangs
-                .Where(k => k.IdKh == id)
-                .Select(k => new { k.IdKh, k.Hoten })
-                .FirstOrDefaultAsync();
+            try
+            {
+                if (string.IsNullOrEmpty(id))
+                {
+                    Console.WriteLine("GetCustomerInfo: ID khách hàng trống");
+                    return Json(null);
+                }
 
-            return Json(customer);
+                Console.WriteLine($"Searching for customer with ID: {id}");
+
+                var customer = await _context.Khachhangs
+                    .Where(k => k.IdKh == id)
+                    .Select(k => new { k.IdKh, k.Hoten, vipDiscount = k.Diemtichluy >= 1000 ? 10 : (k.Diemtichluy >= 500 ? 5 : 0), vipRankName = k.Diemtichluy >= 1000 ? "VIP Gold" : (k.Diemtichluy >= 500 ? "VIP Silver" : "") })
+                    .FirstOrDefaultAsync();
+
+                if (customer == null)
+                {
+                    Console.WriteLine($"Customer not found: {id}");
+                    return Json(null);
+                }
+
+                Console.WriteLine($"Customer found: {customer.Hoten}");
+                return Json(customer);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetCustomerInfo: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                return Json(null);
+            }
         }
 
         [HttpGet]
@@ -880,19 +957,51 @@ namespace Admin_WBLK.Controllers
         }
 
         // Add this helper method to generate a new order detail ID.
+        private static readonly object _orderDetailLock = new object();
         private async Task<string> GenerateOrderDetailId()
         {
-            // Assuming the prefix "CTDH" followed by 6 digits
-            var lastDetail = await _context.Chitietdonhangs
-                .OrderByDescending(c => Convert.ToInt32(c.Idchitietdonhang.Substring(4)))
-                .FirstOrDefaultAsync();
-
-            if (lastDetail == null)
+            lock (_orderDetailLock)
             {
-                return "CTDH000001";
+                try
+                {
+                    // Lấy ID lớn nhất hiện tại từ cơ sở dữ liệu
+                    var lastDetail = _context.Chitietdonhangs
+                        .OrderByDescending(c => c.Idchitietdonhang)
+                        .Select(c => c.Idchitietdonhang)
+                        .FirstOrDefault();
+
+                    int lastNumber = 1;
+                    if (lastDetail != null)
+                    {
+                        // Trích xuất số từ ID cuối cùng và tăng lên 1
+                        if (int.TryParse(lastDetail.Substring(4), out int num))
+                        {
+                            lastNumber = num + 1;
+                        }
+                    }
+
+                    string newId = $"CTDH{lastNumber:D6}";
+                    
+                    // Kiểm tra xem ID mới có tồn tại không
+                    bool exists = _context.Chitietdonhangs.Any(c => c.Idchitietdonhang == newId);
+                    if (exists)
+                    {
+                        // Nếu ID đã tồn tại, tăng số lên cho đến khi tìm được ID chưa sử dụng
+                        do
+                        {
+                            lastNumber++;
+                            newId = $"CTDH{lastNumber:D6}";
+                            exists = _context.Chitietdonhangs.Any(c => c.Idchitietdonhang == newId);
+                        } while (exists);
+                    }
+
+                    return newId;
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception($"Lỗi khi tạo ID chi tiết đơn hàng: {ex.Message}", ex);
+                }
             }
-            int lastNumber = int.Parse(lastDetail.Idchitietdonhang.Substring(4));
-            return $"CTDH{(lastNumber + 1):D6}";
         }
 
         [HttpGet]
