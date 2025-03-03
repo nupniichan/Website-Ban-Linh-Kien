@@ -298,6 +298,16 @@
             document.getElementById('discountCode').addEventListener('input', function () {
                 updateTotalAmount();
             });
+
+            // Thêm sự kiện change cho phương thức thanh toán
+            document.getElementById('paymentMethod').addEventListener('change', function() {
+                const onlinePaymentInfo = document.getElementById('onlinePaymentInfo');
+                if (this.value === 'Momo' || this.value === 'Paypal') {
+                    onlinePaymentInfo.classList.remove('hidden');
+                } else {
+                    onlinePaymentInfo.classList.add('hidden');
+                }
+            });
         });
 
         // Prevent multiple submissions
