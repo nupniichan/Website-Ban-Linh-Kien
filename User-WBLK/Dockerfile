@@ -17,6 +17,3 @@ ENV ASPNETCORE_URLS="http://+:5124;https://+:7050"
 
 CMD ["dotnet", "User-WBLK.dll"]
 
-# Cach chay:
-# docker build -t user-wblk .
-# docker run --name user-wblk -dp 5124:5124 -dp 7050:7050 user-wblk
