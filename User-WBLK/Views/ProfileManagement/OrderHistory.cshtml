@@ -66,17 +66,29 @@
                         <div>
                             <h2 class="text-lg font-semibold mb-3 text-gray-700">Thông tin đơn hàng</h2>
                             <div class="space-y-2">
-                                <p><span class="font-medium text-gray-600">Ngày đặt:</span> <span class="text-gray-800">@order.Ngaydathang?.ToString("dd/MM/yyyy hh:mm tt")</span></p>
-                                <p><span class="font-medium text-gray-600">Phương thức thanh toán:</span> <span class="text-gray-800">@order.Phuongthucthanhtoan</span></p>
+                                <p>
+                                    <span class="font-medium text-gray-600">Ngày đặt:</span>
+                                    <span class="text-gray-800">@order.Ngaydathang?.ToString("dd/MM/yyyy hh:mm tt")</span>
+                                </p>
+                                <p>
+                                    <span class="font-medium text-gray-600">Phương thức thanh toán:</span>
+                                    <span class="text-gray-800">@order.Phuongthucthanhtoan</span>
+                                </p>
                             </div>
                         </div>
                         <div>
                             <h2 class="text-lg font-semibold mb-3 text-gray-700">Thông tin giao hàng</h2>
                             <div class="space-y-2">
-                                <p><span class="font-medium text-gray-600">Địa chỉ giao hàng:</span> <span class="text-gray-800">@order.Diachigiaohang</span></p>
+                                <p>
+                                    <span class="font-medium text-gray-600">Địa chỉ giao hàng:</span>
+                                    <span class="text-gray-800">@order.Diachigiaohang</span>
+                                </p>
                                 @if(!string.IsNullOrEmpty(order.Ghichu))
                                 {
-                                    <p><span class="font-medium text-gray-600">Ghi chú:</span> <span class="text-gray-800">@order.Ghichu</span></p>
+                                    <p>
+                                        <span class="font-medium text-gray-600">Ghi chú:</span>
+                                        <span class="text-gray-800">@order.Ghichu</span>
+                                    </p>
                                 }
                             </div>
                         </div>
@@ -94,6 +106,7 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Đơn giá</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Số lượng</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thành tiền</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hành động</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
@@ -103,45 +116,64 @@
                                         <td class="px-6 py-4">
                                             <div class="flex items-center">
                                                 <div class="ml-4">
-                                                    <div class="text-sm font-medium text-gray-900">@item.IdSpNavigation.Tensanpham</div>
+                                                    <div class="text-sm font-medium text-gray-900">
+                                                        @item.IdSpNavigation.Tensanpham
+                                                    </div>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@item.Dongia.ToString("N0") VNĐ</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@item.Soluongsanpham</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">@((item.Dongia * item.Soluongsanpham).ToString("N0")) VNĐ</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            @item.Dongia.ToString("N0") VNĐ
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            @item.Soluongsanpham
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                            @((item.Dongia * item.Soluongsanpham).ToString("N0")) VNĐ
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                            @if(order.Trangthai == "Giao thành công")
+                                            {
+                                                if(item.IdDg == null)
+                                                {
+                                                    <button class="bg-blue-500 text-white px-4 py-2 rounded-md font-medium hover:bg-blue-600 transition duration-200 openReviewModal" 
+                                                            data-id="@item.Idchitietdonhang" data-tensp="@item.IdSpNavigation.Tensanpham">
+                                                        <i class="fas fa-star mr-2"></i> Đánh giá
+                                                    </button>
+                                                }
+                                                else
+                                                {
+                                                    <span class="bg-green-100 text-green-700 px-4 py-2 rounded-md font-medium">
+                                                        Đã đánh giá
+                                                    </span>
+                                                }
+                                            }
+                                        </td>
                                     </tr>
                                 }
                             </tbody>
                             <tfoot class="bg-gray-50">
                                 <tr>
-                                    <td colspan="3" class="px-6 py-4 text-right font-medium">Tổng cộng:</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-red-600">@order.Tongtien.ToString("N0") VNĐ</td>
+                                    <td colspan="4" class="px-6 py-4 text-right font-medium">Tổng cộng:</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-red-600">
+                                        @order.Tongtien.ToString("N0") VNĐ
+                                    </td>
                                 </tr>
                             </tfoot>
                         </table>
                     </div>
                 </div>
-                
+
                 <!-- Action Buttons -->
                 <div class="flex flex-col sm:flex-row justify-end gap-3 mt-8">
-                    @* "Đánh giá" button appears if the order is "Giao thành công" and not reviewed *@
-                    @if(order.Trangthai == "Giao thành công" && order.Chitietdonhangs.All(ct => ct.IdDg != null) == false)
-                    {
-                        <button id="openReviewModal" class="bg-blue-500 text-white px-6 py-2 rounded-md font-medium shadow hover:bg-blue-600 transition duration-200">
-                            <i class="fas fa-star mr-2"></i> Đánh giá
-                        </button>
-                    }
-                    
                     @* "Hủy đơn" button appears if the order is in "Chờ xác nhận", "Đã duyệt đơn", or "Đã thanh toán" status *@
                     @if(order.Trangthai == "Chờ xác nhận" || order.Trangthai == "Đã duyệt đơn" || order.Trangthai == "Đã thanh toán")
                     {
-                        <form id="cancelOrderForm" method="post" asp-action="CancelOrder" class="inline">
-                            <input type="hidden" name="orderId" value="@order.IdDh" />
-                            <button type="submit" class="bg-red-500 text-white px-6 py-2 rounded-md font-medium shadow hover:bg-red-600 transition duration-200">
-                                <i class="fas fa-times-circle mr-2"></i> Hủy đơn
-                            </button>
-                        </form>
+                        <button id="openCancelModal"
+                                type="button"
+                                class="bg-red-500 text-white px-6 py-2 rounded-md font-medium shadow hover:bg-red-600 transition duration-200">
+                            <i class="fas fa-times-circle mr-2"></i> Hủy đơn
+                        </button>
                     }
                     
                     <!-- "Đóng" returns to the order list -->
@@ -150,7 +182,35 @@
                     </a>
                 </div>
 
-                @* Modal Popup for Submitting a Review (inside the detail block) *@
+                <!-- Modal Popup for Cancel Order Confirmation -->
+                <div id="cancelModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+                    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-xl font-bold text-gray-800">Xác nhận hủy đơn</h2>
+                            <button type="button" id="closeCancelModal" class="text-gray-400 hover:text-gray-600">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <form id="cancelFormModal" method="post" asp-action="CancelOrder">
+                            <input type="hidden" name="orderId" id="hiddenOrderId" value="@order.IdDh" />
+                            <div class="mb-4">
+                                <label class="block text-gray-700 mb-2">Lý do hủy đơn:</label>
+                                <textarea name="LydoHuy" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" rows="3" placeholder="Nhập lý do hủy đơn..."></textarea>
+                            </div>
+                            <div class="flex justify-end space-x-3">
+                                <button type="button" id="closeCancelModalBtn" class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition duration-200">
+                                    Đóng
+                                </button>
+                                <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition duration-200">
+                                    Hủy đơn
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+
+                <!-- Modal Popup for Submitting a Review -->
                 <div id="reviewModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
                     <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
                         <div class="flex justify-between items-center mb-4">
@@ -160,41 +220,31 @@
                             </button>
                         </div>
                         <form id="reviewForm" method="post" asp-action="SubmitReview">
-                            @* Use the first order detail that has not yet been reviewed *@
-                            @{
-                                var firstUnreviewedItem = order.Chitietdonhangs.FirstOrDefault(ct => ct.IdDg == null);
-                            }
-                            @if (firstUnreviewedItem != null)
-                            {
-                                <input type="hidden" name="Idchitietdonhang" value="@firstUnreviewedItem.Idchitietdonhang" />
-                                <div class="mb-4">
-                                    <p class="text-gray-700 mb-2">Sản phẩm: <span class="font-medium">@firstUnreviewedItem.IdSpNavigation.Tensanpham</span></p>
-                                </div>
-                            }
-                            else
-                            {
-                                <p class="text-gray-700 mb-4">Tất cả sản phẩm trong đơn hàng này đã được đánh giá.</p>
-                            }
-
+                            <input type="hidden" name="Idchitietdonhang" id="hiddenOrderDetailId" value="" />
+                            <div class="mb-4">
+                                <p class="text-gray-700 mb-2">Sản phẩm: <span id="productName" class="font-medium"></span></p>
+                            </div>
                             <div class="mb-4">
                                 <label class="block text-gray-700 mb-2">Đánh giá:</label>
-                                <div class="flex space-x-2">
-                                    <select name="rating" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                        <option value="1">1 sao - Rất không hài lòng</option>
-                                        <option value="2">2 sao - Không hài lòng</option>
-                                        <option value="3">3 sao - Bình thường</option>
-                                        <option value="4">4 sao - Hài lòng</option>
-                                        <option value="5" selected>5 sao - Rất hài lòng</option>
-                                    </select>
-                                </div>
+                                <select name="rating" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="1">1 sao - Rất không hài lòng</option>
+                                    <option value="2">2 sao - Không hài lòng</option>
+                                    <option value="3">3 sao - Bình thường</option>
+                                    <option value="4">4 sao - Hài lòng</option>
+                                    <option value="5" selected>5 sao - Rất hài lòng</option>
+                                </select>
                             </div>
                             <div class="mb-4">
                                 <label class="block text-gray-700 mb-2">Bình luận:</label>
-                                <textarea name="comment" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" rows="3" placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm..."></textarea>
+                                <textarea name="comment" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" rows="3" placeholder="Chia sẻ trải nghiệm của bạn..."></textarea>
                             </div>
                             <div class="flex justify-end space-x-3">
-                                <button type="button" id="closeReviewModalBtn" class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition duration-200">Đóng</button>
-                                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-200">Gửi đánh giá</button>
+                                <button type="button" id="closeReviewModalBtn" class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition duration-200">
+                                    Đóng
+                                </button>
+                                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-200">
+                                    Gửi đánh giá
+                                </button>
                             </div>
                         </form>
                     </div>
@@ -224,7 +274,6 @@
                                         <div class="flex items-center mb-2">
                                             <h2 class="text-lg font-bold text-gray-800">Mã đơn hàng: <span class="text-blue-600">@order.IdDh</span></h2>
                                             <div class="ml-4">
-                                                @* Badge based on order status, matching the provided list *@
                                                 @if(order.Trangthai == "Chờ xác nhận")
                                                 {
                                                     <span class="bg-yellow-100 text-yellow-700 text-sm font-medium px-3 py-1 rounded-full">Chờ xác nhận</span>
@@ -269,7 +318,6 @@
                                         </div>
                                     </div>
                                     <div class="mt-4 md:mt-0">
-                                        <!-- "Xem chi tiết" passes the order Id -->
                                         <a asp-action="OrderHistory" asp-route-orderId="@order.IdDh" class="inline-flex items-center bg-blue-500 text-white px-4 py-2 rounded-md font-medium shadow hover:bg-blue-600 transition duration-200">
                                             <i class="fas fa-eye mr-2"></i> Xem chi tiết
                                         </a>
@@ -338,92 +386,121 @@
     </div>
 </div>
 
+@Html.AntiForgeryToken()
+
 @section Scripts {
+    <!-- Include SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        // Open the review modal
-        document.getElementById('openReviewModal')?.addEventListener('click', function () {
-            document.getElementById('reviewModal').classList.remove('hidden');
+        // Helper: Show an inline toast message using SweetAlert2
+        function showInlineMessage(message, icon = 'success') {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: icon,
+                title: message,
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            });
+        }
+
+        // REVIEW FORM SCRIPT
+        document.querySelectorAll('.openReviewModal').forEach(button => {
+            button.addEventListener('click', function () {
+                const orderDetailId = this.getAttribute('data-id');
+                const productName = this.getAttribute('data-tensp');
+                document.getElementById('hiddenOrderDetailId').value = orderDetailId;
+                document.getElementById('productName').textContent = productName;
+                document.getElementById('reviewModal').classList.remove('hidden');
+            });
         });
-        
-        // Close the review modal (both buttons)
         document.getElementById('closeReviewModal')?.addEventListener('click', function () {
             document.getElementById('reviewModal').classList.add('hidden');
         });
-        
         document.getElementById('closeReviewModalBtn')?.addEventListener('click', function () {
             document.getElementById('reviewModal').classList.add('hidden');
         });
-
-        // AJAX submission for review form
         const reviewForm = document.getElementById('reviewForm');
         if (reviewForm) {
             reviewForm.addEventListener('submit', function(e) {
                 e.preventDefault();
                 const formData = new FormData(reviewForm);
-                
-                // Show global loading overlay
                 AppLoading.show("Đang gửi đánh giá...");
-                
                 fetch(reviewForm.action, {
                     method: 'POST',
                     body: formData
                 })
                 .then(response => response.json())
                 .then(data => {
-                    // Hide loading overlay
                     AppLoading.hide();
-                    
-                    alert(data.message);
+                    // Hide the review modal on any response
+                    document.getElementById('reviewModal').classList.add('hidden');
                     if (data.success) {
-                        // Show loading again before redirect
+                        // Remove the review button so it no longer appears
+                        const btn = document.querySelector(`button.openReviewModal[data-id='${document.getElementById('hiddenOrderDetailId').value}']`);
+                        if(btn) {
+                            btn.remove();
+                        }
+                        showInlineMessage(data.message, 'success');
                         AppLoading.showBeforeRedirect('/ProfileManagement/OrderHistory', "Đang chuyển hướng...");
+                    } else {
+                        showInlineMessage(data.message, 'error');
                     }
                 })
                 .catch(error => {
-                    // Hide loading overlay on error
                     AppLoading.hide();
-                    
-                    alert("Có lỗi xảy ra khi gửi đánh giá.");
+                    document.getElementById('reviewModal').classList.add('hidden');
+                    showInlineMessage("Có lỗi xảy ra khi gửi đánh giá.", 'error');
                     console.error(error);
                 });
             });
         }
 
-        // AJAX submission for cancel order form with confirmation
-        const cancelForm = document.getElementById('cancelOrderForm');
-        if (cancelForm) {
-            cancelForm.addEventListener('submit', function(e) {
+        // CANCEL ORDER MODAL SCRIPT
+        document.getElementById('openCancelModal')?.addEventListener('click', function () {
+            document.getElementById('cancelModal').classList.remove('hidden');
+        });
+        document.getElementById('closeCancelModal')?.addEventListener('click', function () {
+            document.getElementById('cancelModal').classList.add('hidden');
+        });
+        document.getElementById('closeCancelModalBtn')?.addEventListener('click', function () {
+            document.getElementById('cancelModal').classList.add('hidden');
+        });
+        const cancelFormModal = document.getElementById('cancelFormModal');
+        if (cancelFormModal) {
+            cancelFormModal.addEventListener('submit', function(e) {
                 e.preventDefault();
-                if (confirm("Bạn có chắc chắn muốn hủy đơn hàng này?")) {
-                    const formData = new FormData(cancelForm);
-                    
-                    // Show global loading overlay
-                    AppLoading.show("Đang hủy đơn hàng...");
-                    
-                    fetch(cancelForm.action, {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        // Hide loading overlay
-                        AppLoading.hide();
-                        
-                        alert(data.message);
-                        if (data.success) {
-                            // Show loading again before redirect
-                            AppLoading.showBeforeRedirect('/ProfileManagement/OrderHistory', "Đang chuyển hướng...");
-                        }
-                    })
-                    .catch(error => {
-                        // Hide loading overlay on error
-                        AppLoading.hide();
-                        
-                        alert("Có lỗi xảy ra khi hủy đơn.");
-                        console.error(error);
-                    });
-                }
+                const formData = new FormData(cancelFormModal);
+                AppLoading.show("Đang hủy đơn hàng...");
+                fetch(cancelFormModal.action, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    AppLoading.hide();
+                    document.getElementById('cancelModal').classList.add('hidden');
+                    if (data.success) {
+                        showInlineMessage(data.message, 'success');
+                        AppLoading.showBeforeRedirect('/ProfileManagement/OrderHistory', "Đang chuyển hướng...");
+                    } else {
+                        showInlineMessage(data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    AppLoading.hide();
+                    document.getElementById('cancelModal').classList.add('hidden');
+                    showInlineMessage("Có lỗi xảy ra khi hủy đơn.", 'error');
+                    console.error(error);
+                });
             });
         }
     </script>
+}
+
+@section Styles {
+    <style>
+        /* Custom styles if needed */
+    </style>
 }
