@@ -1,0 +1,98 @@
+@{
+    ViewData["Title"] = "Hỗ trợ khách hàng";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mx-auto px-4 py-8">
+    <!-- Main Title -->
+    <h1 class="text-3xl font-bold text-blue-700 mb-6">Hỗ trợ khách hàng</h1>
+    
+    <!-- Main Card -->
+    <div class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-blue-500 space-y-8">
+        
+        <!-- Top Row: Contact Info (Left) & Social Media (Right) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            
+            <!-- Contact Info -->
+            <div>
+                <h2 class="text-xl font-semibold mb-4 text-gray-800">Thông tin liên hệ</h2>
+                <ul class="space-y-2 text-gray-700">
+                    <li>
+                        <strong>Hotline:</strong> 123-456-7
+                    </li>
+                    <li>
+                        <strong>Fax:</strong> 123-456-7
+                    </li>
+                    <li>
+                        <strong>Email:</strong> contact@example.com
+                    </li>
+                    <li>
+                        <strong>Địa chỉ:</strong> Số 123, Đường ABC, Quận XYZ, Thành phố
+                    </li>
+                </ul>
+            </div>
+            
+            <!-- Social Media -->
+            <div>
+                <h2 class="text-xl font-semibold mb-4 text-gray-800">Mạng xã hội</h2>
+                <div class="flex space-x-4 text-gray-600">
+                    <a href="#" class="hover:text-blue-600 transition-colors">
+                        <i class="fab fa-facebook-f text-xl"></i>
+                    </a>
+                    <a href="#" class="hover:text-blue-600 transition-colors">
+                        <i class="fab fa-instagram text-xl"></i>
+                    </a>
+                    <a href="#" class="hover:text-blue-600 transition-colors">
+                        <i class="fab fa-twitter text-xl"></i>
+                    </a>
+                    <a href="#" class="hover:text-blue-600 transition-colors">
+                        <i class="fab fa-youtube text-xl"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Bottom Section: Live Chat Instructions -->
+        <div>
+            <h2 class="text-xl font-semibold mb-4 text-gray-800">Hướng dẫn liên hệ qua Live Chat</h2>
+            
+            <!-- Two-Column Steps -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                
+                <!-- Step 1 -->
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2 border-l-4 border-blue-300 pl-2">
+                        Bước 1
+                    </h3>
+                    <p class="text-gray-700 mb-3">
+                        Nhấp vào biểu tượng <strong>"We Are Here!"</strong> ở góc trang (hoặc vị trí được hiển thị) để mở cửa sổ chat.
+                    </p>
+                    <div class="flex justify-center">
+                        <img
+                            src="../imgs/icon.png"
+                            alt="Biểu tượng We Are Here"
+                            class="w-32 h-32 object-contain"
+                        />
+                    </div>
+                </div>
+                
+                <!-- Step 2 -->
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2 border-l-4 border-blue-300 pl-2">
+                        Bước 2
+                    </h3>
+                    <p class="text-gray-700 mb-3">
+                        Sau khi cửa sổ chat xuất hiện, hãy nhập câu hỏi hoặc vấn đề của bạn để nhận được tư vấn và hỗ trợ.
+                    </p>
+                    <div class="flex justify-center">
+                        <img
+                            src="../imgs/chat.png"
+                            alt="Ví dụ cửa sổ chat hỗ trợ"
+                            class="max-w-xs object-contain"
+                        />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
