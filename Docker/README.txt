@@ -52,8 +52,7 @@ docker network connect webbanlinhkien mysql-database-container
 docker network connect webbanlinhkien user-wblk-container
 docker network connect webbanlinhkien admin-wblk-container
 
-Cách chạy docker của user/admin và mysql ( Sử dụng dockercompose )
-Từ từ làm sau
+
 
 2. Https (sau khi áp dụng thành công http):
 
@@ -76,3 +75,10 @@ docker run --name user-wblk-container -d --network webbanlinhkien -p 5124:5124 -
 docker run --name admin-wblk-container -d --network webbanlinhkien -p 5177:5177 -p 7012:7012 -v "D:\Documents\test\Web\TMDT\Website-Ban-Linh-Kien\Docker:/https:ro" -e ASPNETCORE_URLS="http://+:5177;https://+:7012" -e ASPNETCORE_Kestrel__Certificates__Default__Path="/https/aspnetapp.pfx" -e ASPNETCORE_Kestrel__Certificates__Default__Password="root" admin-wblk-image
 
 Done!
+
+3. Cách chạy docker của user/admin và mysql ( Sử dụng dockercompose )
+
+docker compose up -d
+
+
+docker compose restart

@@ -1,0 +1,60 @@
+services:
+  mysql:
+    image: mysql:latest
+    restart: always
+    container_name: mysql-database-container
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: WebBanLinhKien
+    ports:
+      - "3306:3306"
+    volumes:
+      - "D:/Documents/test/Web/TMDT/Website-Ban-Linh-Kien/Docker/Database-MySql:/var/lib/mysql"
+    networks:
+      - webbanlinhkien
+
+  user:
+    build:
+      context: "D:/Documents/test/Web/TMDT/Website-Ban-Linh-Kien/User-WBLK"
+      dockerfile: Dockerfile
+    container_name: user-wblk-container
+    restart: always
+    environment:
+      ASPNETCORE_URLS: "http://+:5124;https://+:7050"
+      ConnectionStrings__DefaultConnection: "Server=mysql-database-container;Database=WebBanLinhKien;User=root;Password=root"
+      ASPNETCORE_Kestrel__Certificates__Default__Path: "/https/aspnetapp.pfx"
+      ASPNETCORE_Kestrel__Certificates__Default__Password: "root"  # Nếu có mật khẩu
+    ports:
+      - "5124:5124"
+      - "7050:7050"
+    depends_on:
+      - mysql
+    networks:
+      - webbanlinhkien
+    volumes:
+      - "D:/Documents/test/Web/TMDT/Website-Ban-Linh-Kien/Docker/certs:/https" # Mount đúng `/https` thay vì `/https-certs`
+
+  admin:
+    build:
+      context: "D:/Documents/test/Web/TMDT/Website-Ban-Linh-Kien/Admin-WBLK"
+      dockerfile: Dockerfile
+    container_name: admin-wblk-container
+    restart: always
+    environment:
+      ASPNETCORE_URLS: "http://+:5177;https://+:7012"
+      ConnectionStrings__DefaultConnection: "Server=mysql-database-container;Database=WebBanLinhKien;User=root;Password=root"
+      ASPNETCORE_Kestrel__Certificates__Default__Path: "/https/aspnetapp.pfx"
+      ASPNETCORE_Kestrel__Certificates__Default__Password: "root"  # Nếu có mật khẩu
+    ports:
+      - "5177:5177"
+      - "7012:7012"
+    depends_on:
+      - mysql
+    networks:
+      - webbanlinhkien
+    volumes:
+      - "D:/Documents/test/Web/TMDT/Website-Ban-Linh-Kien/Docker/certs:/https" # Mount đúng `/https`
+
+networks:
+  webbanlinhkien:
+    driver: bridge
