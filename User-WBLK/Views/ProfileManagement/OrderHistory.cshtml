@@ -116,9 +116,23 @@
                                         <td class="px-6 py-4">
                                             <div class="flex items-center">
                                                 <div class="ml-4">
-                                                    <div class="text-sm font-medium text-gray-900">
+                                                    @{
+                                                        // Generate the URL based on the product's category
+                                                        var productUrl = item.IdSpNavigation.Loaisanpham.ToLower() switch {
+                                                            "pc" => $"/pc/{item.IdSpNavigation.IdSp}",
+                                                            "laptop" => $"/laptop/{item.IdSpNavigation.IdSp}",
+                                                            "components" => $"/components/{item.IdSpNavigation.IdSp}",
+                                                            "storage" => $"/storage/{item.IdSpNavigation.IdSp}",
+                                                            "monitor" => $"/monitor/{item.IdSpNavigation.IdSp}",
+                                                            "speaker" or "microphone" or "webcam" or "audio" => $"/audio/{item.IdSpNavigation.Loaisanpham}/{item.IdSpNavigation.IdSp}",
+                                                            "keyboard" or "mouse" or "headphone" or "peripherals" => $"/peripherals/{item.IdSpNavigation.Loaisanpham}/{item.IdSpNavigation.IdSp}",
+                                                            "network" => $"/network/{item.IdSpNavigation.IdSp}",
+                                                            _ => "#"
+                                                        };
+                                                    }
+                                                    <a href="@productUrl" class="text-sm font-medium text-gray-900 hover:underline">
                                                         @item.IdSpNavigation.Tensanpham
-                                                    </div>
+                                                    </a>
                                                 </div>
                                             </div>
                                         </td>
@@ -208,7 +222,6 @@
                         </form>
                     </div>
                 </div>
-
 
                 <!-- Modal Popup for Submitting a Review -->
                 <div id="reviewModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
