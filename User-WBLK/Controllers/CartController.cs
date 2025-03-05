@@ -7,6 +7,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Website_Ban_Linh_Kien.Models;
 using Microsoft.Extensions.Logging;
+using System.Collections.Generic;
 
 namespace Website_Ban_Linh_Kien.Controllers
 {
@@ -394,6 +395,92 @@ namespace Website_Ban_Linh_Kien.Controllers
                 }
             }
             return Json(new { success = false, message = "Không tìm thấy sản phẩm trong giỏ hàng" });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddMultipleToCart([FromBody] List<string> productIds)
+        {
+            try
+            {
+                var customerId = User.FindFirstValue("CustomerId");
+                if (customerId == null)
+                {
+                    return Json(new { success = false, message = "Vui lòng đăng nhập để thêm vào giỏ hàng" });
+                }
+
+                // Kiểm tra xem khách hàng đã có giỏ hàng chưa
+                var cart = await _context.Giohangs.FirstOrDefaultAsync(g => g.IdKh == customerId);
+                if (cart == null)
+                {
+                    // Tạo giỏ hàng mới nếu chưa có
+                    cart = new Giohang
+                    {
+                        IdGh = Guid.NewGuid().ToString().Substring(0, 10),
+                        IdKh = customerId,
+                        Thoigiancapnhat = DateTime.Now
+                    };
+                    _context.Giohangs.Add(cart);
+                    await _context.SaveChangesAsync();
+                }
+
+                int successCount = 0;
+                List<string> failedProducts = new List<string>();
+
+                foreach (var productId in productIds)
+                {
+                    // Kiểm tra sản phẩm có tồn tại không
+                    var product = await _context.Sanphams.FindAsync(productId);
+                    if (product == null)
+                    {
+                        failedProducts.Add(productId);
+                        continue;
+                    }
+
+                    // Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
+                    var cartItem = await _context.Chitietgiohangs
+                        .FirstOrDefaultAsync(c => c.IdGh == cart.IdGh && c.IdSp == productId);
+
+                    if (cartItem != null)
+                    {
+                        // Nếu đã có, tăng số lượng lên 1
+                        cartItem.Soluongsanpham += 1;
+                        cartItem.Thoigiancapnhat = DateTime.Now;
+                    }
+                    else
+                    {
+                        // Nếu chưa có, thêm mới vào giỏ hàng
+                        cartItem = new Chitietgiohang
+                        {
+                            IdGh = cart.IdGh,
+                            IdSp = productId,
+                            Soluongsanpham = 1,
+                            Thoigiancapnhat = DateTime.Now
+                        };
+                        _context.Chitietgiohangs.Add(cartItem);
+                    }
+
+                    successCount++;
+                }
+
+                await _context.SaveChangesAsync();
+
+                // Lấy số lượng sản phẩm trong giỏ hàng
+                var cartCount = await _context.Chitietgiohangs
+                    .Where(c => c.IdGh == cart.IdGh)
+                    .SumAsync(c => c.Soluongsanpham);
+
+                return Json(new { 
+                    success = true, 
+                    message = $"Đã thêm {successCount} sản phẩm vào giỏ hàng", 
+                    cartCount = cartCount,
+                    failedProducts = failedProducts
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error adding multiple products to cart");
+                return Json(new { success = false, message = "Đã xảy ra lỗi khi thêm sản phẩm vào giỏ hàng" });
+            }
         }
     }
 
