@@ -741,6 +741,12 @@ namespace Admin_WBLK.Controllers
                     return NotFound();
                 }
 
+                // If the new status is not "Hủy đơn", clear the cancellation reason.
+                if (donhang.Trangthai != "Hủy đơn")
+                {
+                    donhang.LydoHuy = null;
+                }
+
                 // Update order info.
                 donhang.Chitietdonhangs = existingOrder.Chitietdonhangs;
                 _context.Entry(existingOrder).State = EntityState.Detached;
@@ -777,7 +783,6 @@ namespace Admin_WBLK.Controllers
                 }
 
                 // --- Recalculate final price with VIP discount applied BEFORE discount code in Edit ---
-                // Calculate original total from existing order details.
                 decimal originalTotal = donhang.Chitietdonhangs.Sum(item => item.Dongia * item.Soluongsanpham);
 
                 // Lookup customer for VIP discount.
@@ -825,6 +830,7 @@ namespace Admin_WBLK.Controllers
                 return View(donhang);
             }
         }
+
 
         public class ChitietdonhangDTO
         {
@@ -937,7 +943,7 @@ namespace Admin_WBLK.Controllers
                         _context.Update(customer);
                     }
                 }
-
+                
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 

@@ -159,7 +159,16 @@
                     @(string.IsNullOrEmpty(Model.Ghichu) ? "Không có ghi chú" : Model.Ghichu)
                 </p>
             </div>
-
+            @* New: Hiển thị lý do hủy đơn nếu đơn hàng bị hủy *@
+            @if(Model.Trangthai == "Hủy đơn" && !string.IsNullOrEmpty(Model.LydoHuy))
+            {
+                <div class="mb-8">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Lý do hủy đơn</h3>
+                    <p class="text-gray-900 bg-gray-50 p-4 rounded-lg">
+                        @Model.LydoHuy
+                    </p>
+                </div>
+            }
             <!-- Buttons -->
             <div class="mt-8 flex items-center justify-end gap-4">
                 @if (!string.IsNullOrEmpty(ViewData["ReturnUrl"]?.ToString()))
