@@ -1,0 +1,665 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    ViewData["Title"] = "Xây dựng cấu hình PC";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold text-blue-700 mb-6">Xây dựng cấu hình PC của bạn</h1>
+    
+    <div class="bg-white rounded-lg shadow-lg p-6 mb-8 border-l-4 border-blue-500">
+        <p class="text-gray-700 mb-4">
+            Hãy chọn các linh kiện phù hợp để xây dựng cấu hình PC theo nhu cầu của bạn. 
+            Chúng tôi sẽ giúp bạn kiểm tra tính tương thích giữa các linh kiện.
+        </p>
+        
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4 md:mb-0">Tổng giá trị: <span id="totalPrice" class="text-red-600 font-bold text-2xl">0 ₫</span></h2>
+            <div class="flex flex-wrap gap-2">
+                <button id="saveConfig" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition transform hover:scale-105">
+                    <i class="fas fa-save mr-2"></i>Lưu cấu hình
+                </button>
+                <button id="loadConfig" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition transform hover:scale-105">
+                    <i class="fas fa-folder-open mr-2"></i>Tải cấu hình
+                </button>
+                <button id="resetConfig" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition transform hover:scale-105">
+                    <i class="fas fa-trash-alt mr-2"></i>Xóa cấu hình
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Danh sách loại linh kiện -->
+        <div class="lg:col-span-1">
+            <div class="bg-gradient-to-br from-white to-blue-50 rounded-lg shadow-lg p-6 sticky top-24 border border-gray-200 hover:border-blue-300 transition-colors duration-300">
+                <h2 class="text-xl font-semibold text-blue-700 mb-6 pb-2 border-b-2 border-blue-200 flex items-center">
+                    <i class="fas fa-microchip mr-2"></i>Các loại linh kiện
+                </h2>
+                <ul class="space-y-3" id="componentTypesList">
+                    @foreach (var componentType in ViewBag.ComponentTypes)
+                    {
+                        <li>
+                            <button class="component-type-btn w-full text-left px-4 py-3 rounded-lg hover:bg-blue-100 transition-all duration-300 flex justify-between items-center border border-transparent hover:border-blue-300 hover:shadow-md group" 
+                                    data-type="@componentType" 
+                                    data-multiple="@(componentType == "HDD" || componentType == "SSD" ? "true" : "false")" 
+                                    data-count="0">
+                                <div class="flex items-center min-w-[100px] flex-shrink-0">
+                                    <div class="w-10 h-10 rounded-full bg-blue-100 group-hover:bg-blue-200 flex items-center justify-center mr-3 transition-colors duration-300">
+                                        @if (componentType == "CPU")
+                                        {
+                                            <i class="fas fa-microchip text-blue-600"></i>
+                                        }
+                                        else if (componentType == "Mainboard")
+                                        {
+                                            <i class="fas fa-server text-blue-600"></i>
+                                        }
+                                        else if (componentType == "VGA")
+                                        {
+                                            <i class="fas fa-tv text-blue-600"></i>
+                                        }
+                                        else if (componentType == "RAM")
+                                        {
+                                            <i class="fas fa-memory text-blue-600"></i>
+                                        }
+                                        else if (componentType == "SSD" || componentType == "HDD")
+                                        {
+                                            <i class="fas fa-hdd text-blue-600"></i>
+                                        }
+                                        else if (componentType == "PSU")
+                                        {
+                                            <i class="fas fa-plug text-blue-600"></i>
+                                        }
+                                        else if (componentType == "Case")
+                                        {
+                                            <i class="fas fa-desktop text-blue-600"></i>
+                                        }
+                                        else if (componentType == "Cooling")
+                                        {
+                                            <i class="fas fa-fan text-blue-600"></i>
+                                        }
+                                        else if (componentType == "Monitor")
+                                        {
+                                            <i class="fas fa-desktop text-blue-600"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="fas fa-cog text-blue-600"></i>
+                                        }
+                                    </div>
+                                    <span class="font-medium text-gray-800 group-hover:text-blue-700 transition-colors duration-300">@componentType</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="selected-component text-sm text-gray-500 group-hover:text-blue-600 transition-colors duration-300 max-w-[150px] truncate text-right mr-2">Chưa chọn</span>
+                                    <i class="fas fa-chevron-right text-gray-400 group-hover:text-blue-500 transition-transform duration-300 group-hover:translate-x-1"></i>
+                                </div>
+                            </button>
+                        </li>
+                    }
+                </ul>
+                
+                <div class="mt-8">
+                    <button id="addToCartBtn" class="w-full bg-gradient-to-r from-yellow-500 to-yellow-400 hover:from-yellow-600 hover:to-yellow-500 text-white py-4 rounded-lg transition font-medium transform hover:scale-105 shadow-md flex items-center justify-center">
+                        <i class="fas fa-shopping-cart mr-2 text-xl"></i>
+                        <span>Thêm tất cả vào giỏ hàng</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Khu vực hiển thị sản phẩm -->
+        <div class="lg:col-span-2">
+            <div id="componentSelection" class="bg-white rounded-lg shadow-lg p-6 mb-6 hidden border-l-4 border-blue-500">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-semibold text-gray-800">Chọn <span id="currentComponentType"></span></h2>
+                    <button id="closeComponentSelection" class="text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="mb-4">
+                    <div class="relative">
+                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                        <input type="text" id="searchComponent" placeholder="Tìm kiếm..." 
+                               class="w-full pl-10 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+                
+                <div id="componentsList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Danh sách sản phẩm sẽ được thêm vào đây bằng JavaScript -->
+                </div>
+            </div>
+            
+            <div id="selectedComponents" class="space-y-6">
+                <!-- Các linh kiện đã chọn sẽ được hiển thị ở đây -->
+                <div class="bg-gray-50 rounded-lg p-8 text-center border border-dashed border-gray-300">
+                    <img src="/imgs/pc-build.svg" alt="PC Build" class="w-32 h-32 mx-auto mb-4 opacity-50">
+                    <h3 class="text-xl font-medium text-gray-500 mb-2">Bắt đầu xây dựng cấu hình PC của bạn</h3>
+                    <p class="text-gray-500">Hãy chọn các linh kiện từ danh sách bên trái để bắt đầu</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Template cho component đã chọn -->
+<template id="selectedComponentTemplate">
+    <div class="selected-component-item bg-white rounded-lg shadow-lg p-6 relative border border-gray-200 hover:border-blue-300 transition-colors duration-300" data-type="" data-id="">
+        <div class="absolute top-4 right-4 space-x-2">
+            <button class="change-component text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 p-2 rounded-full transition">
+                <i class="fas fa-exchange-alt"></i>
+            </button>
+            <button class="remove-component text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 p-2 rounded-full transition">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="flex flex-col md:flex-row">
+            <div class="md:w-1/4 mb-4 md:mb-0 flex items-center justify-center">
+                <img src="" alt="" class="component-image w-full h-auto object-contain max-h-32 transition-transform hover:scale-110">
+            </div>
+            <div class="md:w-3/4 md:pl-6">
+                <h3 class="component-name text-lg font-semibold text-gray-800 mb-2"></h3>
+                <p class="component-brand text-sm text-gray-600 mb-2"></p>
+                <div class="component-specs text-sm text-gray-700 mb-4"></div>
+                <div class="component-price font-bold text-red-600"></div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<!-- Template cho component trong danh sách chọn -->
+<template id="componentItemTemplate">
+    <div class="component-item border border-gray-200 rounded-lg p-4 hover:border-blue-500 cursor-pointer transition-all hover:shadow-md transform hover:scale-105">
+        <div class="flex items-center mb-3">
+            <img src="" alt="" class="component-image w-16 h-16 object-contain mr-4">
+            <div>
+                <h3 class="component-name text-md font-medium text-gray-800 line-clamp-2"></h3>
+                <p class="component-brand text-sm text-gray-600"></p>
+            </div>
+        </div>
+        <div class="component-price font-bold text-red-600 text-right"></div>
+    </div>
+</template>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Khởi tạo biến lưu trữ cấu hình
+            let pcConfiguration = {};
+            let totalPrice = 0;
+            let currentComponentTypeElement = null;
+            
+            // Các nút chọn loại linh kiện
+            const componentTypeBtns = document.querySelectorAll('.component-type-btn');
+            const componentSelection = document.getElementById('componentSelection');
+            const currentComponentType = document.getElementById('currentComponentType');
+            const componentsList = document.getElementById('componentsList');
+            const closeComponentSelection = document.getElementById('closeComponentSelection');
+            const searchComponent = document.getElementById('searchComponent');
+            const selectedComponents = document.getElementById('selectedComponents');
+            const totalPriceElement = document.getElementById('totalPrice');
+            
+            // Các nút chức năng
+            const saveConfigBtn = document.getElementById('saveConfig');
+            const loadConfigBtn = document.getElementById('loadConfig');
+            const resetConfigBtn = document.getElementById('resetConfig');
+            const addToCartBtn = document.getElementById('addToCartBtn');
+            
+            // Xử lý sự kiện khi chọn loại linh kiện
+            componentTypeBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const componentType = this.getAttribute('data-type');
+                    currentComponentType.textContent = componentType;
+                    currentComponentTypeElement = this;
+                    loadComponents(componentType);
+                    componentSelection.classList.remove('hidden');
+                });
+            });
+            
+            // Đóng khu vực chọn linh kiện
+            closeComponentSelection.addEventListener('click', function() {
+                componentSelection.classList.add('hidden');
+            });
+            
+            // Tìm kiếm linh kiện
+            searchComponent.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const componentItems = componentsList.querySelectorAll('.component-item');
+                
+                componentItems.forEach(item => {
+                    const name = item.querySelector('.component-name').textContent.toLowerCase();
+                    const brand = item.querySelector('.component-brand').textContent.toLowerCase();
+                    
+                    if (name.includes(searchTerm) || brand.includes(searchTerm)) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+            
+            // Lưu cấu hình vào localStorage
+            saveConfigBtn.addEventListener('click', function() {
+                if (Object.keys(pcConfiguration).length === 0) {
+                    alert('Vui lòng chọn ít nhất một linh kiện để lưu cấu hình!');
+                    return;
+                }
+                
+                localStorage.setItem('pcConfiguration', JSON.stringify(pcConfiguration));
+                alert('Đã lưu cấu hình thành công!');
+            });
+            
+            // Tải cấu hình từ localStorage
+            loadConfigBtn.addEventListener('click', function() {
+                const savedConfig = localStorage.getItem('pcConfiguration');
+                
+                if (!savedConfig) {
+                    alert('Không tìm thấy cấu hình đã lưu!');
+                    return;
+                }
+                
+                // Xóa cấu hình hiện tại
+                resetConfiguration();
+                
+                // Tải cấu hình đã lưu
+                pcConfiguration = JSON.parse(savedConfig);
+                
+                // Hiển thị các linh kiện đã lưu
+                selectedComponents.innerHTML = '';
+                totalPrice = 0;
+                
+                // Reset count cho các loại linh kiện có thể thêm nhiều
+                componentTypeBtns.forEach(btn => {
+                    if (btn.getAttribute('data-multiple') === 'true') {
+                        btn.setAttribute('data-count', '0');
+                    }
+                });
+                
+                for (const key in pcConfiguration) {
+                    const [type, index] = key.split('_');
+                    const component = pcConfiguration[key];
+                    
+                    addSelectedComponent(component, type, key);
+                    
+                    // Cập nhật count cho các loại linh kiện có thể thêm nhiều
+                    if (type === 'HDD' || type === 'SSD') {
+                        const btn = document.querySelector(`.component-type-btn[data-type="${type}"]`);
+                        const currentCount = parseInt(btn.getAttribute('data-count') || 0);
+                        btn.setAttribute('data-count', (currentCount + 1).toString());
+                        updateComponentTypeButton(type, `Đã chọn ${currentCount + 1}`);
+                    } else {
+                        updateComponentTypeButton(type, component.tensanpham);
+                    }
+                    
+                    totalPrice += component.gia;
+                }
+                
+                updateTotalPrice();
+                alert('Đã tải cấu hình thành công!');
+            });
+            
+            // Xóa cấu hình
+            resetConfigBtn.addEventListener('click', function() {
+                if (confirm('Bạn có chắc chắn muốn xóa toàn bộ cấu hình hiện tại?')) {
+                    resetConfiguration();
+                    // Xóa cấu hình đã lưu trong localStorage
+                    localStorage.removeItem('pcConfiguration');
+                }
+            });
+            
+            // Thêm tất cả vào giỏ hàng
+            addToCartBtn.addEventListener('click', function() {
+                if (Object.keys(pcConfiguration).length === 0) {
+                    alert('Vui lòng chọn ít nhất một linh kiện để thêm vào giỏ hàng!');
+                    return;
+                }
+                
+                // Thêm từng sản phẩm vào giỏ hàng
+                const componentIds = Object.values(pcConfiguration).map(component => component.idSp);
+                
+                // Gọi API để thêm vào giỏ hàng
+                fetch('/Cart/AddMultipleToCart', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(componentIds)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Đã thêm tất cả linh kiện vào giỏ hàng!');
+                        // Cập nhật số lượng giỏ hàng nếu cần
+                        if (typeof updateCartCount === 'function') {
+                            updateCartCount(data.cartCount);
+                        }
+                    } else {
+                        alert('Có lỗi xảy ra: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Có lỗi xảy ra khi thêm vào giỏ hàng!');
+                });
+            });
+            
+            // Hàm tải danh sách linh kiện theo loại
+            function loadComponents(componentType) {
+                componentsList.innerHTML = '<div class="col-span-2 text-center py-8"><i class="fas fa-spinner fa-spin text-blue-500 text-3xl"></i></div>';
+                
+                fetch(`/CustomBuild/GetComponents?componentType=${componentType}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        componentsList.innerHTML = '';
+                        
+                        if (data.length === 0) {
+                            componentsList.innerHTML = '<div class="col-span-2 text-center py-8">Không tìm thấy linh kiện nào thuộc loại này</div>';
+                            return;
+                        }
+                        
+                        data.forEach(component => {
+                            const template = document.getElementById('componentItemTemplate').content.cloneNode(true);
+                            
+                            // Cập nhật thông tin linh kiện
+                            template.querySelector('.component-name').textContent = component.tensanpham;
+                            template.querySelector('.component-brand').textContent = component.thuonghieu;
+                            template.querySelector('.component-price').textContent = formatCurrency(component.gia);
+                            
+                            // Cập nhật hình ảnh
+                            const imgElement = template.querySelector('.component-image');
+                            if (component.hinhanh) {
+                                imgElement.src = component.hinhanh;
+                                imgElement.alt = component.tensanpham;
+                            } else {
+                                imgElement.src = '/imgs/no-image.svg';
+                                imgElement.alt = 'No Image';
+                            }
+                            
+                            // Lưu dữ liệu linh kiện
+                            const componentItem = template.querySelector('.component-item');
+                            componentItem.setAttribute('data-component', JSON.stringify(component));
+                            
+                            // Xử lý sự kiện khi chọn linh kiện
+                            componentItem.addEventListener('click', function() {
+                                const componentData = JSON.parse(this.getAttribute('data-component'));
+                                selectComponent(componentData, componentType);
+                            });
+                            
+                            componentsList.appendChild(template);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        componentsList.innerHTML = '<div class="col-span-2 text-center py-8">Đã xảy ra lỗi khi tải dữ liệu</div>';
+                    });
+            }
+            
+            // Hàm chọn linh kiện
+            function selectComponent(component, type) {
+                // Kiểm tra nếu là HDD hoặc SSD
+                if (type === 'HDD' || type === 'SSD') {
+                    const btn = document.querySelector(`.component-type-btn[data-type="${type}"]`);
+                    const currentCount = parseInt(btn.getAttribute('data-count') || 0);
+                    
+                    // Kiểm tra số lượng tối đa
+                    if (currentCount >= 3) {
+                        alert(`Bạn chỉ có thể thêm tối đa 3 ${type}!`);
+                        componentSelection.classList.add('hidden');
+                        return;
+                    }
+                    
+                    // Tăng số lượng
+                    const newCount = currentCount + 1;
+                    btn.setAttribute('data-count', newCount.toString());
+                    
+                    // Tạo key duy nhất cho linh kiện
+                    const key = `${type}_${newCount}`;
+                    
+                    // Thêm linh kiện vào cấu hình
+                    pcConfiguration[key] = component;
+                    
+                    // Cập nhật UI
+                    addSelectedComponent(component, type, key);
+                    updateComponentTypeButton(type, `Đã chọn ${newCount}`);
+                } else {
+                    // Thêm linh kiện vào cấu hình
+                    const key = type;
+                    pcConfiguration[key] = component;
+                    
+                    // Cập nhật UI
+                    addSelectedComponent(component, type, key);
+                    updateComponentTypeButton(type, component.tensanpham);
+                }
+                
+                // Cập nhật tổng giá
+                updateTotalPrice();
+                
+                // Đóng khu vực chọn linh kiện
+                componentSelection.classList.add('hidden');
+            }
+            
+            // Hàm thêm linh kiện đã chọn vào UI
+            function addSelectedComponent(component, type, key) {
+                // Xóa linh kiện cũ nếu không phải HDD hoặc SSD và đã có
+                if (type !== 'HDD' && type !== 'SSD') {
+                    const existingComponent = selectedComponents.querySelector(`[data-type="${type}"]`);
+                    if (existingComponent) {
+                        existingComponent.remove();
+                    }
+                }
+                
+                // Nếu đây là linh kiện đầu tiên, xóa placeholder
+                if (selectedComponents.querySelector('.bg-gray-50')) {
+                    selectedComponents.innerHTML = '';
+                }
+                
+                const template = document.getElementById('selectedComponentTemplate').content.cloneNode(true);
+                const componentElement = template.querySelector('.selected-component-item');
+                
+                // Cập nhật thông tin linh kiện
+                componentElement.setAttribute('data-type', type);
+                componentElement.setAttribute('data-id', key);
+                template.querySelector('.component-name').textContent = component.tensanpham;
+                template.querySelector('.component-brand').textContent = `Thương hiệu: ${component.thuonghieu}`;
+                template.querySelector('.component-price').textContent = formatCurrency(component.gia);
+                
+                // Cập nhật hình ảnh
+                const imgElement = template.querySelector('.component-image');
+                if (component.hinhanh) {
+                    imgElement.src = component.hinhanh;
+                    imgElement.alt = component.tensanpham;
+                } else {
+                    imgElement.src = '/imgs/no-image.svg';
+                    imgElement.alt = 'No Image';
+                }
+                
+                // Hiển thị thông số kỹ thuật
+                const specsElement = template.querySelector('.component-specs');
+                if (component.thongsokythuat) {
+                    try {
+                        const specs = JSON.parse(component.thongsokythuat);
+                        let specsHtml = '<ul class="list-disc list-inside">';
+                        
+                        for (const key in specs) {
+                            if (key !== 'Danh mục') {
+                                specsHtml += `<li><span class="font-medium">${key}:</span> ${specs[key]}</li>`;
+                            }
+                        }
+                        
+                        specsHtml += '</ul>';
+                        specsElement.innerHTML = specsHtml;
+                    } catch (e) {
+                        specsElement.textContent = 'Không có thông tin chi tiết';
+                    }
+                } else {
+                    specsElement.textContent = 'Không có thông tin chi tiết';
+                }
+                
+                // Xử lý sự kiện thay đổi linh kiện
+                template.querySelector('.change-component').addEventListener('click', function() {
+                    const componentType = componentElement.getAttribute('data-type');
+                    currentComponentType.textContent = componentType;
+                    currentComponentTypeElement = document.querySelector(`.component-type-btn[data-type="${componentType}"]`);
+                    loadComponents(componentType);
+                    componentSelection.classList.remove('hidden');
+                });
+                
+                // Xử lý sự kiện xóa linh kiện
+                template.querySelector('.remove-component').addEventListener('click', function() {
+                    const componentType = componentElement.getAttribute('data-type');
+                    const componentId = componentElement.getAttribute('data-id');
+                    
+                    // Xóa khỏi cấu hình
+                    delete pcConfiguration[componentId];
+                    
+                    // Cập nhật UI
+                    componentElement.remove();
+                    
+                    // Cập nhật count cho HDD và SSD
+                    if (componentType === 'HDD' || componentType === 'SSD') {
+                        const btn = document.querySelector(`.component-type-btn[data-type="${componentType}"]`);
+                        const currentCount = parseInt(btn.getAttribute('data-count') || 0);
+                        const newCount = currentCount - 1;
+                        btn.setAttribute('data-count', newCount.toString());
+                        
+                        if (newCount === 0) {
+                            updateComponentTypeButton(componentType, 'Chưa chọn');
+                        } else {
+                            updateComponentTypeButton(componentType, `Đã chọn ${newCount}`);
+                        }
+                    } else {
+                        updateComponentTypeButton(componentType, 'Chưa chọn');
+                    }
+                    
+                    // Cập nhật tổng giá
+                    updateTotalPrice();
+                    
+                    // Hiển thị placeholder nếu không còn linh kiện nào
+                    if (Object.keys(pcConfiguration).length === 0) {
+                        selectedComponents.innerHTML = `
+                            <div class="bg-gray-50 rounded-lg p-8 text-center border border-dashed border-gray-300">
+                                <img src="/imgs/pc-build.svg" alt="PC Build" class="w-32 h-32 mx-auto mb-4 opacity-50">
+                                <h3 class="text-xl font-medium text-gray-500 mb-2">Bắt đầu xây dựng cấu hình PC của bạn</h3>
+                                <p class="text-gray-500">Hãy chọn các linh kiện từ danh sách bên trái để bắt đầu</p>
+                            </div>
+                        `;
+                    }
+                });
+                
+                selectedComponents.appendChild(template);
+            }
+            
+            // Hàm cập nhật nút loại linh kiện
+            function updateComponentTypeButton(type, name) {
+                const button = document.querySelector(`.component-type-btn[data-type="${type}"]`);
+                if (button) {
+                    const selectedText = button.querySelector('.selected-component');
+                    selectedText.textContent = name;
+                    
+                    // Add tooltip for full name
+                    if (name !== 'Chưa chọn') {
+                        selectedText.setAttribute('title', name);
+                    } else {
+                        selectedText.removeAttribute('title');
+                    }
+                    
+                    if (name === 'Chưa chọn') {
+                        selectedText.classList.remove('text-green-600');
+                        selectedText.classList.add('text-gray-500');
+                        button.classList.remove('bg-blue-100', 'border-blue-300', 'shadow-md');
+                        button.querySelector('.w-10').classList.remove('bg-blue-200');
+                        button.querySelector('.w-10').classList.add('bg-blue-100');
+                    } else {
+                        selectedText.classList.remove('text-gray-500');
+                        selectedText.classList.add('text-green-600');
+                        button.classList.add('bg-blue-100', 'border-blue-300', 'shadow-md');
+                        button.querySelector('.w-10').classList.remove('bg-blue-100');
+                        button.querySelector('.w-10').classList.add('bg-blue-200');
+                    }
+                }
+            }
+            
+            // Hàm cập nhật tổng giá
+            function updateTotalPrice() {
+                totalPrice = 0;
+                
+                for (const key in pcConfiguration) {
+                    totalPrice += pcConfiguration[key].gia;
+                }
+                
+                totalPriceElement.textContent = formatCurrency(totalPrice);
+            }
+            
+            // Hàm reset cấu hình
+            function resetConfiguration() {
+                pcConfiguration = {};
+                totalPrice = 0;
+                totalPriceElement.textContent = formatCurrency(0);
+                
+                // Reset UI
+                selectedComponents.innerHTML = `
+                    <div class="bg-gray-50 rounded-lg p-8 text-center border border-dashed border-gray-300">
+                        <img src="/imgs/pc-build.svg" alt="PC Build" class="w-32 h-32 mx-auto mb-4 opacity-50">
+                        <h3 class="text-xl font-medium text-gray-500 mb-2">Bắt đầu xây dựng cấu hình PC của bạn</h3>
+                        <p class="text-gray-500">Hãy chọn các linh kiện từ danh sách bên trái để bắt đầu</p>
+                    </div>
+                `;
+                
+                // Reset các nút loại linh kiện
+                componentTypeBtns.forEach(btn => {
+                    const type = btn.getAttribute('data-type');
+                    btn.setAttribute('data-count', '0');
+                    updateComponentTypeButton(type, 'Chưa chọn');
+                });
+            }
+            
+            // Hàm định dạng tiền tệ
+            function formatCurrency(amount) {
+                return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
+                    .format(amount)
+                    .replace(/\s/g, '');
+            }
+            
+            // Tải cấu hình đã lưu nếu có
+            const savedConfig = localStorage.getItem('pcConfiguration');
+            if (savedConfig) {
+                pcConfiguration = JSON.parse(savedConfig);
+                
+                // Hiển thị các linh kiện đã lưu
+                selectedComponents.innerHTML = '';
+                totalPrice = 0;
+                
+                // Reset count cho các loại linh kiện có thể thêm nhiều
+                componentTypeBtns.forEach(btn => {
+                    if (btn.getAttribute('data-multiple') === 'true') {
+                        btn.setAttribute('data-count', '0');
+                    }
+                });
+                
+                for (const key in pcConfiguration) {
+                    const [type, index] = key.split('_');
+                    const component = pcConfiguration[key];
+                    
+                    addSelectedComponent(component, type, key);
+                    
+                    // Cập nhật count cho các loại linh kiện có thể thêm nhiều
+                    if (type === 'HDD' || type === 'SSD') {
+                        const btn = document.querySelector(`.component-type-btn[data-type="${type}"]`);
+                        const currentCount = parseInt(btn.getAttribute('data-count') || 0);
+                        btn.setAttribute('data-count', (currentCount + 1).toString());
+                        updateComponentTypeButton(type, `Đã chọn ${currentCount + 1}`);
+                    } else {
+                        updateComponentTypeButton(type, component.tensanpham);
+                    }
+                    
+                    totalPrice += component.gia;
+                }
+                
+                updateTotalPrice();
+            }
+        });
+    </script>
+}
