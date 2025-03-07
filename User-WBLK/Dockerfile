@@ -14,6 +14,7 @@ COPY --from=build /out ./
 EXPOSE 5124 7050
 
 ENV ASPNETCORE_URLS="http://+:5124;https://+:7050"
+ENV ASPNETCORE_Kestrel__Certificates__Default__Path="/https/aspnetapp.pfx"
+ENV ASPNETCORE_Kestrel__Certificates__Default__Password="root"
 
 CMD ["dotnet", "User-WBLK.dll"]
-
