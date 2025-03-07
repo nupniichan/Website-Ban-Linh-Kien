@@ -1,0 +1,64 @@
+version: '3.8'
+
+networks:
+  webbanlinhkien:
+
+volumes:
+  mysql_data:
+
+services:
+  database-mysql:
+    image: mysql-database-image
+    build: ./Database-MySql
+    container_name: mysql-database-container
+    networks:
+      - webbanlinhkien
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: WebBanLinhKien
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  user-wblk:
+    image: user-wblk-image
+    build: ./User-WBLK
+    container_name: user-wblk-container
+    networks:
+      - webbanlinhkien
+    ports:
+      - "5124:5124"
+      - "7050:7050"
+    depends_on:
+      - database-mysql
+    environment:
+      - ASPNETCORE_URLS=http://+:5124;https://+:7050
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/certificates-localhost.pfx
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=nupniichan089
+    volumes:
+      - ./Docker:/https
+
+  admin-wblk:
+    image: admin-wblk-image
+    build: ./Admin-WBLK
+    container_name: admin-wblk-container
+    networks:
+      - webbanlinhkien
+    ports:
+      - "5177:5177"
+      - "7012:7012"
+    depends_on:
+      - database-mysql
+    environment:
+      - ASPNETCORE_URLS=http://+:5177;https://+:7012
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/certificates-localhost.pfx
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=nupniichan089
+    volumes:
+      - ./Docker:/https
+
+# Chạy và build docker compose: docker-compose up --build
+# Chạy docker compose: docker-compose up
+# Dừng docker compose: docker-compose down
+# Build lại docker compose: docker-compose build -d --build
+
