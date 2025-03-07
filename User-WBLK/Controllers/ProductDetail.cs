@@ -160,6 +160,7 @@ namespace Website_Ban_Linh_Kien.Controllers
                 InStock = sp.Soluongton > 0,
                 ProductCode = sp.IdSp,
                 Category = sp.Loaisanpham,
+                LoaiSp = sp.Loaisanpham, // Ensure this is set!
                 TotalReviews = totalReviews,
                 AverageRating = Math.Round(averageRating, 1),
                 RatingDistribution = ratingDistribution,

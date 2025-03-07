@@ -1,7 +1,9 @@
 ﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
+using Microsoft.Extensions.Configuration;
 
 namespace Admin_WBLK.Models;
 
@@ -41,8 +43,18 @@ public partial class DatabaseContext : DbContext
     public virtual DbSet<Xephangvip> Xephangvips { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseMySql("server=localhost;database=WebBanLinhKien;user=root", Microsoft.EntityFrameworkCore.ServerVersion.Parse("10.4.32-mariadb"));
+    {
+        if (!optionsBuilder.IsConfigured)
+        {
+            IConfiguration configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json")
+                .Build();
+
+            var connectionString = configuration.GetConnectionString("DefaultConnection");
+            optionsBuilder.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
+        }
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -64,7 +76,7 @@ public partial class DatabaseContext : DbContext
 
             entity.Property(e => e.Idchitietdonhang).HasMaxLength(10);
             entity.Property(e => e.Dongia)
-                .HasPrecision(10, 2)
+                .HasPrecision(18, 2)
                 .HasColumnName("dongia");
             entity.Property(e => e.IdDg).HasMaxLength(10);
             entity.Property(e => e.IdDh).HasMaxLength(10);
@@ -179,7 +191,7 @@ public partial class DatabaseContext : DbContext
                 .HasMaxLength(50)
                 .HasColumnName("phuongthucthanhtoan");
             entity.Property(e => e.Tongtien)
-                .HasPrecision(10, 2)
+                .HasPrecision(18, 2)
                 .HasColumnName("tongtien");
             entity.Property(e => e.Trangthai)
                 .HasMaxLength(50)
@@ -328,7 +340,7 @@ public partial class DatabaseContext : DbContext
                 .HasMaxLength(10)
                 .HasColumnName("idtk");
             entity.Property(e => e.Luong)
-                .HasPrecision(10, 2)
+                .HasPrecision(18, 2)
                 .HasColumnName("luong");
             entity.Property(e => e.Ngayvaolam).HasColumnName("ngayvaolam");
             entity.Property(e => e.Sodienthoai)
@@ -361,7 +373,7 @@ public partial class DatabaseContext : DbContext
                 .HasColumnType("int(11)")
                 .HasColumnName("damuahang");
             entity.Property(e => e.Gia)
-                .HasPrecision(10, 2)
+                .HasPrecision(18, 2)
                 .HasColumnName("gia");
             entity.Property(e => e.Hinhanh)
                 .HasMaxLength(255)
@@ -439,7 +451,7 @@ public partial class DatabaseContext : DbContext
                 .HasMaxLength(200)
                 .HasColumnName("noidungthanhtoan");
             entity.Property(e => e.Tienthanhtoan)
-                .HasPrecision(10, 2)
+                .HasPrecision(18, 2)
                 .HasColumnName("tienthanhtoan");
             entity.Property(e => e.Trangthai)
                 .HasMaxLength(50)

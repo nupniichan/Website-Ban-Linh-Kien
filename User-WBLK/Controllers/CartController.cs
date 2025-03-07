@@ -7,6 +7,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Website_Ban_Linh_Kien.Models;
 using Microsoft.Extensions.Logging;
+using System.Collections.Generic;
 
 namespace Website_Ban_Linh_Kien.Controllers
 {
@@ -36,27 +37,6 @@ namespace Website_Ban_Linh_Kien.Controllers
             return View(null);
         }
 
-        private bool ValidateQuantity(int quantity, Sanpham product, out string errorMessage)
-        {
-            errorMessage = string.Empty;
-            
-            // Kiểm tra số âm và số 0
-            if (quantity <= 0)
-            {
-                errorMessage = "Số lượng phải lớn hơn 0";
-                return false;
-            }
-
-            // Kiểm tra vượt tồn kho
-            if (quantity > product.Soluongton)
-            {
-                errorMessage = $"Số lượng không thể vượt quá {product.Soluongton}";
-                return false;
-            }
-
-            return true;
-        }
-
         // POST: Cart/AddToCart
         [HttpPost]
         public async Task<IActionResult> AddToCart(string productId, int quantity)
@@ -79,7 +59,7 @@ namespace Website_Ban_Linh_Kien.Controllers
                 // Check requested quantity is at least 1 and does not exceed available stock
                 if (quantity <= 0 || quantity > product.Soluongton)
                 {
-                    return Json(new { success = false, message = errorMessage });
+                    return Json(new { success = false, message = "Số lượng không hợp lệ" });
                 }
 
                 // Enforce the maximum limit of 5 for the same product
@@ -110,7 +90,7 @@ namespace Website_Ban_Linh_Kien.Controllers
                 {
                     if (cartItem.Soluongsanpham >= maxAllowed)
                     {
-                        return Json(new { success = false, message = "Sản phẩm đã đạt số lượng tối đa (5)." });
+                        return Json(new { success = false, message = "Tổng số lượng sản phẩm này trong giỏ hàng không thể vượt quá 5." });
                     }
                     if (cartItem.Soluongsanpham + quantity > maxAllowed)
                     {
@@ -172,23 +152,9 @@ namespace Website_Ban_Linh_Kien.Controllers
                     }
 
                     await _context.SaveChangesAsync();
+                }            }
 
-                    var total = await GetCartTotal(customerId);
-                    return Json(new { 
-                        success = true, 
-                        message = "Cập nhật số lượng thành công",
-                        newQuantity = quantity,
-                        total = total
-                    });
-                }
-
-                return Json(new { success = false, message = "Không tìm thấy sản phẩm trong giỏ hàng" });
-            }
-            catch (Exception ex)
-            {
-                _logger?.LogError($"Error updating quantity: {ex.Message}");
-                return Json(new { success = false, message = "Có lỗi xảy ra khi cập nhật số lượng" });
-            }
+            return RedirectToAction(nameof(Index));
         }
 
         // POST: Cart/RemoveItem
@@ -319,7 +285,7 @@ namespace Website_Ban_Linh_Kien.Controllers
 
                 if (quantity <= 0 || quantity > product.Soluongton)
                 {
-                    return Json(new { success = false, message = errorMessage });
+                    return Json(new { success = false, message = "Số lượng không hợp lệ" });
                 }
 
                 var tempCart = new Giohang
@@ -373,6 +339,10 @@ namespace Website_Ban_Linh_Kien.Controllers
                     if (dto.Quantity > maxAllowed)
                     {
                         return Json(new { success = false, message = $"Sản phẩm chỉ cho phép mua tối đa {maxAllowed}." });
+                    }
+                    if (dto.Quantity < 1)
+                    {
+                        return Json(new{ success = false, message = "Số lượng không thể nhỏ hơn 1."});
                     }
                     if (dto.Quantity > 0)
                     {
@@ -428,46 +398,88 @@ namespace Website_Ban_Linh_Kien.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> ClearCart()
+        public async Task<IActionResult> AddMultipleToCart([FromBody] List<string> productIds)
         {
             try
             {
-                // Nếu người dùng đã đăng nhập
-                if (User.Identity?.IsAuthenticated == true)
+                var customerId = User.FindFirstValue("CustomerId");
+                if (customerId == null)
                 {
-                    var customerId = User.FindFirst("CustomerId")?.Value;
-                    if (!string.IsNullOrEmpty(customerId))
-                    {
-                        // Xóa giỏ hàng của khách hàng
-                        var cart = await _context.Giohangs
-                            .Include(g => g.Chitietgiohangs)
-                            .Where(g => g.IdKh == customerId)
-                            .OrderByDescending(g => g.Thoigiancapnhat)
-                            .FirstOrDefaultAsync();
-                        
-                        if (cart != null)
-                        {
-                            // Xóa chi tiết giỏ hàng
-                            _context.Chitietgiohangs.RemoveRange(cart.Chitietgiohangs);
-                            
-                            // Xóa giỏ hàng
-                            _context.Giohangs.Remove(cart);
-                            
-                            await _context.SaveChangesAsync();
-                            Console.WriteLine($"Cleared cart for customer {customerId}");
-                        }
-                    }
+                    return Json(new { success = false, message = "Vui lòng đăng nhập để thêm vào giỏ hàng" });
                 }
-                
-                // Xóa session giỏ hàng
-                HttpContext.Session.Remove("CartItems");
-                
-                return Ok(new { success = true, message = "Cart cleared successfully" });
+
+                // Kiểm tra xem khách hàng đã có giỏ hàng chưa
+                var cart = await _context.Giohangs.FirstOrDefaultAsync(g => g.IdKh == customerId);
+                if (cart == null)
+                {
+                    // Tạo giỏ hàng mới nếu chưa có
+                    cart = new Giohang
+                    {
+                        IdGh = Guid.NewGuid().ToString().Substring(0, 10),
+                        IdKh = customerId,
+                        Thoigiancapnhat = DateTime.Now
+                    };
+                    _context.Giohangs.Add(cart);
+                    await _context.SaveChangesAsync();
+                }
+
+                int successCount = 0;
+                List<string> failedProducts = new List<string>();
+
+                foreach (var productId in productIds)
+                {
+                    // Kiểm tra sản phẩm có tồn tại không
+                    var product = await _context.Sanphams.FindAsync(productId);
+                    if (product == null)
+                    {
+                        failedProducts.Add(productId);
+                        continue;
+                    }
+
+                    // Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
+                    var cartItem = await _context.Chitietgiohangs
+                        .FirstOrDefaultAsync(c => c.IdGh == cart.IdGh && c.IdSp == productId);
+
+                    if (cartItem != null)
+                    {
+                        // Nếu đã có, tăng số lượng lên 1
+                        cartItem.Soluongsanpham += 1;
+                        cartItem.Thoigiancapnhat = DateTime.Now;
+                    }
+                    else
+                    {
+                        // Nếu chưa có, thêm mới vào giỏ hàng
+                        cartItem = new Chitietgiohang
+                        {
+                            IdGh = cart.IdGh,
+                            IdSp = productId,
+                            Soluongsanpham = 1,
+                            Thoigiancapnhat = DateTime.Now
+                        };
+                        _context.Chitietgiohangs.Add(cartItem);
+                    }
+
+                    successCount++;
+                }
+
+                await _context.SaveChangesAsync();
+
+                // Lấy số lượng sản phẩm trong giỏ hàng
+                var cartCount = await _context.Chitietgiohangs
+                    .Where(c => c.IdGh == cart.IdGh)
+                    .SumAsync(c => c.Soluongsanpham);
+
+                return Json(new { 
+                    success = true, 
+                    message = $"Đã thêm {successCount} sản phẩm vào giỏ hàng", 
+                    cartCount = cartCount,
+                    failedProducts = failedProducts
+                });
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error clearing cart: {ex.Message}");
-                return StatusCode(500, new { success = false, message = ex.Message });
+                _logger?.LogError(ex, "Error adding multiple products to cart");
+                return Json(new { success = false, message = "Đã xảy ra lỗi khi thêm sản phẩm vào giỏ hàng" });
             }
         }
     }

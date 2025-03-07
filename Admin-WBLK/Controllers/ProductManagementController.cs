@@ -458,14 +458,26 @@ namespace Admin_WBLK.Controllers
             if (string.IsNullOrEmpty(term)) return Json(new List<object>());
 
             term = term.ToLower();
-            var suggestions = await _context.Sanphams
-                .Where(s => s.IdSp.ToLower().Contains(term) || 
-                            s.Tensanpham.ToLower().Contains(term))
-                .Take(5)
-                .Select(s => new { s.IdSp, s.Tensanpham })
-                .ToListAsync();
+            try
+            {
+                var suggestions = await _context.Sanphams
+                    .Where(s => s.IdSp.ToLower().Contains(term) || 
+                                s.Tensanpham.ToLower().Contains(term))
+                    .Take(5)
+                    .Select(s => new { 
+                        s.IdSp, 
+                        s.Tensanpham,
+                        MaSP = "Mã SP: " + s.IdSp
+                    })
+                    .ToListAsync();
 
-            return Json(suggestions);
+                return Json(suggestions);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in SearchSuggestions: {ex.Message}");
+                return Json(new List<object>());
+            }
         }
     }
 }

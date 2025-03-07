@@ -250,6 +250,8 @@
         <!-- Price Range -->
         <div>
             <h2 class="font-semibold mb-2">Khoảng giá:</h2>
+            
+            <!-- Price Range Buttons -->
             <div class="flex flex-wrap gap-2">
                 @{
                     var priceRanges = new Dictionary<string, string>() {
@@ -271,15 +273,23 @@
                         ram = Model.Ram,
                         gpu = Model.Gpu
                     });
-                    <a href="@url" class="px-4 py-2 bg-gray-100 rounded-md hover:bg-gray-200 @(Model.PriceRange == range.Key ? "bg-blue-600 text-white" : "")">
+                    var isSelected = Model.PriceRange == range.Key;
+                    <a href="@url" class="price-range-btn flex-1 text-center px-3 py-2 rounded-lg transition-all duration-200 @(isSelected ? "bg-blue-600 text-white shadow-md" : "bg-gray-100 hover:bg-gray-200")">
                         @range.Value
                     </a>
                 }
-                
             </div>
-            <a href="@Url.Action("Laptop", "ProductsList", new { category = Model.Category })" class="inline-block mt-3 bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600">
-                Xóa bộ lọc
-            </a>
+            
+            <!-- Clear Filters Button -->
+            <div class="mt-4 text-center">
+                @if (!string.IsNullOrEmpty(Model.Brand) || !string.IsNullOrEmpty(Model.PriceRange) || !string.IsNullOrEmpty(Model.Usage) || !string.IsNullOrEmpty(Model.CpuType) || !string.IsNullOrEmpty(Model.Ram) || !string.IsNullOrEmpty(Model.Gpu))
+                {
+                    <a href="@Url.Action("Laptop", "ProductsList", new { category = Model.Category })" 
+                       class="inline-block bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-all duration-200 shadow-md">
+                        <i class="fas fa-times-circle mr-2"></i>Xóa bộ lọc
+                    </a>
+                }
+            </div>
         </div>
     </div>
     
@@ -330,6 +340,117 @@
 @section Scripts {
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Xử lý thanh trượt giá
+            const priceSlider = document.getElementById('priceRangeSlider');
+            if (priceSlider) {
+                // Tùy chỉnh giao diện thanh trượt
+                priceSlider.addEventListener('input', function() {
+                    // Cập nhật giao diện khi người dùng kéo thanh trượt
+                    updateSliderBackground(this);
+                });
+                
+                // Xử lý khi người dùng thả thanh trượt
+                priceSlider.addEventListener('change', function() {
+                    const value = parseInt(this.value);
+                    let priceRange = '';
+                    
+                    // Chuyển đổi giá trị thanh trượt thành tham số URL
+                    switch(value) {
+                        case 0:
+                            // Không có bộ lọc giá
+                            navigateWithoutPriceFilter();
+                            return;
+                        case 1:
+                            priceRange = 'duoi-10-trieu';
+                            break;
+                        case 2:
+                            priceRange = '10-15-trieu';
+                            break;
+                        case 3:
+                            priceRange = '15-20-trieu';
+                            break;
+                        case 4:
+                            priceRange = '20-25-trieu';
+                            break;
+                        case 5:
+                            priceRange = '25-35-trieu';
+                            break;
+                        case 6:
+                            priceRange = 'tren-35-trieu';
+                            break;
+                    }
+                    
+                    // Chuyển hướng đến URL với bộ lọc giá mới
+                    navigateWithPriceFilter(priceRange);
+                });
+                
+                // Khởi tạo giao diện thanh trượt
+                updateSliderBackground(priceSlider);
+            }
+            
+            // Hàm cập nhật giao diện thanh trượt
+            function updateSliderBackground(slider) {
+                const value = slider.value;
+                const max = slider.max;
+                const percentage = (value / max) * 100;
+                slider.style.background = `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${percentage}%, #e5e7eb ${percentage}%, #e5e7eb 100%)`;
+            }
+            
+            // Hàm chuyển hướng không có bộ lọc giá
+            function navigateWithoutPriceFilter() {
+                const currentUrl = new URL(window.location.href);
+                const params = new URLSearchParams(currentUrl.search);
+                params.delete('priceRange');
+                
+                // Tạo URL mới và chuyển hướng
+                currentUrl.search = params.toString();
+                AppLoading.showBeforeRedirect(currentUrl.toString());
+            }
+            
+            // Hàm chuyển hướng với bộ lọc giá
+            function navigateWithPriceFilter(priceRange) {
+                const currentUrl = new URL(window.location.href);
+                const params = new URLSearchParams(currentUrl.search);
+                params.set('priceRange', priceRange);
+                
+                // Tạo URL mới và chuyển hướng
+                currentUrl.search = params.toString();
+                AppLoading.showBeforeRedirect(currentUrl.toString());
+            }
+            
+            // Thêm hiệu ứng hover cho các nút danh mục
+            const categoryButtons = document.querySelectorAll('.category-btn');
+            categoryButtons.forEach(btn => {
+                btn.addEventListener('mouseenter', function() {
+                    if (!this.classList.contains('bg-blue-600')) {
+                        this.classList.add('shadow-sm', 'scale-105');
+                    }
+                });
+                
+                btn.addEventListener('mouseleave', function() {
+                    if (!this.classList.contains('bg-blue-600')) {
+                        this.classList.remove('shadow-sm', 'scale-105');
+                    }
+                });
+            });
+            
+            // Thêm hiệu ứng hover cho các nút lọc giá
+            const priceButtons = document.querySelectorAll('.price-range-btn');
+            priceButtons.forEach(btn => {
+                btn.addEventListener('mouseenter', function() {
+                    if (!this.classList.contains('bg-blue-600')) {
+                        this.classList.add('shadow-sm', 'scale-105');
+                    }
+                });
+                
+                btn.addEventListener('mouseleave', function() {
+                    if (!this.classList.contains('bg-blue-600')) {
+                        this.classList.remove('shadow-sm', 'scale-105');
+                    }
+                });
+            });
+            
+            // Xử lý nút "Xem thêm" và "Thu gọn"
             const loadMoreBtn = document.getElementById('loadMoreBtn');
             const collapseBtn = document.getElementById('collapseBtn');
             const products = document.querySelectorAll('.product-item');
@@ -366,7 +487,7 @@
                             product.classList.add('hidden');
                         }
                     });
-
+                    
                     // Reset counter
                     currentlyShown = productsPerPage;
 
@@ -380,5 +501,12 @@
             }
         });
     </script>
+    
+    <style>
+        /* Hiệu ứng chuyển đổi cho các nút */
+        .price-range-btn, .category-btn {
+            transition: all 0.2s ease;
+        }
+    </style>
 }
 

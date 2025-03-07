@@ -616,6 +616,20 @@ namespace Website_Ban_Linh_Kien.Controllers
             // 2. Keep track of how many total items before filters
             int totalBeforeFilters = await query.CountAsync();
 
+            // CATEGORY
+            if (!string.IsNullOrEmpty(category))
+            {
+                if (category.ToLower() == "router")
+                {
+                    query = query.Where(p => p.Thongsokythuat.ToLower().Contains("\"danh mục\": \"router wifi\""));
+                }
+                else if (category.ToLower() == "card-wifi")
+                {
+                    query = query.Where(p => p.Thongsokythuat.ToLower().Contains("\"danh mục\": \"wifi card\""));
+                }
+            }
+            int afterCategory = await query.CountAsync();
+
             // BRAND
             if (!string.IsNullOrEmpty(brand))
             {
@@ -626,11 +640,25 @@ namespace Website_Ban_Linh_Kien.Controllers
             // TYPE
             if (!string.IsNullOrEmpty(type))
             {
+                if (category?.ToLower() == "router")
+                {
                     query = query.Where(p => p.Thongsokythuat.ToLower().Contains($"\"công nghệ ax\": \"{type}\""));
+                }
+                else if (category?.ToLower() == "card-wifi")
+                {
+                    query = query.Where(p => p.Thongsokythuat.ToLower().Contains($"\"công nghệ ax\": \"{type}\""));
+                }
             }
             int afterType = await query.CountAsync();
 
-
+            // CONNECTION
+            if (!string.IsNullOrEmpty(connection))
+            {
+                if (category?.ToLower() == "card-wifi")
+                {
+                    query = query.Where(p => p.Thongsokythuat.ToLower().Contains($"\"tiêu chuẩn mạng\": \"{connection}\""));
+                }
+            }
             int afterConnection = await query.CountAsync();
 
             // PRICE
@@ -668,6 +696,7 @@ namespace Website_Ban_Linh_Kien.Controllers
             // 6. Prepare debug objects
             ViewBag.NetworkCounts = new {
                 Total = totalBeforeFilters,
+                AfterCategory = afterCategory,
                 AfterBrand = afterBrand,
                 AfterType = afterType,
                 AfterConnection = afterConnection,
@@ -675,6 +704,7 @@ namespace Website_Ban_Linh_Kien.Controllers
             };
 
             ViewBag.NetworkFilters = new {
+                Category = category,
                 Brand = brand,
                 Type = type,
                 Connection = connection,
@@ -816,14 +846,14 @@ namespace Website_Ban_Linh_Kien.Controllers
                     case "1-2-trieu":
                         query = query.Where(p => p.Gia >= 1000000 && p.Gia <= 2000000);
                         break;
-                    case "2-3-trieu":
-                        query = query.Where(p => p.Gia >= 2000000 && p.Gia <= 3000000);
+                    case "2-5-trieu":
+                        query = query.Where(p => p.Gia >= 2000000 && p.Gia <= 5000000);
                         break;
-                    case "3-5-trieu":
-                        query = query.Where(p => p.Gia >= 3000000 && p.Gia <= 5000000);
+                    case "5-10-trieu":
+                        query = query.Where(p => p.Gia >= 5000000 && p.Gia <= 10000000);
                         break;
-                    case "tren-5-trieu":
-                        query = query.Where(p => p.Gia > 5000000);
+                    case "tren-10-trieu":
+                        query = query.Where(p => p.Gia > 10000000);
                         break;
                 }
             }

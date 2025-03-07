@@ -84,8 +84,9 @@
         </div>
     </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<script>
+    <script>
     document.getElementById('loginForm').addEventListener('submit', async function (e) {
         e.preventDefault();
 
@@ -105,6 +106,7 @@
             const loginData = await loginResponse.json();
 
             if (loginData.success) {
+                // Merge guest cart if exists
                 const guestCartStr = localStorage.getItem('guestCart');
                 if (guestCartStr) {
                     try {
@@ -125,7 +127,7 @@
                             
                             if (mergeData.success) {
                                 console.log('Merge cart thành công');
-                                localStorage.removeItem('guestCart'); // Xóa cart cũ sau khi merge thành công
+                                localStorage.removeItem('guestCart');
                             } else {
                                 console.error('Lỗi merge cart:', mergeData.message);
                             }
@@ -135,14 +137,26 @@
                     }
                 }
 
-                // Đóng popup và reload trang sau khi hoàn tất tất cả các thao tác
-                document.getElementById('loginPopup').classList.add('hidden');
-                document.getElementById('loginPopup').classList.remove('flex');
-                
-                // Đợi một chút để đảm bảo các thao tác đã hoàn tất
-                setTimeout(() => {
-                    window.location.reload();
-                }, 500);
+                // Show inline toast message for 1.5s using SweetAlert2 then redirect to home page
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: 'Đăng nhập thành công',
+                    showConfirmButton: false,
+                    timer: 1500,
+                    timerProgressBar: true,
+                    didClose: () => {
+                        // Redirect to home page after toast is closed
+                        window.location.href = '/';
+                    }
+                });
+
+                // Alternatively, if you wish to persist the message on a page swap, you could save a flag in sessionStorage:
+                // sessionStorage.setItem('showLoginSuccess', 'true');
+                // Then on the home page, check for that flag and trigger the Swal toast if set.
+                // For simplicity, this example directly redirects after the toast.
+
             } else {
                 const errorMessage = document.querySelector('.error-message');
                 errorMessage.textContent = loginData.message;
@@ -156,7 +170,7 @@
         }
     });
 
-    // Xử lý đóng popup khi click ra ngoài
+    // Close popup when clicking outside
     document.getElementById('loginPopup').addEventListener('click', function(e) {
         if (e.target === this) {
             this.classList.add('hidden');
@@ -164,4 +178,5 @@
         }
     });
 </script>
+
 

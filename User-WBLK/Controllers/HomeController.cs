@@ -237,5 +237,69 @@ namespace Website_Ban_Linh_Kien.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+        public IActionResult SearchResult(string query)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                return View(new SearchResultViewModel { SearchTerm = "", Results = new List<ProductCardViewModel>() });
+            }
+
+            // Split the search query into words (ignoring extra spaces)
+            var searchWords = query.Split(" ", StringSplitOptions.RemoveEmptyEntries)
+                                .Select(w => w.ToLower());
+
+            // Filter products so that every word is contained in the product name.
+            var products = _context.Sanphams.AsQueryable();
+            foreach (var word in searchWords)
+            {
+                products = products.Where(p => p.Tensanpham.ToLower().Contains(word));
+            }
+
+            var results = products.Select(p => new ProductCardViewModel
+            {
+                IdSp = p.IdSp,
+                TenSp = p.Tensanpham,
+                Gia = p.Gia,
+                ImageUrl = p.Hinhanh,
+                LoaiSp = p.Loaisanpham,
+                SoLuotXem = p.Soluotxem,
+                SoLuongTon = p.Soluongton,
+                DaMuaHang = p.Damuahang
+            }).ToList();
+
+            var viewModel = new SearchResultViewModel
+            {
+                SearchTerm = query,
+                Results = results
+            };
+
+            return View(viewModel);
+        }
+        [HttpGet]
+        public IActionResult SearchSuggestions(string query)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                // Return empty JSON array
+                return Json(Array.Empty<ProductCardViewModel>());
+            }
+
+            // Return ALL partial matches (no .Take(5) here)
+            var suggestions = _context.Sanphams
+                .Where(p => p.Tensanpham.Contains(query))
+                .Select(p => new ProductCardViewModel
+                {
+                    IdSp = p.IdSp,
+                    TenSp = p.Tensanpham,
+                    Gia = p.Gia,
+                    ImageUrl = p.Hinhanh,
+                    LoaiSp = p.Loaisanpham
+                })
+                .ToList();
+
+            return Json(suggestions);
+        }
+
+
     }
 }

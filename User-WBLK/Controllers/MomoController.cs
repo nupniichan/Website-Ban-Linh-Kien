@@ -1,24 +1,123 @@
 using Microsoft.AspNetCore.Mvc;
 using Website_Ban_Linh_Kien.Models;
-using Website_Ban_Linh_Kien.Services;
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
 
 namespace Website_Ban_Linh_Kien.Controllers
 {
     public class MomoController : Controller
     {
-        private readonly IMomoService _momoService;
         private readonly DatabaseContext _context;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        
+        // Thuộc tính từ MomoService
+        private readonly MomoOptionModel _options;
+        private readonly IHttpClientFactory _httpClientFactory;
 
-        public MomoController(IMomoService momoService, DatabaseContext context, IHttpContextAccessor httpContextAccessor)
+        public MomoController(DatabaseContext context, IHttpContextAccessor httpContextAccessor, 
+                             IOptions<MomoOptionModel> options, IHttpClientFactory httpClientFactory)
         {
-            _momoService = momoService;
             _context = context;
             _httpContextAccessor = httpContextAccessor;
+            _options = options.Value;
+            _httpClientFactory = httpClientFactory;
+        }
+
+        // Phương thức từ MomoService
+        public async Task<MomoCreatePaymentResponse> CreatePaymentAsync(long amount, string orderId, string orderInfo, string extraData = "", string requestType = null)
+        {
+            var requestId = DateTime.UtcNow.Ticks.ToString();
+            
+            // Sử dụng requestType từ tham số hoặc từ cấu hình
+            string actualRequestType = requestType ?? _options.RequestType;
+            
+            // Đảm bảo extraData không bao giờ là null
+            string actualExtraData = string.IsNullOrEmpty(extraData) ? "" : extraData;
+            
+            // Thêm timestamp vào orderId để tránh trùng lặp
+            string uniqueOrderId = $"{orderId}_{DateTime.Now.Ticks}";
+            
+            // Tạo request object theo định dạng mới của Momo API v2
+            var request = new MomoCreatePaymentRequest
+            {
+                PartnerCode = _options.PartnerCode,
+                AccessKey = _options.AccessKey,
+                RequestId = requestId,
+                Amount = amount,
+                OrderId = uniqueOrderId,
+                OrderInfo = orderInfo,
+                ReturnUrl = _options.ReturnUrl,
+                NotifyUrl = _options.NotifyUrl,
+                RequestType = actualRequestType,
+                ExtraData = actualExtraData
+            };
+            
+            // Tạo chuỗi hash theo định dạng mới của Momo API v2
+            var rawHash = $"accessKey={request.AccessKey}" +
+                         $"&amount={request.Amount}" +
+                         $"&extraData={request.ExtraData}" +
+                         $"&ipnUrl={request.NotifyUrl}" +
+                         $"&orderId={request.OrderId}" +
+                         $"&orderInfo={request.OrderInfo}" +
+                         $"&partnerCode={request.PartnerCode}" +
+                         $"&redirectUrl={request.ReturnUrl}" +
+                         $"&requestId={request.RequestId}" +
+                         $"&requestType={request.RequestType}";
+
+            // Tạo chữ ký
+            var signature = ComputeHmacSha256(rawHash, _options.SecretKey);
+            request.Signature = signature;
+
+            var client = _httpClientFactory.CreateClient();
+            var jsonRequest = JsonConvert.SerializeObject(request);
+            var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
+
+            // Gọi API và xử lý response
+            var response = await client.PostAsync(_options.MomoApiUrl, content);
+            var responseContent = await response.Content.ReadAsStringAsync();
+            
+            // Log response để debug
+            Console.WriteLine($"Momo API Response: {responseContent}");
+            
+            var momoResponse = JsonConvert.DeserializeObject<MomoCreatePaymentResponse>(responseContent);
+            
+            // Lưu trữ ánh xạ giữa uniqueOrderId và orderId gốc để xử lý callback
+            HttpContext.Session.SetString($"MomoOriginalOrderId_{uniqueOrderId}", orderId);
+            
+            return momoResponse;
+        }
+
+        // Phương thức từ MomoService
+        public bool ValidateSignature(string rawHash, string signature)
+        {
+            var hash = ComputeHmacSha256(rawHash, _options.SecretKey);
+            return hash.Equals(signature, StringComparison.OrdinalIgnoreCase);
+        }
+
+        // Phương thức từ MomoService
+        public string GetAccessKey()
+        {
+            return _options.AccessKey;
+        }
+
+        // Phương thức từ MomoService
+        private string ComputeHmacSha256(string message, string secretKey)
+        {
+            var key = Encoding.UTF8.GetBytes(secretKey);
+            var messageBytes = Encoding.UTF8.GetBytes(message);
+
+            using (var hmac = new HMACSHA256(key))
+            {
+                var hashBytes = hmac.ComputeHash(messageBytes);
+                var hash = BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
+                return hash;
+            }
         }
 
         [HttpPost]
@@ -27,6 +126,15 @@ namespace Website_Ban_Linh_Kien.Controllers
             try
             {
                 Console.WriteLine($"CreatePayment request: {JsonConvert.SerializeObject(request)}");
+                
+                // Kiểm tra xem đơn hàng có tồn tại không
+                var orderExists = await _context.Donhangs.AnyAsync(d => d.IdDh == request.OrderId);
+                
+                if (!orderExists)
+                {
+                    Console.WriteLine($"Order {request.OrderId} not found");
+                    return BadRequest(new { success = false, message = $"Không tìm thấy đơn hàng {request.OrderId}" });
+                }
                 
                 // Lưu thông tin đơn hàng vào session để sử dụng sau khi thanh toán
                 if (!string.IsNullOrEmpty(request.ShippingAddress))
@@ -41,152 +149,139 @@ namespace Website_Ban_Linh_Kien.Controllers
                     Console.WriteLine($"Saved cart items to session: {request.CartItems}");
                 }
                 
+                // Lưu thông tin người nhận vào session
+                if (!string.IsNullOrEmpty(request.ReceiverName))
+                {
+                    HttpContext.Session.SetString("ReceiverName", request.ReceiverName);
+                    Console.WriteLine($"Saved receiver name to session: {request.ReceiverName}");
+                }
+                
+                if (!string.IsNullOrEmpty(request.ReceiverPhone))
+                {
+                    HttpContext.Session.SetString("ReceiverPhone", request.ReceiverPhone);
+                    Console.WriteLine($"Saved receiver phone to session: {request.ReceiverPhone}");
+                }
+                
+                if (!string.IsNullOrEmpty(request.Email))
+                {
+                    HttpContext.Session.SetString("Email", request.Email);
+                    Console.WriteLine($"Saved email to session: {request.Email}");
+                }
+                
                 // Lưu thêm OrderId vào session
                 HttpContext.Session.SetString("OrderId", request.OrderId);
                 HttpContext.Session.SetString("OrderAmount", request.Amount.ToString());
                 
-                // Tạo đơn hàng TRƯỚC KHI thanh toán, tương tự như CheckOutController
-                if (!string.IsNullOrEmpty(request.CartItems))
+                // Kiểm tra xem đã có bản ghi thanh toán cho đơn hàng này chưa
+                var existingPayment = await _context.Thanhtoans
+                    .FirstOrDefaultAsync(t => t.IdDh == request.OrderId);
+                    
+                if (existingPayment == null)
                 {
-                    try
+                    // Tạo bản ghi thanh toán với trạng thái "Chờ thanh toán"
+                    var newPaymentId = await GenerateNewPaymentId();
+                    var payment = new Thanhtoan
                     {
-                        var cartItems = JsonConvert.DeserializeObject<List<CartItem>>(request.CartItems);
-                        
-                        // Kiểm tra xem đơn hàng đã tồn tại chưa
-                        var existingOrder = await _context.Donhangs.FirstOrDefaultAsync(d => d.IdDh == request.OrderId);
-                        if (existingOrder == null)
-                        {
-                            // Lấy thông tin khách hàng
-                            string customerId = "KH000001"; // Mặc định
-                            if (User.Identity?.IsAuthenticated == true)
-                            {
-                                var userCustomerId = User.FindFirstValue("CustomerId");
-                                if (!string.IsNullOrEmpty(userCustomerId))
-                                {
-                                    customerId = userCustomerId;
-                                }
-                            }
-                            
-                            // Tạo đơn hàng mới
-                            var donhang = new Donhang
-                            {
-                                IdDh = request.OrderId,
-                                Ngaydathang = DateTime.Now,
-                                Diachigiaohang = request.ShippingAddress,
-                                Tongtien = request.Amount,
-                                Trangthai = "Chờ xác nhận",
-                                Phuongthucthanhtoan = "Momo",
-                                IdKh = customerId
-                            };
-                            
-                            _context.Donhangs.Add(donhang);
-                            await _context.SaveChangesAsync();
-                            
-                            // Tạo chi tiết đơn hàng
-                            int detailStartId = 1;
-                            var lastDetailId = await _context.Chitietdonhangs
-                                .OrderByDescending(c => c.Idchitietdonhang)
-                                .Select(c => c.Idchitietdonhang)
-                                .FirstOrDefaultAsync();
-                                
-                            if (lastDetailId != null && int.TryParse(lastDetailId.Substring(4), out int currentId))
-                            {
-                                detailStartId = currentId + 1;
-                            }
-                            
-                            foreach (var item in cartItems)
-                            {
-                                var product = await _context.Sanphams.FindAsync(item.ProductId);
-                                if (product != null)
-                                {
-                                    var chitietdonhang = new Chitietdonhang
-                                    {
-                                        Idchitietdonhang = $"CTDH{detailStartId:D5}",
-                                        IdDh = request.OrderId,
-                                        IdSp = item.ProductId,
-                                        Soluongsanpham = item.Quantity,
-                                        Dongia = item.Price
-                                    };
-                                    
-                                    _context.Chitietdonhangs.Add(chitietdonhang);
-                                    
-                                    // Cập nhật số lượng tồn kho
-                                    product.Soluongton -= item.Quantity;
-                                    product.Damuahang += item.Quantity;
-                                    
-                                    detailStartId++;
-                                }
-                            }
-                            
-                            await _context.SaveChangesAsync();
-                            Console.WriteLine($"Created order {request.OrderId} with {cartItems.Count} items");
-                        }
-                        else
-                        {
-                            Console.WriteLine($"Order {request.OrderId} already exists");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Error creating order: {ex.Message}");
-                        Console.WriteLine($"Stack trace: {ex.StackTrace}");
-                        // Tiếp tục xử lý thanh toán ngay cả khi tạo đơn hàng thất bại
-                    }
+                        IdTt = newPaymentId,
+                        IdDh = request.OrderId,
+                        Trangthai = "Chờ thanh toán",
+                        Tienthanhtoan = request.Amount,
+                        Ngaythanhtoan = DateTime.Now,
+                        Noidungthanhtoan = $"Thanh toán Momo cho đơn hàng {request.OrderId}",
+                        Mathanhtoan = DateTime.Now.Ticks.ToString() // Tạm thời sử dụng timestamp, sẽ cập nhật sau khi có transId từ Momo
+                    };
+                    
+                    _context.Thanhtoans.Add(payment);
+                    await _context.SaveChangesAsync();
                 }
                 
                 Console.WriteLine($"Using RequestType: {request.RequestType}");
                 
-                var response = await _momoService.CreatePaymentAsync(
+                // Đảm bảo ExtraData không null
+                string extraData = string.IsNullOrEmpty(request.ExtraData) ? "" : request.ExtraData;
+                
+                // Sử dụng phương thức CreatePaymentAsync đã được gộp vào controller
+                var response = await CreatePaymentAsync(
                     request.Amount,
                     request.OrderId,
                     request.OrderInfo,
-                    request.ExtraData,
+                    extraData,
                     request.RequestType);
 
                 if (response.ErrorCode != 0)
                 {
-                    return BadRequest(new { message = response.Message });
+                    return BadRequest(new { success = false, message = response.Message });
                 }
 
-                return Ok(new { payUrl = response.PayUrl });
+                return Ok(new { success = true, payUrl = response.PayUrl });
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error in CreatePayment: {ex.Message}");
                 Console.WriteLine($"Stack trace: {ex.StackTrace}");
-                return StatusCode(500, new { message = ex.Message });
+                return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
 
         [HttpGet]
-        public IActionResult PaymentCallback(string partnerCode, string orderId, string requestId, 
+        public async Task<IActionResult> PaymentCallback(string partnerCode, string orderId, string requestId, 
             long amount, string orderInfo, string orderType, string transId, 
             int resultCode, string message, string payType, long responseTime, string extraData, string signature)
         {
             Console.WriteLine($"Received Momo callback: {JsonConvert.SerializeObject(new { partnerCode, orderId, requestId, amount, orderInfo, orderType, transId, resultCode, message, payType, responseTime, extraData, signature })}");
             Console.WriteLine($"ResultCode: {resultCode}, Message: {message}");
             
+            // Lấy orderId gốc từ session
+            string originalOrderId = HttpContext.Session.GetString($"MomoOriginalOrderId_{orderId}");
+            if (string.IsNullOrEmpty(originalOrderId))
+            {
+                // Nếu không tìm thấy trong session, thử tách orderId từ định dạng "orderId_timestamp"
+                int underscoreIndex = orderId.LastIndexOf('_');
+                if (underscoreIndex > 0)
+                {
+                    originalOrderId = orderId.Substring(0, underscoreIndex);
+                }
+                else
+                {
+                    originalOrderId = orderId; // Sử dụng orderId gốc nếu không tìm thấy dấu gạch dưới
+                }
+            }
+            
             // Kiểm tra kết quả thanh toán
             if (resultCode == 0) // Thanh toán thành công
             {
                 try {
                     // Cập nhật trạng thái đơn hàng
-                    var order = _context.Donhangs.FirstOrDefault(d => d.IdDh == orderId);
+                    var order = await _context.Donhangs.FirstOrDefaultAsync(d => d.IdDh == originalOrderId);
                     if (order != null)
                     {
+                        // Cập nhật trạng thái đơn hàng thành "Đã thanh toán"
                         order.Trangthai = "Đã thanh toán";
-                        _context.SaveChanges();
-                        Console.WriteLine($"Updated order status for {orderId} to 'Đã thanh toán'");
+                        order.Phuongthucthanhtoan = "Momo";
+                        _context.Donhangs.Update(order);
                         
-                        // Tạo thanh toán
-                        var existingPayment = _context.Thanhtoans.FirstOrDefault(t => t.IdDh == orderId);
-                        if (existingPayment == null)
+                        // Cập nhật bản ghi thanh toán thay vì tạo mới
+                        var existingPayment = await _context.Thanhtoans.FirstOrDefaultAsync(t => t.IdDh == originalOrderId);
+                        
+                        if (existingPayment != null)
                         {
+                            existingPayment.Trangthai = "Đã thanh toán";
+                            existingPayment.Ngaythanhtoan = DateTime.Now;
+                            existingPayment.Mathanhtoan = transId;
+                            existingPayment.Noidungthanhtoan = $"Thanh toán qua Momo, mã giao dịch: {transId}";
+                            
+                            _context.Thanhtoans.Update(existingPayment);
+                        }
+                        else
+                        {
+                            // Tạo mã thanh toán mới sử dụng phương thức GenerateNewPaymentId
+                            var paymentId = await GenerateNewPaymentId();
+                            
                             var thanhtoan = new Thanhtoan
                             {
-                                IdTt = Guid.NewGuid().ToString().Substring(0, 10),
-                                IdDh = orderId,
-                                Trangthai = "Thành công",
+                                IdTt = paymentId,
+                                IdDh = originalOrderId,
+                                Trangthai = "Đã thanh toán",
                                 Tienthanhtoan = amount,
                                 Ngaythanhtoan = DateTime.Now,
                                 Mathanhtoan = transId,
@@ -194,18 +289,40 @@ namespace Website_Ban_Linh_Kien.Controllers
                             };
                             
                             _context.Thanhtoans.Add(thanhtoan);
-                            _context.SaveChanges();
-                            Console.WriteLine($"Created payment record for order {orderId}");
                         }
+                        
+                        // Lưu các thay đổi vào cơ sở dữ liệu
+                        await _context.SaveChangesAsync();
+                        
+                        // Xóa giỏ hàng nếu khách hàng đã đăng nhập
+                        if (order.IdKh != null)
+                        {
+                            var cart = await _context.Giohangs
+                                .Include(g => g.Chitietgiohangs)
+                                .Where(g => g.IdKh == order.IdKh)
+                                .OrderByDescending(g => g.Thoigiancapnhat)
+                                .FirstOrDefaultAsync();
+                                
+                            if (cart != null)
+                            {
+                                _context.Chitietgiohangs.RemoveRange(cart.Chitietgiohangs);
+                                _context.Giohangs.Remove(cart);
+                            }
+                        }
+                        
+                        Console.WriteLine($"Updated order status for {originalOrderId} to 'Đã thanh toán'");
                     }
                     else
                     {
-                        Console.WriteLine($"WARNING: Order {orderId} not found");
+                        Console.WriteLine($"WARNING: Order {originalOrderId} not found");
+                        return RedirectToAction("PaymentFailed", "PaymentResult", new { 
+                            errorMessage = "Không tìm thấy đơn hàng" 
+                        });
                     }
                     
                     // Chuyển hướng đến trang thành công với tham số clearCart
                     return RedirectToAction("PaymentSuccess", "PaymentResult", new { 
-                        orderId = orderId, 
+                        orderId = originalOrderId, 
                         transId = transId,
                         amount = amount,
                         clearCart = true
@@ -224,6 +341,30 @@ namespace Website_Ban_Linh_Kien.Controllers
             }
             else
             {
+                try
+                {
+                    // Cập nhật trạng thái đơn hàng thành "Thanh toán không thành công"
+                    var order = await _context.Donhangs.FirstOrDefaultAsync(d => d.IdDh == originalOrderId);
+                    if (order != null)
+                    {
+                        order.Trangthai = "Thanh toán không thành công";
+                        
+                        // Cập nhật bản ghi thanh toán
+                        var payment = await _context.Thanhtoans.FirstOrDefaultAsync(t => t.IdDh == originalOrderId);
+                        if (payment != null)
+                        {
+                            payment.Trangthai = "Thanh toán thất bại";
+                            _context.Thanhtoans.Update(payment);
+                        }
+                        
+                        await _context.SaveChangesAsync();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error updating failed payment status: {ex.Message}");
+                }
+                
                 Console.WriteLine($"Payment failed with code: {resultCode}, message: {message}");
                 return RedirectToAction("PaymentFailed", "PaymentResult", new { 
                     errorMessage = "Thanh toán thất bại: " + message 
@@ -242,85 +383,143 @@ namespace Website_Ban_Linh_Kien.Controllers
                 if (ipn == null)
                 {
                     Console.WriteLine("Error: MomoIPN object is null");
-                    return BadRequest(new { message = "Invalid IPN data" });
+                    return BadRequest(new { success = false, message = "Invalid IPN data" });
+                }
+                
+                // Lấy orderId gốc từ session hoặc từ định dạng "orderId_timestamp"
+                string originalOrderId = HttpContext.Session.GetString($"MomoOriginalOrderId_{ipn.OrderId}");
+                if (string.IsNullOrEmpty(originalOrderId))
+                {
+                    // Nếu không tìm thấy trong session, thử tách orderId từ định dạng "orderId_timestamp"
+                    int underscoreIndex = ipn.OrderId.LastIndexOf('_');
+                    if (underscoreIndex > 0)
+                    {
+                        originalOrderId = ipn.OrderId.Substring(0, underscoreIndex);
+                    }
+                    else
+                    {
+                        originalOrderId = ipn.OrderId; // Sử dụng orderId gốc nếu không tìm thấy dấu gạch dưới
+                    }
                 }
                 
                 // Xử lý thông báo từ Momo
                 if (ipn.ResultCode == 0)
                 {
                     // Thanh toán thành công
-                    // Ghi log và cập nhật trạng thái thanh toán
-                    Console.WriteLine($"Payment successful for order {ipn.OrderId}, transaction {ipn.TransId}");
+                    Console.WriteLine($"Payment successful for order {originalOrderId}, transaction {ipn.TransId}");
                     
                     // Cập nhật trạng thái đơn hàng
-                    var order = await _context.Donhangs.FirstOrDefaultAsync(d => d.IdDh == ipn.OrderId);
+                    var order = await _context.Donhangs.FirstOrDefaultAsync(d => d.IdDh == originalOrderId);
                     if (order != null)
                     {
                         order.Trangthai = "Đã thanh toán";
+                        order.Phuongthucthanhtoan = "Momo";
                         
-                        // Lấy thông tin khách hàng
-                        var customer = await _context.Khachhangs.FindAsync(order.IdKh);
-                        if (customer != null)
+                        // Cập nhật bản ghi thanh toán thay vì tạo mới
+                        var existingPayment = await _context.Thanhtoans.FirstOrDefaultAsync(t => t.IdDh == originalOrderId);
+                        
+                        if (existingPayment != null)
                         {
-                            // Xóa giỏ hàng của khách hàng
+                            existingPayment.Trangthai = "Đã thanh toán";
+                            existingPayment.Ngaythanhtoan = DateTime.Now;
+                            
+                            // Cập nhật Mathanhtoan thành Transaction ID
+                            existingPayment.Mathanhtoan = ipn.TransId;
+                            existingPayment.Noidungthanhtoan = $"Thanh toán qua Momo cho đơn hàng {originalOrderId}";
+                            
+                            _context.Thanhtoans.Update(existingPayment);
+                        }
+                        else
+                        {
+                            // Tạo bản ghi thanh toán nếu không tìm thấy
+                            var newPaymentId = await GenerateNewPaymentId();
+                            var payment = new Thanhtoan
+                            {
+                                IdTt = newPaymentId,
+                                IdDh = originalOrderId,
+                                Trangthai = "Đã thanh toán",
+                                Tienthanhtoan = ipn.Amount,
+                                Ngaythanhtoan = DateTime.Now,
+                                Mathanhtoan = ipn.TransId,
+                                Noidungthanhtoan = $"Thanh toán qua Momo cho đơn hàng {originalOrderId}"
+                            };
+                            
+                            _context.Thanhtoans.Add(payment);
+                        }
+                        
+                        // Xóa giỏ hàng của khách hàng
+                        if (order.IdKh != null)
+                        {
                             var cart = await _context.Giohangs
                                 .Include(g => g.Chitietgiohangs)
-                                .Where(g => g.IdKh == customer.IdKh)
+                                .Where(g => g.IdKh == order.IdKh)
                                 .OrderByDescending(g => g.Thoigiancapnhat)
                                 .FirstOrDefaultAsync();
                             
                             if (cart != null)
                             {
-                                // Xóa chi tiết giỏ hàng
                                 _context.Chitietgiohangs.RemoveRange(cart.Chitietgiohangs);
-                                
-                                // Xóa giỏ hàng
                                 _context.Giohangs.Remove(cart);
-                                
-                                Console.WriteLine($"Removed cart for customer {customer.IdKh}");
                             }
                         }
                         
-                        // Tạo thanh toán nếu chưa tồn tại
-                        var existingPayment = await _context.Thanhtoans.FirstOrDefaultAsync(t => t.IdDh == ipn.OrderId);
-                        if (existingPayment == null)
-                        {
-                            var thanhtoan = new Thanhtoan
-                            {
-                                IdTt = Guid.NewGuid().ToString().Substring(0, 10),
-                                IdDh = ipn.OrderId,
-                                Trangthai = "Thành công",
-                                Tienthanhtoan = ipn.Amount,
-                                Ngaythanhtoan = DateTime.Now,
-                                Mathanhtoan = ipn.TransId,
-                                Noidungthanhtoan = $"Thanh toán qua Momo, mã giao dịch: {ipn.TransId}"
-                            };
-                            
-                            _context.Thanhtoans.Add(thanhtoan);
-                        }
-                        
                         await _context.SaveChangesAsync();
-                        Console.WriteLine($"Updated order status for {ipn.OrderId} to 'Đã thanh toán' and cleared cart");
+                        Console.WriteLine($"Updated order status for {originalOrderId} to 'Đã thanh toán' and cleared cart");
                     }
                     else
                     {
-                        Console.WriteLine($"WARNING: Order {ipn.OrderId} not found");
+                        Console.WriteLine($"WARNING: Order {originalOrderId} not found");
                     }
                 }
                 else
                 {
                     // Thanh toán thất bại
-                    Console.WriteLine($"Payment failed for order {ipn.OrderId}, code: {ipn.ResultCode}, message: {ipn.Message}");
+                    Console.WriteLine($"Payment failed for order {originalOrderId}, code: {ipn.ResultCode}, message: {ipn.Message}");
+                    
+                    // Cập nhật trạng thái đơn hàng thành "Thanh toán không thành công"
+                    var order = await _context.Donhangs.FirstOrDefaultAsync(d => d.IdDh == originalOrderId);
+                    if (order != null)
+                    {
+                        order.Trangthai = "Thanh toán không thành công";
+                        
+                        // Cập nhật bản ghi thanh toán
+                        var payment = await _context.Thanhtoans.FirstOrDefaultAsync(t => t.IdDh == originalOrderId);
+                        if (payment != null)
+                        {
+                            payment.Trangthai = "Thanh toán thất bại";
+                            _context.Thanhtoans.Update(payment);
+                        }
+                        
+                        await _context.SaveChangesAsync();
+                    }
                 }
                 
-                return Ok(new { message = "IPN received" });
+                // Trả về kết quả cho Momo
+                return Ok(new { success = true, message = "IPN received" });
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error in MomoNotify: {ex.Message}");
                 Console.WriteLine($"Stack trace: {ex.StackTrace}");
-                return StatusCode(500, new { message = ex.Message });
+                return StatusCode(500, new { success = false, message = ex.Message });
             }
+        }
+
+        private async Task<string> GenerateNewPaymentId()
+        {
+            var lastPaymentId = await _context.Thanhtoans
+                .OrderByDescending(t => t.IdTt)
+                .Select(t => t.IdTt)
+                .FirstOrDefaultAsync();
+                
+            int nextId = 1;
+            if (lastPaymentId != null && lastPaymentId.StartsWith("TT") && 
+                int.TryParse(lastPaymentId.Substring(2), out int currentId))
+            {
+                nextId = currentId + 1;
+            }
+            
+            return $"TT{nextId:D6}";
         }
     }
 
@@ -333,6 +532,9 @@ namespace Website_Ban_Linh_Kien.Controllers
         public string RequestType { get; set; }
         public string ShippingAddress { get; set; }
         public string CartItems { get; set; }
+        public string ReceiverName { get; set; }
+        public string ReceiverPhone { get; set; }
+        public string Email { get; set; }
     }
 
     public class CartItem

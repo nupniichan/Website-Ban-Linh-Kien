@@ -18,7 +18,7 @@
                 <p class="text-2xl font-bold text-green-700" id="totalOrders">0</p>
             </div>
             <div class="bg-purple-50 p-4 rounded-lg">
-                <p class="text-sm text-purple-600 mb-1">Đơn hàng thành công</p>
+                <p class="text-sm text-purple-600 mb-1">Đơn hàng giao thành công</p>
                 <p class="text-2xl font-bold text-purple-700" id="successOrders">0</p>
             </div>
         </div>
@@ -41,8 +41,8 @@
                 <select id="paymentMethod" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     <option value="">Tất cả</option>
                     <option value="COD">COD</option>
-                    <option value="VNPAY">VNPAY</option>
                     <option value="Paypal">Paypal</option>
+                    <option value="MoMo">MoMo</option>
                 </select>
             </div>
             <div class="flex items-end">
@@ -66,11 +66,138 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Số đơn hàng
                             </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Thao tác
+                            </th>
                         </tr>
                     </thead>
                     <tbody id="revenueTableBody" class="bg-white divide-y divide-gray-200">
                     </tbody>
                 </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Danh sách đơn hàng -->
+    <div id="orderListSection" class="bg-white rounded-lg shadow p-6 mt-8 hidden">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-semibold">Danh sách đơn hàng - <span id="orderListTitle"></span></h2>
+            <button onclick="closeOrderList()" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times"></i> Đóng
+            </button>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Mã đơn hàng
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Khách hàng
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Ngày đặt
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Tổng tiền
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Trạng thái
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Thao tác
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="orderTableBody" class="bg-white divide-y divide-gray-200">
+                </tbody>
+            </table>
+        </div>
+        <div class="mt-4 flex justify-between items-center">
+            <div>
+                <span id="orderPagingInfo">Hiển thị 0-0 của 0</span>
+            </div>
+            <div class="flex space-x-2">
+                <button id="prevPageBtn" class="px-3 py-1 bg-gray-200 rounded disabled:opacity-50">Trước</button>
+                <button id="nextPageBtn" class="px-3 py-1 bg-gray-200 rounded disabled:opacity-50">Sau</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal xem chi tiết đơn hàng -->
+    <div id="orderDetailModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center overflow-y-auto py-10">
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto relative" onclick="event.stopPropagation();">
+            <!-- Nút đóng X ở góc trên bên phải -->
+            <button onclick="closeOrderDetail()" class="absolute top-3 right-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full w-8 h-8 flex items-center justify-center transition-colors duration-200 z-10">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <div class="p-6">
+                <div class="flex items-center mb-4 border-b pb-3">
+                    <h3 class="text-xl font-bold text-blue-700">Chi tiết đơn hàng #<span id="orderDetailId"></span></h3>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <!-- Thông tin đơn hàng -->
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <h4 class="font-semibold mb-3 text-blue-700 border-b pb-2"><i class="fas fa-info-circle mr-2"></i>Thông tin đơn hàng</h4>
+                        <div class="space-y-2">
+                            <p><span class="font-medium">Mã đơn hàng:</span> <span id="detailOrderId" class="text-blue-600"></span></p>
+                            <p><span class="font-medium">Ngày đặt:</span> <span id="detailOrderDate"></span></p>
+                            <p><span class="font-medium">Phương thức thanh toán:</span> <span id="detailPaymentMethod" class="font-semibold"></span></p>
+                            <p><span class="font-medium">Trạng thái:</span> <span id="detailOrderStatus" class="px-2 py-1 rounded-full text-xs"></span></p>
+                        </div>
+                    </div>
+                    
+                    <!-- Thông tin khách hàng -->
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <h4 class="font-semibold mb-3 text-green-700 border-b pb-2"><i class="fas fa-user mr-2"></i>Thông tin khách hàng</h4>
+                        <div class="space-y-2">
+                            <p><span class="font-medium">Tên:</span> <span id="detailCustomerName"></span></p>
+                            <p><span class="font-medium">Email:</span> <span id="detailCustomerEmail"></span></p>
+                            <p><span class="font-medium">Số điện thoại:</span> <span id="detailCustomerPhone"></span></p>
+                            <p><span class="font-medium">Địa chỉ:</span> <span id="detailCustomerAddress" class="text-sm"></span></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Thông tin thanh toán - Hiển thị khi không phải COD -->
+                <div id="paymentInfoSection" class="bg-purple-50 p-4 rounded-lg mb-6 hidden">
+                    <h4 class="font-semibold mb-3 text-purple-700 border-b pb-2"><i class="fas fa-credit-card mr-2"></i>Thông tin thanh toán</h4>
+                    <div class="space-y-2">
+                        <p><span class="font-medium">Mã thanh toán:</span> <span id="detailPaymentCode"></span></p>
+                        <p><span class="font-medium">Ngày thanh toán:</span> <span id="detailPaymentDate"></span></p>
+                        <p><span class="font-medium">Số tiền:</span> <span id="detailPaymentAmount" class="text-purple-600 font-semibold"></span></p>
+                        <p><span class="font-medium">Trạng thái:</span> <span id="detailPaymentStatus" class="px-2 py-1 rounded-full text-xs"></span></p>
+                        <p><span class="font-medium">Nội dung:</span> <span id="detailPaymentContent" class="text-sm"></span></p>
+                    </div>
+                </div>
+                
+                <!-- Danh sách sản phẩm -->
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="font-semibold mb-3 text-gray-700 border-b pb-2"><i class="fas fa-shopping-cart mr-2"></i>Sản phẩm</h4>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sản phẩm</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Đơn giá</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Số lượng</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thành tiền</th>
+                                </tr>
+                            </thead>
+                            <tbody id="orderItemsTable" class="bg-white divide-y divide-gray-200">
+                            </tbody>
+                            <tfoot class="bg-gray-100">
+                                <tr>
+                                    <td colspan="3" class="px-4 py-2 text-right font-semibold">Tổng tiền:</td>
+                                    <td class="px-4 py-2 font-bold text-red-600" id="detailTotalAmount"></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -86,14 +213,14 @@
                     let totalRevenue = 0;
                     let totalOrders = 0;
                     
-                    data.forEach(item => {
+                    data.revenueData.forEach(item => {
                         totalRevenue += item.totalAmount;
                         totalOrders += item.orderCount;
                     });
 
                     document.getElementById('totalRevenue').textContent = totalRevenue.toLocaleString('vi-VN') + ' đ';
                     document.getElementById('totalOrders').textContent = totalOrders;
-                    document.getElementById('successOrders').textContent = totalOrders;
+                    document.getElementById('successOrders').textContent = data.totalSuccessOrders;
                 });
         }
 
@@ -103,24 +230,79 @@
             const toDate = document.getElementById('toDate').value;
             const paymentMethod = document.getElementById('paymentMethod').value;
 
-            fetch(`/RevenueManagement/GetRevenue?fromDate=${fromDate}&toDate=${toDate}&paymentMethod=${paymentMethod}`)
-                .then(response => response.json())
+            console.log("getRevenue - From Date:", fromDate);
+            console.log("getRevenue - To Date:", toDate);
+            console.log("getRevenue - Payment Method:", paymentMethod);
+
+            // Tạo URL với các tham số
+            let url = '/RevenueManagement/GetRevenue';
+            const params = [];
+            
+            if (fromDate) {
+                // Đảm bảo định dạng ngày tháng đúng
+                const fromDateObj = new Date(fromDate);
+                const fromDateIso = fromDateObj.toISOString();
+                params.push(`fromDate=${encodeURIComponent(fromDateIso)}`);
+                console.log("getRevenue - Using fromDate:", fromDateIso);
+            }
+            
+            if (toDate) {
+                // Đảm bảo định dạng ngày tháng đúng
+                const toDateObj = new Date(toDate);
+                const toDateIso = toDateObj.toISOString();
+                params.push(`toDate=${encodeURIComponent(toDateIso)}`);
+                console.log("getRevenue - Using toDate:", toDateIso);
+            }
+            
+            if (paymentMethod) {
+                params.push(`paymentMethod=${encodeURIComponent(paymentMethod)}`);
+            }
+            
+            if (params.length > 0) {
+                url += '?' + params.join('&');
+            }
+            
+            console.log("getRevenue - Final URL:", url);
+
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
                 .then(data => {
+                    console.log("getRevenue - Received data:", data);
+                    
                     const tableBody = document.getElementById('revenueTableBody');
                     tableBody.innerHTML = '';
                     
                     let totalRevenue = 0;
                     let totalOrders = 0;
+                    let totalSuccessOrders = 0;
 
-                    data.forEach(item => {
+                    if (data.revenueData.length === 0) {
+                        tableBody.innerHTML = `
+                            <tr>
+                                <td colspan="4" class="px-6 py-4 text-center text-gray-500">Không có dữ liệu thống kê trong khoảng thời gian này</td>
+                            </tr>
+                        `;
+                    } else {
+                    data.revenueData.forEach(item => {
                         totalRevenue += item.totalAmount;
                         totalOrders += item.orderCount;
+                        totalSuccessOrders += item.successOrderCount;
 
                         const row = `
                             <tr class="hover:bg-gray-50">
                                 <td class="px-6 py-4 whitespace-nowrap">${item.paymentMethod}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-red-600 font-medium">${item.totalAmount.toLocaleString('vi-VN')} đ</td>
                                 <td class="px-6 py-4 whitespace-nowrap">${item.orderCount}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <button onclick="showOrderList('${item.paymentMethod}')" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs">
+                                            <i class="fas fa-list mr-1"></i>Xem danh sách
+                                        </button>
+                                    </td>
                             </tr>
                         `;
                         tableBody.innerHTML += row;
@@ -131,14 +313,313 @@
                             <td class="px-6 py-4 whitespace-nowrap">Tổng cộng</td>
                             <td class="px-6 py-4 whitespace-nowrap text-red-700">${totalRevenue.toLocaleString('vi-VN')} đ</td>
                             <td class="px-6 py-4 whitespace-nowrap">${totalOrders}</td>
+                                <td class="px-6 py-4 whitespace-nowrap"></td>
+                            </tr>
+                        `;
+                        tableBody.innerHTML += totalRow;
+                        
+                        // Cập nhật số đơn hàng thành công
+                        document.getElementById('successOrders').textContent = totalSuccessOrders;
+                    }
+                })
+                .catch(error => {
+                    console.error('Lỗi khi tải dữ liệu thống kê:', error);
+                    document.getElementById('revenueTableBody').innerHTML = `
+                        <tr>
+                            <td colspan="4" class="px-6 py-4 text-center text-red-500">Đã xảy ra lỗi khi tải dữ liệu</td>
                         </tr>
                     `;
-                    tableBody.innerHTML += totalRow;
                 });
         }
 
-        // Gọi hàm lấy thống kê tổng khi trang được tải
+        // Biến lưu trữ trạng thái phân trang
+        let currentPage = 1;
+        let pageSize = 10;
+        let totalOrders = 0;
+        let currentPaymentMethod = '';
+        let currentFromDate = '';
+        let currentToDate = '';
+
+        // Hàm hiển thị danh sách đơn hàng
+        function showOrderList(paymentMethod) {
+            currentPaymentMethod = paymentMethod;
+            currentPage = 1;
+            currentFromDate = document.getElementById('fromDate').value;
+            currentToDate = document.getElementById('toDate').value;
+            
+            console.log("showOrderList - Payment Method:", paymentMethod);
+            console.log("showOrderList - From Date:", currentFromDate);
+            console.log("showOrderList - To Date:", currentToDate);
+            
+            // Hiển thị thông tin lọc
+            let titleText = `Phương thức thanh toán: ${paymentMethod}`;
+            if (currentFromDate) {
+                const fromDateFormatted = new Date(currentFromDate).toLocaleDateString('vi-VN');
+                titleText += ` | Từ ngày: ${fromDateFormatted}`;
+            }
+            if (currentToDate) {
+                const toDateFormatted = new Date(currentToDate).toLocaleDateString('vi-VN');
+                titleText += ` | Đến ngày: ${toDateFormatted}`;
+            }
+            
+            document.getElementById('orderListTitle').textContent = titleText;
+            document.getElementById('orderListSection').classList.remove('hidden');
+            
+            loadOrders();
+        }
+
+        // Hàm đóng danh sách đơn hàng
+        function closeOrderList() {
+            document.getElementById('orderListSection').classList.add('hidden');
+        }
+
+        // Hàm tải danh sách đơn hàng
+        function loadOrders() {
+            // Tạo URL với các tham số
+            let url = `/RevenueManagement/GetOrders?page=${currentPage}&pageSize=${pageSize}&paymentMethod=${encodeURIComponent(currentPaymentMethod)}`;
+            
+            // Thêm tham số từ ngày và đến ngày nếu có
+            if (currentFromDate) {
+                // Đảm bảo định dạng ngày tháng đúng
+                const fromDateObj = new Date(currentFromDate);
+                const fromDateIso = fromDateObj.toISOString();
+                url += `&fromDate=${encodeURIComponent(fromDateIso)}`;
+                console.log("loadOrders - Using fromDate:", fromDateIso);
+            }
+            
+            if (currentToDate) {
+                // Đảm bảo định dạng ngày tháng đúng
+                const toDateObj = new Date(currentToDate);
+                const toDateIso = toDateObj.toISOString();
+                url += `&toDate=${encodeURIComponent(toDateIso)}`;
+                console.log("loadOrders - Using toDate:", toDateIso);
+            }
+            
+            console.log("loadOrders - Final URL:", url);
+            
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("loadOrders - Received data:", data);
+                    
+                    const tableBody = document.getElementById('orderTableBody');
+                    tableBody.innerHTML = '';
+                    
+                    totalOrders = data.totalCount;
+                    console.log("loadOrders - Total orders:", totalOrders);
+                    
+                    if (data.orders.length === 0) {
+                        tableBody.innerHTML = `
+                            <tr>
+                                <td colspan="6" class="px-6 py-4 text-center text-gray-500">Không có đơn hàng nào trong khoảng thời gian này</td>
+                            </tr>
+                        `;
+                    } else {
+                        data.orders.forEach(order => {
+                            const statusClass = getStatusClass(order.status);
+                            const row = `
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap">${order.id}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">${order.customerName}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">${formatDate(order.orderDate)}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-red-600 font-medium">${order.totalAmount.toLocaleString('vi-VN')} đ</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 py-1 rounded-full text-xs ${statusClass}">${order.status}</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <button onclick="viewOrderDetail('${order.id}')" class="text-blue-600 hover:text-blue-800">
+                                            <i class="fas fa-eye mr-1"></i>Xem chi tiết
+                                        </button>
+                                    </td>
+                                </tr>
+                            `;
+                            tableBody.innerHTML += row;
+                        });
+                    }
+
+                    // Cập nhật thông tin phân trang
+                    const start = totalOrders > 0 ? (currentPage - 1) * pageSize + 1 : 0;
+                    const end = Math.min(start + (data.orders.length - 1), totalOrders);
+                    document.getElementById('orderPagingInfo').textContent = `Hiển thị ${start}-${end} của ${totalOrders}`;
+                    
+                    // Cập nhật trạng thái nút phân trang
+                    document.getElementById('prevPageBtn').disabled = currentPage === 1;
+                    document.getElementById('nextPageBtn').disabled = end === totalOrders;
+                })
+                .catch(error => {
+                    console.error('Lỗi khi tải danh sách đơn hàng:', error);
+                    document.getElementById('orderTableBody').innerHTML = `
+                        <tr>
+                            <td colspan="6" class="px-6 py-4 text-center text-red-500">Đã xảy ra lỗi khi tải dữ liệu</td>
+                        </tr>
+                    `;
+                });
+        }
+
+        // Hàm xem chi tiết đơn hàng
+        function viewOrderDetail(orderId) {
+            fetch(`/RevenueManagement/GetOrderDetail/${orderId}`)
+                .then(response => response.json())
+                .then(order => {
+                    console.log("Order detail:", order); // Log để debug
+                    
+                    // Cập nhật thông tin đơn hàng
+                    document.getElementById('orderDetailId').textContent = order.id;
+                    document.getElementById('detailOrderId').textContent = order.id;
+                    document.getElementById('detailOrderDate').textContent = formatDate(order.orderDate);
+                    document.getElementById('detailPaymentMethod').textContent = order.paymentMethod;
+                    
+                    // Cập nhật trạng thái đơn hàng với màu sắc
+                    const statusElement = document.getElementById('detailOrderStatus');
+                    statusElement.textContent = order.status;
+                    statusElement.className = `px-2 py-1 rounded-full text-xs ${getStatusClass(order.status)}`;
+                    
+                    // Cập nhật thông tin khách hàng
+                    document.getElementById('detailCustomerName').textContent = order.customerName;
+                    document.getElementById('detailCustomerEmail').textContent = order.customerEmail || 'Không có';
+                    document.getElementById('detailCustomerPhone').textContent = order.customerPhone;
+                    document.getElementById('detailCustomerAddress').textContent = order.customerAddress;
+                    
+                    // Xử lý hiển thị thông tin thanh toán
+                    const paymentInfoSection = document.getElementById('paymentInfoSection');
+                    
+                    console.log("Payment method:", order.paymentMethod);
+                    console.log("Payment data:", order.payment);
+                    
+                    if (order.paymentMethod !== 'COD') {
+                        if (order.payment) {
+                            // Hiển thị thông tin thanh toán nếu có dữ liệu
+                            document.getElementById('detailPaymentCode').textContent = order.payment.code || 'Không có';
+                            document.getElementById('detailPaymentDate').textContent = order.payment.paymentDate ? formatDate(order.payment.paymentDate) : 'Chưa thanh toán';
+                            document.getElementById('detailPaymentAmount').textContent = order.payment.amount.toLocaleString('vi-VN') + ' đ';
+                            
+                            // Cập nhật trạng thái thanh toán với màu sắc
+                            const paymentStatusElement = document.getElementById('detailPaymentStatus');
+                            paymentStatusElement.textContent = order.payment.status;
+                            paymentStatusElement.className = `px-2 py-1 rounded-full text-xs ${getPaymentStatusClass(order.payment.status)}`;
+                            
+                            document.getElementById('detailPaymentContent').textContent = order.payment.content || 'Không có';
+                            
+                            paymentInfoSection.classList.remove('hidden');
+                        } else {
+                            // Hiển thị thông báo nếu không có dữ liệu thanh toán
+                            document.getElementById('detailPaymentCode').textContent = 'Không có';
+                            document.getElementById('detailPaymentDate').textContent = 'Chưa thanh toán';
+                            document.getElementById('detailPaymentAmount').textContent = '0 đ';
+                            document.getElementById('detailPaymentStatus').textContent = 'Chưa thanh toán';
+                            document.getElementById('detailPaymentStatus').className = 'px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-800';
+                            document.getElementById('detailPaymentContent').textContent = 'Không có thông tin thanh toán';
+                            
+                            paymentInfoSection.classList.remove('hidden');
+                        }
+                    } else {
+                        // Ẩn thông tin thanh toán nếu là COD
+                        paymentInfoSection.classList.add('hidden');
+                    }
+                    
+                    // Cập nhật danh sách sản phẩm
+                    const itemsTable = document.getElementById('orderItemsTable');
+                    itemsTable.innerHTML = '';
+                    
+                    order.items.forEach(item => {
+                        const row = `
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-4 py-2">${item.productName}</td>
+                                <td class="px-4 py-2">${item.price.toLocaleString('vi-VN')} đ</td>
+                                <td class="px-4 py-2">${item.quantity}</td>
+                                <td class="px-4 py-2">${(item.price * item.quantity).toLocaleString('vi-VN')} đ</td>
+                            </tr>
+                        `;
+                        itemsTable.innerHTML += row;
+                    });
+                    
+                    // Cập nhật tổng tiền
+                    document.getElementById('detailTotalAmount').textContent = order.totalAmount.toLocaleString('vi-VN') + ' đ';
+                    
+                    // Hiển thị modal
+                    document.getElementById('orderDetailModal').classList.remove('hidden');
+                })
+                .catch(error => {
+                    console.error('Lỗi khi tải chi tiết đơn hàng:', error);
+                    alert('Đã xảy ra lỗi khi tải chi tiết đơn hàng. Vui lòng thử lại sau.');
+                });
+        }
+
+        // Hàm đóng modal chi tiết đơn hàng
+        function closeOrderDetail() {
+            document.getElementById('orderDetailModal').classList.add('hidden');
+        }
+
+        // Hàm định dạng ngày tháng
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleString('vi-VN');
+        }
+
+        // Hàm lấy class CSS cho trạng thái đơn hàng
+        function getStatusClass(status) {
+            switch(status) {
+                case 'Đã thanh toán':
+                    return 'bg-green-100 text-green-800';
+                case 'Đang xử lý':
+                    return 'bg-yellow-100 text-yellow-800';
+                case 'Đã hủy':
+                    return 'bg-red-100 text-red-800';
+                default:
+                    return 'bg-gray-100 text-gray-800';
+            }
+        }
+
+        // Hàm lấy class CSS cho trạng thái thanh toán
+        function getPaymentStatusClass(status) {
+            switch(status) {
+                case 'Thành công':
+                    return 'bg-green-100 text-green-800';
+                case 'Đang xử lý':
+                    return 'bg-yellow-100 text-yellow-800';
+                case 'Thất bại':
+                    return 'bg-red-100 text-red-800';
+                default:
+                    return 'bg-gray-100 text-gray-800';
+            }
+        }
+
+        // Xử lý sự kiện nút phân trang
+        document.getElementById('prevPageBtn').addEventListener('click', function() {
+            if (currentPage > 1) {
+                currentPage--;
+                loadOrders();
+            }
+        });
+
+        document.getElementById('nextPageBtn').addEventListener('click', function() {
+            if ((currentPage * pageSize) < totalOrders) {
+                currentPage++;
+                loadOrders();
+            }
+        });
+
+        // Thêm sự kiện click cho modal background để đóng modal khi click ra ngoài
         document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('orderDetailModal');
+            modal.addEventListener('click', function(event) {
+                if (event.target === modal) {
+                    closeOrderDetail();
+                }
+            });
+            
+            // Thêm sự kiện nhấn phím Escape để đóng modal
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape' && !modal.classList.contains('hidden')) {
+                    closeOrderDetail();
+                }
+            });
+            
             getTotalStats();
         });
     </script>

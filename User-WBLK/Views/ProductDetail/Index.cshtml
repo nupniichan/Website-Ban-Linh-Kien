@@ -1,674 +1,744 @@
-﻿@model ProductDetailViewModel
-@{
-    ViewData["Title"] = Model.Name;
-    Layout = "~/Views/Shared/_Layout.cshtml";
-}
+﻿    @model ProductDetailViewModel
+    @{
+        ViewData["Title"] = Model.Name;
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
 
-<div class="container mx-auto px-4 py-8">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <!-- Product Images -->
-        <div class="space-y-4">
-            <div class="bg-white p-4 rounded-lg shadow-md">
-                <img src="http://localhost:5177/@Model.ImageUrl" alt="@Model.Name" class="w-full h-auto rounded-lg">
-            </div>
-            @if (Model.AdditionalImages?.Any() == true)
-            {
-                <div class="grid grid-cols-4 gap-4">
-                    @foreach (var image in Model.AdditionalImages)
-                    {
-                        <div class="bg-white p-2 rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer">
-                            <img src="@image" 
-                                 class="w-full h-[100px] object-contain rounded-lg"
-                                 alt="@Model.Name">
-                        </div>
-                    }
+    <div class="container mx-auto px-4 py-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Product Images -->
+            <div class="space-y-4">
+                <div class="bg-white p-4 rounded-lg shadow-md">
+                    <img src="http://localhost:5177/@Model.ImageUrl" alt="@Model.Name" class="w-full h-auto rounded-lg">
                 </div>
-            }
-        </div>
-
-        <!-- Product Info -->
-        <div class="space-y-6">
-            <div class="bg-white p-6 rounded-lg shadow-md">
-                <div class="space-y-4">
-                    <!-- Product Title -->
-                    <h1 class="text-2xl md:text-3xl font-bold">@Model.Name</h1>
-
-                    <!-- Product Info Grid -->
-                    <div class="space-y-1">
-                        <!-- Row 1 -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <div class="flex items-center space-x-2">
-                                <span class="text-gray-600 whitespace-nowrap">Mã SP:</span>
-                                <span class="text-[#007AFF] font-medium">@Model.ProductCode</span>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <span class="text-gray-600 whitespace-nowrap">Bảo hành:</span>
-                                <span class="text-[#FF0000] font-medium">@Model.Warranty tháng</span>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <span class="text-gray-600 whitespace-nowrap">Tình trạng:</span>
-                                <span class="text-[#FFB800] font-medium">@(Model.InStock ? "Còn hàng" : "Hết hàng")</span>
-                            </div>
-                        </div>
-
-                        <!-- Row 2 -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <div class="flex items-center space-x-2">
-                                <span class="text-gray-600 whitespace-nowrap">Số lượt xem:</span>
-                                <span class="text-[#007AFF] font-medium">@Model.ViewCount</span>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <span class="text-gray-600 whitespace-nowrap">Đã mua:</span>
-                                <span class="text-[#007AFF] font-medium">@Model.PurchaseCount</span>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <span class="text-gray-600 whitespace-nowrap">Đánh giá:</span>
-                                <span class="text-[#007AFF] font-medium">@Model.TotalReviews</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Price -->
-                    <div class="bg-gray-100 rounded-lg p-4">
-                        <span class="text-3xl font-bold text-[#FF0000]">@Model.Price.ToString("N0")đ</span>
-                    </div>
-
-                    <!-- Quantity -->
-                    <div class="flex items-center gap-4">
-                        <span class="text-gray-600">Số lượng:</span>
-                        <div class="flex border rounded">
-                            <button onclick="decreaseQuantity()" 
-                                    class="px-3 py-1 border-r hover:bg-gray-100 transition-colors">
-                                -
-                            </button>
-                           <input type="number" 
-                                    id="quantity"
-                                    value="1" 
-                                    min="1"
-                                    max="@(Math.Max(5, Model.SoLuongTon))" 
-                                    onchange="validateQuantity(this)"
-                                    class="w-16 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
-
-                            <button onclick="increaseQuantity()" 
-                                    class="px-3 py-1 border-l hover:bg-gray-100 transition-colors">
-                                +
-                            </button>
-                        </div>
-                        <span id="quantityError" class="text-red-500 text-sm hidden"></span>
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        @if (User.Identity?.IsAuthenticated == true)
+                @if (Model.AdditionalImages?.Any() == true)
+                {
+                    <div class="grid grid-cols-4 gap-4">
+                        @foreach (var image in Model.AdditionalImages)
                         {
-                            <form asp-controller="Cart" 
-                                  asp-action="AddToCart" 
-                                  method="post" 
-                                  id="addToCartForm"
-                                  onsubmit="return validateFormSubmit()">
-                                <input type="hidden" name="productId" value="@Model.Id" />
-                                <input type="hidden" name="quantity" id="cartQuantity" value="1" />
-                                <button type="submit" 
-                                        class="w-full px-4 py-3 border-2 border-[#007AFF] text-[#007AFF] rounded-lg hover:bg-blue-50 font-medium">
-                                    THÊM VÀO GIỎ
+                            <div class="bg-white p-2 rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer">
+                                <img src="@image" 
+                                    class="w-full h-[100px] object-contain rounded-lg"
+                                    alt="@Model.Name">
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+
+            <!-- Product Info -->
+            <div class="space-y-6">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <div class="space-y-4">
+                        <!-- Product Title -->
+                        <h1 class="text-2xl md:text-3xl font-bold">@Model.Name</h1>
+
+                        <!-- Product Info Grid -->
+                        <div class="space-y-1">
+                            <!-- Row 1 -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-gray-600 whitespace-nowrap">Mã SP:</span>
+                                    <span class="text-[#007AFF] font-medium">@Model.ProductCode</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-gray-600 whitespace-nowrap">Bảo hành:</span>
+                                    <span class="text-[#FF0000] font-medium">@Model.Warranty tháng</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-gray-600 whitespace-nowrap">Tình trạng:</span>
+                                    <span class="text-[#FFB800] font-medium">@(Model.InStock ? "Còn hàng" : "Hết hàng")</span>
+                                </div>
+                            </div>
+
+                            <!-- Row 2 -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-gray-600 whitespace-nowrap">Số lượt xem:</span>
+                                    <span class="text-[#007AFF] font-medium">@Model.ViewCount</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-gray-600 whitespace-nowrap">Đã mua:</span>
+                                    <span class="text-[#007AFF] font-medium">@Model.PurchaseCount</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-gray-600 whitespace-nowrap">Đánh giá:</span>
+                                    <span class="text-[#007AFF] font-medium">@Model.TotalReviews</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Price -->
+                        <div class="bg-gray-100 rounded-lg p-4">
+                            <span class="text-3xl font-bold text-[#FF0000]">@Model.Price.ToString("N0")đ</span>
+                        </div>
+
+                        <!-- Quantity -->
+                        <div class="flex items-center gap-4">
+                            <span class="text-gray-600">Số lượng:</span>
+                            <div class="flex border rounded">
+                                <button onclick="decreaseQuantity()" 
+                                        class="px-3 py-1 border-r hover:bg-gray-100 transition-colors">
+                                    -
                                 </button>
-                            </form>
-                        }
-                        else
-                        {
-                            <button onclick="addToGuestCart()"
-                                    class="w-full px-4 py-3 border-2 border-[#007AFF] text-[#007AFF] rounded-lg hover:bg-blue-50 font-medium">
-                                THÊM VÀO GIỎ
-                            </button>
-                        }
-                        <button onclick="buyNow()"
-                                class="w-full px-4 py-3 bg-[#007AFF] text-white rounded-lg hover:bg-blue-600 font-medium">
-                            MUA NGAY
-                        </button>
-                    </div>
+                            <input type="number" 
+                                        id="quantity"
+                                        value="1" 
+                                        min="1"
+                                        max="5" 
+                                        onchange="validateQuantity(this)"
+                                        class="w-16 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
 
-                    <!-- Purchase Assurance -->
-                    <div class="mt-6">
-                        <h3 class="font-medium text-lg mb-4">Yên tâm mua hàng</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="flex items-center gap-2">
-                                <svg class="w-6 h-6 text-[#007AFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                          d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <span>Cam kết giá tốt nhất thị trường</span>
+                                <button onclick="increaseQuantity()" 
+                                        class="px-3 py-1 border-l hover:bg-gray-100 transition-colors">
+                                    +
+                                </button>
                             </div>
-                            <div class="flex items-center gap-2">
-                                <svg class="w-6 h-6 text-[#007AFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                          d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                                </svg>
-                                <span>Sản phẩm mới 100%</span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <svg class="w-6 h-6 text-[#007AFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                </svg>
-                                <span>Lỗi 1 đổi 1 ngay lập tức</span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <svg class="w-6 h-6 text-[#007AFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                          d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                                </svg>
-                                <span>Bảo hành chính hãng</span>
-                            </div>
+                            <span id="quantityError" class="text-red-500 text-sm hidden"></span>
                         </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Product Details Section -->
-    <div class="mt-8">
-        <div class="bg-white rounded-lg shadow-md">
-            <!-- Tabs -->
-            <div class="border-t border-gray-200">
-                <div class="px-6">
-                    <div class="border-b border-gray-200">
-                        <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-                            <button onclick="switchTab('description')" 
-                                    class="tab-btn border-blue-500 text-blue-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm"
-                                    id="descriptionTab">
-                                Mô tả sản phẩm
-                            </button>
-                            <button onclick="switchTab('specs')" 
-                                    class="tab-btn border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm"
-                                    id="specsTab">
-                                Thông số kỹ thuật
-                            </button>
-                        </nav>
-                    </div>
-                </div>
-
-                <!-- Tab contents -->
-                <div class="p-6">
-                    <!-- Description tab -->
-                    <div id="description-tab" class="tab-content prose max-w-none">
-                        @Html.Raw(Model.Description)
-                    </div>
-
-                    <!-- Specifications tab -->
-                    <div id="specs-tab" class="tab-content hidden">
-                        @if (Model.Specifications?.Any() == true)
-                        {
-                            <div class="border border-gray-300 rounded-lg overflow-hidden">
-                                <table class="w-full">
-                                    <thead class="bg-gray-50">
-                                        <tr>
-                                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b w-1/3">Thông số</th>
-                                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b">Giá trị</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach (var spec in Model.Specifications)
-                                        {
-                                            <tr class="border-b hover:bg-gray-50">
-                                                <td class="px-4 py-3 text-sm text-gray-600">@spec.Key</td>
-                                                <td class="px-4 py-3 text-sm font-medium text-gray-900">@spec.Value</td>
-                                            </tr>
-                                        }
-                                    </tbody>
-                                </table>
-                            </div>
-                        }
-                        else
-                        {
-                            <p class="text-gray-500 italic">Chưa có thông số kỹ thuật cho sản phẩm này</p>
-                        }
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Reviews Section -->
-    <div class="mt-8">
-        <h2 class="text-xl font-bold mb-4">Đánh giá & nhận xét (@Model.TotalReviews)</h2>
-        <div class="bg-white rounded-lg border">
-            <div class="flex flex-col sm:flex-row">
-                <!-- Rating Summary -->
-                <div class="text-center p-6 sm:border-r border-b sm:border-b-0 min-w-[200px] flex flex-col justify-center items-center">
-                    <div class="text-[#007AFF] text-4xl font-bold mb-2">
-                        @Model.AverageRating.ToString("0.0")/5
-                    </div>
-                    <div class="flex text-yellow-400 mb-2">
-                        @for (var i = 1; i <= 5; i++)
-                        {
-                            if (i <= Math.Floor(Model.AverageRating))
+                        <!-- Action Buttons -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            @if (User.Identity?.IsAuthenticated == true)
                             {
-                                <span>⭐</span>
-                            }
-                            else if (i - Model.AverageRating <= 0.5 && i - Model.AverageRating > 0)
-                            {
-                                <span>⭐</span>
+                                <form asp-controller="Cart" 
+                                    asp-action="AddToCart" 
+                                    method="post" 
+                                    id="addToCartForm"
+                                    onsubmit="return validateFormSubmit()">
+                                    <input type="hidden" name="productId" value="@Model.Id" />
+                                    <input type="hidden" name="quantity" id="cartQuantity" value="1" />
+                                    <button type="submit" 
+                                            class="w-full px-4 py-3 border-2 border-[#007AFF] text-[#007AFF] rounded-lg hover:bg-blue-50 font-medium">
+                                        THÊM VÀO GIỎ
+                                    </button>
+                                </form>
                             }
                             else
                             {
-                                <span class="text-gray-300">☆</span>
-                            }
-                        }
-                    </div>
-                    <div class="text-gray-500">@Model.TotalReviews đánh giá</div>
-
-                    <!-- Rating Distribution -->
-                    <div class="w-full mt-4 space-y-2">
-                        @for (int i = 5; i >= 1; i--)
-                        {
-                            var count = Model.RatingDistribution[i];
-                            var percentage = Model.TotalReviews > 0 ? (count * 100.0 / Model.TotalReviews) : 0;
-                            <div class="flex items-center gap-2">
-                                <span class="text-sm w-8">@i sao</span>
-                                <div class="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                                    <div class="h-full bg-yellow-400 rounded-full" style="width: @percentage%"></div>
-                                </div>
-                                <span class="text-sm text-gray-500 w-12">@count</span>
-                            </div>
-                        }
-                    </div>
-                </div>
-
-                <!-- Reviews List -->
-                <div class="flex-1 p-6">
-                    @if (!Model.Reviews.Any())
-                    {
-                        <p class="text-gray-500 italic text-center">Chưa có đánh giá nào cho sản phẩm này</p>
-                    }
-                    else
-                    {
-                        <div id="reviewsList">
-                            @foreach (var review in Model.Reviews.Take(4))
-                            {
-                                <div class="py-3 border-b last:border-0">
-                                    <div class="flex items-center gap-2 mb-2">
-                                        <span class="font-medium">@review.UserName</span>
-                                        <span class="text-gray-400">•</span>
-                                        <div class="flex text-yellow-400">
-                                            @for (int i = 0; i < review.Rating; i++)
-                                            {
-                                                <span>⭐</span>
-                                            }
-                                        </div>
-                                        <span class="text-gray-400">•</span>
-                                        <span class="text-sm text-gray-500">@String.Format("{0:dd/MM/yyyy}", review.Date)</span>
-                                    </div>
-                                    <p class="text-gray-600">@review.Comment</p>
-                                </div>
-                            }
-                        </div>
-                        @if (Model.Reviews.Count > 4)
-                        {
-                            <div class="text-center mt-4">
-                                <button id="showMoreBtn" class="bg-blue-500 text-white px-6 py-1.5 rounded-lg hover:bg-blue-600 transition-colors text-sm" onclick="toggleReviews()">
-                                    Xem thêm
+                                <button onclick="addToGuestCart()"
+                                        class="w-full px-4 py-3 border-2 border-[#007AFF] text-[#007AFF] rounded-lg hover:bg-blue-50 font-medium">
+                                    THÊM VÀO GIỎ
                                 </button>
+                            }
+                            <button onclick="buyNow()"
+                                    class="w-full px-4 py-3 bg-[#007AFF] text-white rounded-lg hover:bg-blue-600 font-medium">
+                                MUA NGAY
+                            </button>
+                        </div>
+
+                        <!-- Purchase Assurance -->
+                        <div class="mt-6">
+                            <h3 class="font-medium text-lg mb-4">Yên tâm mua hàng</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="flex items-center gap-2">
+                                    <svg class="w-6 h-6 text-[#007AFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span>Cam kết giá tốt nhất thị trường</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <svg class="w-6 h-6 text-[#007AFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                    </svg>
+                                    <span>Sản phẩm mới 100%</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <svg class="w-6 h-6 text-[#007AFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    </svg>
+                                    <span>Lỗi 1 đổi 1 ngay lập tức</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <svg class="w-6 h-6 text-[#007AFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                    </svg>
+                                    <span>Bảo hành chính hãng</span>
+                                </div>
                             </div>
-                        }
-                    }
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Sản phẩm liên quan -->
-    <div class="mt-8">
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold">Sản phẩm liên quan</h2>
-                <a href="/productslist/@Model.Category.ToLower()" class="text-blue-600 hover:text-blue-700 text-sm">Xem tất cả</a>
+        <!-- Product Details Section -->
+        <div class="mt-8">
+            <div class="bg-white rounded-lg shadow-md">
+                <!-- Tabs -->
+                <div class="border-t border-gray-200">
+                    <div class="px-6">
+                        <div class="border-b border-gray-200">
+                            <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                                <button onclick="switchTab('description')" 
+                                        class="tab-btn border-blue-500 text-blue-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm"
+                                        id="descriptionTab">
+                                    Mô tả sản phẩm
+                                </button>
+                                <button onclick="switchTab('specs')" 
+                                        class="tab-btn border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm"
+                                        id="specsTab">
+                                    Thông số kỹ thuật
+                                </button>
+                            </nav>
+                        </div>
+                    </div>
+
+                    <!-- Tab contents -->
+                    <div class="p-6">
+                        <!-- Description tab -->
+                        <div id="description-tab" class="tab-content prose max-w-none">
+                            @Html.Raw(Model.Description)
+                        </div>
+
+                        <!-- Specifications tab -->
+                        <div id="specs-tab" class="tab-content hidden">
+                            @if (Model.Specifications?.Any() == true)
+                            {
+                                <div class="border border-gray-300 rounded-lg overflow-hidden">
+                                    <table class="w-full">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b w-1/3">Thông số</th>
+                                                <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b">Giá trị</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var spec in Model.Specifications)
+                                            {
+                                                <tr class="border-b hover:bg-gray-50">
+                                                    <td class="px-4 py-3 text-sm text-gray-600">@spec.Key</td>
+                                                    <td class="px-4 py-3 text-sm font-medium text-gray-900">@spec.Value</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            }
+                            else
+                            {
+                                <p class="text-gray-500 italic">Chưa có thông số kỹ thuật cho sản phẩm này</p>
+                            }
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="grid grid-cols-5 gap-6">
-                @foreach (var product in Model.RelatedProducts.Take(5))
+        </div>
+
+        <!-- Reviews Section -->
+        <div class="mt-8">
+            <h2 class="text-xl font-bold mb-4">Đánh giá & nhận xét (@Model.TotalReviews)</h2>
+            <div class="bg-white rounded-lg border">
+                <div class="flex flex-col sm:flex-row">
+                    <!-- Rating Summary -->
+                    <div class="text-center p-6 sm:border-r border-b sm:border-b-0 min-w-[200px] flex flex-col justify-center items-center">
+                        <div class="text-[#007AFF] text-4xl font-bold mb-2">
+                            @Model.AverageRating.ToString("0.0")/5
+                        </div>
+                        <div class="flex items-center mb-2">
+                            @for(var i = 1; i <= 5; i++)
+                            {
+                                if(i <= Math.Floor(Model.AverageRating))
+                                {
+                                    <!-- Full star -->
+                                    <span class="text-yellow-400 text-2xl">★</span>
+                                }
+                                else if(i == Math.Floor(Model.AverageRating) + 1)
+                                {
+                                    var fractional = Model.AverageRating - Math.Floor(Model.AverageRating);
+                                    var percentage = fractional * 100;
+                                    <!-- Partially filled star -->
+                                    <span class="relative inline-block text-gray-300 text-2xl">
+                                        <span>★</span>
+                                        <span class="absolute top-0 left-0 text-yellow-400 overflow-hidden" style="width:@percentage%">★</span>
+                                    </span>
+                                }
+                                else
+                                {
+                                    <!-- Empty star -->
+                                    <span class="text-gray-300 text-2xl">★</span>
+                                }
+                            }
+                        </div>
+
+
+                        <div class="text-gray-500">@Model.TotalReviews đánh giá</div>
+
+                        <!-- Rating Distribution -->
+                        <div class="w-full mt-4 space-y-2">
+                            @for (int i = 5; i >= 1; i--)
+                            {
+                                var count = Model.RatingDistribution[i];
+                                var percentage = Model.TotalReviews > 0 ? (count * 100.0 / Model.TotalReviews) : 0;
+                                <div class="flex items-center gap-2">
+                                    <span class="text-sm w-8">@i sao</span>
+                                    <div class="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                        <div class="h-full bg-yellow-400 rounded-full" style="width: @percentage%"></div>
+                                    </div>
+                                    <span class="text-sm text-gray-500 w-12">@count</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Reviews List -->
+                    <div class="flex-1 p-6">
+                        @if (!Model.Reviews.Any())
+                        {
+                            <p class="text-gray-500 italic text-center">Chưa có đánh giá nào cho sản phẩm này</p>
+                        }
+                        else
+                        {
+                            <div id="reviewsList">
+                                @foreach (var review in Model.Reviews.Take(4))
+                                {
+                                    <div class="py-3 border-b last:border-0">
+                                        <div class="flex items-center gap-2 mb-2">
+                                            <span class="font-medium">@review.UserName</span>
+                                            <span class="text-gray-400">•</span>
+                                            <div class="flex text-yellow-400">
+                                                @for (int i = 0; i < review.Rating; i++)
+                                                {
+                                                    <span>⭐</span>
+                                                }
+                                            </div>
+                                            <span class="text-gray-400">•</span>
+                                            <span class="text-sm text-gray-500">@String.Format("{0:dd/MM/yyyy}", review.Date)</span>
+                                        </div>
+                                        <p class="text-gray-600">@review.Comment</p>
+                                    </div>
+                                }
+                            </div>
+                            @if (Model.Reviews.Count > 4)
+                            {
+                                <div class="text-center mt-4">
+                                    <button id="showMoreBtn" class="bg-blue-500 text-white px-6 py-1.5 rounded-lg hover:bg-blue-600 transition-colors text-sm" onclick="toggleReviews()">
+                                        Xem thêm
+                                    </button>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sản phẩm liên quan -->
+        <div class="mt-8">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold">Sản phẩm liên quan</h2>
+                    <a href="/productslist/@Model.Category.ToLower()" class="text-blue-600 hover:text-blue-700 text-sm">Xem tất cả</a>
+                </div>
+                <div class="grid grid-cols-5 gap-6">
+                    @foreach (var product in Model.RelatedProducts.Take(5))
+                    {
+                        <partial name="_ProductCard" model="product" />
+                    }
+                </div>
+                @if (!Model.RelatedProducts.Any())
                 {
-                    <partial name="_ProductCard" model="product" />
+                    <p class="text-gray-500 text-center py-4">Không có sản phẩm liên quan</p>
                 }
             </div>
-            @if (!Model.RelatedProducts.Any())
-            {
-                <p class="text-gray-500 text-center py-4">Không có sản phẩm liên quan</p>
-            }
         </div>
     </div>
-</div>
 
-@if (TempData["Success"] != null)
-{
-    <div id="successAlert" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg">
-        @TempData["Success"]
-    </div>
-    
-    <script>
-        setTimeout(() => {
-            const alert = document.getElementById('successAlert');
-            if (alert) {
-                alert.style.opacity = '0';
-                alert.style.transition = 'opacity 0.5s ease';
-                setTimeout(() => alert.remove(), 500);
-            }
-        }, 3000);
-    </script>
-}
-
-@section Scripts {
-    <script>
-        // Thumbnail click: change main image
-        document.addEventListener('DOMContentLoaded', function() {
-            const thumbnails = document.querySelectorAll('.grid-cols-4 img');
-            const mainImage = document.querySelector('.bg-white.p-4 img');
-            thumbnails.forEach(thumb => {
-                thumb.addEventListener('click', function() {
-                    mainImage.src = this.src;
-                });
-            });
-        });
-
-        // Submit review via AJAX
-        function submitReviewForm() {
-            var form = document.getElementById('reviewForm');
-            var formData = new FormData(form);
-            fetch(form.action, {
-                method: 'POST',
-                body: new URLSearchParams(formData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message);
-                if (data.success) {
-                    location.reload();
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Có lỗi xảy ra khi gửi đánh giá.');
-            });
-            return false;
-        }
-
-        // Tab switching logic
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.add('hidden');
-            });
-            document.getElementById(`${tabName}-tab`).classList.remove('hidden');
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('border-blue-500', 'text-blue-600');
-                btn.classList.add('border-transparent', 'text-gray-500');
-            });
-            event.currentTarget.classList.remove('border-transparent', 'text-gray-500');
-            event.currentTarget.classList.add('border-blue-500', 'text-blue-600');
-        }
-
-        // Review list toggle logic
-        let currentReviewCount = 4;
-        const allReviews = @Json.Serialize(Model.Reviews);
-        const showMoreBtn = document.getElementById('showMoreBtn');
-        let isExpanded = false;
+    @if (TempData["Success"] != null)
+    {
+        <div id="successAlert" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg">
+            @TempData["Success"]
+        </div>
         
-        function toggleReviews() {
-            const reviewsList = document.getElementById('reviewsList');
-            if (!isExpanded) {
-                const nextReviews = allReviews.slice(currentReviewCount, currentReviewCount + 4);
-                nextReviews.forEach(review => {
-                    const reviewElement = document.createElement('div');
-                    reviewElement.className = 'py-2';
-                    const stars = '⭐'.repeat(review.rating);
-                    reviewElement.innerHTML = `
-                        <div class="flex flex-wrap items-center gap-1">
-                            <span class="font-medium">${review.userName} - </span>
-                            <div class="flex text-yellow-400">${stars}</div>
-                        </div>
-                        <p class="text-gray-600 mt-1">${review.comment}</p>
-                    `;
-                    reviewsList.appendChild(reviewElement);
-                });
-                currentReviewCount += 4;
-                if (currentReviewCount >= allReviews.length) {
-                    showMoreBtn.textContent = 'Ẩn bớt';
-                    isExpanded = true;
-                }
-            } else {
-                const reviews = reviewsList.querySelectorAll('.py-2');
-                for (let i = 4; i < reviews.length; i++) {
-                    reviews[i].remove();
-                }
-                currentReviewCount = 4;
-                showMoreBtn.textContent = 'Xem thêm';
-                isExpanded = false;
-            }
-        }
-
-        // Quantity adjustment and cart functions
-        const maxQuantity = @(Model.SoLuongTon * 0.2);
-        const quantityInput = document.getElementById('quantity');
-        const quantityError = document.getElementById('quantityError');
-
-        function validateQuantity(input) {
-            let value = parseInt(input.value);
-            if (value < 1) { value = 1; }
-            if (value > maxQuantity) {
-                value = Math.floor(maxQuantity);
-                quantityError.textContent = `Số lượng tối đa có thể mua là ${value}`;
-                quantityError.classList.remove('hidden');
-            } else {
-                quantityError.classList.add('hidden');
-            }
-            input.value = value;
-        }
-
-        function increaseQuantity() {
-            let currentValue = parseInt(quantityInput.value);
-            if (currentValue < maxQuantity) {
-                quantityInput.value = currentValue + 1;
-                validateQuantity(quantityInput);
-            }
-        }
-
-        function decreaseQuantity() {
-            let currentValue = parseInt(quantityInput.value);
-            if (currentValue > 1) {
-                quantityInput.value = currentValue - 1;
-                validateQuantity(quantityInput);
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            validateQuantity(quantityInput);
-        });
-
-        function setCartQuantity() {
-            const cartQuantityInput = document.getElementById('cartQuantity');
-            cartQuantityInput.value = quantityInput.value;
-        }
-
-        function addToGuestCart() {
-            const quantity = parseInt(quantityInput.value);
-            const product = {
-                id: '@Model.Id',
-                name: '@Model.Name',
-                price: @Model.Price,
-                image: '@Model.ImageUrl',
-                quantity: quantity,
-                stock: @Model.SoLuongTon // Thêm thông tin stock
-            };
-            let cart = JSON.parse(localStorage.getItem('guestCart')) || [];
-            const existingProductIndex = cart.findIndex(item => item.id === product.id);
-            if (existingProductIndex !== -1) {
-                cart[existingProductIndex].quantity += quantity;
-            } else {
-                cart.push(product);
-            }
-            localStorage.setItem('guestCart', JSON.stringify(cart));
-            window.dispatchEvent(new Event('cartUpdated'));
-            const successAlert = document.createElement('div');
-            successAlert.id = 'successAlert';
-            successAlert.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg';
-            successAlert.textContent = 'Sản phẩm đã được thêm vào giỏ hàng!';
-            document.body.appendChild(successAlert);
+        <script>
             setTimeout(() => {
-                successAlert.style.opacity = '0';
-                successAlert.style.transition = 'opacity 0.5s ease';
-                setTimeout(() => successAlert.remove(), 500);
+                const alert = document.getElementById('successAlert');
+                if (alert) {
+                    alert.style.opacity = '0';
+                    alert.style.transition = 'opacity 0.5s ease';
+                    setTimeout(() => alert.remove(), 500);
+                }
             }, 3000);
-        }
+        </script>
+    }
 
-        function validateFormSubmit() {
-            const quantity = parseInt(quantityInput.value);
-            document.getElementById('cartQuantity').value = quantity;
-            if (quantity <= 0 || quantity > @(Model.SoLuongTon * 0.2)) {
-                alert('Số lượng sản phẩm không hợp lệ!');
-                return false;
-            }
-            fetch('/Cart/AddToCart', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: `productId=@Model.Id&quantity=${quantity}`
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const successAlert = document.createElement('div');
-                    successAlert.id = 'successAlert';
-                    successAlert.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg';
-                    successAlert.textContent = data.message;
-                    document.body.appendChild(successAlert);
-                    setTimeout(() => {
-                        successAlert.style.opacity = '0';
-                        successAlert.style.transition = 'opacity 0.5s ease';
-                        setTimeout(() => successAlert.remove(), 500);
-                    }, 3000);
-                    window.dispatchEvent(new Event('cartUpdated'));
-                } else {
-                    alert(data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Có lỗi xảy ra khi thêm vào giỏ hàng');
+    @section Scripts {
+        <script>
+            // Thumbnail click: change main image
+            document.addEventListener('DOMContentLoaded', function() {
+                const thumbnails = document.querySelectorAll('.grid-cols-4 img');
+                const mainImage = document.querySelector('.bg-white.p-4 img');
+                thumbnails.forEach(thumb => {
+                    thumb.addEventListener('click', function() {
+                        mainImage.src = this.src;
+                    });
+                });
             });
-            return false;
-        }
 
-        function buyNow() {
-            const quantity = parseInt(quantityInput.value);
-            if (quantity <= 0 || quantity > @(Model.SoLuongTon * 0.2)) {
-                alert('Số lượng sản phẩm không hợp lệ!');
-                return;
-            }
-            const product = {
-                id: '@Model.Id',
-                name: '@Model.Name',
-                price: @Model.Price,
-                image: '@Model.ImageUrl',
-                quantity: quantity
-            };
-            if (!@User.Identity?.IsAuthenticated.ToString().ToLower()) {
-                localStorage.setItem('guestCart', JSON.stringify([product]));
-                window.location.href = '/Checkout/Index';
-                return;
-            }
-            fetch('/Cart/BuyNow', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: `productId=@Model.Id&quantity=${quantity}`
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    window.location.href = data.redirectUrl;
-                } else {
-                    alert(data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Có lỗi xảy ra khi xử lý mua ngay');
-            });
-        }
-
-        function submitOrder() {
-            const form = document.getElementById('checkoutForm');
-            if (!form) {
-                console.error('Không tìm thấy form checkout');
-                return;
-            }
-            try {
-                let cartItems;
-                const isAuthenticated = @User.Identity?.IsAuthenticated.ToString().ToLower();
-                if (!isAuthenticated) {
-                    const guestCart = localStorage.getItem('guestCart');
-                    if (!guestCart) {
-                        alert('Giỏ hàng trống');
-                        return;
-                    }
-                    cartItems = JSON.parse(guestCart).map(item => ({
-                        ProductId: item.id,
-                        ProductName: item.name,
-                        ImageUrl: item.image,
-                        Quantity: parseInt(item.quantity),
-                        Price: parseFloat(item.price)
-                    }));
-                } else {
-                    cartItems = Array.from(document.querySelectorAll('.cart-item')).map(item => ({
-                        ProductId: item.dataset.productId,
-                        ProductName: item.dataset.productName,
-                        ImageUrl: item.dataset.imageUrl,
-                        Quantity: parseInt(item.dataset.quantity),
-                        Price: parseFloat(item.dataset.price)
-                    }));
-                }
-                const deliveryMethod = parseInt(form.querySelector('input[name="DeliveryMethod"]:checked').value);
-                const formData = {
-                    ReceiverName: form.querySelector('[name="ReceiverName"]').value,
-                    Email: form.querySelector('[name="Email"]').value,
-                    ReceiverPhone: form.querySelector('[name="ReceiverPhone"]').value,
-                    DeliveryMethod: deliveryMethod,
-                    City: form.querySelector('[name="City"]').value,
-                    District: form.querySelector('[name="District"]').value,
-                    Ward: form.querySelector('[name="Ward"]').value,
-                    StreetAddress: form.querySelector('[name="StreetAddress"]').value,
-                    Note: form.querySelector('[name="Note"]').value,
-                    DiscountCode: form.querySelector('[name="DiscountCode"]').value.trim(),
-                    Items: cartItems,
-                    IsGuest: !isAuthenticated
-                };
-                if (!formData.ReceiverName || !formData.Email || !formData.ReceiverPhone) {
-                    alert('Vui lòng điền đầy đủ thông tin người nhận');
-                    return;
-                }
-                if (deliveryMethod === 1 && (!formData.City || !formData.District || !formData.Ward || !formData.StreetAddress)) {
-                    alert('Vui lòng điền đầy đủ địa chỉ giao hàng');
-                    return;
-                }
-                closeOrderConfirm();
+            // Submit review via AJAX
+            function submitReviewForm() {
+                var form = document.getElementById('reviewForm');
+                var formData = new FormData(form);
                 fetch(form.action, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(formData)
+                    body: new URLSearchParams(formData)
                 })
                 .then(response => response.json())
                 .then(data => {
+                    alert(data.message);
                     if (data.success) {
-                        if (!isAuthenticated) { localStorage.removeItem('guestCart'); }
-                        window.location.href = data.redirectUrl;
-                    } else {
-                        alert(data.message || 'Có lỗi xảy ra khi đặt hàng');
+                        location.reload();
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Có lỗi xảy ra khi đặt hàng');
+                    alert('Có lỗi xảy ra khi gửi đánh giá.');
                 });
-            } catch (error) {
-                console.error('Lỗi khi xử lý đơn hàng:', error);
-                alert('Có lỗi xảy ra khi xử lý đơn hàng');
+                return false;
             }
-        }
-    </script>
-}
+
+            // Tab switching logic
+            function switchTab(tabName) {
+                document.querySelectorAll('.tab-content').forEach(tab => {
+                    tab.classList.add('hidden');
+                });
+                document.getElementById(`${tabName}-tab`).classList.remove('hidden');
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    btn.classList.remove('border-blue-500', 'text-blue-600');
+                    btn.classList.add('border-transparent', 'text-gray-500');
+                });
+                event.currentTarget.classList.remove('border-transparent', 'text-gray-500');
+                event.currentTarget.classList.add('border-blue-500', 'text-blue-600');
+            }
+
+            // Review list toggle logic
+            let currentReviewCount = 4;
+            const allReviews = @Json.Serialize(Model.Reviews);
+            const showMoreBtn = document.getElementById('showMoreBtn');
+            let isExpanded = false;
+            
+            function toggleReviews() {
+                const reviewsList = document.getElementById('reviewsList');
+                if (!isExpanded) {
+                    const nextReviews = allReviews.slice(currentReviewCount, currentReviewCount + 4);
+                    nextReviews.forEach(review => {
+                        const reviewElement = document.createElement('div');
+                        reviewElement.className = 'py-2';
+                        const stars = '⭐'.repeat(review.rating);
+                        reviewElement.innerHTML = `
+                            <div class="flex flex-wrap items-center gap-1">
+                                <span class="font-medium">${review.userName} - </span>
+                                <div class="flex text-yellow-400">${stars}</div>
+                            </div>
+                            <p class="text-gray-600 mt-1">${review.comment}</p>
+                        `;
+                        reviewsList.appendChild(reviewElement);
+                    });
+                    currentReviewCount += 4;
+                    if (currentReviewCount >= allReviews.length) {
+                        showMoreBtn.textContent = 'Ẩn bớt';
+                        isExpanded = true;
+                    }
+                } else {
+                    const reviews = reviewsList.querySelectorAll('.py-2');
+                    for (let i = 4; i < reviews.length; i++) {
+                        reviews[i].remove();
+                    }
+                    currentReviewCount = 4;
+                    showMoreBtn.textContent = 'Xem thêm';
+                    isExpanded = false;
+                }
+            }
+
+            // Quantity adjustment and cart functions
+            // Set maximum allowed quantity to 5
+            const maxQuantity = 5;
+            const quantityInput = document.getElementById('quantity');
+            const quantityError = document.getElementById('quantityError');
+
+            function validateQuantity(input) {
+                let value = parseInt(input.value);
+                if (value < 1) { value = 1; }
+                if (value > maxQuantity) {
+                    value = maxQuantity;
+                    quantityError.textContent = `Số lượng tối đa có thể mua là ${maxQuantity}`;
+                    quantityError.classList.remove('hidden');
+                } else {
+                    quantityError.classList.add('hidden');
+                }
+                input.value = value;
+            }
+
+            function increaseQuantity() {
+                let currentValue = parseInt(quantityInput.value);
+                if (currentValue < maxQuantity) {
+                    quantityInput.value = currentValue + 1;
+                    validateQuantity(quantityInput);
+                }
+            }
+
+            function decreaseQuantity() {
+                let currentValue = parseInt(quantityInput.value);
+                if (currentValue > 1) {
+                    quantityInput.value = currentValue - 1;
+                    validateQuantity(quantityInput);
+                }
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                validateQuantity(quantityInput);
+            });
+
+            function setCartQuantity() {
+                const cartQuantityInput = document.getElementById('cartQuantity');
+                cartQuantityInput.value = quantityInput.value;
+            }
+
+            function validateFormSubmit() {
+                const quantity = parseInt(quantityInput.value);
+                document.getElementById('cartQuantity').value = quantity;
+                if (quantity <= 0 || quantity > maxQuantity) {
+                    // Instead of alert, show inline error
+                    quantityError.textContent = `Số lượng sản phẩm không hợp lệ! Số lượng tối đa là ${maxQuantity}`;
+                    quantityError.classList.remove('hidden');
+                    return false;
+                }
+                fetch('/Cart/AddToCart', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `productId=@Model.Id&quantity=${quantity}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification(data.message, 'success');
+                        window.dispatchEvent(new Event('cartUpdated'));
+                    } else {
+                        // Hiển thị lỗi liên quan đến số lượng trực tiếp trên trang
+                        if (data.message.includes("số lượng") || data.message.includes("Số lượng")) {
+                            quantityError.textContent = data.message;
+                            quantityError.classList.remove('hidden');
+                        } else {
+                            showNotification(data.message, 'error');
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('Có lỗi xảy ra khi thêm vào giỏ hàng', 'error');
+                });
+                return false;
+            }
+
+            function buyNow() {
+                const quantity = parseInt(quantityInput.value);
+                if (quantity <= 0 || quantity > maxQuantity) {
+                    // Instead of alert, show inline error
+                    quantityError.textContent = `Số lượng sản phẩm không hợp lệ! Số lượng tối đa là ${maxQuantity}`;
+                    quantityError.classList.remove('hidden');
+                    return;
+                }
+                const product = {
+                    id: '@Model.Id',
+                    name: '@Model.Name',
+                    price: @Model.Price,
+                    image: '@Model.ImageUrl',
+                    quantity: quantity,
+                    stock: @Model.SoLuongTon,    // Thêm thông tin về số lượng tồn kho
+                    type: '@Model.LoaiSp'         // Thêm thông tin về loại sản phẩm
+                };
+                if (!@User.Identity?.IsAuthenticated.ToString().ToLower()) {
+                    // Kiểm tra giỏ hàng hiện tại của khách
+                    let currentCart = JSON.parse(localStorage.getItem('guestCart')) || [];
+                    const existingItem = currentCart.find(item => item.id === product.id);
+                    
+                    // Nếu sản phẩm đã tồn tại trong giỏ hàng, kiểm tra tổng số lượng
+                    if (existingItem && existingItem.quantity + quantity > maxQuantity) {
+                        quantityError.textContent = `Tổng số lượng sản phẩm này trong giỏ hàng không thể vượt quá ${maxQuantity}`;
+                        quantityError.classList.remove('hidden');
+                        return;
+                    }
+                    
+                    // Lưu giỏ hàng hiện tại vào localStorage với key khác để không mất
+                    localStorage.setItem('guestCartBackup', localStorage.getItem('guestCart'));
+                    
+                    // Tạo giỏ hàng tạm thời chỉ chứa sản phẩm mua ngay
+                    localStorage.setItem('guestCart', JSON.stringify([product]));
+                    localStorage.setItem('isBuyNow', 'true');
+                    
+                    window.location.href = '/Checkout/Index';
+                    return;
+                }
+                fetch('/Cart/BuyNow', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `productId=@Model.Id&quantity=${quantity}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.href = data.redirectUrl;
+                    } else {
+                        // Hiển thị lỗi liên quan đến số lượng trực tiếp trên trang
+                        if (data.message.includes("số lượng") || data.message.includes("Số lượng")) {
+                            quantityError.textContent = data.message;
+                            quantityError.classList.remove('hidden');
+                        } else {
+                            showNotification(data.message, 'error');
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('Có lỗi xảy ra khi xử lý mua ngay', 'error');
+                });
+            }
+
+            // Hàm hiển thị thông báo chung cho cả thành công và lỗi
+            function showNotification(message, type = 'success') {
+                const notificationAlert = document.createElement('div');
+                notificationAlert.id = 'notificationAlert';
+                
+                // Xác định màu sắc dựa trên loại thông báo
+                const bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
+                
+                notificationAlert.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
+                notificationAlert.textContent = message;
+                
+                // Xóa thông báo cũ nếu có
+                const existingAlert = document.getElementById('notificationAlert');
+                if (existingAlert) {
+                    existingAlert.remove();
+                }
+                
+                document.body.appendChild(notificationAlert);
+                setTimeout(() => {
+                    notificationAlert.style.opacity = '0';
+                    notificationAlert.style.transition = 'opacity 0.5s ease';
+                    setTimeout(() => notificationAlert.remove(), 500);
+                }, 3000);
+            }
+
+            function addToGuestCart() {
+                const quantity = parseInt(document.getElementById('quantity').value);
+                // Build a product object with all necessary properties
+                const product = {
+                    id: '@Model.Id',
+                    name: '@Model.Name',
+                    price: @Model.Price,
+                    image: '@Model.ImageUrl',
+                    quantity: quantity,
+                    stock: @Model.SoLuongTon,    // Available stock
+                    type: '@Model.LoaiSp'         // Product type (used for URL generation)
+                };
+                let cart = JSON.parse(localStorage.getItem('guestCart')) || [];
+                const existingProductIndex = cart.findIndex(item => item.id === product.id);
+                
+                if (existingProductIndex !== -1) {
+                    // Kiểm tra số lượng tối đa khi thêm vào sản phẩm đã có trong giỏ hàng
+                    const newQuantity = cart[existingProductIndex].quantity + quantity;
+                    if (newQuantity > maxQuantity) {
+                        quantityError.textContent = `Tổng số lượng sản phẩm này trong giỏ hàng không thể vượt quá ${maxQuantity}`;
+                        quantityError.classList.remove('hidden');
+                        return;
+                    }
+                    cart[existingProductIndex].quantity = newQuantity;
+                } else {
+                    // Kiểm tra số lượng tối đa khi thêm sản phẩm mới
+                    if (quantity > maxQuantity) {
+                        quantityError.textContent = `Số lượng sản phẩm không thể vượt quá ${maxQuantity}`;
+                        quantityError.classList.remove('hidden');
+                        return;
+                    }
+                    cart.push(product);
+                }
+                
+                localStorage.setItem('guestCart', JSON.stringify(cart));
+                window.dispatchEvent(new Event('cartUpdated'));
+                showNotification('Sản phẩm đã được thêm vào giỏ hàng!', 'success');
+            }
+
+            function submitOrder() {
+                const form = document.getElementById('checkoutForm');
+                if (!form) {
+                    console.error('Không tìm thấy form checkout');
+                    return;
+                }
+                try {
+                    let cartItems;
+                    const isAuthenticated = @User.Identity?.IsAuthenticated.ToString().ToLower();
+                    if (!isAuthenticated) {
+                        const guestCart = localStorage.getItem('guestCart');
+                        if (!guestCart) {
+                            showNotification('Giỏ hàng trống', 'error');
+                            return;
+                        }
+                        cartItems = JSON.parse(guestCart).map(item => ({
+                            ProductId: item.id,
+                            ProductName: item.name,
+                            ImageUrl: item.image,
+                            Quantity: parseInt(item.quantity),
+                            Price: parseFloat(item.price)
+                        }));
+                    } else {
+                        cartItems = Array.from(document.querySelectorAll('.cart-item')).map(item => ({
+                            ProductId: item.dataset.productId,
+                            ProductName: item.dataset.productName,
+                            ImageUrl: item.dataset.imageUrl,
+                            Quantity: parseInt(item.dataset.quantity),
+                            Price: parseFloat(item.dataset.price)
+                        }));
+                    }
+                    const deliveryMethod = parseInt(form.querySelector('input[name="DeliveryMethod"]:checked').value);
+                    const formData = {
+                        ReceiverName: form.querySelector('[name="ReceiverName"]').value,
+                        Email: form.querySelector('[name="Email"]').value,
+                        ReceiverPhone: form.querySelector('[name="ReceiverPhone"]').value,
+                        DeliveryMethod: deliveryMethod,
+                        City: form.querySelector('[name="City"]').value,
+                        District: form.querySelector('[name="District"]').value,
+                        Ward: form.querySelector('[name="Ward"]').value,
+                        StreetAddress: form.querySelector('[name="StreetAddress"]').value,
+                        Note: form.querySelector('[name="Note"]').value,
+                        DiscountCode: form.querySelector('[name="DiscountCode"]').value.trim(),
+                        Items: cartItems,
+                        IsGuest: !isAuthenticated
+                    };
+                    if (!formData.ReceiverName || !formData.Email || !formData.ReceiverPhone) {
+                        showNotification('Vui lòng điền đầy đủ thông tin người nhận', 'error');
+                        return;
+                    }
+                    if (deliveryMethod === 1 && (!formData.City || !formData.District || !formData.Ward || !formData.StreetAddress)) {
+                        showNotification('Vui lòng điền đầy đủ địa chỉ giao hàng', 'error');
+                        return;
+                    }
+                    closeOrderConfirm();
+                    fetch(form.action, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            if (!isAuthenticated) { localStorage.removeItem('guestCart'); }
+                            window.location.href = data.redirectUrl;
+                        } else {
+                            showNotification(data.message || 'Có lỗi xảy ra khi đặt hàng', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showNotification('Có lỗi xảy ra khi đặt hàng', 'error');
+                    });
+                } catch (error) {
+                    console.error('Lỗi khi xử lý đơn hàng:', error);
+                    showNotification('Có lỗi xảy ra khi xử lý đơn hàng', 'error');
+                }
+            }
+        </script>
+    }

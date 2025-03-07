@@ -217,19 +217,24 @@ namespace Website_Ban_Linh_Kien.Controllers
                     return Json(new { success = false, message = "Order detail not found." });
                 }
 
-                // Check that the order belongs to the logged-in customer
+                // Verify the order belongs to the logged-in customer
                 var order = orderDetail.IdDhNavigation;
                 if (order == null || order.IdKh != khachhang.IdKh)
                 {
                     return Json(new { success = false, message = "Order not eligible for review." });
                 }
 
-                // Only allow reviews for orders with status "Giao thành công"
+                // Only allow review if order status is "Giao thành công"
                 if (order.Trangthai != "Giao thành công")
                 {
                     return Json(new { success = false, message = "Only orders with 'Giao thành công' status can be reviewed." });
                 }
 
+                // Prevent duplicate reviews for the same order detail
+                if (orderDetail.IdDg != null)
+                {
+                    return Json(new { success = false, message = "Sản phẩm này đã được đánh giá." });
+                }
 
                 // Generate a new review ID (e.g., "DG000001")
                 var lastReview = await _context.Danhgia.OrderByDescending(d => d.IdDg).FirstOrDefaultAsync();
@@ -244,7 +249,7 @@ namespace Website_Ban_Linh_Kien.Controllers
                 }
                 var newReviewId = "DG" + nextNumber.ToString("D6");
 
-                // Create the review
+                // Create the review for this product
                 var review = new Danhgia
                 {
                     IdDg = newReviewId,
@@ -257,15 +262,10 @@ namespace Website_Ban_Linh_Kien.Controllers
                 _context.Danhgia.Add(review);
                 await _context.SaveChangesAsync();
 
-            // Tie the same review to *all* items in the order
-            var allDetails = _context.Chitietdonhangs.Where(ct => ct.IdDh == order.IdDh).ToList();
-            foreach (var detail in allDetails)
-            {
-                detail.IdDg = newReviewId;
-            }
-            _context.Chitietdonhangs.UpdateRange(allDetails);
-            await _context.SaveChangesAsync();
-
+                // Tie the review to the specific order detail
+                orderDetail.IdDg = newReviewId;
+                _context.Chitietdonhangs.Update(orderDetail);
+                await _context.SaveChangesAsync();
 
                 return Json(new { success = true, message = "Cảm ơn bạn đã đánh giá!", reviewed = true });
             }
@@ -275,12 +275,19 @@ namespace Website_Ban_Linh_Kien.Controllers
                 return Json(new { success = false, message = "Có lỗi xảy ra khi gửi đánh giá: " + ex.Message });
             }
         }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CancelOrder(string orderId)
+        public async Task<IActionResult> CancelOrder(string orderId, string LydoHuy)
         {
             try
             {
+                // Check if cancellation reason is provided
+                if (string.IsNullOrWhiteSpace(LydoHuy))
+                {
+                    return Json(new { success = false, message = "Vui lòng nhập lý do hủy đơn." });
+                }
+
                 // Get the logged-in user's account
                 var username = User.Identity.Name;
                 if (string.IsNullOrEmpty(username))
@@ -307,14 +314,15 @@ namespace Website_Ban_Linh_Kien.Controllers
                     return Json(new { success = false, message = "Order not found." });
                 }
 
-                // Only allow cancellation if order status is "Chờ xác nhận" or "Đã duyệt đơn"
-                if (order.Trangthai != "Chờ xác nhận" && order.Trangthai != "Đã duyệt đơn")
+                // Only allow cancellation if order status is "Chờ xác nhận", "Đã duyệt đơn", or "Đã thanh toán"
+                if (order.Trangthai != "Chờ xác nhận" && order.Trangthai != "Đã duyệt đơn" && order.Trangthai != "Đã thanh toán")
                 {
-                    return Json(new { success = false, message = "Order cannot be cancelled in its current status." });
+                    return Json(new { success = false, message = "Không thể hủy đơn hàng ở trạng thái hiện tại." });
                 }
 
-                // Update the order's status to "Hủy đơn"
+                // Update the order's status and record the cancellation reason
                 order.Trangthai = "Hủy đơn";
+                order.LydoHuy = LydoHuy;
                 _context.Donhangs.Update(order);
                 await _context.SaveChangesAsync();
 
@@ -326,6 +334,8 @@ namespace Website_Ban_Linh_Kien.Controllers
                 return Json(new { success = false, message = "Có lỗi xảy ra khi hủy đơn: " + ex.Message });
             }
         }
+
+
 
     }
 }
