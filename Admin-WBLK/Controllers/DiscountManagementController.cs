@@ -22,7 +22,6 @@ namespace Admin_WBLK.Controllers
         public async Task<IActionResult> Index(string searchString, int pageNumber = 1)
         {
             int pageSize = 10;
-            
             ViewData["CurrentFilter"] = searchString;
             
             var query = _context.Magiamgia.AsQueryable();
@@ -32,7 +31,7 @@ namespace Admin_WBLK.Controllers
             {
                 searchString = searchString.ToLower();
                 query = query.Where(m => m.IdMgg.ToLower().Contains(searchString) ||
-                                       m.Ten.ToLower().Contains(searchString));
+                                         m.Ten.ToLower().Contains(searchString));
             }
 
             // Default sorting by IdMgg
@@ -40,8 +39,8 @@ namespace Admin_WBLK.Controllers
 
             var totalItems = await query.CountAsync();
             var items = await query.Skip((pageNumber - 1) * pageSize)
-                                 .Take(pageSize)
-                                 .ToListAsync();
+                                   .Take(pageSize)
+                                   .ToListAsync();
 
             var model = new PaginatedList<Magiamgia>(items, totalItems, pageNumber, pageSize);
             return View(model);
@@ -141,7 +140,7 @@ namespace Admin_WBLK.Controllers
         }
 
         // GET: DiscountManagement/Details/5
-        public async Task<IActionResult> Details(string id, string returnUrl)
+        public async Task<IActionResult> Details(string id)
         {
             if (id == null)
             {
@@ -155,12 +154,11 @@ namespace Admin_WBLK.Controllers
                 return NotFound();
             }
 
-            ViewData["ReturnUrl"] = returnUrl;
             return View(magiamgia);
         }
 
         // GET: DiscountManagement/Edit/5
-        public async Task<IActionResult> Edit(string id, string returnUrl)
+        public async Task<IActionResult> Edit(string id)
         {
             if (id == null)
             {
@@ -173,14 +171,13 @@ namespace Admin_WBLK.Controllers
                 return NotFound();
             }
 
-            ViewData["ReturnUrl"] = returnUrl;
             return View(magiamgia);
         }
 
         // POST: DiscountManagement/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(string id, [Bind("IdMgg,Ten,Tilechietkhau,Ngaysudung,Ngayhethan,Soluong")] Magiamgia magiamgia, string returnUrl)
+        public async Task<IActionResult> Edit(string id, [Bind("IdMgg,Ten,Tilechietkhau,Ngaysudung,Ngayhethan,Soluong")] Magiamgia magiamgia)
         {
             if (id != magiamgia.IdMgg)
             {
@@ -202,9 +199,6 @@ namespace Admin_WBLK.Controllers
                 _context.Update(magiamgia);
                 await _context.SaveChangesAsync();
                 TempData["Success"] = "Cập nhật mã giảm giá thành công!";
-                
-                if (!string.IsNullOrEmpty(returnUrl))
-                    return Redirect(returnUrl);
                 return RedirectToAction(nameof(Index));
             }
             catch (DbUpdateConcurrencyException)
