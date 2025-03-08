@@ -144,6 +144,7 @@ namespace Website_Ban_Linh_Kien.Models.Services
                 customerByEmail.Ngaysinh = DateOnly.FromDateTime(model.BirthDate);
                 customerByEmail.IdTk = newAccount.IdTk;
                 customerByEmail.Loaikhachhang = 1;
+                customerByEmail.IdXephangvip = "THANTHIET";
 
                 _dbContext.Taikhoans.Add(newAccount);
                 _dbContext.SaveChanges();
@@ -180,7 +181,8 @@ namespace Website_Ban_Linh_Kien.Models.Services
                 Ngaysinh = DateOnly.FromDateTime(model.BirthDate),
                 Sodienthoai = model.Phone,
                 IdTk = newAccountId,
-                Loaikhachhang = 1
+                Loaikhachhang = 1,
+                IdXephangvip = "THANTHIET"
             };
 
             // Tạo tài khoản mới
