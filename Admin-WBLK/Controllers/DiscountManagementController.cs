@@ -6,16 +6,24 @@ using System.Threading.Tasks;
 using System.Linq;
 using System;
 using System.Collections.Generic;
+using Admin_WBLK.Models.Strategis;
+using Admin_WBLK.Models.Factories;
 
 namespace Admin_WBLK.Controllers
 {
     public class DiscountManagementController : Controller
     {
         private readonly DatabaseContext _context;
+        private readonly IDiscountSearchStrategy _searchStrategy;
+        private readonly IDiscountSortStrategy _sortStrategy;
+        private readonly IDiscountFactory _discountFactory;
 
         public DiscountManagementController(DatabaseContext context)
         {
             _context = context;
+            _searchStrategy = new DefaultDiscountSearchStrategy();
+            _sortStrategy = new DefaultDiscountSortStrategy();
+            _discountFactory = new DiscountFactory(context);
         }
 
         // GET: DiscountManagement
@@ -26,16 +34,11 @@ namespace Admin_WBLK.Controllers
             
             var query = _context.Magiamgia.AsQueryable();
 
-            // Apply search filter
-            if (!string.IsNullOrEmpty(searchString))
-            {
-                searchString = searchString.ToLower();
-                query = query.Where(m => m.IdMgg.ToLower().Contains(searchString) ||
-                                         m.Ten.ToLower().Contains(searchString));
-            }
-
-            // Default sorting by IdMgg
-            query = query.OrderByDescending(m => m.IdMgg);
+            // Áp dụng Strategy Pattern cho tìm kiếm
+            query = _searchStrategy.Search(query, searchString);
+            
+            // Áp dụng Strategy Pattern cho sắp xếp
+            query = _sortStrategy.Sort(query);
 
             var totalItems = await query.CountAsync();
             var items = await query.Skip((pageNumber - 1) * pageSize)
@@ -74,13 +77,14 @@ namespace Admin_WBLK.Controllers
         // GET: DiscountManagement/Create
         public async Task<IActionResult> Create()
         {
-            var discount = new Magiamgia
-            {
-                Ngaysudung = DateOnly.FromDateTime(DateTime.Today),
-                Ngayhethan = DateOnly.FromDateTime(DateTime.Today.AddDays(1))
-            };
-
-            discount.IdMgg = await GenerateNextDiscountId();
+            // Sử dụng Factory Pattern để tạo mã giảm giá mới
+            var discount = await _discountFactory.CreateDiscount(
+                "", 
+                DateOnly.FromDateTime(DateTime.Today), 
+                DateOnly.FromDateTime(DateTime.Today.AddDays(1)),
+                0,
+                0
+            );
             
             return View(discount);
         }
@@ -107,36 +111,13 @@ namespace Admin_WBLK.Controllers
 
             if (string.IsNullOrEmpty(discount.IdMgg))
             {
-                discount.IdMgg = await GenerateNextDiscountId();
+                discount.IdMgg = await _discountFactory.GenerateNextDiscountId();
             }
 
             _context.Add(discount);
             await _context.SaveChangesAsync();
             TempData["Success"] = "Thêm mã giảm giá thành công!";
             return RedirectToAction(nameof(Index));
-        }
-
-        private async Task<string> GenerateNextDiscountId()
-        {
-            var lastDiscount = await _context.Magiamgia
-                .OrderByDescending(d => d.IdMgg)
-                .FirstOrDefaultAsync();
-
-            if (lastDiscount == null)
-            {
-                return "MG000001";
-            }
-
-            string lastIdNumberPart = lastDiscount.IdMgg.Substring(2);
-            if (int.TryParse(lastIdNumberPart, out int number))
-            {
-                number++;
-                return "MG" + number.ToString("D6");
-            }
-            else
-            {
-                return "MG000001";
-            }
         }
 
         // GET: DiscountManagement/Details/5
@@ -238,14 +219,9 @@ namespace Admin_WBLK.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(string id)
         {
-            var discount = await _context.Magiamgia.FindAsync(id);
-            if (discount != null)
-            {
-                _context.Magiamgia.Remove(discount);
-                await _context.SaveChangesAsync();
-                TempData["Success"] = "Xóa mã giảm giá thành công!";
-            }
-            return RedirectToAction(nameof(Index));
+            // Sử dụng Template Method Pattern cho thao tác xóa
+            var deleteOperation = new DeleteDiscountOperation(_context, this);
+            return await deleteOperation.ProcessDiscount(id);
         }
 
         private bool MagiamgiaExists(string id)
