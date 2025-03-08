@@ -2,16 +2,32 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Admin_WBLK.Models;
 using System.Text.Json;
+using Admin_WBLK.Models.Strategis;
+using Admin_WBLK.Models.Observers;
+using Admin_WBLK.Models.Facades;
+using Microsoft.Extensions.Logging;
 
 namespace Admin_WBLK.Controllers
 {
     public class OrderManagementController : Controller
     {
         private readonly DatabaseContext _context;
+        private readonly OrderFacade _orderFacade;
+        private readonly IOrderSubject _orderSubject;
 
-        public OrderManagementController(DatabaseContext context)
+        public OrderManagementController(DatabaseContext context, ILogger<OrderLogger> logger)
         {
             _context = context;
+            
+            // Khởi tạo Strategy Pattern
+            var orderFilterStrategy = new DefaultOrderFilterStrategy(context);
+            
+            // Khởi tạo Observer Pattern
+            _orderSubject = new OrderManager();
+            _orderSubject.Attach(new OrderLogger(logger));
+            
+            // Khởi tạo Facade Pattern
+            _orderFacade = new OrderFacade(context, orderFilterStrategy);
         }
 
         // GET: OrderManagement
@@ -24,161 +40,34 @@ namespace Admin_WBLK.Controllers
             ViewData["CurrentTuNgay"] = tuNgay;
             ViewData["CurrentDenNgay"] = denNgay;
 
-            // Tạo truy vấn cơ bản
-            var query = _context.Donhangs.AsQueryable();
+            // Sử dụng Facade Pattern để lấy dữ liệu
+            var result = await _orderFacade.GetOrders(
+                searchString, 
+                trangThai, 
+                tuNgay, 
+                denNgay, 
+                pageNumber, 
+                pageSize);
 
-            // Thêm điều kiện sắp xếp mặc định theo ngày đặt hàng mới nhất
-            query = query.OrderByDescending(d => d.Ngaydathang);
-
-            // Áp dụng các bộ lọc
-            if (!string.IsNullOrEmpty(trangThai))
-            {
-                query = query.Where(d => d.Trangthai == trangThai);
-            }
-
-            if (tuNgay.HasValue)
-            {
-                query = query.Where(d => d.Ngaydathang >= tuNgay.Value);
-            }
-
-            if (denNgay.HasValue)
-            {
-                var endOfDay = denNgay.Value.Date.AddDays(1).AddTicks(-1);
-                query = query.Where(d => d.Ngaydathang <= endOfDay);
-            }
-
-            // Xử lý tìm kiếm theo mã đơn hàng hoặc tên khách hàng
-            if (!string.IsNullOrEmpty(searchString))
-            {
-                searchString = searchString.ToLower();
+            ViewBag.TrangThais = result.TrangThais;
+            
+            var paginatedList = new PaginatedList<Donhang>(
+                result.Items.ToList(), 
+                result.TotalItems, 
+                pageNumber ?? 1, 
+                pageSize);
                 
-                // Tìm theo mã đơn hàng
-                var orderIdQuery = query.Where(d => d.IdDh.ToLower().Contains(searchString));
-                
-                // Tìm theo tên khách hàng
-                var customerNameQuery = _context.Khachhangs
-                    .Where(k => k.Hoten.ToLower().Contains(searchString))
-                    .Select(k => k.IdKh);
-                
-                var customerOrdersQuery = query.Where(d => customerNameQuery.Contains(d.IdKh));
-                
-                // Kết hợp hai kết quả
-                query = orderIdQuery.Union(customerOrdersQuery);
-            }
-
-            // Lấy danh sách trạng thái để làm dropdown filter
-            ViewBag.TrangThais = new List<string>
-            {
-                "Chờ xác nhận",
-                "Đã thanh toán",
-                "Thanh toán không thành công",
-                "Đã duyệt đơn",
-                "Đang giao",
-                "Giao thành công",
-                "Không nhận hàng",
-                "Hủy đơn",
-                "Đã kết thúc"
-            };
-
-            try
-            {
-                var totalItems = await query.CountAsync();
-                
-                var items = await query
-                    .Skip(((pageNumber ?? 1) - 1) * pageSize)
-                    .Take(pageSize)
-                    .Include(d => d.IdKhNavigation)
-                    .Include(d => d.Chitietdonhangs)
-                    .Select(d => new Donhang
-                    {
-                        IdDh = d.IdDh ?? "",
-                        IdKh = d.IdKh,
-                        Trangthai = d.Trangthai ?? "",
-                        Tongtien = d.Tongtien != 0 ? d.Tongtien : d.Chitietdonhangs.Sum(c => c.Soluongsanpham * c.Dongia),
-                        Diachigiaohang = d.Diachigiaohang ?? "",
-                        Ngaydathang = d.Ngaydathang,
-                        Phuongthucthanhtoan = d.Phuongthucthanhtoan ?? "",
-                        IdMgg = d.IdMgg,
-                        Ghichu = d.Ghichu ?? "",
-                        LydoHuy = d.LydoHuy ?? "",
-                        IdKhNavigation = d.IdKhNavigation == null ? null : new Khachhang
-                        {
-                            IdKh = d.IdKhNavigation.IdKh,
-                            Hoten = d.IdKhNavigation.Hoten ?? ""
-                        },
-                        Chitietdonhangs = d.Chitietdonhangs
-                    })
-                    .ToListAsync();
-
-                var model = new PaginatedList<Donhang>(items, totalItems, pageNumber ?? 1, pageSize);
-                return View(model);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in Index: {ex.Message}");
-                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
-                throw;
-            }
+            return View(paginatedList);
         }
 
         [HttpGet]
         public async Task<IActionResult> SearchSuggestions(string term)
         {
-            if (string.IsNullOrEmpty(term))
-                return Json(new List<object>());
-
-            term = term.ToLower();
-            try
-            {
-                // Tìm đơn hàng theo mã
-                var orderSuggestions = await _context.Donhangs
-                    .Where(d => d.IdDh.ToLower().Contains(term))
-                    .Take(3)
-                    .Select(d => new { d.IdDh, CustomerName = "" })
-                    .ToListAsync();
-
-                // Tìm khách hàng theo tên
-                var customerIds = await _context.Khachhangs
-                    .Where(k => k.Hoten.ToLower().Contains(term))
-                    .Select(k => new { k.IdKh, k.Hoten })
-                    .Take(3)
-                    .ToListAsync();
-
-                // Tìm đơn hàng của các khách hàng đã tìm thấy
-                var customerOrderSuggestions = new List<object>();
-                foreach (var customer in customerIds)
-                {
-                    var order = await _context.Donhangs
-                        .Where(d => d.IdKh == customer.IdKh)
-                        .OrderByDescending(d => d.Ngaydathang)
-                        .FirstOrDefaultAsync();
-
-                    if (order != null)
-                    {
-                        customerOrderSuggestions.Add(new { 
-                            IdDh = order.IdDh, 
-                            CustomerName = customer.Hoten 
-                        });
-                    }
-                }
-
-                // Kết hợp kết quả
-                var result = orderSuggestions
-                    .Concat(customerOrderSuggestions)
-                    .Take(5)
-                    .ToList();
-
-                return Json(result);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in SearchSuggestions: {ex.Message}");
-                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
-                return Json(new List<object>());
-            }
+            // Sử dụng Facade Pattern để tìm kiếm gợi ý
+            var results = await _orderFacade.SearchSuggestions(term);
+            return Json(results);
         }
 
-        // GET: OrderManagement/Details/5
         public async Task<IActionResult> Details(string id, string returnUrl)
         {
             if (id == null)
@@ -186,43 +75,8 @@ namespace Admin_WBLK.Controllers
                 return NotFound();
             }
 
-            var donhang = await _context.Donhangs
-                .Include(d => d.IdKhNavigation)
-                .Include(d => d.IdMggNavigation)
-                .Include(d => d.Chitietdonhangs)
-                    .ThenInclude(c => c.IdSpNavigation)
-                .Select(d => new Donhang
-                {
-                    IdDh = d.IdDh ?? "",
-                    IdKh = d.IdKh ?? "",
-                    Trangthai = d.Trangthai ?? "",
-                    Tongtien = d.Tongtien,
-                    Diachigiaohang = d.Diachigiaohang ?? "",
-                    Ngaydathang = d.Ngaydathang,
-                    Phuongthucthanhtoan = d.Phuongthucthanhtoan ?? "",
-                    IdMgg = d.IdMgg,
-                    Ghichu = d.Ghichu ?? "",
-                    LydoHuy = d.LydoHuy ?? "",
-                    IdKhNavigation = d.IdKhNavigation == null ? null : new Khachhang
-                    {
-                        IdKh = d.IdKhNavigation.IdKh ?? "",
-                        Hoten = d.IdKhNavigation.Hoten ?? ""
-                    },
-                    IdMggNavigation = d.IdMggNavigation,
-                    Chitietdonhangs = d.Chitietdonhangs.Select(c => new Chitietdonhang
-                    {
-                        IdDh = c.IdDh ?? "",
-                        IdSp = c.IdSp ?? "",
-                        Soluongsanpham = c.Soluongsanpham,
-                        Dongia = c.Dongia,
-                        IdSpNavigation = c.IdSpNavigation == null ? null : new Sanpham
-                        {
-                            IdSp = c.IdSpNavigation.IdSp ?? "",
-                            Tensanpham = c.IdSpNavigation.Tensanpham ?? ""
-                        }
-                    }).ToList()
-                })
-                .FirstOrDefaultAsync(m => m.IdDh == id);
+            // Sử dụng Facade Pattern để lấy chi tiết đơn hàng
+            var donhang = await _orderFacade.GetOrderDetails(id);
 
             if (donhang == null)
             {
@@ -605,17 +459,28 @@ namespace Admin_WBLK.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(string id, string returnUrl)
         {
-            var donhang = await _context.Donhangs.FindAsync(id);
-            if (donhang != null)
+            // Sử dụng Facade Pattern để xóa đơn hàng
+            var success = await _orderFacade.DeleteOrder(id);
+            
+            if (success)
             {
-                _context.Donhangs.Remove(donhang);
-                await _context.SaveChangesAsync();
-                TempData["Success"] = "Xóa đơn hàng thành công!";
+                // Sử dụng Observer Pattern để thông báo xóa
+                var order = new Donhang { IdDh = id };
+                await _orderSubject.NotifyObservers(order, "Deleted");
+                
+                TempData["SuccessMessage"] = "Xóa đơn hàng thành công!";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Không thể xóa đơn hàng!";
             }
 
-            if (string.IsNullOrEmpty(returnUrl))
-                return RedirectToAction(nameof(Index));
-            return Redirect(returnUrl);
+            if (!string.IsNullOrEmpty(returnUrl))
+            {
+                return Redirect(returnUrl);
+            }
+            
+            return RedirectToAction(nameof(Index));
         }
 
         private bool DonhangExists(string id)
@@ -862,104 +727,33 @@ namespace Admin_WBLK.Controllers
         [HttpGet]
         public async Task<IActionResult> UpdateStatus(string id, string newStatus, string returnUrl)
         {
-            if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(newStatus))
+            if (id == null || newStatus == null)
             {
-                return BadRequest();
+                return NotFound();
             }
 
-            try
+            // Sử dụng Facade Pattern để cập nhật trạng thái
+            var success = await _orderFacade.UpdateOrderStatus(id, newStatus);
+            
+            if (success)
             {
-                using var transaction = await _context.Database.BeginTransactionAsync();
-
-                var donhang = await _context.Donhangs
-                    .Include(d => d.Chitietdonhangs)
-                    .FirstOrDefaultAsync(d => d.IdDh == id);
-
-                if (donhang == null)
-                {
-                    return NotFound();
-                }
-
-                // Dictionary các trạng thái hợp lệ
-                var validTransitions = new Dictionary<string, string[]>
-                {
-                    { "Chờ xác nhận", new[] { "Đã duyệt đơn", "Hủy đơn" } },
-                    { "Thanh toán không thành công", new[] { "Hủy đơn" } },
-                    { "Đã thanh toán", new[] { "Đang giao" } },
-                    { "Đã duyệt đơn", new[] { "Đang giao" } },
-                    { "Đang giao", new[] { "Giao thành công", "Không nhận hàng" } },
-                    { "Giao thành công", Array.Empty<string>() },
-                    { "Không nhận hàng", Array.Empty<string>() },
-                    { "Hủy đơn", Array.Empty<string>() },
-                    { "Đã kết thúc", Array.Empty<string>() }
-                };
-
-                if (!validTransitions.ContainsKey(donhang.Trangthai) ||
-                    !validTransitions[donhang.Trangthai].Contains(newStatus))
-                {
-                    TempData["Error"] = $"Không thể chuyển trạng thái từ '{donhang.Trangthai}' sang '{newStatus}'!";
-                    if (!string.IsNullOrEmpty(returnUrl))
-                        return Redirect(returnUrl);
-                    return RedirectToAction(nameof(Index));
-                }
-
-                // Xử lý logic bổ sung
-                switch (newStatus)
-                {
-                    case "Hủy đơn":
-                    case "Không nhận hàng":
-                        foreach (var chitiet in donhang.Chitietdonhangs)
-                        {
-                            var product = await _context.Sanphams.FindAsync(chitiet.IdSp);
-                            if (product != null)
-                            {
-                                product.Soluongton += chitiet.Soluongsanpham;
-                                _context.Update(product);
-                            }
-                        }
-                        break;
-                }
-
-                donhang.Trangthai = newStatus;
-                _context.Update(donhang);
-
-                // If the order status is updated to "Giao thành công", add reward points to the customer.
-                if (newStatus == "Giao thành công")
-                {
-                    var customer = await _context.Khachhangs.FindAsync(donhang.IdKh);
-                    if (customer != null)
-                    {
-                        int currentPoints = customer.Diemtichluy ?? 0;
-                        int additionalPoints = (int)(donhang.Tongtien / 10000);
-                        customer.Diemtichluy = currentPoints + additionalPoints;
-                        _context.Update(customer);
-
-                        // Now update the customer's VIP tier based on the new reward points.
-                        var vipTier = await _context.Xephangvips
-                            .FirstOrDefaultAsync(v => v.Diemtoithieu <= customer.Diemtichluy &&
-                                                      v.Diemtoida >= customer.Diemtichluy);
-
-                        customer.IdXephangvip = vipTier != null ? vipTier.Id : "THANTHIET";
-                        _context.Update(customer);
-                    }
-                }
+                // Sử dụng Observer Pattern để thông báo cập nhật
+                var order = await _context.Donhangs.FindAsync(id);
+                await _orderSubject.NotifyObservers(order, "StatusUpdated");
                 
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-
-                TempData["Success"] = $"Đã cập nhật trạng thái đơn hàng thành '{newStatus}'!";
-
-                if (!string.IsNullOrEmpty(returnUrl))
-                    return Redirect(returnUrl);
-                return RedirectToAction(nameof(Index));
+                TempData["SuccessMessage"] = "Cập nhật trạng thái thành công!";
             }
-            catch (Exception ex)
+            else
             {
-                TempData["Error"] = $"Lỗi: {ex.Message}";
-                if (!string.IsNullOrEmpty(returnUrl))
-                    return Redirect(returnUrl);
-                return RedirectToAction(nameof(Index));
+                TempData["ErrorMessage"] = "Không thể cập nhật trạng thái!";
             }
+
+            if (!string.IsNullOrEmpty(returnUrl))
+            {
+                return Redirect(returnUrl);
+            }
+            
+            return RedirectToAction(nameof(Index));
         }
 
         // Add this helper method to generate a new order detail ID.

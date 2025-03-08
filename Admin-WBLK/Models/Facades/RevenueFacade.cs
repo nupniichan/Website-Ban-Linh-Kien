@@ -48,7 +48,7 @@ namespace Admin_WBLK.Models.Facades
         {
             try
             {
-                var template = new OrderListTemplate(_context, _filterStrategy, page, pageSize);
+                var template = new RevenueOrderListTemplate(_context, _filterStrategy, page, pageSize);
                 var result = await template.GetData(fromDate, toDate, paymentMethod);
                 return controller.Json(result);
             }
@@ -65,7 +65,7 @@ namespace Admin_WBLK.Models.Facades
         {
             try
             {
-                var template = new OrderDetailTemplate(_context, _filterStrategy, id);
+                var template = new RevenueOrderDetailTemplate(_context, _filterStrategy, id);
                 var result = await template.GetData(null, null, null);
                 
                 if (result == null)

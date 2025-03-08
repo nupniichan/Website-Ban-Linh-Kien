@@ -6,13 +6,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Admin_WBLK.Models.Strategis
 {
-    public class OrderDetailTemplate : RevenueDataTemplate
+    public class OrderDetailTemplate : OrderTemplate
     {
         private readonly string _orderId;
 
         public OrderDetailTemplate(
             DatabaseContext context, 
-            IRevenueFilterStrategy filterStrategy,
+            IOrderFilterStrategy filterStrategy,
             string orderId)
             : base(context, filterStrategy)
         {
@@ -29,49 +29,19 @@ namespace Admin_WBLK.Models.Strategis
                 .Where(o => o.IdDh == _orderId);
         }
 
-        protected override async Task<object> ExecuteQuery(IQueryable<Donhang> query)
+        protected override async Task<dynamic> ExecuteQuery(IQueryable<Donhang> query)
         {
-            var order = await query
-                .Select(o => new
-                {
-                    Id = o.IdDh,
-                    OrderDate = o.Ngaydathang,
-                    PaymentMethod = o.Phuongthucthanhtoan,
-                    Status = o.Trangthai,
-                    CustomerName = o.IdKhNavigation.Hoten,
-                    CustomerEmail = o.IdKhNavigation.Email,
-                    CustomerPhone = o.IdKhNavigation.Sodienthoai,
-                    CustomerAddress = o.Diachigiaohang,
-                    TotalAmount = o.Tongtien,
-                    Items = o.Chitietdonhangs.Select(od => new
-                    {
-                        ProductName = od.IdSpNavigation.Tensanpham,
-                        Price = od.Dongia,
-                        Quantity = od.Soluongsanpham
-                    }).ToList(),
-                    Payment = o.Thanhtoans.Select(p => new
-                    {
-                        Id = p.IdTt,
-                        Status = p.Trangthai,
-                        Amount = p.Tienthanhtoan,
-                        PaymentDate = p.Ngaythanhtoan,
-                        Content = p.Noidungthanhtoan,
-                        Code = p.Mathanhtoan
-                    }).FirstOrDefault()
-                })
-                .FirstOrDefaultAsync();
-
-            return order;
+            return await query.FirstOrDefaultAsync();
         }
 
-        protected override object ProcessResult(object result)
+        protected override dynamic ProcessResult(dynamic result)
         {
             // Không cần xử lý thêm, trả về kết quả trực tiếp
             return result;
         }
 
         // Ghi đè phương thức ApplyFilter vì không cần lọc theo ngày và phương thức thanh toán
-        protected override IQueryable<Donhang> ApplyFilter(IQueryable<Donhang> query, DateTime? fromDate, DateTime? toDate, string paymentMethod)
+        protected override IQueryable<Donhang> ApplyFilter(IQueryable<Donhang> query)
         {
             // Không áp dụng bộ lọc vì đã lọc theo ID đơn hàng
             return query;
