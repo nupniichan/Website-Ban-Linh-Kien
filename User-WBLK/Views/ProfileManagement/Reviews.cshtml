@@ -1,0 +1,158 @@
+@model PaginatedList<Website_Ban_Linh_Kien.Models.Danhgia>
+@{
+    ViewBag.Title = "Đánh giá của tôi";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="flex flex-col">
+    <!-- Space below navbar -->
+    <div class="h-16"></div>
+    <div class="flex gap-4">
+        <!-- Sidebar -->
+        <partial name="_AccountSidebar" />
+
+        <!-- Main Content -->
+        <div class="flex-1 bg-white shadow rounded p-4">
+            <h1 class="text-2xl font-bold mb-4 text-gray-800">Đánh giá của tôi</h1>
+
+            @if (!Model.Items.Any())
+            {
+                <div class="flex flex-col items-center justify-center py-12 bg-gray-50 rounded-lg">
+                    <p class="text-gray-500 text-lg">Bạn chưa đánh giá sản phẩm nào.</p>
+                </div>
+            }
+            else
+            {
+                <div class="space-y-3">
+                    @foreach (var review in Model.Items)
+                    {
+                        <div class="bg-white p-3 rounded shadow-md border border-gray-200 space-y-2">
+                            <!-- List of Products in this Review -->
+                            <div class="space-y-2">
+                                @foreach (var ct in review.Chitietdonhangs)
+                                {
+                                    // Generate the product URL based on its category
+                                    var productUrl = ct.IdSpNavigation.Loaisanpham.ToLower() switch {
+                                        "pc" => $"/pc/{ct.IdSpNavigation.IdSp}",
+                                        "laptop" => $"/laptop/{ct.IdSpNavigation.IdSp}",
+                                        "components" => $"/components/{ct.IdSpNavigation.IdSp}",
+                                        "storage" => $"/storage/{ct.IdSpNavigation.IdSp}",
+                                        "monitor" => $"/monitor/{ct.IdSpNavigation.IdSp}",
+                                        "speaker" or "microphone" or "webcam" or "audio" => $"/audio/{ct.IdSpNavigation.Loaisanpham}/{ct.IdSpNavigation.IdSp}",
+                                        "keyboard" or "mouse" or "headphone" or "peripherals" => $"/peripherals/{ct.IdSpNavigation.Loaisanpham}/{ct.IdSpNavigation.IdSp}",
+                                        "network" => $"/network/{ct.IdSpNavigation.IdSp}",
+                                        _ => "#"
+                                    };
+
+                                    // Build full image path (or fallback)
+                                    var imagePath = string.IsNullOrEmpty(ct.IdSpNavigation.Hinhanh)
+                                        ? "/imgs/default-product.jpg"
+                                        : $"http://localhost:5177/{ct.IdSpNavigation.Hinhanh}";
+
+                                    <div class="flex items-center border border-gray-100 rounded p-2">
+                                        <img src="@imagePath" 
+                                             alt="@ct.IdSpNavigation.Tensanpham" 
+                                             class="w-12 h-12 object-cover rounded mr-3"
+                                             onerror="this.onerror=null; this.src='/imgs/default-product.jpg';" />
+
+                                        <div class="flex-1">
+                                            <a href="@productUrl" class="text-sm font-semibold text-blue-600 hover:underline">
+                                                @ct.IdSpNavigation.Tensanpham
+                                            </a>
+                                            <p class="text-xs text-gray-500 mt-1">
+                                                <span class="font-medium">Đơn giá:</span> @ct.Dongia.ToString("N0") VNĐ
+                                                <span class="mx-1">•</span>
+                                                <span class="font-medium">Số lượng:</span> @ct.Soluongsanpham
+                                            </p>
+                                            <!-- Date/time -->
+                                            <p class="text-xs text-gray-400 mt-1">
+                                                <i class="far fa-clock mr-1"></i> 
+                                                @review.Ngaydanhgia?.ToString("dd/MM/yyyy hh:mm tt")
+                                            </p>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+
+                            <!-- Review Content: Stars and Comment -->
+                            <div class="pt-2 border-t border-gray-200">
+                                <div class="flex items-center mb-1">
+                                    <span class="font-medium text-gray-700">Đánh giá:</span>
+                                    <span class="ml-2 text-yellow-500">
+                                        @for (int i = 0; i < review.Sosao; i++)
+                                        {
+                                            <i class="fas fa-star"></i>
+                                        }
+                                        @for (int i = review.Sosao; i < 5; i++)
+                                        {
+                                            <i class="far fa-star"></i>
+                                        }
+                                    </span>
+                                </div>
+                                @if (!string.IsNullOrEmpty(review.Noidung))
+                                {
+                                    <p class="text-sm text-gray-800">@review.Noidung</p>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Pagination -->
+                @if (Model.TotalPages > 1)
+                {
+                    <div class="flex justify-between items-center mt-4">
+                        @if (Model.HasPreviousPage)
+                        {
+                            <a asp-action="Reviews" asp-route-pageNumber="@(Model.PageNumber - 1)" 
+                               class="px-3 py-1 text-sm border rounded-md text-gray-700 bg-white hover:bg-gray-100 transition">
+                                <i class="fas fa-chevron-left mr-1"></i> Trang trước
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="px-3 py-1 text-sm border rounded-md text-gray-400 bg-gray-50 cursor-not-allowed">
+                                <i class="fas fa-chevron-left mr-1"></i> Trang trước
+                            </span>
+                        }
+                        
+                        <div class="hidden md:flex space-x-2">
+                            @for (int i = 1; i <= Model.TotalPages; i++)
+                            {
+                                if (i == Model.PageNumber)
+                                {
+                                    <span class="px-3 py-1 text-sm bg-blue-500 text-white rounded-md shadow">@i</span>
+                                }
+                                else
+                                {
+                                    <a asp-action="Reviews" asp-route-pageNumber="@i"
+                                       class="px-3 py-1 text-sm border rounded-md text-gray-700 bg-white hover:bg-gray-100 transition">
+                                        @i
+                                    </a>
+                                }
+                            }
+                        </div>
+                        
+                        <div class="md:hidden text-sm text-gray-700">
+                            Trang @Model.PageNumber / @Model.TotalPages
+                        </div>
+                        
+                        @if (Model.HasNextPage)
+                        {
+                            <a asp-action="Reviews" asp-route-pageNumber="@(Model.PageNumber + 1)" 
+                               class="px-3 py-1 text-sm border rounded-md text-gray-700 bg-white hover:bg-gray-100 transition">
+                                Trang sau <i class="fas fa-chevron-right ml-1"></i>
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="px-3 py-1 text-sm border rounded-md text-gray-400 bg-gray-50 cursor-not-allowed">
+                                Trang sau <i class="fas fa-chevron-right ml-1"></i>
+                            </span>
+                        }
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>

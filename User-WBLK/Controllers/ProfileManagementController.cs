@@ -336,6 +336,51 @@ namespace Website_Ban_Linh_Kien.Controllers
         }
 
 
+    [HttpGet]
+    public async Task<IActionResult> Reviews(int pageNumber = 1)
+    {
+        ViewBag.CurrentTab = "Review";
+        SetBreadcrumb(
+            ("Trang chủ", "/"),
+            ("Tài khoản", "/account"),
+            ("Đánh giá", null)
+        );
+
+        // Get the logged-in username
+        var username = User.Identity.Name;
+        if (string.IsNullOrEmpty(username))
+        {
+            return Unauthorized();
+        }
+
+        // Retrieve the account and then the customer
+        var account = await _context.Taikhoans.FirstOrDefaultAsync(t => t.Tentaikhoan == username);
+        if (account == null)
+        {
+            return Unauthorized();
+        }
+        var khachhang = await _context.Khachhangs.FirstOrDefaultAsync(k => k.IdTk == account.IdTk);
+        if (khachhang == null)
+        {
+            return NotFound();
+        }
+
+        int pageSize = 5;
+
+        var query = _context.Danhgia
+            .Where(r => r.IdKh == khachhang.IdKh)
+            .OrderByDescending(r => r.Ngaydanhgia)
+            .Include(r => r.Chitietdonhangs)
+                .ThenInclude(ct => ct.IdSpNavigation);
+
+        int count = await query.CountAsync();
+        var items = await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+
+        // Assuming you have a PaginatedList<T> helper class:
+        var paginatedList = new PaginatedList<Website_Ban_Linh_Kien.Models.Danhgia>(items, count, pageNumber, pageSize);
+
+        return View(paginatedList);
+    }
 
     }
 }
