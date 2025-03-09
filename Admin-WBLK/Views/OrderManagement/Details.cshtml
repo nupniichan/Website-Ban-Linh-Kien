@@ -146,6 +146,67 @@
                 </div>
             </div>
 
+            @* Chi tiết thanh toán online *@
+            @if (Model.Phuongthucthanhtoan == "PayPal" || Model.Phuongthucthanhtoan == "MoMo")
+            {
+                <div class="mb-8">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Chi tiết thanh toán online</h3>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        @if (Model.Thanhtoans != null && Model.Thanhtoans.Any())
+                        {
+                            var thanhtoan = Model.Thanhtoans.FirstOrDefault();
+                            <dl class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- Mã thanh toán -->
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500">Mã thanh toán</dt>
+                                    <dd class="mt-1 text-gray-900">@(thanhtoan.Mathanhtoan ?? "Không có")</dd>
+                                </div>
+                                <!-- Trạng thái thanh toán -->
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500">Trạng thái thanh toán</dt>
+                                    <dd class="mt-1">
+                                        @{
+                                            var paymentStatusClass = thanhtoan.Trangthai switch
+                                            {
+                                                "Chờ xác nhận" => "bg-orange-100 text-orange-800",
+                                                "Thanh toán không thành công" => "bg-red-100 text-red-800",
+                                                "Đã thanh toán" => "bg-green-100 text-green-800",
+                                                _ => "bg-gray-100 text-gray-800"
+                                            };
+                                        }
+                                        <span class="@paymentStatusClass px-4 py-2 rounded-full text-sm font-medium inline-block">
+                                            @thanhtoan.Trangthai
+                                        </span>
+                                    </dd>
+                                </div>
+                                <!-- Số tiền thanh toán -->
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500">Số tiền thanh toán</dt>
+                                    <dd class="mt-1 text-gray-900">@thanhtoan.Tienthanhtoan.ToString("#,##0") VNĐ</dd>
+                                </div>
+                                <!-- Ngày thanh toán -->
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500">Ngày thanh toán</dt>
+                                    <dd class="mt-1 text-gray-900">@(thanhtoan.Ngaythanhtoan.HasValue ? thanhtoan.Ngaythanhtoan.Value.ToString("dd/MM/yyyy HH:mm:ss") : "N/A")</dd>
+                                </div>
+                                <!-- Nội dung thanh toán -->
+                                @if (!string.IsNullOrEmpty(thanhtoan.Noidungthanhtoan))
+                                {
+                                    <div class="col-span-2">
+                                        <dt class="text-sm font-medium text-gray-500">Nội dung thanh toán</dt>
+                                        <dd class="mt-1 text-gray-900">@thanhtoan.Noidungthanhtoan</dd>
+                                    </div>
+                                }
+                            </dl>
+                        }
+                        else
+                        {
+                            <p class="text-gray-500 italic">Không có thông tin thanh toán</p>
+                        }
+                    </div>
+                </div>
+            }
+
             <!-- Địa chỉ giao hàng -->
             <div class="mb-8">
                 <h3 class="text-lg font-medium text-gray-900 mb-4">Địa chỉ giao hàng</h3>

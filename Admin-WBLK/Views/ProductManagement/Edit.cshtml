@@ -16,11 +16,9 @@
 
         <!-- Card chứa form -->
         <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
-            <form id="productForm" 
-                  asp-action="Edit" 
-                  method="post" 
-                  enctype="multipart/form-data" 
-                  class="w-full h-full">
+            <!-- Note the added asp-route-id and AntiForgery token -->
+            <form id="productForm" asp-action="Edit" asp-route-id="@Model.IdSp" method="post" enctype="multipart/form-data" class="w-full h-full">
+                @Html.AntiForgeryToken()
                 <input type="hidden" name="thongsokythuat" />
                 <input type="hidden" asp-for="IdSp" />
                 <div asp-validation-summary="ModelOnly" class="mb-4 p-4 rounded-lg bg-red-50 text-red-500"></div>
@@ -181,12 +179,10 @@
 
                 <!-- Buttons -->
                 <div class="mt-8 flex items-center justify-end gap-4">
-
-                        <a asp-action="Index" 
-                           class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-800 transition-colors">
-                            Quay lại
-                        </a>
-                    
+                    <a asp-action="Index" 
+                       class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-800 transition-colors">
+                        Quay lại
+                    </a>
                     <button type="submit" class="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
                         Lưu thay đổi
                     </button>
@@ -338,45 +334,68 @@
             // Thêm xử lý submit form
             const form = document.getElementById('productForm');
             form.addEventListener('submit', async function(e) {
-                e.preventDefault();
+            e.preventDefault();
+            
+            try {
+                // Update description from the editor
+                const moTaEditor = document.getElementById('moTaEditor');
+                const moTaInput = document.querySelector('textarea[name="Mota"]');
+                if (moTaEditor && moTaInput) {
+                    moTaInput.value = moTaEditor.innerHTML;
+                }
                 
-                try {
-                    // Cập nhật nội dung mô tả từ editor
-                    const moTaEditor = document.getElementById('moTaEditor');
-                    const moTaInput = document.querySelector('textarea[name="Mota"]');
-                    if (moTaEditor && moTaInput) {
-                        moTaInput.value = moTaEditor.innerHTML;
+                // Update technical specifications
+                const specs = {};
+                const rows = document.querySelectorAll('#specTable tbody tr');
+                rows.forEach(row => {
+                    const keyInput = row.querySelector('input[name$="].key"]');
+                    const valueInput = row.querySelector('input[name$="].value"]');
+                    if (keyInput && valueInput) {
+                        specs[keyInput.value] = valueInput.value;
                     }
-                    
-                    // Cập nhật thông số kỹ thuật
-                    const specs = {};
-                    const rows = document.querySelectorAll('#specTable tbody tr');
-                    rows.forEach(row => {
-                        const keyInput = row.querySelector('input[name$="].key"]');
-                        const valueInput = row.querySelector('input[name$="].value"]');
-                        if (keyInput && valueInput) {
-                            specs[keyInput.value] = valueInput.value;
-                        }
-                    });
-                    
-                    // Cập nhật input hidden thongsokythuat
-                    const thongSoInput = document.querySelector('input[name="thongsokythuat"]');
-                    if (thongSoInput) {
-                        thongSoInput.value = JSON.stringify(specs);
+                });
+                
+                // Update hidden input for technical specs
+                const thongSoInput = document.querySelector('input[name="thongsokythuat"]');
+                if (thongSoInput) {
+                    thongSoInput.value = JSON.stringify(specs);
+                }
+
+                // Prepare form data for AJAX submission
+                const formData = new FormData(form);
+                const tokenElement = document.querySelector('input[name="__RequestVerificationToken"]');
+                const headers = {};
+                if (tokenElement) {
+                    headers['RequestVerificationToken'] = tokenElement.value;
+                }
+
+                // Make the fetch request
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    headers: headers,
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Server responded with error:', errorText);
+                    // Only show an alert if the error message is not "Failed to fetch"
+                    if (errorText.trim() !== "Failed to fetch") {
+                        alert('Error saving product: ' + errorText);
                     }
-
-                    // Submit form bằng AJAX để xử lý file upload
-                    const formData = new FormData(form);
-                    const response = await fetch(form.action, {
-                        method: 'POST',
-                        body: formData
-                    });
-
-                } catch (error) {
-                    console.error('Error:', error);
+                } else {
+                    // Redirect after successful save
+                    window.location.href = response.url;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                // Only alert if error.message is not "Failed to fetch"
+                if (error.message.trim() !== "Failed to fetch") {
                     alert(error.message);
                 }
-            });
+            }
+        });
+
         });
 
         // Copy toàn bộ các hàm xử lý từ Create.cshtml
