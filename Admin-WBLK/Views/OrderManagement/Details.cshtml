@@ -147,7 +147,7 @@
             </div>
 
             @* Chi tiết thanh toán online *@
-            @if (Model.Phuongthucthanhtoan == "PayPal" || Model.Phuongthucthanhtoan == "MoMo")
+            @if (Model.Phuongthucthanhtoan != "COD")
             {
                 <div class="mb-8">
                     <h3 class="text-lg font-medium text-gray-900 mb-4">Chi tiết thanh toán online</h3>
