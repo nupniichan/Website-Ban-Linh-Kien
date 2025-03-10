@@ -191,6 +191,7 @@ namespace Admin_WBLK.Controllers
                 .Include(d => d.IdMggNavigation)
                 .Include(d => d.Chitietdonhangs)
                     .ThenInclude(c => c.IdSpNavigation)
+                .Include(d => d.Thanhtoans)
                 .Select(d => new Donhang
                 {
                     IdDh = d.IdDh ?? "",
@@ -220,6 +221,16 @@ namespace Admin_WBLK.Controllers
                             IdSp = c.IdSpNavigation.IdSp ?? "",
                             Tensanpham = c.IdSpNavigation.Tensanpham ?? ""
                         }
+                    }).ToList(),
+                    Thanhtoans = d.Thanhtoans.Select(t => new Thanhtoan
+                    {
+                        IdTt = t.IdTt ?? "",
+                        Trangthai = t.Trangthai ?? "",
+                        Tienthanhtoan = t.Tienthanhtoan,
+                        Ngaythanhtoan = t.Ngaythanhtoan,
+                        Noidungthanhtoan = t.Noidungthanhtoan,
+                        Mathanhtoan = t.Mathanhtoan,
+                        IdDh = t.IdDh ?? ""
                     }).ToList()
                 })
                 .FirstOrDefaultAsync(m => m.IdDh == id);
@@ -697,6 +708,7 @@ namespace Admin_WBLK.Controllers
                     ViewBag.Mathanhtoan = thanhtoan.Mathanhtoan;
                     ViewBag.TrangthaiThanhtoan = thanhtoan.Trangthai;
                     ViewBag.Noidungthanhtoan = thanhtoan.Noidungthanhtoan;
+                    ViewBag.NgayThanhToan = thanhtoan.Ngaythanhtoan;
                 }
             }
 
