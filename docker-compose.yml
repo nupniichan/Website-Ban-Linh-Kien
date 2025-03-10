@@ -29,9 +29,9 @@ services:
     container_name: user-wblk-container
     networks:
       - webbanlinhkien
-    expose:
-      - "5124"
-      - "7050"
+    ports:
+      - "5124:5124"
+      - "7050:7050"
     depends_on:
       - database-mysql
     environment:
@@ -43,9 +43,9 @@ services:
     container_name: admin-wblk-container
     networks:
       - webbanlinhkien
-    expose:
-      - "5177"
-      - "7012"
+    ports:
+      - "5177:5177"
+      - "7012:7012"
     depends_on:
       - database-mysql
     environment:
@@ -67,8 +67,3 @@ services:
       - letsencrypt_data:/etc/letsencrypt
     networks:
       - webbanlinhkien
-
-# Chạy và build docker compose: docker-compose up --build
-# Chạy docker compose: docker-compose up
-# Dừng docker compose: docker-compose down
-# Build lại docker compose: docker-compose build -d --build
