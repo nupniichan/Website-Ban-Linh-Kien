@@ -38,18 +38,18 @@
                              data-quantity="@item.Quantity"
                              data-price="@item.Price">
                             <div class="flex items-center mb-4 last:mb-0">
-                                <img src="http://48.217.66.77:5177/@item.ImageUrl" alt="@item.ProductName" 
+                                    <img src="@($"http://48.217.66.77:5177{(item.ImageUrl.StartsWith("/") ? "" : "/")}{item.ImageUrl}")" 
                                      class="w-20 h-20 object-cover rounded">
                                 <div class="ml-4">
                                     <div>@item.ProductName</div>
                                     <div>Số lượng: @item.Quantity</div>
                                     <div class="text-red-500">Giá: @item.Price.ToString("N0") VNĐ</div>
                                 </div>
-                                <input type="hidden" name="Items[${Model.Items.IndexOf(item)}].ProductId" value="${item.ProductId}" />
-                                <input type="hidden" name="Items[${Model.Items.IndexOf(item)}].ProductName" value="${item.ProductName}" />
-                                <input type="hidden" name="Items[${Model.Items.IndexOf(item)}].ImageUrl" value="${item.ImageUrl}" />
-                                <input type="hidden" name="Items[${Model.Items.IndexOf(item)}].Quantity" value="${item.Quantity}" />
-                                <input type="hidden" name="Items[${Model.Items.IndexOf(item)}].Price" value="${item.Price}" />
+                                <input type="hidden" name="Items[@Model.Items.IndexOf(item)].ProductId" value="@item.ProductId" />
+                                <input type="hidden" name="Items[@Model.Items.IndexOf(item)].ProductName" value="@item.ProductName" />
+                                <input type="hidden" name="Items[@Model.Items.IndexOf(item)].ImageUrl" value="@item.ImageUrl" />
+                                <input type="hidden" name="Items[@Model.Items.IndexOf(item)].Quantity" value="@item.Quantity" />
+                                <input type="hidden" name="Items[@Model.Items.IndexOf(item)].Price" value="@item.Price" />
                             </div>
                         </div>
                     }
@@ -311,7 +311,8 @@
                          data-quantity="${item.quantity}"
                          data-price="${item.price}">
                         <div class="flex items-center mb-4 last:mb-0">
-                            <img src="http://48.217.66.77:5177/${item.image}" alt="${item.name}" 
+                            <img src="http://48.217.66.77:5177${item.image.startsWith("/") ? "" : "/"}${item.image}" 
+                                 alt="${item.name}" 
                                  class="w-20 h-20 object-cover rounded">
                             <div class="ml-4">
                                 <div>${item.name}</div>
