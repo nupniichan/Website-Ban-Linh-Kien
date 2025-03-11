@@ -16,24 +16,40 @@ namespace Admin_WBLK.Controllers
 
         // GET: OrderManagement
         [HttpGet]
-        public async Task<IActionResult> Index(string searchString, string trangThai, DateTime? tuNgay, DateTime? denNgay, int? pageNumber)
+        public async Task<IActionResult> Index(
+            string searchString, 
+            string trangThaiDonHang,
+            string loaiSanPham,
+            DateTime? tuNgay, 
+            DateTime? denNgay, 
+            int? pageNumber)
         {
             int pageSize = 10;
             ViewData["CurrentFilter"] = searchString;
-            ViewData["CurrentTrangThai"] = trangThai;
+            ViewData["CurrentTrangThaiDonHang"] = trangThaiDonHang;
+            ViewData["CurrentLoaiSanPham"] = loaiSanPham;
             ViewData["CurrentTuNgay"] = tuNgay;
             ViewData["CurrentDenNgay"] = denNgay;
 
             // Tạo truy vấn cơ bản
-            var query = _context.Donhangs.AsQueryable();
+            var query = _context.Donhangs
+                .Include(d => d.Chitietdonhangs)
+                .ThenInclude(c => c.IdSpNavigation)
+                .AsQueryable();
 
             // Thêm điều kiện sắp xếp mặc định theo ngày đặt hàng mới nhất
             query = query.OrderByDescending(d => d.Ngaydathang);
 
-            // Áp dụng các bộ lọc
-            if (!string.IsNullOrEmpty(trangThai))
+            // Lọc theo trạng thái đơn hàng
+            if (!string.IsNullOrEmpty(trangThaiDonHang))
             {
-                query = query.Where(d => d.Trangthai == trangThai);
+                query = query.Where(d => d.Trangthai == trangThaiDonHang);
+            }
+
+            // Lọc theo loại sản phẩm
+            if (!string.IsNullOrEmpty(loaiSanPham))
+            {
+                query = query.Where(d => d.Chitietdonhangs.Any(c => c.IdSpNavigation.Loaisanpham == loaiSanPham));
             }
 
             if (tuNgay.HasValue)
@@ -66,7 +82,7 @@ namespace Admin_WBLK.Controllers
                 query = orderIdQuery.Union(customerOrdersQuery);
             }
 
-            // Lấy danh sách trạng thái để làm dropdown filter
+            // Lấy danh sách trạng thái đềElàm dropdown filter
             ViewBag.TrangThais = new List<string>
             {
                 "Chờ xác nhận",
@@ -276,7 +292,7 @@ namespace Admin_WBLK.Controllers
                         .FirstOrDefaultAsync(t => t.Mathanhtoan == Mathanhtoan);
                     if (existingPayment != null)
                     {
-                        throw new Exception("Mã thanh toán này đã tồn tại trong hệ thống!");
+                        throw new Exception("Mã thanh toán này đã tồn tại trong hềEthống!");
                     }
                 }
 
@@ -293,7 +309,7 @@ namespace Admin_WBLK.Controllers
                 {
                     var chitietList = JsonSerializer.Deserialize<List<Chitietdonhang>>(chitietdonhangs);
                     
-                    // Tạo danh sách chi tiết đơn hàng mới để tránh trùng lặp
+                    // Tạo danh sách chi tiết đơn hàng mới đềEtránh trùng lặp
                     var newChitietList = new List<Chitietdonhang>();
                     
                     foreach (var chitiet in chitietList)
@@ -315,7 +331,7 @@ namespace Admin_WBLK.Controllers
                         }
                         if (product.Soluongton < chitiet.Soluongsanpham)
                         {
-                            throw new Exception($"Sản phẩm {product.Tensanpham} chỉ còn {product.Soluongton} sản phẩm!");
+                            throw new Exception($"Sản phẩm {product.Tensanpham} còn {product.Soluongton} sản phẩm!");
                         }
 
                         // **Always use the product's price from the database**:
@@ -324,7 +340,7 @@ namespace Admin_WBLK.Controllers
 
                         // Update product inventory
                         product.Soluongton -= chitiet.Soluongsanpham;
-                        product.Damuahang = (product.Damuahang ?? 0) + chitiet.Soluongsanpham;
+                        product.Damuahang = product.Damuahang + chitiet.Soluongsanpham;
                         _context.Update(product);
 
                         // Add to the new list
@@ -345,7 +361,7 @@ namespace Admin_WBLK.Controllers
                     {
                         IdTt = await GeneratePaymentId(),
                         Mathanhtoan = Mathanhtoan,
-                        Trangthai = "Chờ xác nhận",
+                        Trangthai = "ChềExác nhận",
                         Tienthanhtoan = donhang.Tongtien, // Will be updated after discount
                         Ngaythanhtoan = DateTime.Now,
                         Noidungthanhtoan = NoiDungThanhToan ?? "",
@@ -483,7 +499,7 @@ namespace Admin_WBLK.Controllers
             {
                 if (string.IsNullOrEmpty(id))
                 {
-                    return Json(new { success = false, message = "Mã sản phẩm không được để trống" });
+                    return Json(new { success = false, message = "Mã sản phẩm không được đềEtrống" });
                 }
 
                 Console.WriteLine($"Searching for product with ID: {id}");
@@ -777,7 +793,7 @@ namespace Admin_WBLK.Controllers
                             IdTt = await GeneratePaymentId(),
                             Mathanhtoan = Mathanhtoan,
                             IdDh = id,
-                            Trangthai = TrangthaiThanhtoan ?? "Chờ thanh toán",
+                            Trangthai = TrangthaiThanhtoan ?? "ChềEthanh toán",
                             Tienthanhtoan = donhang.Tongtien,
                             Ngaythanhtoan = DateTime.Now,
                             Noidungthanhtoan = NoiDungThanhToan ?? ""
@@ -851,7 +867,7 @@ namespace Admin_WBLK.Controllers
             public decimal Dongia { get; set; }
         }
 
-        // API endpoint để lấy chi tiết đơn hàng
+        // API endpoint đềElấy chi tiết đơn hàng
         [HttpGet]
         public async Task<IActionResult> GetOrderDetails(string id)
         {
@@ -892,10 +908,10 @@ namespace Admin_WBLK.Controllers
                     return NotFound();
                 }
 
-                // Dictionary các trạng thái hợp lệ
+                // Dictionary các trạng thái hợp lềE
                 var validTransitions = new Dictionary<string, string[]>
                 {
-                    { "Chờ xác nhận", new[] { "Đã duyệt đơn", "Hủy đơn" } },
+                    { "ChềExác nhận", new[] { "Đã duyệt đơn", "Hủy đơn" } },
                     { "Thanh toán không thành công", new[] { "Hủy đơn" } },
                     { "Đã thanh toán", new[] { "Đang giao" } },
                     { "Đã duyệt đơn", new[] { "Đang giao" } },
@@ -909,13 +925,13 @@ namespace Admin_WBLK.Controllers
                 if (!validTransitions.ContainsKey(donhang.Trangthai) ||
                     !validTransitions[donhang.Trangthai].Contains(newStatus))
                 {
-                    TempData["Error"] = $"Không thể chuyển trạng thái từ '{donhang.Trangthai}' sang '{newStatus}'!";
+                    TempData["Error"] = $"Không thềEchuyển trạng thái từ '{donhang.Trangthai}' sang '{newStatus}'!";
                     if (!string.IsNullOrEmpty(returnUrl))
                         return Redirect(returnUrl);
                     return RedirectToAction(nameof(Index));
                 }
 
-                // Xử lý logic bổ sung
+                // Xử lý logic bềEsung
                 switch (newStatus)
                 {
                     case "Hủy đơn":
@@ -982,7 +998,7 @@ namespace Admin_WBLK.Controllers
             {
                 try
                 {
-                    // Lấy ID lớn nhất hiện tại từ cơ sở dữ liệu
+                    // Lấy ID lớn nhất hiện tại từ cơ sềEdữ liệu
                     var lastDetail = _context.Chitietdonhangs
                         .OrderByDescending(c => c.Idchitietdonhang)
                         .Select(c => c.Idchitietdonhang)
@@ -991,7 +1007,7 @@ namespace Admin_WBLK.Controllers
                     int lastNumber = 1;
                     if (lastDetail != null)
                     {
-                        // Trích xuất số từ ID cuối cùng và tăng lên 1
+                        // Trích xuất sềEtừ ID cuối cùng và tăng lên 1
                         if (int.TryParse(lastDetail.Substring(4), out int num))
                         {
                             lastNumber = num + 1;
@@ -1004,7 +1020,7 @@ namespace Admin_WBLK.Controllers
                     bool exists = _context.Chitietdonhangs.Any(c => c.Idchitietdonhang == newId);
                     if (exists)
                     {
-                        // Nếu ID đã tồn tại, tăng số lên cho đến khi tìm được ID chưa sử dụng
+                        // Nếu ID đã tồn tại, tăng sềElên cho đến khi tìm được ID chưa sử dụng
                         do
                         {
                             lastNumber++;
