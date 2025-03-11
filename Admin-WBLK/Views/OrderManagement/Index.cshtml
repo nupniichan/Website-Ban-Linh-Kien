@@ -52,21 +52,46 @@
 
             <!-- Filters -->
             <div class="flex flex-wrap gap-4">
-                <select name="trangThai" 
-                        onchange="this.form.submit()"
-                        class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-                    <option value="" selected="@(ViewData["CurrentTrangThai"]?.ToString() == "")">@GetProductTypeText("")</option>
-                    <option value="Components" selected="@(ViewData["CurrentTrangThai"]?.ToString() == "Components")">@GetProductTypeText("Components")</option>
-                    <option value="Laptop" selected="@(ViewData["CurrentTrangThai"]?.ToString() == "Laptop")">@GetProductTypeText("Laptop")</option>
-                    <option value="PC" selected="@(ViewData["CurrentTrangThai"]?.ToString() == "PC")">@GetProductTypeText("PC")</option>
-                    <option value="Monitor" selected="@(ViewData["CurrentTrangThai"]?.ToString() == "Monitor")">@GetProductTypeText("Monitor")</option>
-                    <option value="Storage" selected="@(ViewData["CurrentTrangThai"]?.ToString() == "Storage")">@GetProductTypeText("Storage")</option>
-                    <option value="Peripherals" selected="@(ViewData["CurrentTrangThai"]?.ToString() == "Peripherals")">@GetProductTypeText("Peripherals")</option>
-                    <option value="Network" selected="@(ViewData["CurrentTrangThai"]?.ToString() == "Network")">@GetProductTypeText("Network")</option>
-                    <option value="Audio" selected="@(ViewData["CurrentTrangThai"]?.ToString() == "Audio")">@GetProductTypeText("Audio")</option>
-                </select>
-
+                <!-- Bộ lọc trạng thái đơn hàng -->
                 <div class="flex items-center gap-2">
+                    <label class="text-sm font-medium text-gray-600">Trạng thái:</label>
+                    <select name="trangThaiDonHang" 
+                            onchange="this.form.submit()"
+                            class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        <option value="" selected="@(ViewData["CurrentTrangThaiDonHang"]?.ToString() == "")">Tất cả trạng thái</option>
+                        <option value="Chờ xác nhận" selected="@(ViewData["CurrentTrangThaiDonHang"]?.ToString() == "Chờ xác nhận")">Chờ xác nhận</option>
+                        <option value="Đã thanh toán" selected="@(ViewData["CurrentTrangThaiDonHang"]?.ToString() == "Đã thanh toán")">Đã thanh toán</option>
+                        <option value="Đã duyệt đơn" selected="@(ViewData["CurrentTrangThaiDonHang"]?.ToString() == "Đã duyệt đơn")">Đã duyệt đơn</option>
+                        <option value="Đang giao" selected="@(ViewData["CurrentTrangThaiDonHang"]?.ToString() == "Đang giao")">Đang giao</option>
+                        <option value="Giao thành công" selected="@(ViewData["CurrentTrangThaiDonHang"]?.ToString() == "Giao thành công")">Giao thành công</option>
+                        <option value="Không nhận hàng" selected="@(ViewData["CurrentTrangThaiDonHang"]?.ToString() == "Không nhận hàng")">Không nhận hàng</option>
+                        <option value="Hủy đơn" selected="@(ViewData["CurrentTrangThaiDonHang"]?.ToString() == "Hủy đơn")">Hủy đơn</option>
+                        <option value="Thanh toán không thành công" selected="@(ViewData["CurrentTrangThaiDonHang"]?.ToString() == "Thanh toán không thành công")">Thanh toán không thành công</option>
+                        <option value="Đã kết thúc" selected="@(ViewData["CurrentTrangThaiDonHang"]?.ToString() == "Đã kết thúc")">Đã kết thúc</option>
+                    </select>
+                </div>
+
+                <!-- Bộ lọc loại sản phẩm -->
+                <div class="flex items-center gap-2">
+                    <label class="text-sm font-medium text-gray-600">Loại sản phẩm:</label>
+                    <select name="loaiSanPham" 
+                            onchange="this.form.submit()"
+                            class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        <option value="" selected="@(ViewData["CurrentLoaiSanPham"]?.ToString() == "")">@GetProductTypeText("")</option>
+                        <option value="Components" selected="@(ViewData["CurrentLoaiSanPham"]?.ToString() == "Components")">@GetProductTypeText("Components")</option>
+                        <option value="Laptop" selected="@(ViewData["CurrentLoaiSanPham"]?.ToString() == "Laptop")">@GetProductTypeText("Laptop")</option>
+                        <option value="PC" selected="@(ViewData["CurrentLoaiSanPham"]?.ToString() == "PC")">@GetProductTypeText("PC")</option>
+                        <option value="Monitor" selected="@(ViewData["CurrentLoaiSanPham"]?.ToString() == "Monitor")">@GetProductTypeText("Monitor")</option>
+                        <option value="Storage" selected="@(ViewData["CurrentLoaiSanPham"]?.ToString() == "Storage")">@GetProductTypeText("Storage")</option>
+                        <option value="Peripherals" selected="@(ViewData["CurrentLoaiSanPham"]?.ToString() == "Peripherals")">@GetProductTypeText("Peripherals")</option>
+                        <option value="Network" selected="@(ViewData["CurrentLoaiSanPham"]?.ToString() == "Network")">@GetProductTypeText("Network")</option>
+                        <option value="Audio" selected="@(ViewData["CurrentLoaiSanPham"]?.ToString() == "Audio")">@GetProductTypeText("Audio")</option>
+                    </select>
+                </div>
+
+                <!-- Bộ lọc thời gian -->
+                <div class="flex items-center gap-2">
+                    <label class="text-sm font-medium text-gray-600">Thời gian:</label>
                     <input type="datetime-local" 
                            name="tuNgay"
                            value="@(ViewData["CurrentTuNgay"] != null ? DateTime.Parse(ViewData["CurrentTuNgay"].ToString()).ToString("yyyy-MM-ddTHH:mm") : "")"
@@ -83,21 +108,6 @@
                         Lọc
                     </button>
                 </div>
-
-                <!-- Clear Filters -->
-                @if (!string.IsNullOrEmpty(ViewData["CurrentFilter"]?.ToString()) || 
-                     !string.IsNullOrEmpty(ViewData["CurrentTrangThai"]?.ToString()) ||
-                     !string.IsNullOrEmpty(ViewData["CurrentTuNgay"]?.ToString()) ||
-                     !string.IsNullOrEmpty(ViewData["CurrentDenNgay"]?.ToString()))
-                {
-                    <a asp-action="Index" 
-                       class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                        Xóa bộ lọc
-                    </a>
-                }
             </div>
         </form>
     </div>
@@ -324,7 +334,8 @@
                 <a asp-action="Index" 
                    asp-route-pageNumber="@(Model.PageNumber - 1)"
                    asp-route-searchString="@ViewData["CurrentFilter"]"
-                   asp-route-trangThai="@ViewData["CurrentTrangThai"]"
+                   asp-route-trangThaiDonHang="@ViewData["CurrentTrangThaiDonHang"]"
+                   asp-route-loaiSanPham="@ViewData["CurrentLoaiSanPham"]"
                    asp-route-tuNgay="@ViewData["CurrentTuNgay"]"
                    asp-route-denNgay="@ViewData["CurrentDenNgay"]"
                    class="px-3 py-2 rounded-lg border hover:bg-gray-50">
@@ -350,7 +361,8 @@
                 <a asp-action="Index" 
                    asp-route-pageNumber="1"
                    asp-route-searchString="@ViewData["CurrentFilter"]"
-                   asp-route-trangThai="@ViewData["CurrentTrangThai"]"
+                   asp-route-trangThaiDonHang="@ViewData["CurrentTrangThaiDonHang"]"
+                   asp-route-loaiSanPham="@ViewData["CurrentLoaiSanPham"]"
                    asp-route-tuNgay="@ViewData["CurrentTuNgay"]"
                    asp-route-denNgay="@ViewData["CurrentDenNgay"]"
                    class="px-3 py-2 rounded-lg border hover:bg-gray-50">1</a>
@@ -365,7 +377,8 @@
                 <a asp-action="Index" 
                    asp-route-pageNumber="@i"
                    asp-route-searchString="@ViewData["CurrentFilter"]"
-                   asp-route-trangThai="@ViewData["CurrentTrangThai"]"
+                   asp-route-trangThaiDonHang="@ViewData["CurrentTrangThaiDonHang"]"
+                   asp-route-loaiSanPham="@ViewData["CurrentLoaiSanPham"]"
                    asp-route-tuNgay="@ViewData["CurrentTuNgay"]"
                    asp-route-denNgay="@ViewData["CurrentDenNgay"]"
                    class="px-3 py-2 rounded-lg border @(i == Model.PageNumber ? "bg-blue-50 text-blue-600 font-medium" : "hover:bg-gray-50")">
@@ -382,7 +395,8 @@
                 <a asp-action="Index" 
                    asp-route-pageNumber="@Model.TotalPages"
                    asp-route-searchString="@ViewData["CurrentFilter"]"
-                   asp-route-trangThai="@ViewData["CurrentTrangThai"]"
+                   asp-route-trangThaiDonHang="@ViewData["CurrentTrangThaiDonHang"]"
+                   asp-route-loaiSanPham="@ViewData["CurrentLoaiSanPham"]"
                    asp-route-tuNgay="@ViewData["CurrentTuNgay"]"
                    asp-route-denNgay="@ViewData["CurrentDenNgay"]"
                    class="px-3 py-2 rounded-lg border hover:bg-gray-50">@Model.TotalPages</a>
@@ -393,7 +407,8 @@
                 <a asp-action="Index" 
                    asp-route-pageNumber="@(Model.PageNumber + 1)"
                    asp-route-searchString="@ViewData["CurrentFilter"]"
-                   asp-route-trangThai="@ViewData["CurrentTrangThai"]"
+                   asp-route-trangThaiDonHang="@ViewData["CurrentTrangThaiDonHang"]"
+                   asp-route-loaiSanPham="@ViewData["CurrentLoaiSanPham"]"
                    asp-route-tuNgay="@ViewData["CurrentTuNgay"]"
                    asp-route-denNgay="@ViewData["CurrentDenNgay"]"
                    class="px-3 py-2 rounded-lg border hover:bg-gray-50">
