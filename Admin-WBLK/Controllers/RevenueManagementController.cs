@@ -2,6 +2,8 @@
 using Admin_WBLK.Models.Strategis;
 using Admin_WBLK.Models.Observers;
 using Admin_WBLK.Models.Facades;
+using Admin_WBLK.Models.Templates;
+using Admin_WBLK.Models.Composites;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -15,6 +17,13 @@ namespace Admin_WBLK.Controllers
         private readonly DatabaseContext _context;
         private readonly RevenueFacade _revenueFacade;
         private readonly IRevenueSubject _revenueSubject;
+        
+        // Template Method Pattern
+        private readonly DailyRevenueReport _dailyRevenueReport;
+        private readonly MonthlyRevenueReport _monthlyRevenueReport;
+        
+        // Composite Pattern
+        private readonly RevenueBuilder _revenueBuilder;
 
         public RevenueManagementController(DatabaseContext context, ILogger<RevenueLogger> logger)
         {
@@ -30,6 +39,13 @@ namespace Admin_WBLK.Controllers
             
             // Khởi tạo Facade Pattern
             _revenueFacade = new RevenueFacade(context, filterStrategy);
+            
+            // Khởi tạo Template Method Pattern
+            _dailyRevenueReport = new DailyRevenueReport(context);
+            _monthlyRevenueReport = new MonthlyRevenueReport(context);
+            
+            // Khởi tạo Composite Pattern
+            _revenueBuilder = new RevenueBuilder(context);
         }
 
         public async Task<IActionResult> Index()
@@ -56,6 +72,32 @@ namespace Admin_WBLK.Controllers
         {
             // Sử dụng Facade Pattern để lấy chi tiết đơn hàng
             return await _revenueFacade.GetOrderDetail(id, this);
+        }
+        
+        // Template Method Pattern - Báo cáo doanh thu hàng ngày
+        [HttpGet]
+        public async Task<IActionResult> GetDailyReport(DateTime? fromDate, DateTime? toDate, string? paymentMethod)
+        {
+            return await _dailyRevenueReport.GenerateReport(fromDate, toDate, paymentMethod, this);
+        }
+        
+        // Template Method Pattern - Báo cáo doanh thu hàng tháng
+        [HttpGet]
+        public async Task<IActionResult> GetMonthlyReport(DateTime? fromDate, DateTime? toDate, string? paymentMethod)
+        {
+            return await _monthlyRevenueReport.GenerateReport(fromDate, toDate, paymentMethod, this);
+        }
+        
+        // Composite Pattern - Cấu trúc phân cấp doanh thu
+        [HttpGet]
+        public async Task<IActionResult> GetRevenueHierarchy(DateTime? fromDate, DateTime? toDate)
+        {
+            var revenueHierarchy = await _revenueBuilder.BuildRevenueHierarchy(fromDate, toDate);
+            
+            // Thông báo qua Observer Pattern
+            await _revenueSubject.NotifyObservers("Đã tạo báo cáo phân cấp doanh thu");
+            
+            return Json(revenueHierarchy.GetDetails());
         }
     }
 }
