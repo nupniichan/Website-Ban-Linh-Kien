@@ -14,6 +14,7 @@ using Admin_WBLK.Models.Factories;
 using Admin_WBLK.Models.Commands;
 using Admin_WBLK.Models.Facades;
 using Admin_WBLK.Models.AbstractFactories;
+using Admin_WBLK.Models.States;
 
 namespace Admin_WBLK.Controllers
 {
@@ -157,6 +158,19 @@ namespace Admin_WBLK.Controllers
                 return View(sanpham);
             }
 
+            // Kiểm tra trạng thái sản phẩm trước khi cập nhật
+            var currentProduct = await _productFacade.GetProductById(id);
+            if (currentProduct == null)
+                return NotFound();
+
+            // Sử dụng State Pattern để kiểm tra xem sản phẩm có thể được cập nhật không
+            var productContext = new ProductContext(currentProduct);
+            if (!productContext.CanUpdate())
+            {
+                TempData["ErrorMessage"] = "Sản phẩm không thể được cập nhật trong trạng thái hiện tại.";
+                return RedirectToAction(nameof(Index));
+            }
+
             // Sử dụng Command Pattern thông qua Facade để cập nhật sản phẩm
             var thongSoKyThuat = Request.Form["thongsokythuat"].ToString();
             return await _productFacade.UpdateProduct(
@@ -180,6 +194,14 @@ namespace Admin_WBLK.Controllers
             if (sanpham == null)
                 return NotFound();
 
+            // Sử dụng State Pattern để kiểm tra xem sản phẩm có thể bị xóa không
+            var productContext = new ProductContext(sanpham);
+            if (!productContext.CanDelete())
+            {
+                TempData["ErrorMessage"] = "Sản phẩm không thể bị xóa trong trạng thái hiện tại.";
+                return RedirectToAction(nameof(Index));
+            }
+
             return View(sanpham);
         }
 
@@ -188,6 +210,19 @@ namespace Admin_WBLK.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(string id)
         {
+            // Kiểm tra trạng thái sản phẩm trước khi xóa
+            var sanpham = await _productFacade.GetProductById(id);
+            if (sanpham == null)
+                return NotFound();
+
+            // Sử dụng State Pattern để kiểm tra xem sản phẩm có thể bị xóa không
+            var productContext = new ProductContext(sanpham);
+            if (!productContext.CanDelete())
+            {
+                TempData["ErrorMessage"] = "Sản phẩm không thể bị xóa trong trạng thái hiện tại.";
+                return RedirectToAction(nameof(Index));
+            }
+
             // Sử dụng Command Pattern thông qua Facade để xóa sản phẩm
             return await _productFacade.DeleteProduct(id, this, TempData);
         }
