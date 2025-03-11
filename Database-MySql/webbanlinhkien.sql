@@ -756,10 +756,7 @@ INSERT INTO `taikhoan` (`IdTk`, `matkhau`, `tentaikhoan`, `ngaytaotk`, `ngaysuad
 ('TK000036', 'trinhthiq', 'trinhthiq', '2025-02-23', NULL, 'nhanvienkinhdoanh'),
 ('TK000037', 'phanvanr', 'phanvanr', '2025-02-23', NULL, 'nhanvienmarketing'),
 ('TK000038', 'luuminhs', 'luuminhs', '2025-02-23', NULL, 'nhanvienmarketing'),
-('TK000039', 'tathit', 'tathit', '2025-02-23', NULL, 'nhanvienkinhdoanh'),
-('TK000040', 'NupOniiBaka@089', 'nupniichan', '2025-03-11', NULL, 'khachhang'),
-('TK000041', 'NupOniiBaka@089', 'nupniichan089', '2025-03-11', NULL, 'khachhang'),
-('TK000042', 'Admin@089', 'adminasdsad', '2025-03-11', NULL, 'khachhang');
+('TK000039', 'tathit', 'tathit', '2025-02-23', NULL, 'nhanvienkinhdoanh')
 
 -- --------------------------------------------------------
 
