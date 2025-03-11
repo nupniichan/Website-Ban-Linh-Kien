@@ -173,16 +173,16 @@ namespace Admin_WBLK.Controllers
                 sanpham.IdSp = newId;
 
                 // Process image
-                var fileName = Path.GetRandomFileName() + Path.GetExtension(imageFile.FileName);
+                var randomFileName = GenerateRandomFileName(Path.GetExtension(imageFile.FileName));
                 var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Images", "ProductImage");
                 if (!Directory.Exists(uploadPath))
                     Directory.CreateDirectory(uploadPath);
 
-                var filePath = Path.Combine(uploadPath, fileName);
+                var filePath = Path.Combine(uploadPath, randomFileName);
                 using (var stream = new FileStream(filePath, FileMode.Create))
                     await imageFile.CopyToAsync(stream);
 
-                sanpham.Hinhanh = "/Images/ProductImage/" + fileName;
+                sanpham.Hinhanh = "/Images/ProductImage/" + randomFileName;
 
                 // Process technical specifications
                 var thongSoKyThuat = Request.Form["thongsokythuat"].ToString();
@@ -260,12 +260,12 @@ namespace Admin_WBLK.Controllers
                     var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Images", "ProductImage");
                     Directory.CreateDirectory(uploadPath);
 
-                    var fileName = $"{Guid.NewGuid()}{Path.GetExtension(imageFile.FileName)}";
-                    var filePath = Path.Combine(uploadPath, fileName);
+                    var randomFileName = GenerateRandomFileName(Path.GetExtension(imageFile.FileName));
+                    var filePath = Path.Combine(uploadPath, randomFileName);
                     using (var stream = new FileStream(filePath, FileMode.Create))
                         await imageFile.CopyToAsync(stream);
 
-                    sanpham.Hinhanh = $"/Images/ProductImage/{fileName}";
+                    sanpham.Hinhanh = $"/Images/ProductImage/{randomFileName}";
                 }
                 else
                 {
@@ -365,6 +365,17 @@ namespace Admin_WBLK.Controllers
                 Console.WriteLine($"Error in SearchSuggestions: {ex.Message}");
                 return Json(new List<object>());
             }
+        }
+
+        // Thêm hàm mới để tạo tên file ngẫu nhiên
+        private string GenerateRandomFileName(string extension)
+        {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            var random = new Random();
+            var randomString = new string(Enumerable.Repeat(chars, 20)
+                .Select(s => s[random.Next(s.Length)]).ToArray());
+            
+            return randomString + extension.ToLower();
         }
     }
 }

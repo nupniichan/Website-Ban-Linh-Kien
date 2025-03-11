@@ -38,7 +38,7 @@
                              data-quantity="@item.Quantity"
                              data-price="@item.Price">
                             <div class="flex items-center mb-4 last:mb-0">
-                                    <img src="@($"http://48.217.66.77:5177{(item.ImageUrl.StartsWith("/") ? "" : "/")}{item.ImageUrl}")" 
+                                    <img src="@($"https://admin.bpt-computer.store{(item.ImageUrl.StartsWith("/") ? "" : "/")}{item.ImageUrl}")" 
                                      class="w-20 h-20 object-cover rounded">
                                 <div class="ml-4">
                                     <div>@item.ProductName</div>
@@ -311,7 +311,7 @@
                          data-quantity="${item.quantity}"
                          data-price="${item.price}">
                         <div class="flex items-center mb-4 last:mb-0">
-                            <img src="http://48.217.66.77:5177${item.image.startsWith("/") ? "" : "/"}${item.image}" 
+                            <img src="https://admin.bpt-computer.store${item.image.startsWith("/") ? "" : "/"}${item.image}" 
                                  alt="${item.name}" 
                                  class="w-20 h-20 object-cover rounded">
                             <div class="ml-4">
