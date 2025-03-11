@@ -232,7 +232,7 @@ namespace Admin_WBLK.Controllers
                     Hoten = baseName + sequence,
                     Chucvu = taikhoan.Quyentruycap,
                     Luong = 0,
-                    Gioitinh = "Chưa xác định",
+                    Gioitinh = "N",
                     Sodienthoai = "0000000000",
                     Email = "abc@gmail.com",
                     Diachi = "Road A",
@@ -261,7 +261,7 @@ namespace Admin_WBLK.Controllers
                     Email = "default@gmail.com",
                     Diachi = "Default Address",
                     Sodienthoai = "0000000000",
-                    Gioitinh = "Chưa xác định",
+                    Gioitinh = "N",
                     Ngaysinh = DateOnly.FromDateTime(new DateTime(1990, 1, 1)),
                     IdTk = taikhoan.IdTk
                 };
