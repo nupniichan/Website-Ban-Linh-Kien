@@ -7,6 +7,7 @@ using Admin_WBLK.Models.Observers;
 using Admin_WBLK.Models.Facades;
 using Admin_WBLK.Models.Mementos;
 using Admin_WBLK.Models.ChainOfResponsibility;
+using Admin_WBLK.Models.Visitors;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 
@@ -1013,6 +1014,84 @@ namespace Admin_WBLK.Controllers
         {
             var history = _orderCaretaker.GetHistory(id);
             return Json(history);
+        }
+
+        // Visitor Pattern - Tạo hóa đơn
+        [HttpGet]
+        public async Task<IActionResult> GenerateInvoice(string id)
+        {
+            var order = await _context.Donhangs
+                .Include(d => d.IdKhNavigation)
+                .Include(d => d.IdMggNavigation)
+                .Include(d => d.Chitietdonhangs)
+                    .ThenInclude(c => c.IdSpNavigation)
+                .Include(d => d.Thanhtoans)
+                .FirstOrDefaultAsync(m => m.IdDh == id);
+                
+            if (order == null)
+            {
+                return NotFound();
+            }
+            
+            // Sử dụng Visitor Pattern
+            var invoiceVisitor = new InvoiceGeneratorVisitor();
+            OrderExtensions.Accept(order, invoiceVisitor);
+            
+            string invoiceContent = invoiceVisitor.GetInvoice(order);
+            
+            return Json(new { success = true, invoice = invoiceContent });
+        }
+        
+        // Visitor Pattern - Tạo báo cáo
+        [HttpGet]
+        public async Task<IActionResult> GenerateReport(string id)
+        {
+            var order = await _context.Donhangs
+                .Include(d => d.IdKhNavigation)
+                .Include(d => d.IdMggNavigation)
+                .Include(d => d.Chitietdonhangs)
+                    .ThenInclude(c => c.IdSpNavigation)
+                .Include(d => d.Thanhtoans)
+                .FirstOrDefaultAsync(m => m.IdDh == id);
+                
+            if (order == null)
+            {
+                return NotFound();
+            }
+            
+            // Sử dụng Visitor Pattern
+            var reportVisitor = new OrderReportVisitor();
+            OrderExtensions.Accept(order, reportVisitor);
+            
+            string reportContent = reportVisitor.GetReport(order);
+            
+            return Json(new { success = true, report = reportContent });
+        }
+        
+        // Visitor Pattern - Xuất JSON
+        [HttpGet]
+        public async Task<IActionResult> ExportJson(string id)
+        {
+            var order = await _context.Donhangs
+                .Include(d => d.IdKhNavigation)
+                .Include(d => d.IdMggNavigation)
+                .Include(d => d.Chitietdonhangs)
+                    .ThenInclude(c => c.IdSpNavigation)
+                .Include(d => d.Thanhtoans)
+                .FirstOrDefaultAsync(m => m.IdDh == id);
+                
+            if (order == null)
+            {
+                return NotFound();
+            }
+            
+            // Sử dụng Visitor Pattern
+            var jsonVisitor = new OrderJsonExportVisitor();
+            OrderExtensions.Accept(order, jsonVisitor);
+            
+            string jsonData = jsonVisitor.GetJsonData();
+            
+            return Json(new { success = true, data = jsonData });
         }
     }
     

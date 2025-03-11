@@ -232,6 +232,26 @@
             }
             <!-- Buttons -->
             <div class="mt-8 flex items-center justify-end gap-4">
+                <!-- Visitor Pattern - Các nút xuất dữ liệu -->
+                <div class="flex-grow flex items-center gap-2">
+                    <button type="button" onclick="generateInvoice('@Model.IdDh')" 
+                            class="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                        <i class="fas fa-file-invoice mr-1"></i> Xuất hóa đơn
+                    </button>
+                    <button type="button" onclick="generateReport('@Model.IdDh')" 
+                            class="px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2">
+                        <i class="fas fa-chart-bar mr-1"></i> Báo cáo
+                    </button>
+                    <button type="button" onclick="exportJson('@Model.IdDh')" 
+                            class="px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+                        <i class="fas fa-code mr-1"></i> Xuất JSON
+                    </button>
+                    <button type="button" onclick="showOrderHistory('@Model.IdDh')" 
+                            class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        <i class="fas fa-history mr-1"></i> Lịch sử
+                    </button>
+                </div>
+                
                 @if (!string.IsNullOrEmpty(ViewData["ReturnUrl"]?.ToString()))
                 {
                     <a href="@ViewData["ReturnUrl"]" 
@@ -255,4 +275,141 @@
             </div>
         </div>
     </div>
-</div> 
+</div>
+
+<!-- Modal cho Visitor Pattern -->
+<div class="modal fade" id="visitorModal" tabindex="-1" role="dialog" aria-labelledby="visitorModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="visitorModalLabel">Kết quả</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <pre id="visitorContent" class="bg-gray-100 p-4 rounded-lg overflow-auto" style="max-height: 500px;"></pre>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="printContent()">In</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal cho Memento Pattern -->
+<div class="modal fade" id="historyModal" tabindex="-1" role="dialog" aria-labelledby="historyModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="historyModalLabel">Lịch sử trạng thái</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="historyContent"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Visitor Pattern - Xuất hóa đơn
+        function generateInvoice(orderId) {
+            $.ajax({
+                url: '/OrderManagement/GenerateInvoice',
+                type: 'GET',
+                data: { id: orderId },
+                success: function(data) {
+                    if (data.success) {
+                        $('#visitorModalLabel').text('Hóa đơn bán hàng');
+                        $('#visitorContent').text(data.invoice);
+                        $('#visitorModal').modal('show');
+                    }
+                }
+            });
+        }
+        
+        // Visitor Pattern - Tạo báo cáo
+        function generateReport(orderId) {
+            $.ajax({
+                url: '/OrderManagement/GenerateReport',
+                type: 'GET',
+                data: { id: orderId },
+                success: function(data) {
+                    if (data.success) {
+                        $('#visitorModalLabel').text('Báo cáo chi tiết đơn hàng');
+                        $('#visitorContent').text(data.report);
+                        $('#visitorModal').modal('show');
+                    }
+                }
+            });
+        }
+        
+        // Visitor Pattern - Xuất JSON
+        function exportJson(orderId) {
+            $.ajax({
+                url: '/OrderManagement/ExportJson',
+                type: 'GET',
+                data: { id: orderId },
+                success: function(data) {
+                    if (data.success) {
+                        $('#visitorModalLabel').text('Dữ liệu JSON');
+                        $('#visitorContent').text(data.data);
+                        $('#visitorModal').modal('show');
+                    }
+                }
+            });
+        }
+        
+        // Memento Pattern - Xem lịch sử trạng thái
+        function showOrderHistory(orderId) {
+            $.ajax({
+                url: '/OrderManagement/GetOrderStateHistory',
+                type: 'GET',
+                data: { id: orderId },
+                success: function(data) {
+                    let historyHtml = '<table class="table table-striped">';
+                    historyHtml += '<thead><tr><th>Trạng thái</th><th>Thời gian</th><th>Người cập nhật</th></tr></thead>';
+                    historyHtml += '<tbody>';
+                    
+                    if (data.length === 0) {
+                        historyHtml += '<tr><td colspan="3" class="text-center">Không có lịch sử</td></tr>';
+                    } else {
+                        data.forEach(function(item) {
+                            historyHtml += `<tr>
+                                <td>${item.trangthai}</td>
+                                <td>${new Date(item.ngayCapNhat).toLocaleString()}</td>
+                                <td>${item.nguoiCapNhat}</td>
+                            </tr>`;
+                        });
+                    }
+                    
+                    historyHtml += '</tbody></table>';
+                    
+                    $('#historyContent').html(historyHtml);
+                    $('#historyModal').modal('show');
+                }
+            });
+        }
+        
+        // In nội dung
+        function printContent() {
+            var content = $('#visitorContent').text();
+            var printWindow = window.open('', '_blank');
+            printWindow.document.write('<html><head><title>In</title>');
+            printWindow.document.write('<style>body { font-family: monospace; white-space: pre; }</style>');
+            printWindow.document.write('</head><body>');
+            printWindow.document.write(content);
+            printWindow.document.write('</body></html>');
+            printWindow.document.close();
+            printWindow.print();
+        }
+    </script>
+} 
