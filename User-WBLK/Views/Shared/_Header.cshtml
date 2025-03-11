@@ -441,7 +441,7 @@
                             let html = "";
                             data.forEach(item => {
                                 const productUrl = getProductUrl(item.loaiSp, item.idSp);
-                                const imageSrc = "http://localhost:5177/" + item.imageUrl;
+                                const imageSrc = "http://48.217.66.77:5177" + item.imageUrl;
                                 const formattedPrice = new Intl.NumberFormat('vi-VN').format(item.gia) + "đ";
 
                                 html += `
