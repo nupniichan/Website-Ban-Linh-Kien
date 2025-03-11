@@ -89,12 +89,57 @@ namespace Admin_WBLK.Controllers
             if (sanpham == null)
                 return NotFound();
 
+            // Sử dụng State Pattern để xác định trạng thái sản phẩm
+            var productContext = new ProductContext(sanpham);
+            ViewBag.ProductState = productContext.GetStateName();
+            ViewBag.CanUpdate = productContext.CanUpdate();
+            ViewBag.CanDelete = productContext.CanDelete();
+            ViewBag.CanSell = productContext.CanSell();
+
+            // Sử dụng Prototype Pattern để tạo một bản sao của sản phẩm
+            var productPrototype = new Models.Prototypes.ProductPrototype(sanpham);
+            ViewBag.ClonedProduct = productPrototype.Clone();
+
+            // Sử dụng Decorator Pattern để hiển thị thông tin sản phẩm
+            var baseProduct = new Models.Decorators.ConcreteProduct(sanpham);
+            
+            // Kiểm tra nếu sản phẩm có giảm giá
+            bool hasDiscount = sanpham.Gia > 0 && sanpham.Soluongton > 10;
+            if (hasDiscount)
+            {
+                // Áp dụng decorator giảm giá 10% cho sản phẩm có số lượng tồn > 10
+                var discountedProduct = new Models.Decorators.DiscountedProduct(baseProduct, 10);
+                ViewBag.ProductName = discountedProduct.GetName();
+                ViewBag.ProductPrice = discountedProduct.GetPrice();
+                ViewBag.ProductDescription = discountedProduct.GetDescription();
+            }
+            else if (sanpham.Soluotxem > 100)
+            {
+                // Áp dụng decorator sản phẩm nổi bật cho sản phẩm có lượt xem > 100
+                var featuredProduct = new Models.Decorators.FeaturedProduct(baseProduct);
+                ViewBag.ProductName = featuredProduct.GetName();
+                ViewBag.ProductPrice = featuredProduct.GetPrice();
+                ViewBag.ProductDescription = featuredProduct.GetDescription();
+            }
+            else
+            {
+                // Sử dụng thông tin sản phẩm gốc
+                ViewBag.ProductName = baseProduct.GetName();
+                ViewBag.ProductPrice = baseProduct.GetPrice();
+                ViewBag.ProductDescription = baseProduct.GetDescription();
+            }
+
             return View(sanpham);
         }
 
         // GET: ProductManagement/Create
         public IActionResult Create()
         {
+            // Sử dụng Singleton Pattern để lấy danh sách loại sản phẩm và thương hiệu
+            var configManager = Models.Singletons.ProductConfigurationManager.Instance;
+            ViewBag.Categories = configManager.GetProductCategories();
+            ViewBag.Brands = configManager.GetProductBrands();
+            
             return View();
         }
 
