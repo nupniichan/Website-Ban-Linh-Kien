@@ -322,10 +322,7 @@ namespace Admin_WBLK.Controllers
                 // Đánh dấu entity đã được sửa đổi
                 _context.Entry(existingCustomer).State = EntityState.Modified;
                 
-                // Lưu thay đổi và ghi log
-                Console.WriteLine("Saving changes to database...");
                 await _context.SaveChangesAsync();
-                Console.WriteLine("Changes saved successfully!");
 
                 TempData["Success"] = "Cập nhật thông tin khách hàng thành công!";
                 

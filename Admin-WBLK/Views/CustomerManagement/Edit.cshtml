@@ -113,21 +113,15 @@
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
-        // Thêm debug để kiểm tra form submit
-        console.log("Edit form script loaded");
-        
         // Thêm custom validation cho địa chỉ
         $(document).ready(function() {
             const diachiInput = $('#Diachi');
             const diachiError = $('#diachiError');
             const form = $('#editForm');
             
-            console.log("Form ready, setting up validation");
-            
             // Hàm kiểm tra định dạng địa chỉ
             function validateDiachi() {
                 const value = diachiInput.val();
-                console.log("Validating address:", value);
                 const parts = value.split(',');
                 
                 // Kiểm tra có đúng 4 phần
@@ -165,34 +159,12 @@
             
             // Kiểm tra khi submit form
             form.on('submit', function(e) {
-                console.log("Form submitting...");
-                
-                // Kiểm tra tất cả các trường
-                console.log("Form data:", {
-                    IdKh: $('#IdKh').val(),
-                    Hoten: $('#Hoten').val(),
-                    Email: $('#Email').val(),
-                    Sodienthoai: $('#Sodienthoai').val(),
-                    Diachi: $('#Diachi').val(),
-                    Gioitinh: $('#Gioitinh').val(),
-                    Ngaysinh: $('#Ngaysinh').val(),
-                    IdTk: $('#IdTk').val()
-                });
-                
                 if (!validateDiachi()) {
-                    console.log("Address validation failed, preventing submit");
                     e.preventDefault();
                     diachiInput.focus();
                     return false;
                 }
-                
-                console.log("Form validation passed, submitting...");
                 return true;
-            });
-            
-            // Thêm sự kiện click cho nút submit để debug
-            $('#submitButton').on('click', function() {
-                console.log("Submit button clicked");
             });
         });
     </script>
