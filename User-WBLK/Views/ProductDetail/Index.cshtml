@@ -9,7 +9,7 @@
             <!-- Product Images -->
             <div class="space-y-4">
                 <div class="bg-white p-4 rounded-lg shadow-md">
-                    <img src="http://localhost:5177/@Model.ImageUrl" alt="@Model.Name" class="w-full h-auto rounded-lg">
+                <img src="@($"https://admin.bpt-computer.store{(Model.ImageUrl.StartsWith("/") ? "" : "/")}{Model.ImageUrl}")" alt="@Model.Name" class="w-full h-auto rounded-lg">
                 </div>
                 @if (Model.AdditionalImages?.Any() == true)
                 {
