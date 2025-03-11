@@ -8,7 +8,7 @@
     <div class="max-w-3xl mx-auto">
         <h1 class="text-3xl font-bold text-gray-900 mb-6">Chỉnh sửa thông tin khách hàng</h1>
         <div class="bg-white rounded-lg shadow-sm p-6">
-            <form asp-action="Edit" method="post">
+            <form asp-action="Edit" method="post" id="editForm">
                 <div asp-validation-summary="ModelOnly" id="validation-summary" class="mb-4 text-red-500 text-sm"></div>
                 <input type="hidden" asp-for="IdKh" />
                 <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
@@ -100,6 +100,7 @@
                         </a>
                     }
                     <button type="submit" 
+                            id="submitButton"
                             class="px-4 py-2 bg-yellow-600 text-white text-sm font-medium rounded-lg hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2">
                         Lưu thay đổi
                     </button>
@@ -116,6 +117,7 @@
         $(document).ready(function() {
             const diachiInput = $('#Diachi');
             const diachiError = $('#diachiError');
+            const form = $('#editForm');
             
             // Hàm kiểm tra định dạng địa chỉ
             function validateDiachi() {
@@ -156,11 +158,13 @@
             diachiInput.on('input', validateDiachi);
             
             // Kiểm tra khi submit form
-            $('form').on('submit', function(e) {
+            form.on('submit', function(e) {
                 if (!validateDiachi()) {
                     e.preventDefault();
                     diachiInput.focus();
+                    return false;
                 }
+                return true;
             });
         });
     </script>
