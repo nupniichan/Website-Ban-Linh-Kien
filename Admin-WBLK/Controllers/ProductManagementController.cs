@@ -13,6 +13,7 @@ using Admin_WBLK.Models.Strategis;
 using Admin_WBLK.Models.Factories;
 using Admin_WBLK.Models.Commands;
 using Admin_WBLK.Models.Facades;
+using Admin_WBLK.Models.AbstractFactories;
 
 namespace Admin_WBLK.Controllers
 {
@@ -37,6 +38,7 @@ namespace Admin_WBLK.Controllers
             var filterStrategy = new DefaultProductFilterStrategy();
             var sortStrategy = new DefaultProductSortStrategy();
             var productFactory = new ProductFactory(context);
+            var factoryProvider = new ProductFactoryProvider(context);
             
             // Khởi tạo Facade Pattern
             _productFacade = new ProductFacade(
@@ -44,7 +46,8 @@ namespace Admin_WBLK.Controllers
                 productFactory,
                 searchStrategy,
                 filterStrategy,
-                sortStrategy
+                sortStrategy,
+                factoryProvider
             );
         }
 
