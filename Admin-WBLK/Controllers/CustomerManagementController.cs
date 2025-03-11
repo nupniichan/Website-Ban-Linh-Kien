@@ -214,16 +214,44 @@ namespace Admin_WBLK.Controllers
         // POST: CustomerManagement/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(string id, [Bind("IdKh,Hoten,Email,Sodienthoai,Diachi,Gioitinh,Ngaysinh,IdTk")] Khachhang khachhang, string returnUrl)
+        public async Task<IActionResult> Edit(string id, [Bind("IdKh,Hoten,Email,Sodienthoai,Diachi,Gioitinh,Ngaysinh,IdTk")] Khachhang khachhang, string returnUrl = null)
         {
+            Console.WriteLine("Edit POST method called");
+            Console.WriteLine($"ID: {id}, Customer ID: {khachhang.IdKh}, Return URL: {returnUrl}");
+            
             if (id != khachhang.IdKh)
             {
+                Console.WriteLine("ID mismatch");
                 return NotFound();
             }
 
             try
             {
+                // Thêm dòng debug để xem dữ liệu đầu vào
+                Console.WriteLine($"Editing customer: {JsonSerializer.Serialize(khachhang)}");
+                
+                // Kiểm tra xem form có gửi đúng dữ liệu không
+                Console.WriteLine($"Form data - Name: {khachhang.Hoten}, Email: {khachhang.Email}, Phone: {khachhang.Sodienthoai}");
+                Console.WriteLine($"Form data - Address: {khachhang.Diachi}, Gender: {khachhang.Gioitinh}, DOB: {khachhang.Ngaysinh}");
+                Console.WriteLine($"Form data - Account ID: {khachhang.IdTk}");
+                
+                // Xóa các validation không cần thiết
                 ModelState.Remove("IdTkNavigation");
+                ModelState.Remove("returnUrl");
+                
+                // Kiểm tra ModelState
+                if (!ModelState.IsValid)
+                {
+                    Console.WriteLine("ModelState is invalid:");
+                    foreach (var state in ModelState)
+                    {
+                        if (state.Value.Errors.Count > 0)
+                        {
+                            Console.WriteLine($"- {state.Key}: {string.Join(", ", state.Value.Errors.Select(e => e.ErrorMessage))}");
+                        }
+                    }
+                }
+                
                 // Validate linked account if provided
                 if (!string.IsNullOrEmpty(khachhang.IdTk))
                 {
@@ -248,12 +276,16 @@ namespace Admin_WBLK.Controllers
                 if (!khachhang.Ngaysinh.HasValue)
                 {
                     ModelState.AddModelError("Ngaysinh", "Ngày sinh không được để trống");
+                    ViewData["ReturnUrl"] = returnUrl;
+                    ViewBag.Accounts = new SelectList(_context.Taikhoans.Where(t => t.Quyentruycap == "khachhang"), "IdTk", "Tentaikhoan", khachhang.IdTk);
                     return View(khachhang);
                 }
                 var birthDate = khachhang.Ngaysinh.Value;
                 if (birthDate >= today)
                 {
                     ModelState.AddModelError("Ngaysinh", "Ngày sinh không thể là ngày hiện tại hoặc trong tương lai");
+                    ViewData["ReturnUrl"] = returnUrl;
+                    ViewBag.Accounts = new SelectList(_context.Taikhoans.Where(t => t.Quyentruycap == "khachhang"), "IdTk", "Tentaikhoan", khachhang.IdTk);
                     return View(khachhang);
                 }
                 var age = today.Year - birthDate.Year;
@@ -266,13 +298,34 @@ namespace Admin_WBLK.Controllers
 
                 if (!ModelState.IsValid)
                 {
-                    ViewBag.Accounts = new SelectList(_context.Taikhoans, "IdTk", "Tentaikhoan", khachhang.IdTk);
+                    ViewBag.Accounts = new SelectList(_context.Taikhoans.Where(t => t.Quyentruycap == "khachhang"), "IdTk", "Tentaikhoan", khachhang.IdTk);
+                    ViewData["ReturnUrl"] = returnUrl;
                     return View(khachhang);
                 }
 
-                // No longer preserve the old IdTk; use the new value from the form.
-                _context.Khachhangs.Update(khachhang);
+                // Thay đổi cách cập nhật dữ liệu
+                var existingCustomer = await _context.Khachhangs.FindAsync(id);
+                if (existingCustomer == null)
+                {
+                    return NotFound();
+                }
+
+                // Cập nhật từng trường thay vì cập nhật toàn bộ entity
+                existingCustomer.Hoten = khachhang.Hoten;
+                existingCustomer.Email = khachhang.Email;
+                existingCustomer.Sodienthoai = khachhang.Sodienthoai;
+                existingCustomer.Diachi = khachhang.Diachi;
+                existingCustomer.Gioitinh = khachhang.Gioitinh;
+                existingCustomer.Ngaysinh = khachhang.Ngaysinh;
+                existingCustomer.IdTk = khachhang.IdTk;
+
+                // Đánh dấu entity đã được sửa đổi
+                _context.Entry(existingCustomer).State = EntityState.Modified;
+                
+                // Lưu thay đổi và ghi log
+                Console.WriteLine("Saving changes to database...");
                 await _context.SaveChangesAsync();
+                Console.WriteLine("Changes saved successfully!");
 
                 TempData["Success"] = "Cập nhật thông tin khách hàng thành công!";
                 
@@ -280,22 +333,28 @@ namespace Admin_WBLK.Controllers
                     return Redirect(returnUrl);
                 return RedirectToAction(nameof(Index));
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException ex)
             {
+                Console.WriteLine($"Concurrency error: {ex.Message}");
                 if (!KhachhangExists(khachhang.IdKh))
                 {
                     return NotFound();
                 }
                 else
                 {
-                    throw;
+                    ModelState.AddModelError("", "Dữ liệu đã bị thay đổi bởi người khác. Vui lòng thử lại.");
+                    ViewBag.Accounts = new SelectList(_context.Taikhoans.Where(t => t.Quyentruycap == "khachhang"), "IdTk", "Tentaikhoan", khachhang.IdTk);
+                    ViewData["ReturnUrl"] = returnUrl;
+                    return View(khachhang);
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
                 ModelState.AddModelError("", $"Có lỗi xảy ra: {ex.Message}");
-                ViewBag.Accounts = new SelectList(_context.Taikhoans, "IdTk", "Tentaikhoan", khachhang.IdTk);
+                ViewBag.Accounts = new SelectList(_context.Taikhoans.Where(t => t.Quyentruycap == "khachhang"), "IdTk", "Tentaikhoan", khachhang.IdTk);
+                ViewData["ReturnUrl"] = returnUrl;
                 return View(khachhang);
             }
         }
