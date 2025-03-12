@@ -1,4 +1,5 @@
-﻿    @model ProductDetailViewModel
+﻿@using Website_Ban_Linh_Kien.Services
+    @model ProductDetailViewModel
     @{
         ViewData["Title"] = Model.Name;
         Layout = "~/Views/Shared/_Layout.cshtml";
@@ -9,7 +10,9 @@
             <!-- Product Images -->
             <div class="space-y-4">
                 <div class="bg-white p-4 rounded-lg shadow-md">
-                <img src="@($"http://48.217.66.77:5177{(Model.ImageUrl.StartsWith("/") ? "" : "/")}{Model.ImageUrl}")" alt="@Model.Name" class="w-full h-auto rounded-lg">
+                <img src="@($"{GeneralConfig.BaseImageUrl}{(Model.ImageUrl.StartsWith("/") ? "" : "/")}{Model.ImageUrl}")" 
+                    alt="@Model.Name" 
+                    class="w-full h-auto rounded-lg">
                 </div>
                 @if (Model.AdditionalImages?.Any() == true)
                 {

@@ -1,4 +1,5 @@
-﻿@*
+﻿@using Website_Ban_Linh_Kien.Services;
+@*
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
 @{
@@ -371,8 +372,8 @@
                             // Cập nhật hình ảnh
                             const imgElement = template.querySelector('.component-image');
                             if (component.hinhanh) {
-                                imgElement.src = "http://48.217.66.77:5177" + component.hinhanh;
-                                imgElement.alt = component.tensanpham;
+                                        imgElement.src = Config.BaseImageUrl + component.hinhanh;
+                                        imgElement.alt = component.tensanpham;
                             } else {
                                 imgElement.src = '/imgs/no-image.svg';
                                 imgElement.alt = 'No Image';
@@ -469,8 +470,8 @@
                 // Cập nhật hình ảnh
                 const imgElement = template.querySelector('.component-image');
                 if (component.hinhanh) {
-                    imgElement.src = "http://48.217.66.77:5177" + component.hinhanh;
-                    imgElement.alt = component.tensanpham;
+                            imgElement.src = Config.BaseImageUrl + component.hinhanh;
+                            imgElement.alt = component.tensanpham;
                 } else {
                     imgElement.src = '/imgs/no-image.svg';
                     imgElement.alt = 'No Image';

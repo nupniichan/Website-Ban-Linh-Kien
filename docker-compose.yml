@@ -20,6 +20,7 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: WebBanLinhKien
+      MYSQL_SQL_MODE: "NO_ENGINE_SUBSTITUTION"
     volumes:
       - mysql_data:/var/lib/mysql
 

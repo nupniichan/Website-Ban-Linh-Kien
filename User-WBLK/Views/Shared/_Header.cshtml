@@ -1,3 +1,4 @@
+@using Website_Ban_Linh_Kien.Services
 <style>
         input[type="search"]::-webkit-search-cancel-button,
         input[type="search"]::-webkit-search-decoration,
@@ -381,6 +382,10 @@
 
         // Custom event for updating cart count after adding items
         window.addEventListener('cartUpdated', updateCartCount);
+
+        const Config = {
+        BaseImageUrl: "@GeneralConfig.BaseImageUrl"
+    };
     </script>
     <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -441,8 +446,8 @@
                             let html = "";
                             data.forEach(item => {
                                 const productUrl = getProductUrl(item.loaiSp, item.idSp);
-                                const imageSrc = "http://48.217.66.77:5177" + item.imageUrl;
-                                const formattedPrice = new Intl.NumberFormat('vi-VN').format(item.gia) + "đ";
+                                    const imageSrc = Config.BaseImageUrl + item.imageUrl;
+                                    const formattedPrice = new Intl.NumberFormat('vi-VN').format(item.gia) + "đ";
 
                                 html += `
                                     <div class="flex items-center justify-between p-2 border-b hover:bg-gray-100 cursor-pointer pl-4 pr-4"

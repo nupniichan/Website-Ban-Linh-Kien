@@ -1,4 +1,6 @@
-﻿@model Giohang
+﻿@using Website_Ban_Linh_Kien.Services;
+
+@model Giohang
 @{
     ViewData["Title"] = "Giỏ hàng";
     var isAuthenticated = User.Identity?.IsAuthenticated == true;
@@ -67,8 +69,8 @@
                         <div class="flex items-center gap-4 py-4 border-b last:border-b-0" data-product-id="@item.IdSp">
                             <!-- Product Image wrapped in a link -->
                             <a href="@productUrl" class="flex-shrink-0">
-                            <img src="@($"http://48.217.66.77:5177{(item.IdSpNavigation.Hinhanh.StartsWith("/") ? "" : "/")}{item.IdSpNavigation.Hinhanh}")" 
-                            alt="@item.IdSpNavigation.Tensanpham"
+                                <img src="@($"{GeneralConfig.BaseImageUrl}{(item.IdSpNavigation.Hinhanh.StartsWith("/") ? "" : "/")}{item.IdSpNavigation.Hinhanh}")" />
+                                alt="@item.IdSpNavigation.Tensanpham"
                             class="w-24 h-24 object-contain rounded-lg border p-2">
                             </a>
 
@@ -404,9 +406,8 @@
                     <div class="flex items-center gap-4 py-4 border-b last:border-b-0">
                         <div class="flex-shrink-0">
                             <a href="${productUrl}">
-                                <img src="http://0.0.0.0:5177/${item.image}" 
-                                     alt="${item.name}"
-                                     class="w-24 h-24 object-contain rounded-lg border p-2">
+                                <img src="${item.image.startsWith('/') ? '@GeneralConfig.BaseImageUrl' + item.image : '@GeneralConfig.BaseImageUrl/' + item.image}" 
+                                     alt="${item.name}" class="w-24 h-24 object-contain rounded-lg border p-2">
                             </a>
                         </div>
                         <div class="flex-grow">

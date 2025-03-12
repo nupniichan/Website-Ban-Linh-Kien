@@ -1,4 +1,5 @@
-﻿@model CheckoutViewModel
+﻿@using Website_Ban_Linh_Kien.Services
+@model CheckoutViewModel
 
 <div class="container mx-auto px-4 md:px-8 lg:px-32">
     <div class="max-w-[700px] mx-auto py-5">
@@ -38,7 +39,7 @@
                              data-quantity="@item.Quantity"
                              data-price="@item.Price">
                             <div class="flex items-center mb-4 last:mb-0">
-                                    <img src="@($"http://48.217.66.77:5177{(item.ImageUrl.StartsWith("/") ? "" : "/")}{item.ImageUrl}")" 
+                                    <img src="${'@GeneralConfig.BaseImageUrl'}${item.ImageUrl.StartsWith('/') ? '' : '/'}${item.ImageUrl}"
                                      class="w-20 h-20 object-cover rounded">
                                 <div class="ml-4">
                                     <div>@item.ProductName</div>
@@ -311,9 +312,9 @@
                          data-quantity="${item.quantity}"
                          data-price="${item.price}">
                         <div class="flex items-center mb-4 last:mb-0">
-                            <img src="http://48.217.66.77:5177${item.image.startsWith("/") ? "" : "/"}${item.image}" 
-                                 alt="${item.name}" 
-                                 class="w-20 h-20 object-cover rounded">
+                        <img src="${'@GeneralConfig.BaseImageUrl'}${item.image.startsWith('/') ? '' : '/'}${item.image}" 
+                             alt="${item.name}" 
+                             class="w-20 h-20 object-cover rounded">
                             <div class="ml-4">
                                 <div>${item.name}</div>
                                 <div>Số lượng: ${item.quantity}</div>

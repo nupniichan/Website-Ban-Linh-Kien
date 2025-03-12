@@ -137,17 +137,53 @@ namespace Admin_WBLK.Controllers
         // GET: AccountManagement/Create
         public IActionResult Create()
         {
-            // Generate next IdTk
-            var lastAccount = _context.Taikhoans.OrderByDescending(t => t.IdTk).FirstOrDefault();
-            var nextId = "TK000001";
-
-            if (lastAccount != null && int.TryParse(lastAccount.IdTk.Substring(2), out int lastId))
+            try
             {
-                nextId = $"TK{(lastId + 1).ToString("D6")}";
+                // Generate next IdTk
+                var nextId = GenerateAccountId();
+                var model = new Taikhoan { IdTk = nextId, Ngaytaotk = DateOnly.FromDateTime(DateTime.Now) };
+                return View(model);
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in Create GET: {ex.Message}");
+                TempData["Error"] = "Có lỗi xảy ra khi tạo ID tài khoản mới.";
+                return RedirectToAction(nameof(Index));
+            }
+        }
 
-            var model = new Taikhoan { IdTk = nextId, Ngaytaotk = DateOnly.FromDateTime(DateTime.Now) };
-            return View(model);
+        // Thêm phương thức mới để tạo ID tài khoản
+        private string GenerateAccountId()
+        {
+            try
+            {
+                // Lấy ID lớn nhất hiện tại
+                var lastAccount = _context.Taikhoans
+                    .Where(t => t.IdTk != null && t.IdTk.StartsWith("TK"))
+                    .OrderByDescending(t => t.IdTk)
+                    .FirstOrDefault();
+
+                if (lastAccount == null || string.IsNullOrEmpty(lastAccount.IdTk))
+                    return "TK000001";
+
+                // Tìm số ID lớn nhất hiện tại
+                if (int.TryParse(lastAccount.IdTk.Substring(2), out int lastId))
+                {
+                    // Tạo ID mới bằng cách tăng số lên 1
+                    return $"TK{(lastId + 1):D6}";
+                }
+                else
+                {
+                    // Nếu không thể parse được số, trả về ID mặc định
+                    return "TK000001";
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GenerateAccountId: {ex.Message}");
+                // Trả về ID mặc định nếu có lỗi
+                return "TK000001";
+            }
         }
 
         [HttpPost]
@@ -196,7 +232,7 @@ namespace Admin_WBLK.Controllers
                     Hoten = baseName + sequence,
                     Chucvu = taikhoan.Quyentruycap,
                     Luong = 0,
-                    Gioitinh = "Chưa xác định",
+                    Gioitinh = "N",
                     Sodienthoai = "0000000000",
                     Email = "abc@gmail.com",
                     Diachi = "Road A",
@@ -213,7 +249,7 @@ namespace Admin_WBLK.Controllers
             else if (actionType == "AccountAndCustomer" &&
                     taikhoan.Quyentruycap.Equals("khachhang", StringComparison.OrdinalIgnoreCase))
             {
-                string newCustomerId = GenerateCustomerId();
+                string newCustomerId = await GenerateCustomerId();
                 string baseName = "Khách hàng ";
                 int count = _context.Khachhangs.Count(k => k.Hoten.StartsWith(baseName));
                 string sequence = GetAlphabetSequence(count + 1);
@@ -222,11 +258,10 @@ namespace Admin_WBLK.Controllers
                 {
                     IdKh = newCustomerId,
                     Hoten = baseName + sequence,
-                    // Set default values (adjust these defaults as needed)
                     Email = "default@gmail.com",
                     Diachi = "Default Address",
                     Sodienthoai = "0000000000",
-                    Gioitinh = "Chưa xác định",
+                    Gioitinh = "N",
                     Ngaysinh = DateOnly.FromDateTime(new DateTime(1990, 1, 1)),
                     IdTk = taikhoan.IdTk
                 };
@@ -244,20 +279,33 @@ namespace Admin_WBLK.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-
-        private string GenerateCustomerId()
+        private async Task<string> GenerateCustomerId()
         {
-            var lastCustomer = _context.Khachhangs.OrderByDescending(k => k.IdKh).FirstOrDefault();
-            if (lastCustomer == null)
+            try
+            {
+                // Lấy ID khách hàng mới nhất
+                var lastCustomer = await _context.Khachhangs
+                            .Where(k => k.IdKh != null && k.IdKh.StartsWith("KH"))
+                            .OrderByDescending(k => k.IdKh)
+                            .Select(k => k.IdKh)
+                            .FirstOrDefaultAsync();
+        
+                if (string.IsNullOrEmpty(lastCustomer))
+                    return "KH000001";
+        
+                // Trích xuất phần số từ ID và tăng lên 1
+                if (int.TryParse(lastCustomer.Substring(2), out int lastNumber))
+                {
+                    return $"KH{(lastNumber + 1):D6}";
+                }
+        
+                // Nếu không thể parse được số, trả về ID mặc định
                 return "KH000001";
-            string numStr = lastCustomer.IdKh.Substring(2);
-            if (int.TryParse(numStr, out int lastNumber))
-            {
-                return $"KH{(lastNumber + 1):D6}";
             }
-            else
+            catch (Exception ex)
             {
-                throw new Exception($"Cannot parse customer ID number from {lastCustomer.IdKh}");
+                Console.WriteLine($"Error in GenerateCustomerId: {ex.Message}");
+                return "KH000001";
             }
         }
 
@@ -270,8 +318,19 @@ namespace Admin_WBLK.Controllers
             {
                 return "NV0001";
             }
-            int lastNumber = int.Parse(lastNhanvien.IdNv.Substring(2));
-            return $"NV{(lastNumber + 1):D4}";
+            
+            // Trích xuất phần số từ ID
+            if (int.TryParse(lastNhanvien.IdNv.Substring(2), out int lastNumber))
+            {
+                // Tạo ID mới bằng cách tăng số lên 1
+                int newNumber = lastNumber + 1;
+                return $"NV{newNumber:D4}";
+            }
+            else
+            {
+                // Nếu không thể parse được số, trả về ID mặc định
+                return "NV0001";
+            }
         }
 
 
@@ -343,10 +402,6 @@ namespace Admin_WBLK.Controllers
                 }
             }
         }
-
-
-
-
 
         // GET: AccountManagement/Delete/5
         public async Task<IActionResult> Delete(string id)

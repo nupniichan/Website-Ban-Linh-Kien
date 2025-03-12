@@ -1,4 +1,5 @@
 @using Website_Ban_Linh_Kien.Models
+@using Website_Ban_Linh_Kien.Services
 @model ProductCardViewModel
 @{
     var defaultId = "default-product";
@@ -26,7 +27,11 @@
     }
     <a href="@productUrl" class="block h-full">
         <div class="p-3 flex flex-col h-full">
-            <img src="@($"http://48.217.66.77:5177{(Model.ImageUrl.StartsWith("/") ? "" : "/")}{Model.ImageUrl}")" alt="Product Image" class="w-full h-40 object-contain rounded-lg" loading="lazy" onerror="this.onerror=null; this.src='/imgs/default-product.jpg';">
+            <img src="@($"{GeneralConfig.BaseImageUrl}{(Model.ImageUrl.StartsWith("/") ? "" : "/")}{Model.ImageUrl}")"
+                 alt="Product Image"
+                 class="w-full h-40 object-contain rounded-lg"
+                 loading="lazy"
+                 onerror="this.onerror=null; this.src='/imgs/default-product.jpg';">
             <div class="relative group flex-grow">
                 <h3 class="text-base font-semibold mt-3 product-title overflow-hidden h-12 line-clamp-2"
                     data-full-text="@(Model?.TenSp ?? defaultName)">
