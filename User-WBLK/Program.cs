@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Website_Ban_Linh_Kien.Models;
+using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authentication.Facebook;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,12 +12,12 @@ builder.Services.AddControllersWithViews();
 // Add HttpClient factory
 builder.Services.AddHttpClient();
 
-// Thêm HttpContextAccessor
+// Add HttpContextAccessor
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddMemoryCache();
 
-// Thêm Session
+// Add Session
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
@@ -24,7 +26,7 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-// Thêm DbContext vào DI container
+// Add DbContext to DI container
 builder.Services.AddDbContext<DatabaseContext>(options =>
     options.UseMySql(
         builder.Configuration.GetConnectionString("DefaultConnection"),
@@ -32,26 +34,42 @@ builder.Services.AddDbContext<DatabaseContext>(options =>
     )
 );
 
-// Cấu hình Authentication
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(options =>
-    {
-        options.LoginPath = "/Shared/AccessDenied";
-        options.LogoutPath = "/Login/Logout";
-        options.AccessDeniedPath = "/Shared/AccessDenied";
-        options.ExpireTimeSpan = TimeSpan.FromDays(7); // Cookie tồn tại 7 ngày
-        options.SlidingExpiration = true; // Gia hạn cookie mỗi lần request
-    });
-
-builder.Services.ConfigureApplicationCookie(options =>
+// Configure Authentication with both local and external login
+builder.Services.AddAuthentication(options =>
 {
-    options.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.Lax; // hoặc None nếu cần
+    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+})
+.AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+{
+    options.LoginPath = "/Shared/AccessDenied";
+    options.LogoutPath = "/Login/Logout";
+    options.AccessDeniedPath = "/Shared/AccessDenied";
+    options.ExpireTimeSpan = TimeSpan.FromDays(7); // Cookie exists for 7 days
+    options.SlidingExpiration = true;
+})
+// Temporary cookie for external authentication data.
+.AddCookie("External")
+.AddGoogle(googleOptions =>
+{
+    googleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+    googleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+    googleOptions.SignInScheme = "External"; // Use external cookie scheme
+})
+.AddFacebook(facebookOptions =>
+{
+    facebookOptions.AppId = builder.Configuration["Authentication:Facebook:AppId"];
+    facebookOptions.AppSecret = builder.Configuration["Authentication:Facebook:AppSecret"];
+    facebookOptions.SignInScheme = "External"; // Use external cookie scheme
 });
 
-// Connect MomoAPI - Chỉ cấu hình MomoOptionModel, không đăng ký service
+// Configure cookie settings if needed
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.Lax; // or None if needed
+});
+
+// Connect MomoAPI (Only configuration, no service registration)
 builder.Services.Configure<MomoOptionModel>(builder.Configuration.GetSection("MomoAPI"));
-// Đã gộp MomoService vào MomoController nên không cần đăng ký service nữa
-// builder.Services.AddScoped<IMomoService, MomoService>();
 
 var app = builder.Build();
 
@@ -59,7 +77,6 @@ var app = builder.Build();
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -69,7 +86,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 
-// Sử dụng Session trước Authentication
+// Use Session before Authentication
 app.UseSession();
 
 app.UseAuthentication();
@@ -91,8 +108,8 @@ app.MapControllerRoute(
     name: "orderHistory",
     pattern: "/orderHistory/{action=OrderHistory}/{id?}",
     defaults: new { controller = "ProfileManagement" });
-    
-// cái này tui đang test nào xong xoá sau
+
+// Test route (remove after testing)
 app.MapControllerRoute(
     name: "producstList",
     pattern: "/productsList/{action=Index}/{id?}",

@@ -7,6 +7,7 @@ using Website_Ban_Linh_Kien.Models;
 using System;
 using System.Linq;
 using System.Security.Claims;
+using System.Diagnostics;
 
 namespace Website_Ban_Linh_Kien.Controllers
 {
@@ -65,12 +66,17 @@ namespace Website_Ban_Linh_Kien.Controllers
             return View(khachhang);
         }
 
-        // POST: Profile
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Profile(string Hoten, string Diachi)
+        public async Task<IActionResult> Profile(
+            string Hoten, 
+            string Diachi, 
+            DateTime? Ngaysinh, 
+            string Gioitinh,
+            string newPassword, 
+            string confirmPassword,
+            string Sodienthoai)  // Phone parameter
         {
-            // Retrieve the current user/account as before
             var username = User.Identity.Name;
             if (string.IsNullOrEmpty(username))
             {
@@ -92,7 +98,7 @@ namespace Website_Ban_Linh_Kien.Controllers
                 return NotFound();
             }
 
-            // --- Server-side Validation ---
+            // --- Validation for Profile Fields ---
             if (string.IsNullOrWhiteSpace(Hoten))
             {
                 ModelState.AddModelError("Hoten", "Tên không được để trống.");
@@ -107,23 +113,84 @@ namespace Website_Ban_Linh_Kien.Controllers
                 ModelState.AddModelError("Diachi", "Địa chỉ phải có hơn 8 ký tự.");
             }
 
+            // --- Phone Number Validation ---
+            if (!string.IsNullOrWhiteSpace(Sodienthoai) && Sodienthoai != "0000000000")
+            {
+                if (!Regex.IsMatch(Sodienthoai, @"^0\d{9,10}$"))
+                {
+                    ModelState.AddModelError("Sodienthoai", "Số điện thoại không hợp lệ. Vui lòng nhập số điện thoại hợp lệ.");
+                }
+            }
+
+            // --- Optional Password Change ---
+            var pwdPlaceholder = "********";
+            if (!string.IsNullOrWhiteSpace(newPassword) || !string.IsNullOrWhiteSpace(confirmPassword))
+            {
+                // If the user didn't change the placeholder, treat it as not wanting to change the password.
+                if (newPassword == pwdPlaceholder)
+                {
+                    newPassword = "";
+                    confirmPassword = "";
+                }
+                else
+                {
+                    if (newPassword != confirmPassword)
+                    {
+                        ModelState.AddModelError("", "Mật khẩu xác nhận không khớp.");
+                    }
+                    else if (newPassword.Length < 8)
+                    {
+                        ModelState.AddModelError("", "Mật khẩu phải có ít nhất 8 ký tự.");
+                    }
+                }
+            }
+
             if (!ModelState.IsValid)
             {
                 ViewBag.EditMode = true;
-                // Return the current full record so that non-editable fields show up
                 return View(khachhang);
             }
 
-            // Update allowed fields
+            // Update profile fields
             khachhang.Hoten = Hoten;
             khachhang.Diachi = Diachi;
+            khachhang.Ngaysinh = Ngaysinh.HasValue ? DateOnly.FromDateTime(Ngaysinh.Value) : null;
+            khachhang.Gioitinh = string.IsNullOrWhiteSpace(Gioitinh) ? null : Gioitinh;
+
+            // Update phone if current value is default and a new phone is provided.
+            if (khachhang.Sodienthoai == "0000000000" && !string.IsNullOrWhiteSpace(Sodienthoai))
+            {
+                khachhang.Sodienthoai = Sodienthoai;
+            }
+
+            // Update password only if newPassword is provided after checking against placeholder.
+            if (!string.IsNullOrWhiteSpace(newPassword))
+            {
+                account.Matkhau = newPassword;
+                _context.Taikhoans.Update(account);
+            }
 
             _context.Khachhangs.Update(khachhang);
-            await _context.SaveChangesAsync();
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("Error updating profile: " + ex.ToString());
+                TempData["ErrorMessage"] = "Có lỗi xảy ra khi cập nhật thông tin: " + ex.ToString();
+                ViewBag.EditMode = true;
+                return View(khachhang);
+            }
 
             TempData["SuccessMessage"] = "Thông tin tài khoản đã được cập nhật thành công!";
             return RedirectToAction("Profile");
         }
+
+
+
+
 
         public async Task<IActionResult> OrderHistory(string? orderId, int pageNumber = 1)
         {
@@ -271,7 +338,7 @@ namespace Website_Ban_Linh_Kien.Controllers
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine("[SubmitReview ERROR]: " + ex.Message);
+                Debug.WriteLine("[SubmitReview ERROR]: " + ex.ToString());
                 return Json(new { success = false, message = "Có lỗi xảy ra khi gửi đánh giá: " + ex.Message });
             }
         }
@@ -330,57 +397,96 @@ namespace Website_Ban_Linh_Kien.Controllers
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine("[CancelOrder ERROR]: " + ex.Message);
+                Debug.WriteLine("[CancelOrder ERROR]: " + ex.ToString());
                 return Json(new { success = false, message = "Có lỗi xảy ra khi hủy đơn: " + ex.Message });
             }
         }
 
-
-    [HttpGet]
-    public async Task<IActionResult> Reviews(int pageNumber = 1)
-    {
-        ViewBag.CurrentTab = "Review";
-        SetBreadcrumb(
-            ("Trang chủ", "/"),
-            ("Tài khoản", "/account"),
-            ("Đánh giá", null)
-        );
-
-        // Get the logged-in username
-        var username = User.Identity.Name;
-        if (string.IsNullOrEmpty(username))
+        [HttpGet]
+        public async Task<IActionResult> Reviews(int pageNumber = 1)
         {
-            return Unauthorized();
-        }
+            ViewBag.CurrentTab = "Review";
+            SetBreadcrumb(
+                ("Trang chủ", "/"),
+                ("Tài khoản", "/account"),
+                ("Đánh giá", null)
+            );
 
-        // Retrieve the account and then the customer
-        var account = await _context.Taikhoans.FirstOrDefaultAsync(t => t.Tentaikhoan == username);
-        if (account == null)
+            // Get the logged-in username
+            var username = User.Identity.Name;
+            if (string.IsNullOrEmpty(username))
+            {
+                return Unauthorized();
+            }
+
+            // Retrieve the account and then the customer
+            var account = await _context.Taikhoans.FirstOrDefaultAsync(t => t.Tentaikhoan == username);
+            if (account == null)
+            {
+                return Unauthorized();
+            }
+            var khachhang = await _context.Khachhangs.FirstOrDefaultAsync(k => k.IdTk == account.IdTk);
+            if (khachhang == null)
+            {
+                return NotFound();
+            }
+
+            int pageSize = 5;
+
+            var query = _context.Danhgia
+                .Where(r => r.IdKh == khachhang.IdKh)
+                .OrderByDescending(r => r.Ngaydanhgia)
+                .Include(r => r.Chitietdonhangs)
+                    .ThenInclude(ct => ct.IdSpNavigation);
+
+            int count = await query.CountAsync();
+            var items = await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+
+            // Assuming you have a PaginatedList<T> helper class:
+            var paginatedList = new PaginatedList<Danhgia>(items, count, pageNumber, pageSize);
+
+            return View(paginatedList);
+        
+        }
+        // GET: /ProfileManagement/CheckProfileCompleteness
+        [HttpGet]
+        public async Task<IActionResult> CheckProfileCompleteness()
         {
-            return Unauthorized();
+            var username = User.Identity?.Name;
+            if (string.IsNullOrEmpty(username))
+            {
+                return Json(new { incomplete = false, missingFields = new string[] { } });
+            }
+
+            var account = await _context.Taikhoans.FirstOrDefaultAsync(t => t.Tentaikhoan == username);
+            if (account == null)
+            {
+                return Json(new { incomplete = false, missingFields = new string[] { } });
+            }
+
+            var customer = await _context.Khachhangs.FirstOrDefaultAsync(k => k.IdTk == account.IdTk);
+            if (customer == null)
+            {
+                return Json(new { incomplete = false, missingFields = new string[] { } });
+            }
+
+            var missing = new List<string>();
+
+            if (string.IsNullOrEmpty(customer.Diachi) || customer.Diachi == "Vui lòng đổi địa chỉ")
+                missing.Add("Địa chỉ");
+            if (string.IsNullOrEmpty(customer.Sodienthoai) || customer.Sodienthoai == "0000000000")
+                missing.Add("Số điện thoại");
+            if (!customer.Ngaysinh.HasValue)
+                missing.Add("Ngày sinh");
+            if (string.IsNullOrEmpty(customer.Gioitinh))
+                missing.Add("Giới tính");
+            if (string.IsNullOrEmpty(account.Matkhau))
+                missing.Add("Mật khẩu");
+
+            bool incompleteFlag = missing.Any();
+
+            return Json(new { incomplete = incompleteFlag, missingFields = missing });
         }
-        var khachhang = await _context.Khachhangs.FirstOrDefaultAsync(k => k.IdTk == account.IdTk);
-        if (khachhang == null)
-        {
-            return NotFound();
-        }
-
-        int pageSize = 5;
-
-        var query = _context.Danhgia
-            .Where(r => r.IdKh == khachhang.IdKh)
-            .OrderByDescending(r => r.Ngaydanhgia)
-            .Include(r => r.Chitietdonhangs)
-                .ThenInclude(ct => ct.IdSpNavigation);
-
-        int count = await query.CountAsync();
-        var items = await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
-
-        // Assuming you have a PaginatedList<T> helper class:
-        var paginatedList = new PaginatedList<Website_Ban_Linh_Kien.Models.Danhgia>(items, count, pageNumber, pageSize);
-
-        return View(paginatedList);
-    }
 
     }
 }

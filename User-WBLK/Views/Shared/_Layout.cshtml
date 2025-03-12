@@ -115,5 +115,55 @@ s0.parentNode.insertBefore(s1,s0);
             });
         });
     </script>
+       <script>
+            $(document).ready(function () {
+                // Only proceed if the URL does NOT include "/profilemanagement"
+                if (window.location.pathname.toLowerCase().indexOf('/profilemanagement') === -1) {
+                    $.ajax({
+                        url: '@Url.Action("CheckProfileCompleteness", "ProfileManagement")',
+                        method: 'GET',
+                        dataType: 'json'
+                    })
+                    .done(function (response) {
+                        if (response.incomplete === true) {
+                            var missingFields = response.missingFields;
+                            var missingText = (missingFields && missingFields.length > 0)
+                                ? "Thiếu: " + missingFields.join(", ") + "."
+                                : "";
+                            
+                            // Check if we are on the checkout page.
+                            var isCheckout = window.location.pathname.toLowerCase().indexOf('/checkout') !== -1;
+                            
+                            var swalOptions = {
+                                title: 'Thông tin chưa được cập nhật!',
+                                text: 'Vui lòng cập nhật thông tin tài khoản của bạn trước khi đặt hàng. ' + missingText,
+                                icon: 'warning',
+                                confirmButtonText: 'Cập nhật ngay',
+                                allowOutsideClick: !isCheckout, // If checkout, disable outside click
+                                allowEscapeKey: !isCheckout        // If checkout, disable ESC key
+                            };
+                            
+                            if (!isCheckout) {
+                                swalOptions.showCancelButton = true;
+                                swalOptions.cancelButtonText = 'Để sau';
+                            } else {
+                                swalOptions.showCancelButton = false;
+                            }
+                            
+                            Swal.fire(swalOptions).then((result) => {
+                                if (result.isConfirmed) {
+                                    window.location.href = '@Url.Action("Profile", "ProfileManagement", new { edit = true })';
+                                }
+                            });
+                        }
+                    })
+                    .fail(function (jqXHR, textStatus, errorThrown) {
+                        console.error("Error checking profile completeness: " + textStatus + " - " + errorThrown);
+                    });
+                }
+            });
+        </script>
+
+
 </body>
 </html>
