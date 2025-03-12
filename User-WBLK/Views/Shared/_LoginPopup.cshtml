@@ -64,12 +64,16 @@
                 </div>
 
                 <!-- Social Login Buttons -->
+                @{
+                    var googleLoginUrl = Url.Action("ExternalLogin", "Login", new { provider = "Google", returnUrl = "/" });
+                    var facebookLoginUrl = Url.Action("ExternalLogin", "Login", new { provider = "Facebook", returnUrl = "/" });
+                }
                 <div class="grid grid-cols-2 gap-4">
-                    <button type="button" class="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                    <button type="button" onclick="location.href='@googleLoginUrl'" class="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
                         <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="h-5 w-5 mr-2" alt="Google">
                         <span class="text-sm font-semibold text-gray-700">Google</span>
                     </button>
-                    <button type="button" class="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                    <button type="button" onclick="location.href='@facebookLoginUrl'" class="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
                         <img src="https://www.svgrepo.com/show/475647/facebook-color.svg" class="h-5 w-5 mr-2" alt="Facebook">
                         <span class="text-sm font-semibold text-gray-700">Facebook</span>
                     </button>

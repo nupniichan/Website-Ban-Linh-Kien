@@ -3,62 +3,123 @@
 @{
     ViewBag.Title = "Profile";
     Layout = "~/Views/Shared/_Layout.cshtml";
-    // Determine whether we are in edit mode (set via ViewBag.EditMode by the controller)
     bool isEditing = ViewBag.EditMode != null && (bool)ViewBag.EditMode;
+
+    // Precompute selected attribute values for the gender dropdown.
+    var defaultSelected = string.IsNullOrEmpty(Model.Gioitinh) ? "selected" : "";
+    var maleSelected = Model.Gioitinh == "Nam" ? "selected" : "";
+    var femaleSelected = Model.Gioitinh == "Nữ" ? "selected" : "";
+    var otherSelected = (!string.IsNullOrEmpty(Model.Gioitinh) && Model.Gioitinh != "Nam" && Model.Gioitinh != "Nữ") ? "selected" : "";
+    // A fixed placeholder to show in the password fields.
+    var pwdPlaceholder = "********";
 }
 
 <div class="flex flex-col">
-    <!-- Add space below the navbar -->
+    <!-- Space below the navbar -->
     <div class="h-16"></div>
-
     <div class="flex gap-6">
         <!-- Sidebar -->
         <partial name="_AccountSidebar" />
-
         <!-- Content -->
         <div class="flex-1 bg-white shadow-lg rounded-lg p-6">
+            @Html.ValidationSummary(true, "", new { @class = "text-red-500 mb-4" })
+
             @if (TempData["SuccessMessage"] != null)
             {
                 <div class="bg-green-200 text-green-800 p-2 rounded mb-4">
                     @TempData["SuccessMessage"]
                 </div>
             }
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="bg-red-200 text-red-800 p-2 rounded mb-4">
+                    @TempData["ErrorMessage"]
+                </div>
+            }
+
             <h1 class="text-2xl font-bold mb-6">Thông tin tài khoản</h1>
 
             @if (isEditing)
             {
-                <!-- Edit Mode: display a form -->
+                <!-- Edit Mode: Display the form -->
                 <form asp-action="Profile" method="post">
                     @Html.AntiForgeryToken()
                     <div class="grid grid-cols-1 gap-4">
+                        <!-- Name -->
                         <div class="mb-4">
                             <label for="Hoten" class="block font-medium">Tên:</label>
-                            <input type="text" id="Hoten" name="Hoten" value="@Model.Hoten" 
-                                   class="block w-full h-10 px-3 border border-gray-300 rounded-md focus:border-blue-500 focus:ring focus:ring-blue-200" />
+                            <input type="text" id="Hoten" name="Hoten" value="@Model.Hoten"
+                                   class="block w-full h-10 px-4 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring focus:ring-blue-200" />
                             <span class="text-red-500" asp-validation-for="Hoten"></span>
                         </div>
+                        <!-- Address -->
                         <div class="mb-4">
                             <label for="Diachi" class="block font-medium">Địa chỉ:</label>
-                            <input type="text" id="Diachi" name="Diachi" value="@Model.Diachi" 
-                                   class="block w-full h-10 px-3 border border-gray-300 rounded-md focus:border-blue-500 focus:ring focus:ring-blue-200" />
+                            <input type="text" id="Diachi" name="Diachi" value="@Model.Diachi"
+                                   class="block w-full h-10 px-4 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring focus:ring-blue-200" />
                             <span class="text-red-500" asp-validation-for="Diachi"></span>
                         </div>
-                        <!-- Non-editable fields: we show them as disabled inputs -->
+                        <!-- Date of Birth -->
+                        <div class="mb-4">
+                            <label for="Ngaysinh" class="block font-medium">Ngày sinh:</label>
+                            @if (!Model.Ngaysinh.HasValue)
+                            {
+                                <input type="date" id="Ngaysinh" name="Ngaysinh"
+                                       class="block w-full h-10 px-4 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring focus:ring-blue-200" />
+                            }
+                            else
+                            {
+                                <!-- When already set, show the value as read-only but include a hidden field so it's submitted -->
+                                <input type="hidden" name="Ngaysinh" value="@Model.Ngaysinh?.ToString("yyyy-MM-dd")" />
+                                <input type="date" id="Ngaysinh" name="Ngaysinh" value="@Model.Ngaysinh?.ToString("yyyy-MM-dd")"
+                                       class="form-input mt-1 block w-full" disabled />
+                            }
+                        </div>
+                        <!-- Gender -->
+                        <div class="mb-4">
+                            <label for="gioitinh" class="block font-medium">Giới tính:</label>
+                            <select id="gioitinh" name="Gioitinh" class="block w-full h-10 px-4 py-2 border border-gray-300 rounded-md">
+                                <option value="" selected="@defaultSelected">Chọn giới tính</option>
+                                <option value="Nam" selected="@maleSelected">Nam</option>
+                                <option value="Nữ" selected="@femaleSelected">Nữ</option>
+                                <option value="Khác" selected="@otherSelected">Khác</option>
+                            </select>
+                        </div>
+                        <!-- Phone Number -->
+                        <div class="mb-4">
+                            <label for="Sodienthoai" class="block font-medium">Số điện thoại:</label>
+                            @if (Model.Sodienthoai == "0000000000")
+                            {
+                                <input type="text" id="Sodienthoai" name="Sodienthoai" value="@Model.Sodienthoai"
+                                       class="block w-full h-10 px-4 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring focus:ring-blue-200" />
+                                <span class="text-red-500" asp-validation-for="Sodienthoai"></span>
+                            }
+                            else
+                            {
+                                <!-- Include a hidden field so the value is submitted -->
+                                <input type="hidden" name="Sodienthoai" value="@Model.Sodienthoai" />
+                                <input type="text" id="Sodienthoai" value="@Model.Sodienthoai"
+                                       class="form-input mt-1 block w-full" disabled />
+                            }
+                        </div>
+                        <!-- New Password -->
+                        <div class="mb-4">
+                            <label for="newPassword" class="block font-medium">Mật khẩu mới:</label>
+                            <input type="password" id="newPassword" name="newPassword" value="@pwdPlaceholder" 
+                                   placeholder="Nhập mật khẩu mới nếu muốn thay đổi"
+                                   class="block w-full h-10 px-4 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring focus:ring-blue-200" />
+                        </div>
+                        <!-- Confirm New Password -->
+                        <div class="mb-4">
+                            <label for="confirmPassword" class="block font-medium">Xác nhận mật khẩu mới:</label>
+                            <input type="password" id="confirmPassword" name="confirmPassword" value="@pwdPlaceholder" 
+                                   placeholder="Xác nhận mật khẩu mới"
+                                   class="block w-full h-10 px-4 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring focus:ring-blue-200" />
+                        </div>
+                        <!-- Non-editable Fields -->
                         <div class="mb-4">
                             <label class="block font-medium">Email:</label>
                             <input type="text" value="@Model.Email" class="form-input mt-1 block w-full" disabled />
-                        </div>
-                        <div class="mb-4">
-                            <label class="block font-medium">Số điện thoại:</label>
-                            <input type="text" value="@Model.Sodienthoai" class="form-input mt-1 block w-full" disabled />
-                        </div>
-                        <div class="mb-4">
-                            <label class="block font-medium">Ngày sinh:</label>
-                            <input type="text" value="@Model.Ngaysinh?.ToString("yyyy-MM-dd")" class="form-input mt-1 block w-full" disabled />
-                        </div>
-                        <div class="mb-4">
-                            <label class="block font-medium">Giới tính:</label>
-                            <input type="text" value="@Model.Gioitinh" class="form-input mt-1 block w-full" disabled />
                         </div>
                         <div class="mb-4">
                             <label class="block font-medium">Tên tài khoản:</label>
@@ -84,7 +145,6 @@
                         </div>
                     </div>
                     <div class="mt-6 flex justify-between">
-                        <!-- Cancel button reloads the page in display mode -->
                         <a asp-action="Profile" class="bg-gray-500 text-white px-6 py-2 rounded-lg font-medium shadow hover:bg-gray-600">
                             Hủy
                         </a>
@@ -96,7 +156,7 @@
             }
             else
             {
-                <!-- Display Mode: show read-only info -->
+                <!-- Display Mode: show read-only profile info -->
                 <div class="grid grid-cols-1 gap-4">
                     <div class="bg-gray-50 p-3 rounded-lg shadow-md flex items-center">
                         <span class="font-medium">Tên:</span>
@@ -119,8 +179,8 @@
                         <span class="ml-auto">@Model.Gioitinh</span>
                     </div>
                     <div class="bg-gray-50 p-3 rounded-lg shadow-md flex items-center">
-                        <span class="font-medium whitespace-nowrap">Địa chỉ:</span>
-                        <span class="whitespace-nowrap ml-auto pl-3">@Model.Diachi</span>
+                        <span class="font-medium">Địa chỉ:</span>
+                        <span class="ml-auto">@Model.Diachi</span>
                     </div>
                     <div class="bg-gray-50 p-3 rounded-lg shadow-md flex items-center">
                         <span class="font-medium">Tên tài khoản:</span>
@@ -145,9 +205,8 @@
                     </div>
                 </div>
                 <div class="mt-6 text-right">
-                    <!-- Link that reloads the page with edit=true to enable edit mode -->
                     <a asp-action="Profile" asp-route-edit="true" class="bg-yellow-500 text-white px-6 py-2 rounded-lg font-medium shadow hover:bg-yellow-600">
-                        Sửa thông tin tài khoản
+                        Sửa thông tin tài khoản / mật khẩu
                     </a>
                 </div>
             }
@@ -157,4 +216,21 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Clear the password fields on focus if they contain the placeholder
+        $(function () {
+            var placeholder = "@pwdPlaceholder";
+            $("#newPassword, #confirmPassword").focus(function () {
+                if ($(this).val() === placeholder) {
+                    $(this).val("");
+                }
+            });
+        });
+        // Enable real-time validation on keyup
+        $.validator.setDefaults({
+            onkeyup: function (element) {
+                $(element).valid();
+            }
+        });
+    </script>
 }
