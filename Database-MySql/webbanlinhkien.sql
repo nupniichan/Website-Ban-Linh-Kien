@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 11, 2025 at 10:27 AM
+-- Generation Time: Mar 12, 2025 at 04:52 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -67,8 +67,7 @@ INSERT INTO `chitietdonhang` (`Idchitietdonhang`, `IdDh`, `IdSp`, `IdDg`, `soluo
 ('CTDH000024', 'DH000016', 'SP000028', NULL, 1, 6990000.00),
 ('CTDH000034', 'DH000028', 'SP000003', NULL, 1, 11990000.00),
 ('CTDH000036', 'DH000030', 'SP000003', NULL, 1, 11990000.00),
-('CTDH000037', 'DH000031', 'SP000003', NULL, 1, 11990000.00),
-('CTDH00035', 'DH000029', 'SP000001', NULL, 1, 15990000.00);
+('CTDH000037', 'DH000031', 'SP000003', NULL, 1, 11990000.00);
 
 -- --------------------------------------------------------
 
@@ -140,9 +139,8 @@ INSERT INTO `donhang` (`IdDh`, `trangthai`, `tongtien`, `diachigiaohang`, `ngayd
 ('DH000017', 'Giao thành công', 14990000.00, '55 Nguyễn Công Trứ, Phường Phúc Lợi, Quận Ba Đình, Hà Nội', '2025-02-17 10:20:00', 'COD', NULL, NULL, 'KH000017', NULL),
 ('DH000018', 'Đã duyệt đơn', 12990000.00, '40 Lê Lợi, Phường Tân Định, Quận 1, Thành phố Hồ Chí Minh', '2025-02-18 11:45:00', 'Paypal', NULL, NULL, 'KH000018', 'MG000010'),
 ('DH000028', 'Chờ xác nhận', 9592000.00, '246 Nguyễn Văn Luông, phường 10, quận 6, TPHCM', '2025-02-23 10:17:34', 'COD', NULL, NULL, 'KH000002', 'MG000003'),
-('DH000029', 'Đã thanh toán', 15990000.00, '249Đ, Nguyễn Văn Luông, Phường 11, Quận 6, Hồ Chí Minh', '2025-03-09 18:08:10', 'PayPal', '', NULL, 'KH000025', NULL),
 ('DH000030', 'Chờ xác nhận', 11630300.00, '246 Nguyễn Văn Luông, phường 10, quận 6, TPHCM', '2025-03-10 10:08:30', 'Paypal', 'a', NULL, 'KH000002', NULL),
-('DH000031', 'Chờ xác nhận', 11630300.00, '246 Nguyễn Văn Luông, phường 10, quận 6, TPHCM', '2025-03-10 10:11:16', 'PayPal', 'a', NULL, 'KH000002', NULL);
+('DH000031', 'Đã thanh toán', 11630300.00, '246 Nguyễn Văn Luông, phường 10, quận 6, TPHCM', '2025-03-10 10:11:16', 'PayPal', 'a', NULL, 'KH000002', NULL);
 
 -- --------------------------------------------------------
 
@@ -206,7 +204,7 @@ CREATE TABLE `khachhang` (
 --
 
 INSERT INTO `khachhang` (`IdKh`, `hoten`, `diachi`, `email`, `gioitinh`, `ngaysinh`, `sodienthoai`, `diemtichluy`, `IdTk`, `id_xephangvip`, `loaikhachhang`) VALUES
-('KH000001', 'a', '123 Nguyễn Văn A, Quận 1, TP.HCM', 'a@gmail.com', 'Nam', '1990-01-01', '0946575839', 100, 'TK000002', 'THANTHIET', b'1'),
+('KH000001', 'abv', '123 Nguyễn Văn A, Phuong 12 ,Quận 1, TP.HCM', 'a@gmail.com', 'Nam', '2000-06-03', '0946575839', 100, 'TK000002', 'THANTHIET', b'1'),
 ('KH000002', 'Trần Thị B', '45 Lê Lợi, Phường Bến Thành, Quận 1, Thành phố Hồ Chí Minh', 'b@gmail.com', 'Nữ', '1995-02-15', '0912345678', 777, 'TK000003', 'BAC', b'1'),
 ('KH000003', 'Phạm Văn C', '78 Nguyễn Văn Linh, Phường Hải Châu 1, Quận Hải Châu, Đà Nẵng', 'c@gmail.com', 'Nam', '1992-03-20', '0934567890', 1002, 'TK000004', 'VANG', b'1'),
 ('KH000004', 'Kim Đăng D', '90 Lạch Tray, Phường Hồng Bàng, Quận Ngô Quyền, Hải Phòng', 'd@gmail.com', 'Nữ', '1998-04-25', '0956789012', 10000, 'TK000005', 'KIMCUONG', b'1'),
@@ -223,13 +221,7 @@ INSERT INTO `khachhang` (`IdKh`, `hoten`, `diachi`, `email`, `gioitinh`, `ngaysi
 ('KH000015', 'Đặng Văn K', '35 Võ Văn Tần, Phường 2, Quận Tân Bình, Thành phố Hồ Chí Minh', 'dvk@gmail.com', 'Nam', '1995-03-20', '0978901234', 4000, 'TK000016', 'VANG', b'1'),
 ('KH000016', 'Mai Thị L', '47 Lê Duẩn, Phường Mỹ An, Quận Ngũ Hành Sơn, Đà Nẵng', 'mtl@gmail.com', 'Nữ', '1991-04-25', '0989012345', 20000, 'TK000017', 'KIMCUONG', b'1'),
 ('KH000017', 'Phan Văn M', '68 Hồng Bàng, Phường Hồng Bàng, Quận Lê Chân, Hải Phòng', 'pvm@gmail.com', 'Nam', '1998-05-30', '0990123456', 250, 'TK000018', 'THANTHIET', b'1'),
-('KH000018', 'Trương Thị N', '100 Phạm Hùng, Phường Thịnh Quang, Quận Thanh Xuân, Hà Nội', 'ttn@gmail.com', 'Nữ', '2004-06-05', '0901234567', 1200, 'TK000019', 'BAC', b'1'),
-('KH000021', 'asd', '249Đ Nguyễn Văn Luông, Phường 11, Quận 6, Hồ Chí Minh', 'asd@gmail.com', NULL, NULL, '0949752094', 0, NULL, 'THANTHIET', b'0'),
-('KH000022', 'gas', '249Đ, Nguyễn Văn Luông, Phường 11, Quận 6, Thành phố Hồ Chí Minh, a, a, Tp.Hồ Chí Minh', 'gas@gmail.com', NULL, NULL, '0949752092', 0, NULL, 'THANTHIET', b'0'),
-('KH000023', 'sadsa', '', 'kjgs@gmail.com', NULL, NULL, '095353163', 0, NULL, 'THANTHIET', b'0'),
-('KH000025', 'Nguyễn Phi Quốc Bảo', '249Đ, Nguyễn Văn Luông, Phường 11, Quận 6, Hồ Chí Minh', 'nupbaka@gmail.com', NULL, NULL, '0949752042', 0, NULL, 'THANTHIET', b'0'),
-('KH000026', 'Khách hàng A', 'Default Address', 'default@gmail.com', 'Chưa ', '1990-01-01', '0000000000', 0, 'TK000041', NULL, b'0'),
-('KH000027', 'Khách hàng B', 'Default Address', 'default@gmail.com', 'Chưa ', '1990-01-01', '0000000000', 0, 'TK000042', NULL, b'0');
+('KH000018', 'Trương Thị N', '100 Phạm Hùng, Phường Thịnh Quang, Quận Thanh Xuân, Hà Nội', 'ttn@gmail.com', 'Nữ', '2004-06-05', '0901234567', 1200, 'TK000019', 'BAC', b'1');
 
 -- --------------------------------------------------------
 
@@ -271,7 +263,7 @@ INSERT INTO `magiamgia` (`IdMgg`, `ten`, `ngaysudung`, `ngayhethan`, `tilechietk
 ('MG000018', 'Flash Sale', '2025-07-07', '2025-07-07', 35.00, 15),
 ('MG000019', 'Giờ vàng', '2025-04-15', '2025-04-15', 40.00, 10),
 ('MG000020', 'Cuối năm', '2025-12-26', '2025-12-31', 22.00, 35),
-('MG000021', 'ajkk', '2025-03-08', '2025-03-09', 10.00, 10);
+('MG000021', 'cai', '2025-03-08', '2025-03-09', 10.00, 10);
 
 -- --------------------------------------------------------
 
@@ -756,7 +748,10 @@ INSERT INTO `taikhoan` (`IdTk`, `matkhau`, `tentaikhoan`, `ngaytaotk`, `ngaysuad
 ('TK000036', 'trinhthiq', 'trinhthiq', '2025-02-23', NULL, 'nhanvienkinhdoanh'),
 ('TK000037', 'phanvanr', 'phanvanr', '2025-02-23', NULL, 'nhanvienmarketing'),
 ('TK000038', 'luuminhs', 'luuminhs', '2025-02-23', NULL, 'nhanvienmarketing'),
-('TK000039', 'tathit', 'tathit', '2025-02-23', NULL, 'nhanvienkinhdoanh');
+('TK000039', 'tathit', 'tathit', '2025-02-23', NULL, 'nhanvienkinhdoanh'),
+('TK000040', 'NupOniiBaka@089', 'nupniichan', '2025-03-11', NULL, 'khachhang'),
+('TK000041', 'NupOniiBaka@089', 'nupniichan089', '2025-03-11', NULL, 'khachhang'),
+('TK000042', 'Admin@089', 'adminasdsad', '2025-03-11', NULL, 'khachhang');
 
 -- --------------------------------------------------------
 
@@ -797,9 +792,8 @@ INSERT INTO `thanhtoan` (`IdTt`, `trangthai`, `tienthanhtoan`, `ngaythanhtoan`, 
 ('TT000016', 'Thành công', 25990000.00, '2025-02-16 10:45:00', 'Thanh toán đơn hàng DH000016', 'PAY016', 'DH000016'),
 ('TT000017', 'Thành công', 14990000.00, '2025-02-17 11:20:00', 'Thanh toán đơn hàng DH000017', 'PAY017', 'DH000017'),
 ('TT000018', 'Thành công', 12990000.00, '2025-02-18 12:30:00', 'Thanh toán đơn hàng DH000018', 'PAY018', 'DH000018'),
-('TT000019', 'Đã thanh toán', 15990000.00, '2025-03-09 18:08:42', 'Thanh toán PayPal cho đơn hàng DH000029', '87069338JK697974N', 'DH000029'),
 ('TT000020', 'Chờ xác nhận', 11390500.00, '2025-03-10 10:08:30', 'a', 'PP029824213412', 'DH000030'),
-('TT000021', 'Chờ xác nhận', 11390500.00, '2025-03-10 10:11:16', 'a', 'VNP082763214', 'DH000031');
+('TT000021', 'Chờ xác nhận', 11630300.00, '2025-03-10 10:11:16', 'a', 'VNP082763214', 'DH000031');
 
 -- --------------------------------------------------------
 
