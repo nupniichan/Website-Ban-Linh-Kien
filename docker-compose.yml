@@ -4,12 +4,13 @@ networks:
   webbanlinhkien:
 
 volumes:
-  mysql_data:
+  website-ban-linh-kien_mysql_data:
   nginx_data:
   letsencrypt_data:
 
 services:
   database-mysql:
+    restart: unless-stopped
     image: mysql-database-image
     build: ./Database-MySql
     container_name: mysql-database-container
@@ -22,7 +23,8 @@ services:
       MYSQL_DATABASE: WebBanLinhKien
       MYSQL_SQL_MODE: "NO_ENGINE_SUBSTITUTION"
     volumes:
-      - mysql_data:/var/lib/mysql
+      - website-ban-linh-kien_mysql_data:/var/lib/mysql
+    command: --datadir=/var/lib/mysql
 
   user-wblk:
     image: user-wblk-image
