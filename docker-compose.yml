@@ -11,8 +11,7 @@ volumes:
 services:
   database-mysql:
     restart: unless-stopped
-    image: mariadb:10.4 
-    build: ./Database-MySql
+    image: mariadb:10.4
     container_name: mariadb-database-container
     networks:
       - webbanlinhkien
@@ -23,8 +22,8 @@ services:
       MYSQL_DATABASE: WebBanLinhKien
       MYSQL_SQL_MODE: "NO_ENGINE_SUBSTITUTION"
     volumes:
-      - website-ban-linh-kien_mysql_data:/bitnami/mariadb
-    command: --datadir=/bitnami/mariadb
+      - website-ban-linh-kien_mysql_data:/var/lib/mysql
+      - ./Database-MySql/webbanlinhkien.sql:/docker-entrypoint-initdb.d/webbanlinhkien.sql
 
   user-wblk:
     image: user-wblk-image
