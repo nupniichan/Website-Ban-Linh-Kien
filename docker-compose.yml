@@ -16,9 +16,10 @@ services:
     networks:
       - webbanlinhkien
     ports:
-      - "3306:3306"
+      - "127.0.0.1:3306:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: WBLK_USER
+      MYSQL_PASSWORD: Wblk@TMDT2025
       MYSQL_DATABASE: WebBanLinhKien
       MYSQL_SQL_MODE: "NO_ENGINE_SUBSTITUTION"
     volumes:
