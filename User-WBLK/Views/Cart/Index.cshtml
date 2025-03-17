@@ -69,9 +69,9 @@
                         <div class="flex items-center gap-4 py-4 border-b last:border-b-0" data-product-id="@item.IdSp">
                             <!-- Product Image wrapped in a link -->
                             <a href="@productUrl" class="flex-shrink-0">
-                                <img src="@($"{GeneralConfig.BaseImageUrl}{(item.IdSpNavigation.Hinhanh.StartsWith("/") ? "" : "/")}{item.IdSpNavigation.Hinhanh}")" />
-                                alt="@item.IdSpNavigation.Tensanpham"
-                            class="w-24 h-24 object-contain rounded-lg border p-2">
+                                <img src="@($"{GeneralConfig.BaseImageUrl}{(item.IdSpNavigation.Hinhanh.StartsWith("/") ? "" : "/")}{item.IdSpNavigation.Hinhanh}")" 
+                                     alt="@item.IdSpNavigation.Tensanpham"
+                                     class="w-24 h-24 object-contain rounded-lg border p-2">
                             </a>
 
                             <!-- Product Title / Price wrapped in a link -->
