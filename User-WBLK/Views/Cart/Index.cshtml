@@ -69,7 +69,7 @@
                         <div class="flex items-center gap-4 py-4 border-b last:border-b-0" data-product-id="@item.IdSp">
                             <!-- Product Image wrapped in a link -->
                             <a href="@productUrl" class="flex-shrink-0">
-                                <img src="${'https://admin.bpt-computer.store'}${item.IdSpNavigation.Hinhanh.StartsWith('/') ? '' : '/'}${item.IdSpNavigation.Hinhanh}" 
+                                <img src="${'https://admin.bpt-computer.store'}${item.IdSpNavigation.Hinhanh.startsWith('/') ? '' : '/'}${item.IdSpNavigation.Hinhanh}" 
                                      alt="@item.IdSpNavigation.Tensanpham"
                                      class="w-24 h-24 object-contain rounded-lg border p-2">
                             </a>
@@ -406,7 +406,7 @@
                     <div class="flex items-center gap-4 py-4 border-b last:border-b-0">
                         <div class="flex-shrink-0">
                             <a href="${productUrl}">
-                                <img src="${'https://admin.bpt-computer.store'}${item.image.StartsWith('/') ? '' : '/'}${item.image}" 
+                                <img src="${'https://admin.bpt-computer.store'}${item.image.startsWith('/') ? '' : '/'}${item.image}" 
                                      alt="${item.name}" class="w-24 h-24 object-contain rounded-lg border p-2">
                             </a>
                         </div>
