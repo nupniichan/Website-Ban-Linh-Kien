@@ -5,7 +5,11 @@ using System.Text.Json;
 using Admin_WBLK.Models.Strategis;
 using Admin_WBLK.Models.Observers;
 using Admin_WBLK.Models.Facades;
+using Admin_WBLK.Models.Mementos;
+using Admin_WBLK.Models.ChainOfResponsibility;
+using Admin_WBLK.Models.Visitors;
 using Microsoft.Extensions.Logging;
+using System.Collections.Generic;
 
 namespace Admin_WBLK.Controllers
 {
@@ -14,6 +18,12 @@ namespace Admin_WBLK.Controllers
         private readonly DatabaseContext _context;
         private readonly OrderFacade _orderFacade;
         private readonly IOrderSubject _orderSubject;
+        
+        // Memento Pattern - Caretaker để quản lý lịch sử trạng thái
+        private readonly OrderCaretaker _orderCaretaker;
+        
+        // Chain of Responsibility Pattern - Chuỗi xử lý đơn hàng
+        private readonly IOrderHandler _orderProcessingChain;
 
         public OrderManagementController(DatabaseContext context, ILogger<OrderLogger> logger)
         {
@@ -28,6 +38,20 @@ namespace Admin_WBLK.Controllers
             
             // Khởi tạo Facade Pattern
             _orderFacade = new OrderFacade(context, orderFilterStrategy);
+            
+            // Khởi tạo Memento Pattern
+            _orderCaretaker = new OrderCaretaker();
+            
+            // Khởi tạo Chain of Responsibility Pattern
+            var validationHandler = new OrderValidationHandler();
+            var paymentHandler = new PaymentHandler(context);
+            var inventoryHandler = new InventoryHandler(context);
+            var notificationHandler = new NotificationHandler();
+            
+            _orderProcessingChain = validationHandler;
+            validationHandler.SetNext(paymentHandler)
+                             .SetNext(inventoryHandler)
+                             .SetNext(notificationHandler);
         }
 
         // GET: OrderManagement
@@ -96,7 +120,10 @@ namespace Admin_WBLK.Controllers
                     IdKhNavigation = d.IdKhNavigation == null ? null : new Khachhang
                     {
                         IdKh = d.IdKhNavigation.IdKh ?? "",
-                        Hoten = d.IdKhNavigation.Hoten ?? ""
+                        Hoten = d.IdKhNavigation.Hoten ?? "",
+                        Sodienthoai = d.IdKhNavigation.Sodienthoai ?? "",
+                        Email = d.IdKhNavigation.Email,
+                        Diachi = d.IdKhNavigation.Diachi ?? ""
                     },
                     IdMggNavigation = d.IdMggNavigation,
                     Chitietdonhangs = d.Chitietdonhangs.Select(c => new Chitietdonhang
@@ -490,6 +517,53 @@ namespace Admin_WBLK.Controllers
             var donhang = await _context.Donhangs
                 .Include(d => d.IdKhNavigation)
                 .Include(d => d.IdMggNavigation)
+                .Include(d => d.Chitietdonhangs)
+                    .ThenInclude(c => c.IdSpNavigation)
+                .Include(d => d.Thanhtoans)
+                .Select(d => new Donhang
+                {
+                    IdDh = d.IdDh ?? "",
+                    IdKh = d.IdKh ?? "",
+                    Trangthai = d.Trangthai ?? "",
+                    Tongtien = d.Tongtien,
+                    Diachigiaohang = d.Diachigiaohang ?? "",
+                    Ngaydathang = d.Ngaydathang,
+                    Phuongthucthanhtoan = d.Phuongthucthanhtoan ?? "",
+                    IdMgg = d.IdMgg,
+                    Ghichu = d.Ghichu ?? "",
+                    LydoHuy = d.LydoHuy ?? "",
+                    IdKhNavigation = d.IdKhNavigation == null ? null : new Khachhang
+                    {
+                        IdKh = d.IdKhNavigation.IdKh ?? "",
+                        Hoten = d.IdKhNavigation.Hoten ?? "",
+                        Sodienthoai = d.IdKhNavigation.Sodienthoai ?? "",
+                        Email = d.IdKhNavigation.Email,
+                        Diachi = d.IdKhNavigation.Diachi ?? ""
+                    },
+                    IdMggNavigation = d.IdMggNavigation,
+                    Chitietdonhangs = d.Chitietdonhangs.Select(c => new Chitietdonhang
+                    {
+                        IdDh = c.IdDh ?? "",
+                        IdSp = c.IdSp ?? "",
+                        Soluongsanpham = c.Soluongsanpham,
+                        Dongia = c.Dongia,
+                        IdSpNavigation = c.IdSpNavigation == null ? null : new Sanpham
+                        {
+                            IdSp = c.IdSpNavigation.IdSp ?? "",
+                            Tensanpham = c.IdSpNavigation.Tensanpham ?? ""
+                        }
+                    }).ToList(),
+                    Thanhtoans = d.Thanhtoans.Select(t => new Thanhtoan
+                    {
+                        IdTt = t.IdTt ?? "",
+                        Trangthai = t.Trangthai ?? "",
+                        Tienthanhtoan = t.Tienthanhtoan,
+                        Ngaythanhtoan = t.Ngaythanhtoan,
+                        Noidungthanhtoan = t.Noidungthanhtoan,
+                        Mathanhtoan = t.Mathanhtoan,
+                        IdDh = t.IdDh ?? ""
+                    }).ToList()
+                })
                 .FirstOrDefaultAsync(m => m.IdDh == id);
 
             if (donhang == null)
@@ -505,20 +579,54 @@ namespace Admin_WBLK.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(string id, string returnUrl)
         {
-            // Sử dụng Facade Pattern để xóa đơn hàng
-            var success = await _orderFacade.DeleteOrder(id);
-            
-            if (success)
+            if (string.IsNullOrEmpty(id))
             {
-                // Sử dụng Observer Pattern để thông báo xóa
-                var order = new Donhang { IdDh = id };
-                await _orderSubject.NotifyObservers(order, "Deleted");
-                
-                TempData["SuccessMessage"] = "Xóa đơn hàng thành công!";
+                TempData["ErrorMessage"] = "Mã đơn hàng không hợp lệ!";
+                return RedirectToAction(nameof(Index));
             }
-            else
+
+            try
             {
-                TempData["ErrorMessage"] = "Không thể xóa đơn hàng!";
+                // Sử dụng Facade Pattern để xóa đơn hàng
+                if (_orderFacade != null)
+                {
+                    var success = await _orderFacade.DeleteOrder(id);
+                    
+                    if (success)
+                    {
+                        // Sử dụng Observer Pattern để thông báo xóa
+                        if (_orderSubject != null)
+                        {
+                            var order = new Donhang { IdDh = id };
+                            await _orderSubject.NotifyObservers(order, "Deleted");
+                        }
+                        
+                        TempData["SuccessMessage"] = "Xóa đơn hàng thành công!";
+                    }
+                    else
+                    {
+                        TempData["ErrorMessage"] = "Không thể xóa đơn hàng!";
+                    }
+                }
+                else
+                {
+                    // Fallback nếu _orderFacade là null
+                    var donhang = await _context.Donhangs.FindAsync(id);
+                    if (donhang != null)
+                    {
+                        _context.Donhangs.Remove(donhang);
+                        await _context.SaveChangesAsync();
+                        TempData["SuccessMessage"] = "Xóa đơn hàng thành công!";
+                    }
+                    else
+                    {
+                        TempData["ErrorMessage"] = "Không tìm thấy đơn hàng!";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Lỗi khi xóa đơn hàng: {ex.Message}";
             }
 
             if (!string.IsNullOrEmpty(returnUrl))
@@ -652,6 +760,9 @@ namespace Admin_WBLK.Controllers
                 {
                     return NotFound();
                 }
+                
+                // Memento Pattern - Lưu trạng thái cũ trước khi cập nhật
+                _orderCaretaker.SaveState(id, existingOrder.Trangthai, User.Identity?.Name ?? "Admin");
 
                 // If the new status is not "Hủy đơn", clear the cancellation reason.
                 if (donhang.Trangthai != "Hủy đơn")
@@ -779,20 +890,40 @@ namespace Admin_WBLK.Controllers
                 return NotFound();
             }
 
-            // Sử dụng Facade Pattern để cập nhật trạng thái
-            var success = await _orderFacade.UpdateOrderStatus(id, newStatus);
-            
-            if (success)
+            var order = await _context.Donhangs.FindAsync(id);
+            if (order == null)
             {
-                // Sử dụng Observer Pattern để thông báo cập nhật
-                var order = await _context.Donhangs.FindAsync(id);
-                await _orderSubject.NotifyObservers(order, "StatusUpdated");
-                
-                TempData["SuccessMessage"] = "Cập nhật trạng thái thành công!";
+                return NotFound();
+            }
+            
+            // Memento Pattern - Lưu trạng thái cũ trước khi cập nhật
+            _orderCaretaker.SaveState(id, order.Trangthai, User.Identity?.Name ?? "Admin");
+            
+            // Chain of Responsibility Pattern - Xử lý đơn hàng theo chuỗi
+            if (newStatus == "Đã duyệt đơn")
+            {
+                bool success = await _orderProcessingChain.Handle(order);
+                if (success)
+                {
+                    await _context.SaveChangesAsync();
+                    await _orderSubject.NotifyObservers(order, "StatusUpdated");
+                    TempData["SuccessMessage"] = "Đơn hàng đã được duyệt thành công!";
+                }
+                else
+                {
+                    await _context.SaveChangesAsync();
+                    await _orderSubject.NotifyObservers(order, "StatusUpdated");
+                    TempData["WarningMessage"] = $"Đơn hàng chuyển sang trạng thái {order.Trangthai}!";
+                }
             }
             else
             {
-                TempData["ErrorMessage"] = "Không thể cập nhật trạng thái!";
+                // Xử lý bình thường cho các trạng thái khác
+                order.Trangthai = newStatus;
+                _context.Update(order);
+                await _context.SaveChangesAsync();
+                await _orderSubject.NotifyObservers(order, "StatusUpdated");
+                TempData["SuccessMessage"] = "Cập nhật trạng thái thành công!";
             }
 
             if (!string.IsNullOrEmpty(returnUrl))
@@ -875,6 +1006,209 @@ namespace Admin_WBLK.Controllers
                 .ToListAsync();
 
             return Json(suggestions);
+        }
+        
+        // Memento Pattern - API endpoint để lấy lịch sử trạng thái
+        [HttpGet]
+        public IActionResult GetOrderStateHistory(string id)
+        {
+            var history = _orderCaretaker.GetHistory(id);
+            return Json(history);
+        }
+
+        // Visitor Pattern - Tạo hóa đơn
+        [HttpGet]
+        public async Task<IActionResult> GenerateInvoice(string id)
+        {
+            var order = await _context.Donhangs
+                .Include(d => d.IdKhNavigation)
+                .Include(d => d.IdMggNavigation)
+                .Include(d => d.Chitietdonhangs)
+                    .ThenInclude(c => c.IdSpNavigation)
+                .Include(d => d.Thanhtoans)
+                .FirstOrDefaultAsync(m => m.IdDh == id);
+                
+            if (order == null)
+            {
+                return NotFound();
+            }
+            
+            // Sử dụng Visitor Pattern
+            var invoiceVisitor = new InvoiceGeneratorVisitor();
+            OrderExtensions.Accept(order, invoiceVisitor);
+            
+            string invoiceContent = invoiceVisitor.GetInvoice(order);
+            
+            return Json(new { success = true, invoice = invoiceContent });
+        }
+        
+        // Visitor Pattern - Tạo báo cáo
+        [HttpGet]
+        public async Task<IActionResult> GenerateReport(string id)
+        {
+            var order = await _context.Donhangs
+                .Include(d => d.IdKhNavigation)
+                .Include(d => d.IdMggNavigation)
+                .Include(d => d.Chitietdonhangs)
+                    .ThenInclude(c => c.IdSpNavigation)
+                .Include(d => d.Thanhtoans)
+                .FirstOrDefaultAsync(m => m.IdDh == id);
+                
+            if (order == null)
+            {
+                return NotFound();
+            }
+            
+            // Sử dụng Visitor Pattern
+            var reportVisitor = new OrderReportVisitor();
+            OrderExtensions.Accept(order, reportVisitor);
+            
+            string reportContent = reportVisitor.GetReport(order);
+            
+            return Json(new { success = true, report = reportContent });
+        }
+        
+        // Visitor Pattern - Xuất JSON
+        [HttpGet]
+        public async Task<IActionResult> ExportJson(string id)
+        {
+            var order = await _context.Donhangs
+                .Include(d => d.IdKhNavigation)
+                .Include(d => d.IdMggNavigation)
+                .Include(d => d.Chitietdonhangs)
+                    .ThenInclude(c => c.IdSpNavigation)
+                .Include(d => d.Thanhtoans)
+                .FirstOrDefaultAsync(m => m.IdDh == id);
+                
+            if (order == null)
+            {
+                return NotFound();
+            }
+            
+            // Sử dụng Visitor Pattern
+            var jsonVisitor = new OrderJsonExportVisitor();
+            OrderExtensions.Accept(order, jsonVisitor);
+            
+            string jsonData = jsonVisitor.GetJsonData();
+            
+            return Json(new { success = true, data = jsonData });
+        }
+    }
+    
+    // Chain of Responsibility Pattern - Interface xử lý đơn hàng
+    public interface IOrderHandler
+    {
+        Task<bool> Handle(Donhang order);
+        IOrderHandler SetNext(IOrderHandler handler);
+    }
+    
+    // Chain of Responsibility Pattern - Lớp cơ sở xử lý đơn hàng
+    public abstract class OrderHandler : IOrderHandler
+    {
+        protected IOrderHandler _nextHandler;
+        
+        public IOrderHandler SetNext(IOrderHandler handler)
+        {
+            _nextHandler = handler;
+            return handler;
+        }
+        
+        public abstract Task<bool> Handle(Donhang order);
+    }
+    
+    // Chain of Responsibility Pattern - Xử lý kiểm tra đơn hàng
+    public class OrderValidationHandler : OrderHandler
+    {
+        public override async Task<bool> Handle(Donhang order)
+        {
+            // Kiểm tra tính hợp lệ của đơn hàng
+            if (order == null || string.IsNullOrEmpty(order.IdDh))
+            {
+                return false;
+            }
+            
+            return _nextHandler != null ? await _nextHandler.Handle(order) : true;
+        }
+    }
+    
+    // Chain of Responsibility Pattern - Xử lý thanh toán
+    public class PaymentHandler : OrderHandler
+    {
+        private readonly DatabaseContext _context;
+        
+        public PaymentHandler(DatabaseContext context)
+        {
+            _context = context;
+        }
+        
+        public override async Task<bool> Handle(Donhang order)
+        {
+            // Xử lý thanh toán
+            if (order.Phuongthucthanhtoan == "COD")
+            {
+                // Đơn hàng COD không cần xử lý thanh toán trước
+                return _nextHandler != null ? await _nextHandler.Handle(order) : true;
+            }
+            
+            // Kiểm tra thanh toán
+            var payment = await _context.Thanhtoans
+                .FirstOrDefaultAsync(t => t.IdDh == order.IdDh);
+                
+            if (payment == null || payment.Trangthai != "Đã thanh toán")
+            {
+                // Chưa thanh toán, không thể tiếp tục
+                order.Trangthai = "Chờ thanh toán";
+                return false;
+            }
+            
+            return _nextHandler != null ? await _nextHandler.Handle(order) : true;
+        }
+    }
+    
+    // Chain of Responsibility Pattern - Xử lý tồn kho
+    public class InventoryHandler : OrderHandler
+    {
+        private readonly DatabaseContext _context;
+        
+        public InventoryHandler(DatabaseContext context)
+        {
+            _context = context;
+        }
+        
+        public override async Task<bool> Handle(Donhang order)
+        {
+            // Kiểm tra tồn kho
+            var orderDetails = await _context.Chitietdonhangs
+                .Where(c => c.IdDh == order.IdDh)
+                .ToListAsync();
+                
+            foreach (var detail in orderDetails)
+            {
+                var product = await _context.Sanphams.FindAsync(detail.IdSp);
+                if (product == null || product.Soluongton < detail.Soluongsanpham)
+                {
+                    // Không đủ hàng
+                    order.Trangthai = "Chờ hàng";
+                    return false;
+                }
+            }
+            
+            // Đủ hàng, cập nhật trạng thái
+            order.Trangthai = "Đã duyệt đơn";
+            
+            return _nextHandler != null ? await _nextHandler.Handle(order) : true;
+        }
+    }
+    
+    // Chain of Responsibility Pattern - Xử lý thông báo
+    public class NotificationHandler : OrderHandler
+    {
+        public override async Task<bool> Handle(Donhang order)
+        {
+            // Xử lý thông báo (có thể gửi email, SMS, v.v.)
+            Console.WriteLine($"Đã gửi thông báo cho đơn hàng {order.IdDh}");
+            
+            return _nextHandler != null ? await _nextHandler.Handle(order) : true;
         }
     }
 }

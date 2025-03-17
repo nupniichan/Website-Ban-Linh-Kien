@@ -28,5 +28,13 @@ namespace Admin_WBLK.Models.Observers
                 await observer.Update(order, action);
             }
         }
+        
+        public async Task NotifyObservers(string message)
+        {
+            foreach (var observer in _observers)
+            {
+                await observer.Update(message);
+            }
+        }
     }
 } 

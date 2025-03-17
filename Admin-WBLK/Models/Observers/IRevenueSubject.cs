@@ -8,5 +8,6 @@ namespace Admin_WBLK.Models.Observers
         void Attach(IRevenueObserver observer);
         void Detach(IRevenueObserver observer);
         Task NotifyObservers(Donhang order, string action);
+        Task NotifyObservers(string message);
     }
 } 

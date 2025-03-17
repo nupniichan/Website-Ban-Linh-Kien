@@ -67,9 +67,9 @@
                         <div class="flex items-center gap-4 py-4 border-b last:border-b-0" data-product-id="@item.IdSp">
                             <!-- Product Image wrapped in a link -->
                             <a href="@productUrl" class="flex-shrink-0">
-                                <img src="http://localhost:5177/@item.IdSpNavigation.Hinhanh" 
-                                     alt="@item.IdSpNavigation.Tensanpham"
-                                     class="w-24 h-24 object-contain rounded-lg border p-2">
+                            <img src="@($"https://admin.bpt-computer.store{(item.IdSpNavigation.Hinhanh.StartsWith("/") ? "" : "/")}{item.IdSpNavigation.Hinhanh}")" 
+                            alt="@item.IdSpNavigation.Tensanpham"
+                            class="w-24 h-24 object-contain rounded-lg border p-2">
                             </a>
 
                             <!-- Product Title / Price wrapped in a link -->
@@ -404,9 +404,7 @@
                     <div class="flex items-center gap-4 py-4 border-b last:border-b-0">
                         <div class="flex-shrink-0">
                             <a href="${productUrl}">
-                                <img src="http://localhost:5177/${item.image}" 
-                                     alt="${item.name}"
-                                     class="w-24 h-24 object-contain rounded-lg border p-2">
+                                <img src="https://admin.bpt-computer.store${item.image}" alt="${item.name}" class="w-24 h-24 object-contain rounded-lg border p-2">
                             </a>
                         </div>
                         <div class="flex-grow">

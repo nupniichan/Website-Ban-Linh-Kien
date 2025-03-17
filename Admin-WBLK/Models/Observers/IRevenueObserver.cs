@@ -6,5 +6,6 @@ namespace Admin_WBLK.Models.Observers
     public interface IRevenueObserver
     {
         Task Update(Donhang order, string action);
+        Task Update(string message);
     }
 } 

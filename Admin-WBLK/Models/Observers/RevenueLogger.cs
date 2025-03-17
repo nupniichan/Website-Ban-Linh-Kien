@@ -19,5 +19,11 @@ namespace Admin_WBLK.Models.Observers
             _logger.LogInformation($"{DateTime.Now}: {action} đơn hàng {order.IdDh} - Giá trị: {order.Tongtien} - Phương thức thanh toán: {order.Phuongthucthanhtoan}");
             return Task.CompletedTask;
         }
+
+        public Task Update(string message)
+        {
+            _logger.LogInformation($"{DateTime.Now}: {message}");
+            return Task.CompletedTask;
+        }
     }
 } 

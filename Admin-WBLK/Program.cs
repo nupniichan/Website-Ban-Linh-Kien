@@ -1,4 +1,5 @@
 using Admin_WBLK.Models;
+using Admin_WBLK.Models.Observers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
@@ -7,7 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-// Th�m DbContext v�o DI container
+// Thm DbContext vo DI container
 builder.Services.AddDbContext<DatabaseContext>(options =>
     options.UseMySql(
         builder.Configuration.GetConnectionString("DefaultConnection"),
@@ -21,7 +22,21 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.LogoutPath = "/AccountManagement/Logout"; // Đường dẫn để đăng xuất
         options.ExpireTimeSpan = TimeSpan.FromHours(1); // Thời gian hết hạn cookie
     });
+
+// Đăng ký các dịch vụ Builder Pattern
+builder.Services.AddScoped<Admin_WBLK.Models.Builders.IDashboardBuilder, Admin_WBLK.Models.Builders.DashboardBuilder>();
+builder.Services.AddScoped<Admin_WBLK.Models.Builders.DashboardDirector>();
+
+// Đăng ký các dịch vụ Observer Pattern
+builder.Services.AddSingleton<IRevenueSubject, RevenueManager>();
+builder.Services.AddSingleton<IRevenueObserver, RevenueLogger>();
+
 var app = builder.Build();
+
+// Cấu hình RevenueLogger với RevenueManager
+var revenueSubject = app.Services.GetRequiredService<IRevenueSubject>();
+var revenueObserver = app.Services.GetRequiredService<IRevenueObserver>();
+revenueSubject.Attach(revenueObserver);
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

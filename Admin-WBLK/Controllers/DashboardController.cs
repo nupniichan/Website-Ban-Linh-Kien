@@ -1,5 +1,7 @@
 using System.Diagnostics;
 using Admin_WBLK.Models;
+using Admin_WBLK.Models.Builders;
+using Admin_WBLK.Models.Observers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
@@ -10,82 +12,92 @@ namespace Admin_WBLK.Controllers
     {
         private readonly ILogger<DashboardController> _logger;
         private readonly DatabaseContext _context;
+        private readonly IDashboardBuilder _dashboardBuilder;
+        private readonly DashboardDirector _dashboardDirector;
+        private readonly IRevenueSubject _revenueSubject;
 
-        public DashboardController(ILogger<DashboardController> logger, DatabaseContext context)
+        public DashboardController(
+            ILogger<DashboardController> logger, 
+            DatabaseContext context,
+            IDashboardBuilder dashboardBuilder,
+            DashboardDirector dashboardDirector,
+            IRevenueSubject revenueSubject)
         {
             _logger = logger;
             _context = context;
+            _dashboardBuilder = dashboardBuilder;
+            _dashboardDirector = dashboardDirector;
+            _revenueSubject = revenueSubject;
         }
 
         public async Task<IActionResult> Index()
         {
             try
             {
-                // Thống kê đơn hàng
-                var totalOrders = await _context.Donhangs.CountAsync();
-                var completedOrders = await _context.Donhangs
-                    .Where(d => d.Trangthai == "Giao thành công")
-                    .CountAsync();
-                var pendingOrders = await _context.Donhangs
-                    .Where(d => d.Trangthai == "Đang giao")
-                    .CountAsync();
-
-                // Doanh thu - bỏ điều kiện HasValue vì Tongtien là decimal không phải decimal?
-                var totalRevenue = await _context.Donhangs
-                    .Where(d => d.Trangthai == "Giao thành công")
-                    .SumAsync(d => d.Tongtien);
-
-                // Thống kê theo phương thức thanh toán - thêm logging để debug
-                var paymentStats = await _context.Donhangs
-                    .Where(d => d.Trangthai == "Giao thành công")  // Bỏ điều kiện check null của phương thức
-                    .GroupBy(d => d.Phuongthucthanhtoan ?? "Không xác định")  // Xử lý null ngay tại đây
-                    .Select(g => new
-                    {
-                        Method = g.Key,
-                        Count = g.Count(),
-                        Amount = g.Sum(d => d.Tongtien)
-                    })
-                    .ToListAsync();
-
-                // Thêm logging chi tiết
-                foreach (var stat in paymentStats)
-                {
-                    _logger.LogInformation($"Payment Method: {stat.Method}, Count: {stat.Count}, Amount: {stat.Amount}");
-                }
-
-                // Đơn hàng gần đây
-                var recentOrders = await _context.Donhangs
-                    .Where(d => !string.IsNullOrEmpty(d.Trangthai))
-                    .OrderByDescending(d => d.Ngaydathang ?? DateTime.MinValue)
-                    .Take(5)
-                    .Select(d => new
-                    {
-                        IdDh = d.IdDh,
-                        Ngaydathang = d.Ngaydathang,
-                        Tongtien = d.Tongtien,  // Bỏ ?? 0 vì Tongtien là decimal
-                        Trangthai = d.Trangthai ?? "Không xác định",
-                        Phuongthucthanhtoan = d.Phuongthucthanhtoan ?? "Không xác định"
-                    })
-                    .ToListAsync();
-
-                // Log để debug
-                _logger.LogInformation($"Total Orders: {totalOrders}");
-                _logger.LogInformation($"Completed Orders: {completedOrders}");
-                _logger.LogInformation($"Payment Stats: {JsonSerializer.Serialize(paymentStats)}");
-
-                ViewBag.TotalOrders = totalOrders;
-                ViewBag.CompletedOrders = completedOrders;
-                ViewBag.PendingOrders = pendingOrders;
-                ViewBag.TotalRevenue = totalRevenue;
-                ViewBag.PaymentStats = paymentStats;
-                ViewBag.RecentOrders = recentOrders;
+                // Sử dụng Builder Pattern để xây dựng dữ liệu dashboard
+                var dashboardData = await _dashboardDirector.BuildFullDashboard(_dashboardBuilder);
+                
+                // Thông báo qua Observer Pattern
+                await _revenueSubject.NotifyObservers("Đã tạo báo cáo dashboard");
+                
+                // Truyền dữ liệu vào view
+                ViewBag.TotalOrders = dashboardData.TotalOrders;
+                ViewBag.CompletedOrders = dashboardData.CompletedOrders;
+                ViewBag.PendingOrders = dashboardData.PendingOrders;
+                ViewBag.TotalRevenue = dashboardData.TotalRevenue;
+                ViewBag.PaymentStats = dashboardData.PaymentStats;
+                ViewBag.RecentOrders = dashboardData.RecentOrders;
 
                 return View();
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error in Dashboard Index: {ex.Message}");
+                _logger.LogError($"Lỗi trong Dashboard Index: {ex.Message}");
                 throw;
+            }
+        }
+        
+        // Endpoint để lấy dashboard tối thiểu (chỉ thống kê đơn hàng và doanh thu)
+        [HttpGet]
+        public async Task<IActionResult> MinimalDashboard()
+        {
+            try
+            {
+                var dashboardData = await _dashboardDirector.BuildMinimalDashboard(_dashboardBuilder);
+                return Json(dashboardData);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Lỗi trong MinimalDashboard: {ex.Message}");
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+        
+        // Endpoint để lấy dashboard tùy chỉnh
+        [HttpGet]
+        public async Task<IActionResult> CustomDashboard(
+            bool includeOrderStats = true,
+            bool includeRevenueStats = true,
+            bool includePaymentStats = false,
+            bool includeRecentOrders = false,
+            int recentOrdersCount = 5)
+        {
+            try
+            {
+                var dashboardData = await _dashboardDirector.BuildCustomDashboard(
+                    _dashboardBuilder,
+                    includeOrderStats,
+                    includeRevenueStats,
+                    includePaymentStats,
+                    includeRecentOrders,
+                    recentOrdersCount);
+                    
+                return Json(dashboardData);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Lỗi trong CustomDashboard: {ex.Message}");
+                return StatusCode(500, new { error = ex.Message });
             }
         }
 
