@@ -151,6 +151,16 @@ namespace Website_Ban_Linh_Kien.Controllers
                     customerByEmail.Ngaysinh = DateOnly.FromDateTime(model.BirthDate);
                     customerByEmail.IdTk = newAccount.IdTk;
                     customerByEmail.Loaikhachhang = 1;
+                    
+                    // Đảm bảo điểm tích lũy và hạng VIP được thiết lập nếu chưa có
+                    if (customerByEmail.Diemtichluy == null)
+                    {
+                        customerByEmail.Diemtichluy = 0;
+                    }
+                    if (string.IsNullOrEmpty(customerByEmail.IdXephangvip))
+                    {
+                        customerByEmail.IdXephangvip = "THANTHIET";
+                    }
 
                     _dbContext.Taikhoans.Add(newAccount);
                     _dbContext.SaveChanges();
@@ -188,7 +198,9 @@ namespace Website_Ban_Linh_Kien.Controllers
                     Ngaysinh = DateOnly.FromDateTime(model.BirthDate),
                     Sodienthoai = model.Phone,
                     IdTk = GenerateNewAccountId(),
-                    Loaikhachhang = 1
+                    Loaikhachhang = 1,
+                    Diemtichluy = 0,
+                    IdXephangvip = "THANTHIET"
                 };
 
                 var accountForNewCustomer = new Taikhoan
