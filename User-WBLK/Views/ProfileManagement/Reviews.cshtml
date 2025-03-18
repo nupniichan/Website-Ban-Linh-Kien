@@ -1,3 +1,4 @@
+@using Website_Ban_Linh_Kien.Services;
 @model PaginatedList<Website_Ban_Linh_Kien.Models.Danhgia>
 @{
     ViewBag.Title = "Đánh giá của tôi";
@@ -46,8 +47,9 @@
 
                                     // Build full image path (or fallback)
                                     var imagePath = string.IsNullOrEmpty(ct.IdSpNavigation.Hinhanh)
-                                        ? "/imgs/default-product.jpg"
-                                        : $"http://localhost:5177/{ct.IdSpNavigation.Hinhanh}";
+                                    ? "/imgs/default-product.jpg"
+                                    : $"{GeneralConfig.BaseImageUrl}{(ct.IdSpNavigation.Hinhanh.StartsWith("/") ? "" : "/")}{ct.IdSpNavigation.Hinhanh}";
+
 
                                     <div class="flex items-center border border-gray-100 rounded p-2">
                                         <img src="@imagePath" 
