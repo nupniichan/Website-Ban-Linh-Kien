@@ -2,7 +2,7 @@
 {
     public static class GeneralConfig
     {
-        public const string BaseImageUrl = "https://admin.bpt-computer.store";
+        public const string BaseImageUrl = "http://localhost:5177";
     }
 
 }
