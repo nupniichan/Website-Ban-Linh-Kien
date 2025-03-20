@@ -1,16 +1,20 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Website_Ban_Linh_Kien.Models;
 using System.Text.RegularExpressions;
+using Website_Ban_Linh_Kien.Models.Services;
+using Website_Ban_Linh_Kien.Models.Factories;
 
 namespace Website_Ban_Linh_Kien.Controllers
 {
     public class RegisterController : Controller
     {
         private readonly DatabaseContext _dbContext;
+        private readonly RegistrationService _registrationService;
 
         public RegisterController(DatabaseContext dbContext)
         {
             _dbContext = dbContext;
+            _registrationService = new RegistrationService(dbContext);
         }
 
         // GET: RegisterController
@@ -22,7 +26,8 @@ namespace Website_Ban_Linh_Kien.Controllers
         [HttpPost]
         public IActionResult Register([FromForm] RegisterViewModel model)
         {
-            try
+            // Sử dụng RegistrationService để xử lý đăng ký
+            if (!ModelState.IsValid)
             {
                 // Validate input
                 if (!ModelState.IsValid)
@@ -228,36 +233,11 @@ namespace Website_Ban_Linh_Kien.Controllers
             {
                 return Json(new { success = false, message = "Đã xảy ra lỗi khi đăng ký" });
             }
+            
+            return _registrationService.Register(model);
         }
 
-        private string GenerateNewAccountId()
-        {
-            var lastAccount = _dbContext.Taikhoans
-                .OrderByDescending(t => t.IdTk)
-                .FirstOrDefault();
-
-            if (lastAccount == null)
-            {
-                return "TK00001";
-            }
-
-            int lastNumber = int.Parse(lastAccount.IdTk.Substring(2));
-            return $"TK{(lastNumber + 1).ToString("D5")}";
-        }
-
-        private string GenerateNewCustomerId()
-        {
-            var lastCustomer = _dbContext.Khachhangs
-                .OrderByDescending(k => k.IdKh)
-                .FirstOrDefault();
-
-            if (lastCustomer == null)
-            {
-                return "KH000001";
-            }
-
-            int lastNumber = int.Parse(lastCustomer.IdKh.Substring(2));
-            return $"KH{(lastNumber + 1).ToString("D6")}";
-        }
+        // Các phương thức GenerateNewAccountId và GenerateNewCustomerId không còn cần thiết
+        // vì đã được chuyển sang các lớp Factory
     }
 }

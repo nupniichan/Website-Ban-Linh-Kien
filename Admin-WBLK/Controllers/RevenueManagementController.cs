@@ -1,16 +1,51 @@
 ﻿using Admin_WBLK.Models;
+using Admin_WBLK.Models.Strategis;
+using Admin_WBLK.Models.Observers;
+using Admin_WBLK.Models.Facades;
+using Admin_WBLK.Models.Templates;
+using Admin_WBLK.Models.Composites;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Threading.Tasks;
 
 namespace Admin_WBLK.Controllers
 {
     public class RevenueManagementController : Controller
     {
         private readonly DatabaseContext _context;
+        private readonly RevenueFacade _revenueFacade;
+        private readonly IRevenueSubject _revenueSubject;
+        
+        // Template Method Pattern
+        private readonly DailyRevenueReport _dailyRevenueReport;
+        private readonly MonthlyRevenueReport _monthlyRevenueReport;
+        
+        // Composite Pattern
+        private readonly RevenueBuilder _revenueBuilder;
 
-        public RevenueManagementController(DatabaseContext context)
+        public RevenueManagementController(DatabaseContext context, ILogger<RevenueLogger> logger)
         {
             _context = context;
+            
+            // Khởi tạo các thành phần
+            var filterStrategy = new DefaultRevenueFilterStrategy();
+            
+            // Khởi tạo Observer Pattern
+            _revenueSubject = new RevenueManager();
+            var revenueLogger = new RevenueLogger(logger);
+            _revenueSubject.Attach(revenueLogger);
+            
+            // Khởi tạo Facade Pattern
+            _revenueFacade = new RevenueFacade(context, filterStrategy);
+            
+            // Khởi tạo Template Method Pattern
+            _dailyRevenueReport = new DailyRevenueReport(context);
+            _monthlyRevenueReport = new MonthlyRevenueReport(context);
+            
+            // Khởi tạo Composite Pattern
+            _revenueBuilder = new RevenueBuilder(context);
         }
 
         public async Task<IActionResult> Index()
@@ -21,166 +56,48 @@ namespace Admin_WBLK.Controllers
         [HttpGet]
         public async Task<IActionResult> GetRevenue(DateTime? fromDate, DateTime? toDate, string? paymentMethod)
         {
-            var query = _context.Donhangs.AsQueryable();
-
-            if (fromDate.HasValue)
-            {
-                // Đảm bảo lấy từ đầu ngày
-                var fromDateStart = fromDate.Value.Date;
-                query = query.Where(d => d.Ngaydathang >= fromDateStart);
-            }
-            
-            if (toDate.HasValue)
-            {
-                // Đảm bảo lấy đến cuối ngày
-                var toDateEnd = toDate.Value.Date.AddDays(1).AddTicks(-1);
-                query = query.Where(d => d.Ngaydathang <= toDateEnd);
-            }
-
-            if (!string.IsNullOrEmpty(paymentMethod))
-                query = query.Where(d => d.Phuongthucthanhtoan == paymentMethod);
-
-            var result = await query
-                .GroupBy(d => d.Phuongthucthanhtoan)
-                .Select(g => new
-                {
-                    paymentMethod = g.Key,
-                    totalAmount = g.Sum(d => d.Tongtien),
-                    orderCount = g.Count(),
-                    successOrderCount = g.Count(d => d.Trangthai == "Giao thành công")
-                })
-                .ToListAsync();
-
-            // Tính tổng số đơn hàng thành công
-            int totalSuccessOrders = result.Sum(r => r.successOrderCount);
-
-            return Json(new { 
-                revenueData = result,
-                totalSuccessOrders = totalSuccessOrders
-            });
+            // Sử dụng Facade Pattern để lấy dữ liệu doanh thu
+            return await _revenueFacade.GetRevenueSummary(fromDate, toDate, paymentMethod, this);
         }
 
         [HttpGet]
         public async Task<IActionResult> GetOrders(int page = 1, int pageSize = 10, string? paymentMethod = null, DateTime? fromDate = null, DateTime? toDate = null)
         {
-            // Log các tham số để debug
-            Console.WriteLine($"GetOrders - paymentMethod: {paymentMethod}, fromDate: {fromDate}, toDate: {toDate}");
-            
-            var query = _context.Donhangs.AsQueryable();
-
-            // Áp dụng bộ lọc
-            if (!string.IsNullOrEmpty(paymentMethod))
-            {
-                query = query.Where(o => o.Phuongthucthanhtoan == paymentMethod);
-                Console.WriteLine($"Filtering by payment method: {paymentMethod}");
-            }
-
-            if (fromDate.HasValue)
-            {
-                // Đảm bảo lấy từ đầu ngày
-                var fromDateStart = fromDate.Value.Date;
-                query = query.Where(o => o.Ngaydathang >= fromDateStart);
-                Console.WriteLine($"Filtering from date: {fromDateStart}");
-            }
-
-            if (toDate.HasValue)
-            {
-                // Đảm bảo lấy đến cuối ngày
-                var toDateEnd = toDate.Value.Date.AddDays(1).AddTicks(-1);
-                query = query.Where(o => o.Ngaydathang <= toDateEnd);
-                Console.WriteLine($"Filtering to date: {toDateEnd}");
-            }
-
-            // Đếm tổng số đơn hàng trước khi phân trang
-            var totalCount = await query.CountAsync();
-            Console.WriteLine($"Total count after filtering: {totalCount}");
-
-            // Lấy dữ liệu phân trang
-            var orders = await query
-                .OrderByDescending(o => o.Ngaydathang)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .Select(o => new
-                {
-                    Id = o.IdDh,
-                    CustomerName = o.IdKhNavigation.Hoten,
-                    OrderDate = o.Ngaydathang,
-                    PaymentMethod = o.Phuongthucthanhtoan,
-                    TotalAmount = o.Tongtien,
-                    Status = o.Trangthai
-                })
-                .ToListAsync();
-
-            Console.WriteLine($"Returned orders count: {orders.Count}");
-            
-            return Json(new { orders, totalCount });
+            // Sử dụng Facade Pattern để lấy danh sách đơn hàng
+            return await _revenueFacade.GetOrderList(page, pageSize, paymentMethod, fromDate, toDate, this);
         }
 
         [HttpGet]
         public async Task<IActionResult> GetOrderDetail(string id)
         {
-            try
-            {
-                // Log để debug
-                Console.WriteLine($"GetOrderDetail - Order ID: {id}");
-                
-                var order = await _context.Donhangs
-                    .Include(o => o.IdKhNavigation)
-                    .Include(o => o.Chitietdonhangs)
-                    .ThenInclude(od => od.IdSpNavigation)
-                    .Include(o => o.Thanhtoans)
-                    .Where(o => o.IdDh == id)
-                    .Select(o => new
-                    {
-                        Id = o.IdDh,
-                        OrderDate = o.Ngaydathang,
-                        PaymentMethod = o.Phuongthucthanhtoan,
-                        Status = o.Trangthai,
-                        CustomerName = o.IdKhNavigation.Hoten,
-                        CustomerEmail = o.IdKhNavigation.Email,
-                        CustomerPhone = o.IdKhNavigation.Sodienthoai,
-                        CustomerAddress = o.Diachigiaohang,
-                        TotalAmount = o.Tongtien,
-                        Items = o.Chitietdonhangs.Select(od => new
-                        {
-                            ProductName = od.IdSpNavigation.Tensanpham,
-                            Price = od.Dongia,
-                            Quantity = od.Soluongsanpham
-                        }).ToList(),
-                        Payment = o.Thanhtoans.Select(p => new
-                        {
-                            Id = p.IdTt,
-                            Status = p.Trangthai,
-                            Amount = p.Tienthanhtoan,
-                            PaymentDate = p.Ngaythanhtoan,
-                            Content = p.Noidungthanhtoan,
-                            Code = p.Mathanhtoan
-                        }).FirstOrDefault()
-                    })
-                    .FirstOrDefaultAsync();
-
-                if (order == null)
-                {
-                    Console.WriteLine($"GetOrderDetail - Order not found: {id}");
-                    return NotFound();
-                }
-
-                // Log thông tin thanh toán để debug
-                Console.WriteLine($"GetOrderDetail - Payment Method: {order.PaymentMethod}");
-                Console.WriteLine($"GetOrderDetail - Has Payment: {order.Payment != null}");
-                if (order.Payment != null)
-                {
-                    Console.WriteLine($"GetOrderDetail - Payment ID: {order.Payment.Id}");
-                    Console.WriteLine($"GetOrderDetail - Payment Status: {order.Payment.Status}");
-                }
-
-                return Json(order);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"GetOrderDetail - Exception: {ex.Message}");
-                return StatusCode(500, new { error = ex.Message });
-            }
+            // Sử dụng Facade Pattern để lấy chi tiết đơn hàng
+            return await _revenueFacade.GetOrderDetail(id, this);
+        }
+        
+        // Template Method Pattern - Báo cáo doanh thu hàng ngày
+        [HttpGet]
+        public async Task<IActionResult> GetDailyReport(DateTime? fromDate, DateTime? toDate, string? paymentMethod)
+        {
+            return await _dailyRevenueReport.GenerateReport(fromDate, toDate, paymentMethod, this);
+        }
+        
+        // Template Method Pattern - Báo cáo doanh thu hàng tháng
+        [HttpGet]
+        public async Task<IActionResult> GetMonthlyReport(DateTime? fromDate, DateTime? toDate, string? paymentMethod)
+        {
+            return await _monthlyRevenueReport.GenerateReport(fromDate, toDate, paymentMethod, this);
+        }
+        
+        // Composite Pattern - Cấu trúc phân cấp doanh thu
+        [HttpGet]
+        public async Task<IActionResult> GetRevenueHierarchy(DateTime? fromDate, DateTime? toDate)
+        {
+            var revenueHierarchy = await _revenueBuilder.BuildRevenueHierarchy(fromDate, toDate);
+            
+            // Thông báo qua Observer Pattern
+            await _revenueSubject.NotifyObservers("Đã tạo báo cáo phân cấp doanh thu");
+            
+            return Json(revenueHierarchy.GetDetails());
         }
     }
 }

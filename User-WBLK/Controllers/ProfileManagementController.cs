@@ -15,10 +15,21 @@ namespace Website_Ban_Linh_Kien.Controllers
     public class ProfileManagementController : Controller
     {
         private readonly DatabaseContext _context;
+        private readonly ProfileFacade _profileFacade;
+        private readonly IProfileSubject _profileSubject;
 
         public ProfileManagementController(DatabaseContext context)
         {
             _context = context;
+            _profileFacade = new ProfileFacade(context);
+            
+            // Khởi tạo Subject và đăng ký các Observer
+            _profileSubject = new ProfileSubject();
+            
+            // Đăng ký các Observer
+            _profileSubject.RegisterObserver(new LoggingObserver());
+            _profileSubject.RegisterObserver(new NotificationObserver(context));
+            _profileSubject.RegisterObserver(new StatisticsObserver(context));
         }
 
         protected void SetBreadcrumb(params (string Text, string Url)[] items)
@@ -45,19 +56,14 @@ namespace Website_Ban_Linh_Kien.Controllers
                 return Unauthorized();
             }
 
-            // Retrieve the account using the username
-            var account = await _context.Taikhoans
-                .FirstOrDefaultAsync(t => t.Tentaikhoan == username);
+            // Sử dụng Facade để lấy thông tin tài khoản và khách hàng
+            var account = await _profileFacade.GetAccountByUsername(username);
             if (account == null)
             {
                 return Unauthorized();
             }
 
-            // Retrieve the customer (khách hàng) info including the related account info and rank info
-            var khachhang = await _context.Khachhangs
-                .Include(k => k.IdTkNavigation)
-                .Include(k => k.IdXephangvipNavigation)
-                .FirstOrDefaultAsync(k => k.IdTk == account.IdTk);
+            var khachhang = await _profileFacade.GetCustomerFullInfo(account.IdTk);
             if (khachhang == null)
             {
                 return NotFound();
@@ -184,8 +190,7 @@ namespace Website_Ban_Linh_Kien.Controllers
                 return View(khachhang);
             }
 
-            TempData["SuccessMessage"] = "Thông tin tài khoản đã được cập nhật thành công!";
-            return RedirectToAction("Profile");
+            return await command.Execute();
         }
 
 
@@ -208,14 +213,14 @@ namespace Website_Ban_Linh_Kien.Controllers
                 return Unauthorized();
             }
 
-            // Retrieve the account and customer
-            var account = await _context.Taikhoans.FirstOrDefaultAsync(t => t.Tentaikhoan == username);
+            // Sử dụng Facade để lấy thông tin tài khoản và khách hàng
+            var account = await _profileFacade.GetAccountByUsername(username);
             if (account == null)
             {
                 return Unauthorized();
             }
 
-            var khachhang = await _context.Khachhangs.FirstOrDefaultAsync(k => k.IdTk == account.IdTk);
+            var khachhang = await _profileFacade.GetCustomerByAccountId(account.IdTk);
             if (khachhang == null)
             {
                 return NotFound();
@@ -224,10 +229,7 @@ namespace Website_Ban_Linh_Kien.Controllers
             if (!string.IsNullOrEmpty(orderId))
             {
                 // Detail Mode: load order details including items
-                var order = await _context.Donhangs
-                    .Include(o => o.Chitietdonhangs)
-                        .ThenInclude(ct => ct.IdSpNavigation)
-                    .FirstOrDefaultAsync(o => o.IdDh == orderId && o.IdKh == khachhang.IdKh);
+                var order = await _profileFacade.GetOrderDetail(orderId, khachhang.IdKh);
                 if (order == null)
                 {
                     return NotFound();
@@ -239,11 +241,8 @@ namespace Website_Ban_Linh_Kien.Controllers
             {
                 // List Mode: create a paginated list
                 int pageSize = 10; // Adjust page size as needed
-                var query = _context.Donhangs
-                    .Where(o => o.IdKh == khachhang.IdKh)
-                    .OrderByDescending(o => o.Ngaydathang);
-                int count = await query.CountAsync();
-                var items = await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+                var count = await _profileFacade.CountCustomerOrders(khachhang.IdKh);
+                var items = await _profileFacade.GetCustomerOrders(khachhang.IdKh, pageNumber, pageSize);
                 var paginatedList = new PaginatedList<Donhang>(items, count, pageNumber, pageSize);
                 return View(paginatedList);
             }
@@ -253,87 +252,15 @@ namespace Website_Ban_Linh_Kien.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SubmitReview(string Idchitietdonhang, int rating, string comment)
         {
-            try
-            {
-                // Get the logged-in user's account
-                var username = User.Identity.Name;
-                if (string.IsNullOrEmpty(username))
-                {
-                    return Json(new { success = false, message = "User not found." });
-                }
-
-                var account = await _context.Taikhoans.FirstOrDefaultAsync(t => t.Tentaikhoan == username);
-                if (account == null)
-                {
-                    return Json(new { success = false, message = "User account not found." });
-                }
-
-                var khachhang = await _context.Khachhangs.FirstOrDefaultAsync(k => k.IdTk == account.IdTk);
-                if (khachhang == null)
-                {
-                    return Json(new { success = false, message = "Customer not found." });
-                }
-
-                // Retrieve the specific order detail record by its ID (including its parent order)
-                var orderDetail = await _context.Chitietdonhangs
-                    .Include(ct => ct.IdDhNavigation)
-                    .FirstOrDefaultAsync(ct => ct.Idchitietdonhang == Idchitietdonhang);
-
-                if (orderDetail == null)
-                {
-                    return Json(new { success = false, message = "Order detail not found." });
-                }
-
-                // Verify the order belongs to the logged-in customer
-                var order = orderDetail.IdDhNavigation;
-                if (order == null || order.IdKh != khachhang.IdKh)
-                {
-                    return Json(new { success = false, message = "Order not eligible for review." });
-                }
-
-                // Only allow review if order status is "Giao thành công"
-                if (order.Trangthai != "Giao thành công")
-                {
-                    return Json(new { success = false, message = "Only orders with 'Giao thành công' status can be reviewed." });
-                }
-
-                // Prevent duplicate reviews for the same order detail
-                if (orderDetail.IdDg != null)
-                {
-                    return Json(new { success = false, message = "Sản phẩm này đã được đánh giá." });
-                }
-
-                // Generate a new review ID (e.g., "DG000001")
-                var lastReview = await _context.Danhgia.OrderByDescending(d => d.IdDg).FirstOrDefaultAsync();
-                int nextNumber = 1;
-                if (lastReview != null && lastReview.IdDg?.StartsWith("DG") == true)
-                {
-                    var numericPart = lastReview.IdDg.Substring(2);
-                    if (int.TryParse(numericPart, out int parsed))
-                    {
-                        nextNumber = parsed + 1;
-                    }
-                }
-                var newReviewId = "DG" + nextNumber.ToString("D6");
-
-                // Create the review for this product
-                var review = new Danhgia
-                {
-                    IdDg = newReviewId,
-                    Sosao = rating,
-                    Noidung = comment,
-                    Ngaydanhgia = DateTime.Now,
-                    IdKh = khachhang.IdKh
-                };
-
-                _context.Danhgia.Add(review);
-                await _context.SaveChangesAsync();
-
-                // Tie the review to the specific order detail
-                orderDetail.IdDg = newReviewId;
-                _context.Chitietdonhangs.Update(orderDetail);
-                await _context.SaveChangesAsync();
-
+            // Sử dụng Command Pattern để xử lý gửi đánh giá
+            var command = new SubmitReviewCommand(
+                _context,
+                User.Identity.Name,
+                Idchitietdonhang,
+                rating,
+                comment,
+                _profileSubject
+            );
                 return Json(new { success = true, message = "Cảm ơn bạn đã đánh giá!", reviewed = true });
             }
             catch (Exception ex)
@@ -347,52 +274,14 @@ namespace Website_Ban_Linh_Kien.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CancelOrder(string orderId, string LydoHuy)
         {
-            try
-            {
-                // Check if cancellation reason is provided
-                if (string.IsNullOrWhiteSpace(LydoHuy))
-                {
-                    return Json(new { success = false, message = "Vui lòng nhập lý do hủy đơn." });
-                }
-
-                // Get the logged-in user's account
-                var username = User.Identity.Name;
-                if (string.IsNullOrEmpty(username))
-                {
-                    return Json(new { success = false, message = "User not found." });
-                }
-
-                var account = await _context.Taikhoans.FirstOrDefaultAsync(t => t.Tentaikhoan == username);
-                if (account == null)
-                {
-                    return Json(new { success = false, message = "User account not found." });
-                }
-
-                var khachhang = await _context.Khachhangs.FirstOrDefaultAsync(k => k.IdTk == account.IdTk);
-                if (khachhang == null)
-                {
-                    return Json(new { success = false, message = "Customer not found." });
-                }
-
-                // Find the order and verify it belongs to the customer
-                var order = await _context.Donhangs.FirstOrDefaultAsync(o => o.IdDh == orderId && o.IdKh == khachhang.IdKh);
-                if (order == null)
-                {
-                    return Json(new { success = false, message = "Order not found." });
-                }
-
-                // Only allow cancellation if order status is "Chờ xác nhận", "Đã duyệt đơn", or "Đã thanh toán"
-                if (order.Trangthai != "Chờ xác nhận" && order.Trangthai != "Đã duyệt đơn" && order.Trangthai != "Đã thanh toán")
-                {
-                    return Json(new { success = false, message = "Không thể hủy đơn hàng ở trạng thái hiện tại." });
-                }
-
-                // Update the order's status and record the cancellation reason
-                order.Trangthai = "Hủy đơn";
-                order.LydoHuy = LydoHuy;
-                _context.Donhangs.Update(order);
-                await _context.SaveChangesAsync();
-
+            // Sử dụng Command Pattern để xử lý hủy đơn hàng
+            var command = new CancelOrderCommand(
+                _context,
+                User.Identity.Name,
+                orderId,
+                LydoHuy,
+                _profileSubject
+            );
                 return Json(new { success = true, message = "Đơn hàng đã được hủy." });
             }
             catch (Exception ex)
@@ -487,6 +376,5 @@ namespace Website_Ban_Linh_Kien.Controllers
 
             return Json(new { incomplete = incompleteFlag, missingFields = missing });
         }
-
     }
 }

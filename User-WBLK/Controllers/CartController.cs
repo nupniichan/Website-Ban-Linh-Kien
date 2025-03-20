@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Website_Ban_Linh_Kien.Models;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
+using Website_Ban_Linh_Kien.Models.Strategies.Cart;
 
 namespace Website_Ban_Linh_Kien.Controllers
 {
@@ -15,11 +16,24 @@ namespace Website_Ban_Linh_Kien.Controllers
     {
         private readonly DatabaseContext _context;
         private readonly ILogger<CartController>? _logger;
+        private readonly CartContext _cartContext;
+        private readonly AddToCartStrategy _addToCartStrategy;
+        private readonly UpdateQuantityStrategy _updateQuantityStrategy;
+        private readonly RemoveItemStrategy _removeItemStrategy;
 
-        public CartController(DatabaseContext context, ILogger<CartController>? logger)
+        public CartController(
+            DatabaseContext context, 
+            ILogger<CartController>? logger,
+            ILogger<AddToCartStrategy> addToCartLogger,
+            ILogger<UpdateQuantityStrategy> updateQuantityLogger,
+            ILogger<RemoveItemStrategy> removeItemLogger)
         {
             _context = context;
             _logger = logger;
+            _cartContext = new CartContext(context);
+            _addToCartStrategy = new AddToCartStrategy(addToCartLogger);
+            _updateQuantityStrategy = new UpdateQuantityStrategy(updateQuantityLogger);
+            _removeItemStrategy = new RemoveItemStrategy(removeItemLogger);
         }
 
         // GET: Cart
@@ -41,90 +55,9 @@ namespace Website_Ban_Linh_Kien.Controllers
         [HttpPost]
         public async Task<IActionResult> AddToCart(string productId, int quantity)
         {
-            try
-            {
-                var customerId = User.FindFirstValue("CustomerId");
-                if (customerId == null)
-                {
-                    return Json(new { success = false, message = "Vui lòng đăng nhập để thêm vào giỏ hàng" });
-                }
-
-                // Check product existence
-                var product = await _context.Sanphams.FindAsync(productId);
-                if (product == null)
-                {
-                    return Json(new { success = false, message = "Không tìm thấy sản phẩm" });
-                }
-
-                // Check requested quantity is at least 1 and does not exceed available stock
-                if (quantity <= 0 || quantity > product.Soluongton)
-                {
-                    return Json(new { success = false, message = "Số lượng không hợp lệ" });
-                }
-
-                // Enforce the maximum limit of 5 for the same product
-                const int maxAllowed = 5;
-
-                // Find or create the cart
-                var cart = await _context.Giohangs
-                    .Include(g => g.Chitietgiohangs)
-                    .FirstOrDefaultAsync(g => g.IdKh == customerId);
-
-                if (cart == null)
-                {
-                    cart = new Giohang
-                    {
-                        IdGh = Guid.NewGuid().ToString().Substring(0, 10),
-                        IdKh = customerId,
-                        Thoigiancapnhat = DateTime.Now
-                    };
-                    _context.Giohangs.Add(cart);
-                    await _context.SaveChangesAsync();
-                }
-
-                // Check if the product is already in the cart
-                var cartItem = await _context.Chitietgiohangs
-                    .FirstOrDefaultAsync(c => c.IdGh == cart.IdGh && c.IdSp == productId);
-
-                if (cartItem != null)
-                {
-                    if (cartItem.Soluongsanpham >= maxAllowed)
-                    {
-                        return Json(new { success = false, message = "Tổng số lượng sản phẩm này trong giỏ hàng không thể vượt quá 5." });
-                    }
-                    if (cartItem.Soluongsanpham + quantity > maxAllowed)
-                    {
-                        return Json(new { success = false, message = $"Bạn chỉ có thể mua tối đa {maxAllowed} sản phẩm của loại này." });
-                    }
-
-                    // Increase quantity if within limit
-                    cartItem.Soluongsanpham += quantity;
-                    cartItem.Thoigiancapnhat = DateTime.Now;
-                }
-                else
-                {
-                    // For a new item, ensure quantity does not exceed maxAllowed
-                    if (quantity > maxAllowed)
-                    {
-                        return Json(new { success = false, message = $"Sản phẩm chỉ cho phép mua tối đa {maxAllowed}." });
-                    }
-                    _context.Chitietgiohangs.Add(new Chitietgiohang
-                    {
-                        IdGh = cart.IdGh,
-                        IdSp = productId,
-                        Soluongsanpham = quantity,
-                        Thoigiancapnhat = DateTime.Now
-                    });
-                }
-
-                await _context.SaveChangesAsync();
-                return Json(new { success = true, message = "Đã thêm sản phẩm vào giỏ hàng" });
-            }
-            catch (Exception ex)
-            {
-                _logger?.LogError($"Error adding to cart: {ex.Message}");
-                return Json(new { success = false, message = "Có lỗi xảy ra khi thêm vào giỏ hàng" });
-            }
+            var customerId = User.FindFirstValue("CustomerId");
+            _cartContext.SetStrategy(_addToCartStrategy);
+            return await _cartContext.ExecuteStrategy(customerId, new AddToCartData { ProductId = productId, Quantity = quantity });
         }
 
         // POST: Cart/UpdateQuantity
@@ -324,46 +257,9 @@ namespace Website_Ban_Linh_Kien.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateQuantityAjax([FromBody] UpdateCartDto dto)
         {
-            const int maxAllowed = 5;
             var customerId = User.FindFirstValue("CustomerId");
-            if (customerId != null)
-            {
-                var cartItem = await _context.Chitietgiohangs
-                    .Include(c => c.IdGhNavigation)
-                    .ThenInclude(g => g.Chitietgiohangs)
-                    .ThenInclude(c => c.IdSpNavigation)
-                    .FirstOrDefaultAsync(c => c.IdGhNavigation.IdKh == customerId && c.IdSp == dto.ProductId);
-                if (cartItem != null)
-                {
-                    // If the user tries to update quantity above maxAllowed, return an error
-                    if (dto.Quantity > maxAllowed)
-                    {
-                        return Json(new { success = false, message = $"Sản phẩm chỉ cho phép mua tối đa {maxAllowed}." });
-                    }
-                    if (dto.Quantity < 1)
-                    {
-                        return Json(new{ success = false, message = "Số lượng không thể nhỏ hơn 1."});
-                    }
-                    if (dto.Quantity > 0)
-                    {
-                        cartItem.Soluongsanpham = dto.Quantity;
-                        cartItem.Thoigiancapnhat = DateTime.Now;
-                    }
-                    else
-                    {
-                        _context.Chitietgiohangs.Remove(cartItem);
-                    }
-                    await _context.SaveChangesAsync();
-
-                    var cart = await _context.Giohangs
-                        .Include(g => g.Chitietgiohangs)
-                        .ThenInclude(c => c.IdSpNavigation)
-                        .FirstOrDefaultAsync(g => g.IdKh == customerId);
-                    var total = cart?.Chitietgiohangs.Sum(c => c.IdSpNavigation.Gia * c.Soluongsanpham) ?? 0;
-                    return Json(new { success = true, cartTotal = total.ToString("N0") });
-                }
-            }
-            return Json(new { success = false, message = "Không tìm thấy giỏ hàng hoặc sản phẩm" });
+            _cartContext.SetStrategy(_updateQuantityStrategy);
+            return await _cartContext.ExecuteStrategy(customerId, new UpdateQuantityData { ProductId = dto.ProductId, Quantity = dto.Quantity });
         }
 
         // ------------------------------
@@ -374,27 +270,8 @@ namespace Website_Ban_Linh_Kien.Controllers
         public async Task<IActionResult> RemoveItemAjax([FromBody] RemoveCartDto dto)
         {
             var customerId = User.FindFirstValue("CustomerId");
-            if (customerId != null)
-            {
-                var cartItem = await _context.Chitietgiohangs
-                    .Include(c => c.IdGhNavigation)
-                    .ThenInclude(g => g.Chitietgiohangs)
-                    .ThenInclude(c => c.IdSpNavigation)
-                    .FirstOrDefaultAsync(c => c.IdGhNavigation.IdKh == customerId && c.IdSp == dto.ProductId);
-                if (cartItem != null)
-                {
-                    _context.Chitietgiohangs.Remove(cartItem);
-                    await _context.SaveChangesAsync();
-
-                    var cart = await _context.Giohangs
-                        .Include(g => g.Chitietgiohangs)
-                        .ThenInclude(c => c.IdSpNavigation)
-                        .FirstOrDefaultAsync(g => g.IdKh == customerId);
-                    var total = cart?.Chitietgiohangs.Sum(c => c.IdSpNavigation.Gia * c.Soluongsanpham) ?? 0;
-                    return Json(new { success = true, cartTotal = total.ToString("N0") });
-                }
-            }
-            return Json(new { success = false, message = "Không tìm thấy sản phẩm trong giỏ hàng" });
+            _cartContext.SetStrategy(_removeItemStrategy);
+            return await _cartContext.ExecuteStrategy(customerId, new RemoveItemData { ProductId = dto.ProductId });
         }
 
         [HttpPost]

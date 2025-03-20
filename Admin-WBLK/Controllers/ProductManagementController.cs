@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,12 +9,19 @@ using Admin_WBLK.Models;
 using Microsoft.AspNetCore.Http;
 using System.IO;
 using System.Text.Json;
+using Admin_WBLK.Models.Strategis;
+using Admin_WBLK.Models.Factories;
+using Admin_WBLK.Models.Commands;
+using Admin_WBLK.Models.Facades;
+using Admin_WBLK.Models.AbstractFactories;
+using Admin_WBLK.Models.States;
 
 namespace Admin_WBLK.Controllers
 {
     public class ProductManagementController : Controller
     {
         private readonly DatabaseContext _context;
+        private readonly ProductFacade _productFacade;
 
         // JsonSerializer options to not escape Unicode characters
         private static readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
@@ -26,6 +33,23 @@ namespace Admin_WBLK.Controllers
         public ProductManagementController(DatabaseContext context)
         {
             _context = context;
+            
+            // Khởi tạo các thành phần
+            var searchStrategy = new DefaultProductSearchStrategy();
+            var filterStrategy = new DefaultProductFilterStrategy();
+            var sortStrategy = new DefaultProductSortStrategy();
+            var productFactory = new ProductFactory(context);
+            var factoryProvider = new ProductFactoryProvider(context);
+            
+            // Khởi tạo Facade Pattern
+            _productFacade = new ProductFacade(
+                context,
+                productFactory,
+                searchStrategy,
+                filterStrategy,
+                sortStrategy,
+                factoryProvider
+            );
         }
 
         // GET: ProductManagement
@@ -37,78 +61,20 @@ namespace Admin_WBLK.Controllers
             ViewData["CurrentThuongHieu"] = thuongHieu;
             ViewData["CurrentSort"] = sortOrder;
 
-            // Retrieve all products
-            var query = _context.Sanphams.AsQueryable();
+            // Sử dụng Facade Pattern để lấy danh sách sản phẩm
+            var model = await _productFacade.GetProducts(
+                searchString,
+                loaiSp,
+                thuongHieu,
+                sortOrder,
+                pageNumber,
+                pageSize
+            );
 
-            if (!string.IsNullOrEmpty(searchString))
-            {
-                searchString = searchString.ToLower();
-                query = query.Where(s => s.IdSp.ToLower().Contains(searchString) ||
-                                         s.Tensanpham.ToLower().Contains(searchString));
-            }
+            // Lấy danh sách loại sản phẩm và thương hiệu
+            ViewBag.LoaiSps = await _productFacade.GetCategories();
+            ViewBag.ThuongHieus = await _productFacade.GetBrands();
 
-            if (!string.IsNullOrEmpty(thuongHieu))
-            {
-                query = query.Where(s => s.Thuonghieu == thuongHieu);
-            }
-
-            // Sorting
-            query = sortOrder switch
-            {
-                "oldest" => query.OrderBy(s => s.IdSp),
-                _ => query.OrderByDescending(s => s.IdSp)
-            };
-
-            var items = await query.ToListAsync();
-
-            if (!string.IsNullOrEmpty(loaiSp))
-            {
-                if (loaiSp == "PC" || loaiSp == "Laptop" || loaiSp == "Monitor")
-                {
-                    items = items.Where(s => s.Loaisanpham == loaiSp).ToList();
-                }
-                else
-                {
-                    items = items.Where(s =>
-                    {
-                        var specs = JsonSerializer.Deserialize<Dictionary<string, string>>(s.Thongsokythuat, _jsonOptions);
-                        return specs != null &&
-                               ((specs.ContainsKey("Danh mục") && specs["Danh mục"] == loaiSp) ||
-                                (specs.ContainsKey("Loại ổ cứng") && specs["Loại ổ cứng"] == loaiSp));
-                    }).ToList();
-                }
-            }
-
-            // Prepare category list
-            var allProducts = await _context.Sanphams.ToListAsync();
-            var danhMucs = allProducts
-                .Select(s =>
-                {
-                    if (s.Loaisanpham == "PC" || s.Loaisanpham == "Laptop" || s.Loaisanpham == "Monitor")
-                        return s.Loaisanpham;
-
-                    var specs = JsonSerializer.Deserialize<Dictionary<string, string>>(s.Thongsokythuat, _jsonOptions);
-                    if (specs != null)
-                    {
-                        if (specs.ContainsKey("Danh mục")) return specs["Danh mục"];
-                        if (specs.ContainsKey("Loại ổ cứng")) return specs["Loại ổ cứng"];
-                    }
-                    return null;
-                })
-                .Where(dm => dm != null)
-                .Distinct()
-                .ToList();
-
-            ViewBag.LoaiSps = danhMucs;
-            ViewBag.ThuongHieus = await _context.Sanphams.Select(s => s.Thuonghieu).Distinct().ToListAsync();
-
-            // Pagination
-            var totalItems = items.Count;
-            var pagedItems = items.Skip((pageNumber - 1) * pageSize)
-                                  .Take(pageSize)
-                                  .ToList();
-
-            var model = new PaginatedList<Sanpham>(pagedItems, totalItems, pageNumber, pageSize);
             return View(model);
         }
 
@@ -118,9 +84,50 @@ namespace Admin_WBLK.Controllers
             if (id == null)
                 return NotFound();
 
-            var sanpham = await _context.Sanphams.FirstOrDefaultAsync(m => m.IdSp == id);
+            // Sử dụng Facade Pattern để lấy thông tin sản phẩm
+            var sanpham = await _productFacade.GetProductById(id);
             if (sanpham == null)
                 return NotFound();
+
+            // Sử dụng State Pattern để xác định trạng thái sản phẩm
+            var productContext = new ProductContext(sanpham);
+            ViewBag.ProductState = productContext.GetStateName();
+            ViewBag.CanUpdate = productContext.CanUpdate();
+            ViewBag.CanDelete = productContext.CanDelete();
+            ViewBag.CanSell = productContext.CanSell();
+
+            // Sử dụng Prototype Pattern để tạo một bản sao của sản phẩm
+            var productPrototype = new Models.Prototypes.ProductPrototype(sanpham);
+            ViewBag.ClonedProduct = productPrototype.Clone();
+
+            // Sử dụng Decorator Pattern để hiển thị thông tin sản phẩm
+            var baseProduct = new Models.Decorators.ConcreteProduct(sanpham);
+            
+            // Kiểm tra nếu sản phẩm có giảm giá
+            bool hasDiscount = sanpham.Gia > 0 && sanpham.Soluongton > 10;
+            if (hasDiscount)
+            {
+                // Áp dụng decorator giảm giá 10% cho sản phẩm có số lượng tồn > 10
+                var discountedProduct = new Models.Decorators.DiscountedProduct(baseProduct, 10);
+                ViewBag.ProductName = discountedProduct.GetName();
+                ViewBag.ProductPrice = discountedProduct.GetPrice();
+                ViewBag.ProductDescription = discountedProduct.GetDescription();
+            }
+            else if (sanpham.Soluotxem > 100)
+            {
+                // Áp dụng decorator sản phẩm nổi bật cho sản phẩm có lượt xem > 100
+                var featuredProduct = new Models.Decorators.FeaturedProduct(baseProduct);
+                ViewBag.ProductName = featuredProduct.GetName();
+                ViewBag.ProductPrice = featuredProduct.GetPrice();
+                ViewBag.ProductDescription = featuredProduct.GetDescription();
+            }
+            else
+            {
+                // Sử dụng thông tin sản phẩm gốc
+                ViewBag.ProductName = baseProduct.GetName();
+                ViewBag.ProductPrice = baseProduct.GetPrice();
+                ViewBag.ProductDescription = baseProduct.GetDescription();
+            }
 
             return View(sanpham);
         }
@@ -128,6 +135,11 @@ namespace Admin_WBLK.Controllers
         // GET: ProductManagement/Create
         public IActionResult Create()
         {
+            // Sử dụng Singleton Pattern để lấy danh sách loại sản phẩm và thương hiệu
+            var configManager = Models.Singletons.ProductConfigurationManager.Instance;
+            ViewBag.Categories = configManager.GetProductCategories();
+            ViewBag.Brands = configManager.GetProductBrands();
+            
             return View();
         }
 
@@ -136,75 +148,29 @@ namespace Admin_WBLK.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("IdSp,Tensanpham,Gia,Soluongton,Thuonghieu,Mota,Thongsokythuat,Loaisanpham,Hinhanh,Soluotxem,Damuahang")] Sanpham sanpham, IFormFile? imageFile)
         {
-            try
+            // Remove fields that are auto-set
+            ModelState.Remove("IdSp");
+            ModelState.Remove("Hinhanh");
+            ModelState.Remove("Soluotxem");
+            ModelState.Remove("Damuahang");
+
+            if (!ModelState.IsValid)
             {
-                // Remove fields that are auto-set
-                ModelState.Remove("IdSp");
-                ModelState.Remove("Hinhanh");
-                ModelState.Remove("Soluotxem");
-                ModelState.Remove("Damuahang");
-
-                if (!ModelState.IsValid)
-                {
-                    foreach (var modelState in ModelState.Values)
-                        foreach (var error in modelState.Errors)
-                            Console.WriteLine(error.ErrorMessage);
-                    return View(sanpham);
-                }
-
-                if (imageFile == null || imageFile.Length == 0)
-                {
-                    ModelState.AddModelError("ImageFile", "Vui lòng chọn hình ảnh sản phẩm");
-                    return View(sanpham);
-                }
-
-                // Auto-increment product ID
-                string newId = "SP00001";
-                var lastProduct = await _context.Sanphams.OrderByDescending(p => p.IdSp)
-                                                         .Select(p => new { p.IdSp })
-                                                         .FirstOrDefaultAsync();
-
-                if (lastProduct != null && !string.IsNullOrEmpty(lastProduct.IdSp))
-                {
-                    int lastNumber = int.Parse(lastProduct.IdSp.Substring(2));
-                    newId = $"SP{(lastNumber + 1):D5}";
-                }
-
-                sanpham.IdSp = newId;
-
-                // Process image
-                var randomFileName = GenerateRandomFileName(Path.GetExtension(imageFile.FileName));
-                var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Images", "ProductImage");
-                if (!Directory.Exists(uploadPath))
-                    Directory.CreateDirectory(uploadPath);
-
-                var filePath = Path.Combine(uploadPath, randomFileName);
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                    await imageFile.CopyToAsync(stream);
-
-                sanpham.Hinhanh = "/Images/ProductImage/" + randomFileName;
-
-                // Process technical specifications
-                var thongSoKyThuat = Request.Form["thongsokythuat"].ToString();
-                if (!string.IsNullOrEmpty(thongSoKyThuat))
-                    sanpham.Thongsokythuat = thongSoKyThuat;
-                else
-                {
-                    ModelState.AddModelError("Thongsokythuat", "Thông số kỹ thuật không được để trống");
-                    return View(sanpham);
-                }
-
-                _context.Sanphams.Add(sanpham);
-                await _context.SaveChangesAsync();
-
-                TempData["Success"] = "Thêm sản phẩm thành công!";
-                return RedirectToAction(nameof(Index));
-            }
-            catch (Exception ex)
-            {
-                ModelState.AddModelError("", $"Có lỗi xảy ra: {ex.Message}");
+                foreach (var modelState in ModelState.Values)
+                    foreach (var error in modelState.Errors)
+                        Console.WriteLine(error.ErrorMessage);
                 return View(sanpham);
             }
+
+            // Sử dụng Command Pattern thông qua Facade để tạo sản phẩm
+            var thongSoKyThuat = Request.Form["thongsokythuat"].ToString();
+            return await _productFacade.CreateProduct(
+                sanpham,
+                imageFile,
+                thongSoKyThuat,
+                this,
+                TempData
+            );
         }
 
         // GET: ProductManagement/Edit/5
@@ -213,7 +179,8 @@ namespace Admin_WBLK.Controllers
             if (id == null)
                 return NotFound();
 
-            var sanpham = await _context.Sanphams.FindAsync(id);
+            // Sử dụng Facade Pattern để lấy thông tin sản phẩm
+            var sanpham = await _productFacade.GetProductById(id);
             if (sanpham == null)
                 return NotFound();
 
@@ -225,85 +192,40 @@ namespace Admin_WBLK.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(string id, [Bind("IdSp,Tensanpham,Gia,Soluongton,Loaisanpham,Thuonghieu,Hinhanh,Mota,Thongsokythuat")] Sanpham sanpham, IFormFile? imageFile)
         {
-            try
+            ModelState.Remove("IdNvNavigation");
+            ModelState.Remove("IdNv");
+
+            if (!ModelState.IsValid)
             {
-                if (id != sanpham.IdSp)
-                    return NotFound();
-
-                ModelState.Remove("IdNvNavigation");
-                ModelState.Remove("IdNv");
-
-                if (!ModelState.IsValid)
-                {
-                    foreach (var modelState in ModelState.Values)
-                        foreach (var error in modelState.Errors)
-                            Console.WriteLine(error.ErrorMessage);
-                    return View(sanpham);
-                }
-
-                var existingProduct = await _context.Sanphams.AsNoTracking()
-                                                           .FirstOrDefaultAsync(s => s.IdSp == id);
-                if (existingProduct == null)
-                    return NotFound();
-
-                // Handle image update
-                if (imageFile != null && imageFile.Length > 0)
-                {
-                    if (!string.IsNullOrEmpty(existingProduct.Hinhanh))
-                    {
-                        var oldImagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot",
-                            existingProduct.Hinhanh.TrimStart('/').Replace("/", "\\"));
-                        if (System.IO.File.Exists(oldImagePath))
-                            System.IO.File.Delete(oldImagePath);
-                    }
-
-                    var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Images", "ProductImage");
-                    Directory.CreateDirectory(uploadPath);
-
-                    var randomFileName = GenerateRandomFileName(Path.GetExtension(imageFile.FileName));
-                    var filePath = Path.Combine(uploadPath, randomFileName);
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                        await imageFile.CopyToAsync(stream);
-
-                    sanpham.Hinhanh = $"/Images/ProductImage/{randomFileName}";
-                }
-                else
-                {
-                    sanpham.Hinhanh = existingProduct.Hinhanh;
-                }
-
-                // Process technical specifications
-                var specs = new Dictionary<string, string>();
-                var thongSoKyThuatJson = Request.Form["thongsokythuat"].ToString();
-                if (!string.IsNullOrEmpty(thongSoKyThuatJson))
-                {
-                    try
-                    {
-                        specs = JsonSerializer.Deserialize<Dictionary<string, string>>(thongSoKyThuatJson);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine("Lỗi khi deserialize thông số kỹ thuật: " + ex.Message);
-                    }
-                }
-
-                sanpham.Thongsokythuat = specs.Any() 
-                    ? JsonSerializer.Serialize(specs, _jsonOptions)
-                    : existingProduct?.Thongsokythuat;
-
-                _context.Update(sanpham);
-                await _context.SaveChangesAsync();
-
-                TempData["Success"] = "Cập nhật sản phẩm thành công!";
-                return RedirectToAction(nameof(Index));
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in Edit action: {ex.Message}");
-                Console.WriteLine($"Stack trace: {ex.StackTrace}");
-                ModelState.AddModelError("", $"Có lỗi xảy ra: {ex.Message}");
+                foreach (var modelState in ModelState.Values)
+                    foreach (var error in modelState.Errors)
+                        Console.WriteLine(error.ErrorMessage);
                 return View(sanpham);
             }
+
+            // Kiểm tra trạng thái sản phẩm trước khi cập nhật
+            var currentProduct = await _productFacade.GetProductById(id);
+            if (currentProduct == null)
+                return NotFound();
+
+            // Sử dụng State Pattern để kiểm tra xem sản phẩm có thể được cập nhật không
+            var productContext = new ProductContext(currentProduct);
+            if (!productContext.CanUpdate())
+            {
+                TempData["ErrorMessage"] = "Sản phẩm không thể được cập nhật trong trạng thái hiện tại.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            // Sử dụng Command Pattern thông qua Facade để cập nhật sản phẩm
+            var thongSoKyThuat = Request.Form["thongsokythuat"].ToString();
+            return await _productFacade.UpdateProduct(
+                id,
+                sanpham,
+                imageFile,
+                thongSoKyThuat,
+                this,
+                TempData
+            );
         }
 
         // GET: ProductManagement/Delete/5
@@ -312,9 +234,18 @@ namespace Admin_WBLK.Controllers
             if (id == null)
                 return NotFound();
 
-            var sanpham = await _context.Sanphams.FirstOrDefaultAsync(m => m.IdSp == id);
+            // Sử dụng Facade Pattern để lấy thông tin sản phẩm
+            var sanpham = await _productFacade.GetProductById(id);
             if (sanpham == null)
                 return NotFound();
+
+            // Sử dụng State Pattern để kiểm tra xem sản phẩm có thể bị xóa không
+            var productContext = new ProductContext(sanpham);
+            if (!productContext.CanDelete())
+            {
+                TempData["ErrorMessage"] = "Sản phẩm không thể bị xóa trong trạng thái hiện tại.";
+                return RedirectToAction(nameof(Index));
+            }
 
             return View(sanpham);
         }
@@ -324,12 +255,21 @@ namespace Admin_WBLK.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(string id)
         {
-            var sanpham = await _context.Sanphams.FindAsync(id);
-            if (sanpham != null)
-                _context.Sanphams.Remove(sanpham);
+            // Kiểm tra trạng thái sản phẩm trước khi xóa
+            var sanpham = await _productFacade.GetProductById(id);
+            if (sanpham == null)
+                return NotFound();
 
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            // Sử dụng State Pattern để kiểm tra xem sản phẩm có thể bị xóa không
+            var productContext = new ProductContext(sanpham);
+            if (!productContext.CanDelete())
+            {
+                TempData["ErrorMessage"] = "Sản phẩm không thể bị xóa trong trạng thái hiện tại.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            // Sử dụng Command Pattern thông qua Facade để xóa sản phẩm
+            return await _productFacade.DeleteProduct(id, this, TempData);
         }
 
         private bool SanphamExists(string id)
@@ -365,17 +305,6 @@ namespace Admin_WBLK.Controllers
                 Console.WriteLine($"Error in SearchSuggestions: {ex.Message}");
                 return Json(new List<object>());
             }
-        }
-
-        // Thêm hàm mới để tạo tên file ngẫu nhiên
-        private string GenerateRandomFileName(string extension)
-        {
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-            var random = new Random();
-            var randomString = new string(Enumerable.Repeat(chars, 20)
-                .Select(s => s[random.Next(s.Length)]).ToArray());
-            
-            return randomString + extension.ToLower();
         }
     }
 }
