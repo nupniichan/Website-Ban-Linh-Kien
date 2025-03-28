@@ -911,7 +911,7 @@ namespace Admin_WBLK.Controllers
                 // Dictionary các trạng thái hợp lềE
                 var validTransitions = new Dictionary<string, string[]>
                 {
-                    { "ChềExác nhận", new[] { "Đã duyệt đơn", "Hủy đơn" } },
+                    { "Chờ xác nhận", new[] { "Đã duyệt đơn", "Hủy đơn" } },
                     { "Thanh toán không thành công", new[] { "Hủy đơn" } },
                     { "Đã thanh toán", new[] { "Đang giao" } },
                     { "Đã duyệt đơn", new[] { "Đang giao" } },
@@ -925,7 +925,7 @@ namespace Admin_WBLK.Controllers
                 if (!validTransitions.ContainsKey(donhang.Trangthai) ||
                     !validTransitions[donhang.Trangthai].Contains(newStatus))
                 {
-                    TempData["Error"] = $"Không thềEchuyển trạng thái từ '{donhang.Trangthai}' sang '{newStatus}'!";
+                    TempData["Error"] = $"Không thể chuyển trạng thái từ '{donhang.Trangthai}' sang '{newStatus}'!";
                     if (!string.IsNullOrEmpty(returnUrl))
                         return Redirect(returnUrl);
                     return RedirectToAction(nameof(Index));
