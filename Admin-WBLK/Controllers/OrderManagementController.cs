@@ -361,7 +361,7 @@ namespace Admin_WBLK.Controllers
                     {
                         IdTt = await GeneratePaymentId(),
                         Mathanhtoan = Mathanhtoan,
-                        Trangthai = "ChềExác nhận",
+                        Trangthai = "Chờ xác nhận",
                         Tienthanhtoan = donhang.Tongtien, // Will be updated after discount
                         Ngaythanhtoan = DateTime.Now,
                         Noidungthanhtoan = NoiDungThanhToan ?? "",
