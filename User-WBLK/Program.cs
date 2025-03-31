@@ -83,14 +83,14 @@ if (!app.Environment.IsDevelopment())
 
 app.UseMiddleware<CheckCookiesSession>();
 
-app.UseHttpsRedirection();
-app.UseStaticFiles();
-app.UseRouting();
-
 app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
 });
+
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+app.UseRouting();
 
 // Use Session before Authentication
 app.UseSession();
