@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Website_Ban_Linh_Kien.Models;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.Facebook;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
