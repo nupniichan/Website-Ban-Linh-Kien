@@ -55,12 +55,42 @@ builder.Services.AddAuthentication(options =>
     googleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"];
     googleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
     googleOptions.SignInScheme = "External"; // Use external cookie scheme
+
+    googleOptions.Events = new Microsoft.AspNetCore.Authentication.OAuth.OAuthEvents
+    {
+        OnRedirectToAuthorizationEndpoint = context =>
+        {
+            // Force the scheme to https if it is http
+            var redirectUri = context.RedirectUri;
+            if (redirectUri.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
+            {
+                redirectUri = "https://" + redirectUri.Substring("http://".Length);
+            }
+            context.Response.Redirect(redirectUri);
+            return Task.CompletedTask;
+        }
+    };
 })
 .AddFacebook(facebookOptions =>
 {
     facebookOptions.AppId = builder.Configuration["Authentication:Facebook:AppId"];
     facebookOptions.AppSecret = builder.Configuration["Authentication:Facebook:AppSecret"];
     facebookOptions.SignInScheme = "External"; // Use external cookie scheme
+
+    facebookOptions.Events = new Microsoft.AspNetCore.Authentication.OAuth.OAuthEvents
+    {
+        OnRedirectToAuthorizationEndpoint = context =>
+        {
+            // Force the scheme to https if it is http
+            var redirectUri = context.RedirectUri;
+            if (redirectUri.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
+            {
+                redirectUri = "https://" + redirectUri.Substring("http://".Length);
+            }
+            context.Response.Redirect(redirectUri);
+            return Task.CompletedTask;
+        }
+    };
 });
 
 // Configure cookie settings if needed
