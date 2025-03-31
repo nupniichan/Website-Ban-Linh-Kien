@@ -45,7 +45,7 @@ builder.Services.AddAuthentication(options =>
     options.LoginPath = "/Shared/AccessDenied";
     options.LogoutPath = "/Login/Logout";
     options.AccessDeniedPath = "/Shared/AccessDenied";
-    options.ExpireTimeSpan = TimeSpan.FromDays(7); // Cookie exists for 7 days
+    options.ExpireTimeSpan = TimeSpan.FromDays(7);
     options.SlidingExpiration = true;
 })
 // Temporary cookie for external authentication data.
@@ -54,52 +54,22 @@ builder.Services.AddAuthentication(options =>
 {
     googleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"];
     googleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
-    googleOptions.SignInScheme = "External"; // Use external cookie scheme
-
-    googleOptions.Events = new Microsoft.AspNetCore.Authentication.OAuth.OAuthEvents
-    {
-        OnRedirectToAuthorizationEndpoint = context =>
-        {
-            // Force the scheme to https if it is http
-            var redirectUri = context.RedirectUri;
-            if (redirectUri.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
-            {
-                redirectUri = "https://" + redirectUri.Substring("http://".Length);
-            }
-            context.Response.Redirect(redirectUri);
-            return Task.CompletedTask;
-        }
-    };
+    googleOptions.SignInScheme = "External";
 })
 .AddFacebook(facebookOptions =>
 {
     facebookOptions.AppId = builder.Configuration["Authentication:Facebook:AppId"];
     facebookOptions.AppSecret = builder.Configuration["Authentication:Facebook:AppSecret"];
-    facebookOptions.SignInScheme = "External"; // Use external cookie scheme
-
-    facebookOptions.Events = new Microsoft.AspNetCore.Authentication.OAuth.OAuthEvents
-    {
-        OnRedirectToAuthorizationEndpoint = context =>
-        {
-            // Force the scheme to https if it is http
-            var redirectUri = context.RedirectUri;
-            if (redirectUri.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
-            {
-                redirectUri = "https://" + redirectUri.Substring("http://".Length);
-            }
-            context.Response.Redirect(redirectUri);
-            return Task.CompletedTask;
-        }
-    };
+    facebookOptions.SignInScheme = "External"; 
 });
 
 // Configure cookie settings if needed
 builder.Services.ConfigureApplicationCookie(options =>
 {
-    options.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.Lax; // or None if needed
+    options.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.Lax; 
 });
 
-// Connect MomoAPI (Only configuration, no service registration)
+// Connect MomoAPI 
 builder.Services.Configure<MomoOptionModel>(builder.Configuration.GetSection("MomoAPI"));
 
 var app = builder.Build();
@@ -115,7 +85,8 @@ app.UseMiddleware<CheckCookiesSession>();
 
 app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
-    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto,
+    RequireHeaderSymmetry = false
 });
 
 app.UseHttpsRedirection();
@@ -147,7 +118,7 @@ app.MapControllerRoute(
 
 // Test route (remove after testing)
 app.MapControllerRoute(
-    name: "producstList",
+    name: "productsList",
     pattern: "/productsList/{action=Index}/{id?}",
     defaults: new { controller = "ProductsList" });
 
