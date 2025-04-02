@@ -309,7 +309,7 @@ namespace Admin_WBLK.Controllers
                 {
                     var chitietList = JsonSerializer.Deserialize<List<Chitietdonhang>>(chitietdonhangs);
                     
-                    // Tạo danh sách chi tiết đơn hàng mới đềEtránh trùng lặp
+                    // Tạo danh sách chi tiết đơn hàng mới đề tránh trùng lặp
                     var newChitietList = new List<Chitietdonhang>();
                     
                     foreach (var chitiet in chitietList)
@@ -908,10 +908,10 @@ namespace Admin_WBLK.Controllers
                     return NotFound();
                 }
 
-                // Dictionary các trạng thái hợp lềE
+                // Dictionary các trạng thái hợp lệ
                 var validTransitions = new Dictionary<string, string[]>
                 {
-                    { "ChềExác nhận", new[] { "Đã duyệt đơn", "Hủy đơn" } },
+                    { "Chờ xác nhận", new[] { "Đã duyệt đơn", "Hủy đơn" } },
                     { "Thanh toán không thành công", new[] { "Hủy đơn" } },
                     { "Đã thanh toán", new[] { "Đang giao" } },
                     { "Đã duyệt đơn", new[] { "Đang giao" } },
@@ -925,13 +925,13 @@ namespace Admin_WBLK.Controllers
                 if (!validTransitions.ContainsKey(donhang.Trangthai) ||
                     !validTransitions[donhang.Trangthai].Contains(newStatus))
                 {
-                    TempData["Error"] = $"Không thềEchuyển trạng thái từ '{donhang.Trangthai}' sang '{newStatus}'!";
+                    TempData["Error"] = $"Không thể chuyển trạng thái từ '{donhang.Trangthai}' sang '{newStatus}'!";
                     if (!string.IsNullOrEmpty(returnUrl))
                         return Redirect(returnUrl);
                     return RedirectToAction(nameof(Index));
                 }
 
-                // Xử lý logic bềEsung
+                // Xử lý logic bổ sung
                 switch (newStatus)
                 {
                     case "Hủy đơn":
