@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Website_Ban_Linh_Kien.Models;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.Facebook;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,7 +45,7 @@ builder.Services.AddAuthentication(options =>
     options.LoginPath = "/Shared/AccessDenied";
     options.LogoutPath = "/Login/Logout";
     options.AccessDeniedPath = "/Shared/AccessDenied";
-    options.ExpireTimeSpan = TimeSpan.FromDays(7); // Cookie exists for 7 days
+    options.ExpireTimeSpan = TimeSpan.FromDays(7);
     options.SlidingExpiration = true;
 })
 // Temporary cookie for external authentication data.
@@ -53,22 +54,22 @@ builder.Services.AddAuthentication(options =>
 {
     googleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"];
     googleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
-    googleOptions.SignInScheme = "External"; // Use external cookie scheme
+    googleOptions.SignInScheme = "External";
 })
 .AddFacebook(facebookOptions =>
 {
     facebookOptions.AppId = builder.Configuration["Authentication:Facebook:AppId"];
     facebookOptions.AppSecret = builder.Configuration["Authentication:Facebook:AppSecret"];
-    facebookOptions.SignInScheme = "External"; // Use external cookie scheme
+    facebookOptions.SignInScheme = "External"; 
 });
 
 // Configure cookie settings if needed
 builder.Services.ConfigureApplicationCookie(options =>
 {
-    options.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.Lax; // or None if needed
+    options.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.Lax; 
 });
 
-// Connect MomoAPI (Only configuration, no service registration)
+// Connect MomoAPI 
 builder.Services.Configure<MomoOptionModel>(builder.Configuration.GetSection("MomoAPI"));
 
 var app = builder.Build();
@@ -81,6 +82,12 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseMiddleware<CheckCookiesSession>();
+
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto,
+    RequireHeaderSymmetry = false
+});
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
@@ -111,7 +118,7 @@ app.MapControllerRoute(
 
 // Test route (remove after testing)
 app.MapControllerRoute(
-    name: "producstList",
+    name: "productsList",
     pattern: "/productsList/{action=Index}/{id?}",
     defaults: new { controller = "ProductsList" });
 
