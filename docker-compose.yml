@@ -40,6 +40,7 @@ services:
       - database-mysql
     environment:
       - ASPNETCORE_URLS=http://+:5124
+    restart: always
 
   admin-wblk:
     image: admin-wblk-image
@@ -54,6 +55,7 @@ services:
       - database-mysql
     environment:
       - ASPNETCORE_URLS=http://+:5177
+    restart: always
 
   nginx-proxy:
     image: 'jc21/nginx-proxy-manager:latest'
