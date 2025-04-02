@@ -54,12 +54,14 @@ builder.Services.AddAuthentication(options =>
 {
     googleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"];
     googleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+    googleOptions.RedirectUri = builder.Configuration["Authentication:Google:RedirectUri"];
     googleOptions.SignInScheme = "External";
 })
 .AddFacebook(facebookOptions =>
 {
     facebookOptions.AppId = builder.Configuration["Authentication:Facebook:AppId"];
     facebookOptions.AppSecret = builder.Configuration["Authentication:Facebook:AppSecret"];
+    facebookOptions.RedirectUri = builder.Configuration["Authentication:Facebook:RedirectUri"];
     facebookOptions.SignInScheme = "External"; 
 });
 
