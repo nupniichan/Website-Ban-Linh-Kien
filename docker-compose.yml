@@ -34,12 +34,13 @@ services:
     networks:
       - webbanlinhkien
     ports:
+      - "5124:5124"
       - "7050:7050"
     depends_on:
       - database-mysql
     environment:
+      - ASPNETCORE_URLS=http://+:5124
       - ASPNETCORE_URLS=https://+:7050
-    restart: always
 
   admin-wblk:
     image: admin-wblk-image
@@ -54,7 +55,7 @@ services:
       - database-mysql
     environment:
       - ASPNETCORE_URLS=http://+:5177
-    restart: always
+      - ASPNETCORE_URLS=https://+:7012
 
   nginx-proxy:
     image: 'jc21/nginx-proxy-manager:latest'

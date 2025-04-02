@@ -11,6 +11,6 @@ FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
 WORKDIR /app
 COPY --from=build /out ./
 
-EXPOSE 7050
+EXPOSE 5124 7050
 
 CMD ["dotnet", "User-WBLK.dll"]
