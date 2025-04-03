@@ -632,17 +632,43 @@ namespace Admin_WBLK.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(string id, string returnUrl)
         {
-            var donhang = await _context.Donhangs.FindAsync(id);
-            if (donhang != null)
+            var donhang = await _context.Donhangs
+                .Include(d => d.Chitietdonhangs)
+                .FirstOrDefaultAsync(d => d.IdDh == id);
+
+            if (donhang == null)
+                return NotFound();
+
+            // Kiểm tra trạng thái đơn hàng
+            if (donhang.Trangthai == "Đang giao" || donhang.Trangthai == "Giao thành công")
             {
-                _context.Donhangs.Remove(donhang);
-                await _context.SaveChangesAsync();
-                TempData["Success"] = "Xóa đơn hàng thành công!";
+                TempData["Error"] = "Không thể xóa đơn hàng đang trong quá trình giao hoặc đã giao thành công.";
+                if (!string.IsNullOrEmpty(returnUrl))
+                    return Redirect(returnUrl);
+                return RedirectToAction(nameof(Index));
             }
 
-            if (string.IsNullOrEmpty(returnUrl))
-                return RedirectToAction(nameof(Index));
-            return Redirect(returnUrl);
+            // Nếu đơn hàng bị hủy hoặc không nhận hàng, hoàn trả số lượng sản phẩm
+            if (donhang.Trangthai == "Hủy đơn" || donhang.Trangthai == "Không nhận hàng")
+            {
+                foreach (var chitiet in donhang.Chitietdonhangs)
+                {
+                    var product = await _context.Sanphams.FindAsync(chitiet.IdSp);
+                    if (product != null)
+                    {
+                        product.Soluongton += chitiet.Soluongsanpham;
+                        _context.Update(product);
+                    }
+                }
+            }
+
+            _context.Donhangs.Remove(donhang);
+            await _context.SaveChangesAsync();
+            TempData["Success"] = "Xóa đơn hàng thành công!";
+
+            if (!string.IsNullOrEmpty(returnUrl))
+                return Redirect(returnUrl);
+            return RedirectToAction(nameof(Index));
         }
 
         private bool DonhangExists(string id)
