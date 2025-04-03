@@ -324,11 +324,22 @@ namespace Admin_WBLK.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(string id)
         {
-            var sanpham = await _context.Sanphams.FindAsync(id);
-            if (sanpham != null)
-                _context.Sanphams.Remove(sanpham);
+            var sanpham = await _context.Sanphams
+                .Include(s => s.Chitietdonhangs)
+                .FirstOrDefaultAsync(s => s.IdSp == id);
 
+            if (sanpham == null)
+                return NotFound();
+
+            if (sanpham.Chitietdonhangs.Any())
+            {
+                TempData["Error"] = "Không thể xóa sản phẩm này vì nó đang tồn tại trong đơn hàng.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            _context.Sanphams.Remove(sanpham);
             await _context.SaveChangesAsync();
+            TempData["Success"] = "Xóa sản phẩm thành công!";
             return RedirectToAction(nameof(Index));
         }
 

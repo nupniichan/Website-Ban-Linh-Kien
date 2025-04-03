@@ -14,6 +14,13 @@
         </div>
     }
 
+    @if (TempData["Error"] != null)
+    {
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+            <span class="block sm:inline">@TempData["Error"]</span>
+        </div>
+    }
+
     <!-- Search Bar và Filters -->
     <div class="mb-6 space-y-4">
         <form asp-action="Index" method="get" class="flex flex-wrap gap-4">

@@ -238,13 +238,22 @@ namespace Admin_WBLK.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(string id)
         {
-            var discount = await _context.Magiamgia.FindAsync(id);
-            if (discount != null)
+            var discount = await _context.Magiamgia
+                .Include(m => m.Donhangs)
+                .FirstOrDefaultAsync(m => m.IdMgg == id);
+
+            if (discount == null)
+                return NotFound();
+
+            if (discount.Donhangs.Any())
             {
-                _context.Magiamgia.Remove(discount);
-                await _context.SaveChangesAsync();
-                TempData["Success"] = "Xóa mã giảm giá thành công!";
+                TempData["Error"] = "Không thể xóa mã giảm giá này vì nó đang được sử dụng trong đơn hàng.";
+                return RedirectToAction(nameof(Index));
             }
+
+            _context.Magiamgia.Remove(discount);
+            await _context.SaveChangesAsync();
+            TempData["Success"] = "Xóa mã giảm giá thành công!";
             return RedirectToAction(nameof(Index));
         }
 

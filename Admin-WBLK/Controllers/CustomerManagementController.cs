@@ -374,13 +374,22 @@ namespace Admin_WBLK.Controllers
         {
             try
             {
-                var khachhang = await _context.Khachhangs.FindAsync(id);
-                if (khachhang != null)
+                var khachhang = await _context.Khachhangs
+                    .Include(k => k.Donhangs)
+                    .FirstOrDefaultAsync(k => k.IdKh == id);
+
+                if (khachhang == null)
+                    return NotFound();
+
+                if (khachhang.Donhangs.Any())
                 {
-                    _context.Khachhangs.Remove(khachhang);
-                    await _context.SaveChangesAsync();
-                    TempData["Success"] = "Xóa khách hàng thành công!";
+                    TempData["Error"] = "Không thể xóa khách hàng này vì họ đang có đơn hàng.";
+                    return RedirectToAction(nameof(Index));
                 }
+
+                _context.Khachhangs.Remove(khachhang);
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "Xóa khách hàng thành công!";
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
