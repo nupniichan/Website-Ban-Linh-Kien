@@ -1,142 +1,167 @@
-# Website Bán Linh Kiện (Computer Parts E-commerce)
+# Computer Parts E-Commerce Website
 
-Dự án Website Bán Linh Kiện là một ứng dụng e-commerce hoàn chỉnh cho cửa hàng bán linh kiện máy tính, bao gồm cả phần user (khách hàng) và admin (quản trị). Dự án được xây dựng trên nền tảng ASP.NET Core và sử dụng Docker để triển khai.
+![E-Commerce](https://img.shields.io/badge/E--Commerce-Online-brightgreen)
+![.NET](https://img.shields.io/badge/.NET-9.0-blue)
+![Docker](https://img.shields.io/badge/Docker-Enabled-blue)
+![MySQL](https://img.shields.io/badge/Database-MariaDB-orange)
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## Cấu trúc dự án
+A complete e-commerce solution for computer parts retailing, including both user (customer) and admin (management) components. This project is built on ASP.NET Core and containerized with Docker for easy deployment.
 
-Dự án được chia thành các phần chính:
+## Project Structure
 
-- **User-WBLK**: Ứng dụng dành cho khách hàng, cho phép xem sản phẩm, đặt hàng, thanh toán...
-- **Admin-WBLK**: Ứng dụng quản trị viên, quản lý sản phẩm, đơn hàng, tài khoản...
-- **Database-MySql**: Cơ sở dữ liệu MySQL/MariaDB
-- **Docker**: Cấu hình Docker để triển khai toàn bộ hệ thống
+The project consists of these main components:
 
-## Tính năng chính
+- **User-WBLK**: Customer-facing application for browsing products, placing orders, and payments
+- **Admin-WBLK**: Administration application for managing products, orders, and user accounts
+- **Database-MySql**: MySQL/MariaDB database for data storage
+- **Docker**: Docker configuration for deploying the entire system
 
-### User-WBLK
-- Hiển thị danh sách sản phẩm
-- Đăng nhập/đăng ký tài khoản (local hoặc thông qua Google, Facebook)
-- Quản lý giỏ hàng
-- Đặt hàng và thanh toán (hỗ trợ thanh toán qua MoMo, PayPal)
-- Xem lịch sử đơn hàng
-- Quản lý thông tin cá nhân
+## Key Features
 
-### Admin-WBLK
-- Đăng nhập quản trị
-- Quản lý sản phẩm
-- Quản lý đơn hàng
-- Quản lý tài khoản người dùng
-- Xử lý các yêu cầu từ người dùng
+### User Portal
+- Product catalog browsing
+- User account management (local or social login via Google, Facebook)
+- Shopping cart functionality
+- Order placement and payment processing (MoMo, PayPal)
+- Order history
+- Personal profile management
+- ...
 
-## Yêu cầu hệ thống
+### Admin Portal
+- Administrative login
+- Product management
+- Order management
+- User account management
+- Customer request handling
+- ...
 
-- Docker và Docker Compose
-- .NET 9.0 SDK (để phát triển)
+## System Requirements
 
-## Cài đặt và triển khai
+- Docker and Docker Compose
+- .NET 9.0 SDK (for development)
 
-### Sử dụng Docker Compose (Khuyến nghị)
+## Installation and Deployment
 
-Đây là cách đơn giản nhất để chạy toàn bộ hệ thống:
+### Using Docker Compose (Recommended)
+
+This is the simplest way to run the entire system:
 
 ```bash
-# Triển khai tất cả các dịch vụ
+# Deploy all services
 docker compose up -d --build
 
-# Khởi động lại nếu cần
+# Restart if needed
 docker compose restart
 ```
 
-### Triển khai thủ công (HTTP only)
+### Manual Deployment (.NET Core)
 
-#### Cài đặt cơ sở dữ liệu
+#### Setup Database
 ```bash
-cd Database-MySql
-docker build -t mysql-database-image .
-docker run --name mysql-database-container -dp 3306:3306 mysql-database-image
+# Option 1: Using XAMPP
+# 1. Install XAMPP from https://www.apachefriends.org/
+# 2. Start MySQL service from XAMPP Control Panel
+# 3. Create database and import schema:
+#    - Open phpMyAdmin (http://localhost/phpmyadmin)
+#    - Create a new database named "WebBanLinhKien"
+#    - Import ./Database-MySql/webbanlinhkien.sql file
+#    - Create a user WBLK_USER with password Wblk@TMDT2025 with full privileges
+
+# Option 2: Using MySQL Workbench
+# 1. Install MySQL Community Server from https://dev.mysql.com/downloads/
+# 2. Connect to your MySQL server using MySQL Workbench
+# 3. Create a new database named "WebBanLinhKien"
+# 4. Import schema from ./Database-MySql/webbanlinhkien.sql
+# 5. Create a user WBLK_USER with password Wblk@TMDT2025
 ```
 
-#### Tạo network
-```bash
-docker network create webbanlinhkien
-docker network connect webbanlinhkien mysql-database-container
+#### Configure Connection Strings
+Edit the connection string in appsettings.json files for both User-WBLK and Admin-WBLK projects to point to your local MySQL instance, for example:
+```json
+"ConnectionStrings": {
+  "DefaultConnection": "server=localhost;database=WebBanLinhKien;user=WBLK_USER;password=Wblk@TMDT2025"
+}
 ```
 
-#### Triển khai User-WBLK
+#### Run User Portal Application
 ```bash
+# Navigate to User-WBLK directory
 cd User-WBLK
-docker build -t user-wblk-image .
-docker run --name user-wblk-container -d --network webbanlinhkien -p 5124:5124 -e ASPNETCORE_URLS="http://+:5124" user-wblk-image
-docker network connect webbanlinhkien user-wblk-container
+
+# Restore packages
+dotnet restore
+
+# Run the application
+dotnet run
 ```
 
-#### Triển khai Admin-WBLK
+#### Run Admin Portal Application
 ```bash
+# Navigate to Admin-WBLK directory
 cd Admin-WBLK
-docker build -t admin-wblk-image .
-docker run --name admin-wblk-container -d --network webbanlinhkien -p 5177:5177 -e ASPNETCORE_URLS="http://+:5177" admin-wblk-image
-docker network connect webbanlinhkien admin-wblk-container
+
+# Restore packages
+dotnet restore
+
+# Run the application
+dotnet run
 ```
 
-### Thiết lập HTTPS (Sau khi đã thiết lập HTTP thành công)
+## Accessing Applications
 
-```bash
-# Tạo chứng chỉ SSL
-dotnet dev-certs https --trust
-dotnet dev-certs https -ep "Docker/aspnetapp.pfx" -p "root"
+After deployment:
 
-# Chạy User-WBLK với HTTPS
-docker run --name user-wblk-container -d --network webbanlinhkien -p 5124:5124 -p 7050:7050 -v "Docker:/https:ro" -e ASPNETCORE_URLS="http://+:5124;https://+:7050" -e ASPNETCORE_Kestrel__Certificates__Default__Path="/https/aspnetapp.pfx" -e ASPNETCORE_Kestrel__Certificates__Default__Password="root" user-wblk-image
-
-# Chạy Admin-WBLK với HTTPS
-docker run --name admin-wblk-container -d --network webbanlinhkien -p 5177:5177 -p 7012:7012 -v "Docker:/https:ro" -e ASPNETCORE_URLS="http://+:5177;https://+:7012" -e ASPNETCORE_Kestrel__Certificates__Default__Path="/https/aspnetapp.pfx" -e ASPNETCORE_Kestrel__Certificates__Default__Password="root" admin-wblk-image
-```
-
-## Truy cập ứng dụng
-
-Sau khi triển khai:
-
-- **User-WBLK (Trang người dùng)**: http://localhost:5124 và https://localhost:7050
-- **Admin-WBLK (Trang quản trị)**: http://localhost:5177 và https://localhost:7012
+- **User Portal**: http://localhost:5124 and https://localhost:7050
+- **Admin Portal**: http://localhost:5177 and https://localhost:7012
 - **Nginx Proxy Manager**: http://localhost:81 (admin panel)
 
-## Cấu hình và thông tin kết nối
+## Configuration and Connection Details
 
-### Cơ sở dữ liệu
+### Database
 - Server: mariadb-database-container
 - Database: WebBanLinhKien
 - User: WBLK_USER
 - Password: Wblk@TMDT2025
 
-### Cổng và endpoints
-- User-WBLK: 5124 (HTTP), 7050 (HTTPS)
-- Admin-WBLK: 5177 (HTTP), 7012 (HTTPS)
+### Ports and Endpoints
+- User Portal: 5124 (HTTP), 7050 (HTTPS)
+- Admin Portal: 5177 (HTTP), 7012 (HTTPS)
 - Database: 3306
 - Nginx: 80 (HTTP), 443 (HTTPS), 81 (admin)
 
-## Tích hợp thanh toán
+## Payment Integration
 
 ### MoMo
-Đã tích hợp sẵn API thanh toán MoMo, cấu hình trong file User-WBLK/appsettings.json
+MoMo payment API is integrated, configured in User-WBLK/appsettings.json
 
 ### PayPal
-Đã tích hợp sẵn API thanh toán PayPal, cấu hình trong file User-WBLK/appsettings.json
+PayPal payment API is integrated, configured in User-WBLK/appsettings.json
 
-## Đăng nhập xã hội
+## Social Login
 
-Hệ thống hỗ trợ đăng nhập qua:
+The system supports login via:
 - Google
 - Facebook
 
-## Phát triển
+## Development
 
-Để phát triển dự án, bạn cần:
-1. Cài đặt .NET 9.0 SDK
-2. Cài đặt Docker và Docker Compose
-3. Clone repository và mở trong IDE ưa thích (Visual Studio, VS Code...)
-4. Chạy cơ sở dữ liệu bằng Docker
-5. Chạy các ứng dụng trong chế độ development
+To develop this project, you need:
+1. Install .NET 9.0 SDK
+2. Install Docker and Docker Compose
+3. Clone the repository and open in your preferred IDE (Visual Studio, VS Code...)
+4. Run the database using Docker
+5. Run the applications in development mode
 
-## Giấy phép
+## License
 
-© Website-Ban-Linh-Kien - Bạn có thể sử dụng mã nguồn này cho mục đích học tập và phi thương mại. 
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Contributors
+
+Thanks to all the amazing people who have contributed to this project:
+
+- [Trần Hồng Phát](https://github.com/ThePinkKitten)
+- [Lê Nguyễn Hoàng Thanh](https://github.com/KevzCz)
+
+Feel free to contribute to this project by submitting issues or pull requests on our GitHub repository. 
