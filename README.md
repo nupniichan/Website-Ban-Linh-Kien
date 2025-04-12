@@ -1,12 +1,15 @@
+<div align="center">
+
 # Computer Parts E-Commerce Website
 
 ![E-Commerce](https://img.shields.io/badge/E--Commerce-Online-brightgreen)
 ![.NET](https://img.shields.io/badge/.NET-9.0-blue)
 ![Docker](https://img.shields.io/badge/Docker-Enabled-blue)
 ![MySQL](https://img.shields.io/badge/Database-MariaDB-orange)
-![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
 A complete e-commerce solution for computer parts retailing, including both user (customer) and admin (management) components. This project is built on ASP.NET Core and containerized with Docker for easy deployment.
+</div>
 
 ## Project Structure
 
